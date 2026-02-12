@@ -3,7 +3,9 @@
 > *"This file is the complete algorithm. Everything else is just efficiency."*
 > — Andrej Karpathy
 
-A GPT language model — trained and run — in a single Python file, with zero dependencies beyond the standard library. No PyTorch. No TensorFlow. No NumPy. Just `math`, `random`, and `os`.
+This is Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html) — a GPT language model trained and run in a single Python file, with zero dependencies beyond the standard library. No PyTorch. No TensorFlow. No NumPy. Just `math`, `random`, and `os`.
+
+The code in `microgpt.py` is Karpathy's original, included here unchanged (the only edit is the dataset file path, adjusted to fit the project layout).
 
 This project strips a Generative Pre-trained Transformer down to its absolute essence: ~200 lines of pure Python that build an autograd engine, define a transformer architecture, train it with Adam, and generate text. If you've ever wanted to understand what *actually* happens inside a GPT, this is the place to start.
 
@@ -273,4 +275,4 @@ If you understand this code, you understand the core algorithm behind ChatGPT, C
 
 ## Credits
 
-Created by [Andrej Karpathy](https://github.com/karpathy). The original code is published at [karpathy.ai/microgpt.html](https://karpathy.ai/microgpt.html). The autograd engine is a spiritual descendant of [micrograd](https://github.com/karpathy/micrograd), and the model architecture follows [nanoGPT](https://github.com/karpathy/nanoGPT) — both excellent companion projects.
+`microgpt.py` is written by [Andrej Karpathy](https://github.com/karpathy) and published at [karpathy.ai/microgpt.html](https://karpathy.ai/microgpt.html). It is included here with attribution (see the [LICENSE](../LICENSE) in the project root). The autograd engine is a spiritual descendant of [micrograd](https://github.com/karpathy/micrograd), and the model architecture follows [nanoGPT](https://github.com/karpathy/nanoGPT) — both excellent companion projects.

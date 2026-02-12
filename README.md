@@ -5,7 +5,7 @@ Six implementations of the same tiny GPT language model, inspired by Andrej Karp
 The progression goes from raw first principles to framework-powered GPU code:
 
 ```
-01_pure_python/          Zero dependencies. Scalar autograd. The whole algorithm laid bare.
+01_pure_python/          Karpathy's original code. Zero dependencies. Scalar autograd.
 02_numpy_manual_backprop/  NumPy arrays, but every gradient still written by hand.
 03_pytorch/              PyTorch autograd takes over. Same model, ~30 lines shorter.
 04_pytorch_batched/      Mini-batches, padding, masking — training at scale.
@@ -46,4 +46,4 @@ Each subfolder has its own README with a deeper look at what makes that implemen
 
 ## Credits
 
-This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy) — a GPT trained and run in a single file of pure, dependency-free Python. The `01_pure_python` folder contains his original code. The other five versions reimplement the same algorithm in different frameworks to show how the same ideas translate across tools.
+This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy) — a GPT trained and run in a single file of pure, dependency-free Python. The `01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). The other five versions reimplement the same algorithm in different frameworks to show how the same ideas translate across tools.
