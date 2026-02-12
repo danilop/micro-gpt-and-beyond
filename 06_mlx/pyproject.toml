@@ -1,0 +1,9 @@
+[project]
+name = "06-mlx"
+version = "0.1.0"
+description = "microGPT in MLX for Apple Silicon"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "mlx>=0.30.6",
+]
