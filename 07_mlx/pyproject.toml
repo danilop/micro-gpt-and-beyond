@@ -1,5 +1,5 @@
 [project]
-name = "06-mlx"
+name = "07-mlx"
 version = "0.1.0"
 description = "microGPT in MLX for Apple Silicon"
 readme = "README.md"
