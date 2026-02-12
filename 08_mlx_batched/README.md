@@ -46,6 +46,24 @@ The `mx.eval` call triggers the entire forward + backward + optimizer update in 
 | Batch size | 1 | 32 |
 | Training steps | 500 | 1000 |
 
+### Padding and masking — the same work as PyTorch
+
+The `make_batch` function pads sequences and builds masks, just like `04_pytorch_batched`. The only difference is `mx.array` instead of `torch.tensor`:
+
+```python
+def make_batch(docs, step, batch_size):
+    for s in sequences:
+        n = len(s) - 1
+        inp = s[:n] + [PAD] * (max_len - 1 - n)
+        tgt = s[1:n+1] + [0] * (max_len - 1 - n)
+        pmask = [False] * n + [True] * (max_len - 1 - n)
+        tmask = [1.0] * n + [0.0] * (max_len - 1 - n)
+
+    return mx.array(input_ids), mx.array(target_ids), mx.array(pad_masks), mx.array(target_masks)
+```
+
+This is the manual work that JAX's `vmap` avoids — and the reason the 06 vs 08 comparison is instructive.
+
 ## What you learn here
 
 - MLX batching follows the PyTorch pattern — no `vmap` shortcut
@@ -60,3 +78,5 @@ Requires a Mac with Apple Silicon (M1/M2/M3/M4).
 ```bash
 uv run python main.py
 ```
+
+Trains for 1000 steps (prints every 10) and generates 20 names. Runs on the Apple GPU automatically.

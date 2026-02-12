@@ -54,6 +54,20 @@ Like the PyTorch batched version, this uses a bigger model to make batching wort
 | Batch size | 1 | 32 |
 | Training steps | 500 | 1000 |
 
+### Loss masking
+
+The loss function uses a `target_mask` to ignore padded positions — same idea as PyTorch's `ignore_index=-100`, but done explicitly with a mask since JAX doesn't have a built-in convention:
+
+```python
+def loss_fn(params, input_ids, targets, pad_mask, target_mask):
+    logits = forward_batch(params, input_ids, pad_mask)  # vmap handles the batch
+    log_probs = jax.nn.log_softmax(logits, axis=-1)
+    target_log_probs = log_probs[jnp.arange(B)[:, None], jnp.arange(T)[None, :], targets]
+    target_log_probs = target_log_probs * target_mask
+    loss = -jnp.sum(target_log_probs) / jnp.sum(target_mask)
+    return loss
+```
+
 ## What you learn here
 
 - `jax.vmap` — automatic vectorization without rewriting model code
@@ -66,3 +80,5 @@ Like the PyTorch batched version, this uses a bigger model to make batching wort
 ```bash
 uv run python main.py
 ```
+
+Trains for 1000 steps (prints every 10) and generates 20 names. First run may be slow as JAX JIT-compiles; subsequent steps are fast.
