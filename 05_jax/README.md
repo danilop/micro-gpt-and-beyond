@@ -1,4 +1,4 @@
-# 05 — JAX
+# microGPT and Beyond — JAX
 
 Same architecture, but written in JAX's purely functional style. No classes, no hidden state, no mutation. Every function takes its inputs and returns its outputs — nothing else.
 

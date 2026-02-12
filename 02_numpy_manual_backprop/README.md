@@ -1,4 +1,4 @@
-# 02 — NumPy with Manual Backpropagation
+# microGPT and Beyond — NumPy with Manual Backpropagation
 
 Same GPT architecture as the pure-Python version, but using NumPy arrays for vectorized matrix operations. The key twist: every gradient is derived by hand and coded explicitly. There is no autograd — you *are* the autograd.
 

@@ -1,4 +1,4 @@
-# microGPT
+# microGPT and Beyond — Pure Python
 
 > *"This file is the complete algorithm. Everything else is just efficiency."*
 > — Andrej Karpathy

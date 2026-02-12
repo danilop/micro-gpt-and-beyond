@@ -1,4 +1,4 @@
-# 03 — PyTorch
+# microGPT and Beyond — PyTorch
 
 Same architecture as versions 01 and 02, but now PyTorch handles the tensors *and* the gradients. This is where you see how much boilerplate disappears when you let a framework do the differentiation.
 

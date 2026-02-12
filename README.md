@@ -1,4 +1,4 @@
-# microGPT — Six Ways
+# microGPT and Beyond
 
 Six implementations of the same tiny GPT language model, inspired by Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html) — a GPT trained and run in a single file of pure Python. Each version teaches something different about how neural networks are built, trained, and run. The model learns to generate human names from a dataset of ~32,000 real ones.
 
