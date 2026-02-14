@@ -69,4 +69,4 @@ The forward pass stores everything the backward pass needs in a `cache` dict —
 uv run python main.py
 ```
 
-Trains for 500 steps and generates 20 names. Runs ~100x faster than the pure-Python version thanks to NumPy's vectorized operations, despite doing the same math.
+Trains for 1000 steps and generates 20 names. Runs ~100x faster than the pure-Python version thanks to NumPy's vectorized operations, despite doing the same math.

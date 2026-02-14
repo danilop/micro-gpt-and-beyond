@@ -4,7 +4,7 @@ microGPT — JAX batched edition.
 Same architecture as 05_jax, but with mini-batch training via jax.vmap:
   - Write the forward pass for a single example
   - vmap automatically vectorizes it across a batch
-  - No manual padding logic — vmap handles the batch dimension
+  - Padding at the data level, but the model code stays single-example
   - Scaled-up model (2 layers, 64-dim embeddings, context 16)
   - Batches of 32, 1000 training steps
 
@@ -56,7 +56,7 @@ num_steps = 1000
 # ---------------------------------------------------------------------------
 key = jax.random.PRNGKey(42)
 
-def init_param(key, shape, std=0.02):
+def init_param(key, shape, std=0.08):
     return jax.random.normal(key, shape) * std
 
 def split_keys(key, n):
@@ -74,9 +74,9 @@ for i in range(n_layer):
     params[f'l{i}.wq'] = init_param(next(ki), (n_embd, n_embd))
     params[f'l{i}.wk'] = init_param(next(ki), (n_embd, n_embd))
     params[f'l{i}.wv'] = init_param(next(ki), (n_embd, n_embd))
-    params[f'l{i}.wo'] = jnp.zeros((n_embd, n_embd))
+    params[f'l{i}.wo'] = init_param(next(ki), (n_embd, n_embd))
     params[f'l{i}.fc1'] = init_param(next(ki), (n_embd, 4 * n_embd))
-    params[f'l{i}.fc2'] = jnp.zeros((4 * n_embd, n_embd))
+    params[f'l{i}.fc2'] = init_param(next(ki), (4 * n_embd, n_embd))
 
 num_params = sum(p.size for p in jax.tree.leaves(params))
 print(f"num params: {num_params}")
@@ -129,7 +129,7 @@ def forward_single(params, input_ids, pad_mask):
         x_res2 = x
         x_n2 = rmsnorm(x)
         h = x_n2 @ params[f'l{li}.fc1']
-        h = jax.nn.relu(h) ** 2
+        h = jax.nn.relu(h)
         x = h @ params[f'l{li}.fc2'] + x_res2
 
     logits = x @ params['lm_head'].T  # (T, V)
@@ -166,7 +166,7 @@ loss_fn_jit = jit(loss_fn)
 # ---------------------------------------------------------------------------
 # Adam optimizer (functional)
 # ---------------------------------------------------------------------------
-learning_rate, beta1, beta2, eps_adam = 1e-2, 0.9, 0.95, 1e-8
+learning_rate, beta1, beta2, eps_adam = 1e-2, 0.85, 0.99, 1e-8
 m_state = jax.tree.map(jnp.zeros_like, params)
 v_state = jax.tree.map(jnp.zeros_like, params)
 
@@ -221,7 +221,7 @@ for step in range(num_steps):
     loss_val = loss_fn_jit(params, input_ids, targets, pad_mask, target_mask)
     grads = grad_fn(params, input_ids, targets, pad_mask, target_mask)
 
-    lr_t = learning_rate * 0.5 * (1 + math.cos(math.pi * step / num_steps))
+    lr_t = learning_rate * (1 - step / num_steps)
     params, m_state, v_state = adam_update(params, grads, m_state, v_state, step, lr_t)
 
     if (step + 1) % 10 == 0 or step == 0:
@@ -231,7 +231,7 @@ for step in range(num_steps):
 # Inference (single-example, no vmap needed)
 # ---------------------------------------------------------------------------
 temperature = 0.5
-print("\n--- inference ---")
+print("\n--- inference (new, hallucinated names) ---")
 rng_key = jax.random.PRNGKey(0)
 for sample_idx in range(20):
     tokens = [BOS]

@@ -50,9 +50,9 @@ Like the PyTorch batched version, this uses a bigger model to make batching wort
 |---|---|---|
 | Embedding dim | 16 | 64 |
 | Layers | 1 | 2 |
-| Context length | 8 | 16 |
+| Context length | 16 | 16 |
 | Batch size | 1 | 32 |
-| Training steps | 500 | 1000 |
+| Training steps | 1000 | 1000 |
 
 ### Loss masking
 
@@ -60,8 +60,9 @@ The loss function uses a `target_mask` to ignore padded positions — same idea 
 
 ```python
 def loss_fn(params, input_ids, targets, pad_mask, target_mask):
-    logits = forward_batch(params, input_ids, pad_mask)  # vmap handles the batch
+    logits = forward_batch(params, input_ids, pad_mask)
     log_probs = jax.nn.log_softmax(logits, axis=-1)
+    B, T, V = log_probs.shape
     target_log_probs = log_probs[jnp.arange(B)[:, None], jnp.arange(T)[None, :], targets]
     target_log_probs = target_log_probs * target_mask
     loss = -jnp.sum(target_log_probs) / jnp.sum(target_mask)

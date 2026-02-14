@@ -38,10 +38,10 @@ print(f"vocab size: {vocab_size}")
 n_embd = 16
 n_head = 4
 n_layer = 1
-block_size = 8
+block_size = 16
 head_dim = n_embd // n_head
 
-def param(shape, std=0.02):
+def param(shape, std=0.08):
     w = np.random.randn(*shape).astype(np.float64) * std
     return w
 
@@ -55,9 +55,9 @@ for i in range(n_layer):
     P[f'l{i}.wq'] = param((n_embd, n_embd))
     P[f'l{i}.wk'] = param((n_embd, n_embd))
     P[f'l{i}.wv'] = param((n_embd, n_embd))
-    P[f'l{i}.wo'] = param((n_embd, n_embd), std=0.0)
+    P[f'l{i}.wo'] = param((n_embd, n_embd))
     P[f'l{i}.fc1'] = param((n_embd, 4 * n_embd))
-    P[f'l{i}.fc2'] = param((4 * n_embd, n_embd), std=0.0)
+    P[f'l{i}.fc2'] = param((4 * n_embd, n_embd))
 
 # Gradient buffers (same shapes, zeroed)
 G = {k: np.zeros_like(v) for k, v in P.items()}
@@ -92,14 +92,14 @@ def softmax_bwd(probs, dprobs):
     s = np.sum(dprobs * probs, axis=-1, keepdims=True)
     return probs * (dprobs - s)
 
-def squared_relu_fwd(x):
+def relu_fwd(x):
     mask = (x > 0).astype(x.dtype)
     relu_x = x * mask
-    return relu_x ** 2, (relu_x, mask)
+    return relu_x, mask
 
-def squared_relu_bwd(dout, cache):
-    relu_x, mask = cache
-    return dout * 2 * relu_x * mask
+def relu_bwd(dout, cache):
+    mask = cache
+    return dout * mask
 
 
 def forward(tokens_np):
@@ -164,7 +164,7 @@ def forward(tokens_np):
 
         # MLP
         hidden = x_normed2 @ P[f'l{li}.fc1']  # (n, 4D)
-        act, cache[f'l{li}.act'] = squared_relu_fwd(hidden)
+        act, cache[f'l{li}.act'] = relu_fwd(hidden)
         mlp_out = act @ P[f'l{li}.fc2']  # (n, D)
 
         x = mlp_out + x_res2
@@ -204,7 +204,7 @@ def backward(cache):
         dact = dx @ P[f'l{li}.fc2'].T           # (n, 4D)
         G[f'l{li}.fc2'] += act.T @ dx            # (4D, D)
 
-        dhidden = squared_relu_bwd(dact, cache[f'l{li}.act'])
+        dhidden = relu_bwd(dact, cache[f'l{li}.act'])
 
         # hidden = x_normed2 @ fc1
         dx_normed2 = dhidden @ P[f'l{li}.fc1'].T  # (n, D)
@@ -269,14 +269,14 @@ def backward(cache):
 # ---------------------------------------------------------------------------
 # Adam optimizer (manual, operating on the P/G dicts)
 # ---------------------------------------------------------------------------
-learning_rate, beta1, beta2, eps_adam = 1e-2, 0.9, 0.95, 1e-8
+learning_rate, beta1, beta2, eps_adam = 1e-2, 0.85, 0.99, 1e-8
 M = {k: np.zeros_like(v) for k, v in P.items()}  # first moment
 Vb = {k: np.zeros_like(v) for k, v in P.items()}  # second moment
 
 # ---------------------------------------------------------------------------
 # Training loop
 # ---------------------------------------------------------------------------
-num_steps = 500
+num_steps = 1000
 for step in range(num_steps):
     doc = docs[step % len(docs)]
     tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
@@ -289,8 +289,8 @@ for step in range(num_steps):
     loss, cache = forward(tokens_np)
     backward(cache)
 
-    # Adam update with cosine LR decay
-    lr_t = learning_rate * 0.5 * (1 + math.cos(math.pi * step / num_steps))
+    # Adam update with linear LR decay
+    lr_t = learning_rate * (1 - step / num_steps)
     for k in P:
         M[k] = beta1 * M[k] + (1 - beta1) * G[k]
         Vb[k] = beta2 * Vb[k] + (1 - beta2) * G[k] ** 2
@@ -304,7 +304,7 @@ for step in range(num_steps):
 # Inference
 # ---------------------------------------------------------------------------
 temperature = 0.5
-print("\n--- inference ---")
+print("\n--- inference (new, hallucinated names) ---")
 
 def inference_forward(token_ids):
     """Simplified forward pass for inference (no loss, no cache needed)."""
@@ -333,7 +333,7 @@ def inference_forward(token_ids):
         x_n2, _ = rmsnorm_fwd(x)
         h = x_n2 @ P[f'l{li}.fc1']
         mask = (h > 0).astype(h.dtype)
-        h = (h * mask) ** 2
+        h = h * mask
         x = h @ P[f'l{li}.fc2'] + x_res2
     return x @ P['lm_head'].T  # (n, V)
 

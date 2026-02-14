@@ -44,12 +44,12 @@ print(f"vocab size: {vocab_size}")
 n_embd = 16
 n_head = 4
 n_layer = 1
-block_size = 8
+block_size = 16
 head_dim = n_embd // n_head
 
 key = jax.random.PRNGKey(42)
 
-def init_param(key, shape, std=0.02):
+def init_param(key, shape, std=0.08):
     return jax.random.normal(key, shape) * std
 
 def split_keys(key, n):
@@ -67,9 +67,9 @@ for i in range(n_layer):
     params[f'l{i}.wq'] = init_param(next(ki), (n_embd, n_embd))
     params[f'l{i}.wk'] = init_param(next(ki), (n_embd, n_embd))
     params[f'l{i}.wv'] = init_param(next(ki), (n_embd, n_embd))
-    params[f'l{i}.wo'] = jnp.zeros((n_embd, n_embd))
+    params[f'l{i}.wo'] = init_param(next(ki), (n_embd, n_embd))
     params[f'l{i}.fc1'] = init_param(next(ki), (n_embd, 4 * n_embd))
-    params[f'l{i}.fc2'] = jnp.zeros((4 * n_embd, n_embd))
+    params[f'l{i}.fc2'] = init_param(next(ki), (4 * n_embd, n_embd))
 
 num_params = sum(p.size for p in jax.tree.leaves(params))
 print(f"num params: {num_params}")
@@ -118,7 +118,7 @@ def forward(params, input_ids):
         x_res2 = x
         x_n2 = rmsnorm(x)
         h = x_n2 @ params[f'l{li}.fc1']
-        h = jax.nn.relu(h) ** 2
+        h = jax.nn.relu(h)
         x = h @ params[f'l{li}.fc2'] + x_res2
 
     logits = x @ params['lm_head'].T  # (n, V)
@@ -140,7 +140,7 @@ loss_fn_jit = jit(loss_fn)
 # ---------------------------------------------------------------------------
 # Adam optimizer (functional — no hidden state mutation)
 # ---------------------------------------------------------------------------
-learning_rate, beta1, beta2, eps_adam = 1e-2, 0.9, 0.95, 1e-8
+learning_rate, beta1, beta2, eps_adam = 1e-2, 0.85, 0.99, 1e-8
 m_state = jax.tree.map(jnp.zeros_like, params)
 v_state = jax.tree.map(jnp.zeros_like, params)
 
@@ -159,7 +159,7 @@ def adam_update(params, grads, m_state, v_state, step, lr):
 # ---------------------------------------------------------------------------
 # Training loop
 # ---------------------------------------------------------------------------
-num_steps = 500
+num_steps = 1000
 for step in range(num_steps):
     doc = docs[step % len(docs)]
     tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
@@ -171,7 +171,7 @@ for step in range(num_steps):
     loss_val = loss_fn_jit(params, input_ids, targets)
     grads = grad_fn(params, input_ids, targets)
 
-    lr_t = learning_rate * 0.5 * (1 + math.cos(math.pi * step / num_steps))
+    lr_t = learning_rate * (1 - step / num_steps)
     params, m_state, v_state = adam_update(params, grads, m_state, v_state, step, lr_t)
 
     print(f"step {step+1:4d} / {num_steps:4d} | loss {loss_val:.4f}")
@@ -180,7 +180,7 @@ for step in range(num_steps):
 # Inference
 # ---------------------------------------------------------------------------
 temperature = 0.5
-print("\n--- inference ---")
+print("\n--- inference (new, hallucinated names) ---")
 rng_key = jax.random.PRNGKey(0)
 for sample_idx in range(20):
     tokens = [BOS]

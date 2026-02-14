@@ -41,7 +41,7 @@ print(f"vocab size: {vocab_size}")
 n_embd = 16
 n_head = 4
 n_layer = 1
-block_size = 8
+block_size = 16
 head_dim = n_embd // n_head
 
 
@@ -62,7 +62,6 @@ class CausalSelfAttention(nn.Module):
         self.wk = nn.Linear(n_embd, n_embd, bias=False)
         self.wv = nn.Linear(n_embd, n_embd, bias=False)
         self.wo = nn.Linear(n_embd, n_embd, bias=False)
-        self.wo.weight = mx.zeros((n_embd, n_embd))
 
     def __call__(self, x):
         n = x.shape[0]
@@ -84,11 +83,10 @@ class MLP(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(n_embd, 4 * n_embd, bias=False)
         self.fc2 = nn.Linear(4 * n_embd, n_embd, bias=False)
-        self.fc2.weight = mx.zeros((n_embd, 4 * n_embd))
 
     def __call__(self, x):
         h = self.fc1(x)
-        h = mx.maximum(h, 0) ** 2  # squared ReLU
+        h = mx.maximum(h, 0)  # ReLU
         return self.fc2(h)
 
 
@@ -129,10 +127,13 @@ class MicroGPT(nn.Module):
 # Training
 # ---------------------------------------------------------------------------
 model = MicroGPT()
+# Match original init: N(0, 0.08) for all weights
+model.load_weights([(k, mx.random.normal(v.shape) * 0.08)
+                    for k, v in mlx.utils.tree_flatten(model.parameters())])
 num_params = sum(p.size for _, p in mlx.utils.tree_flatten(model.parameters()))
 print(f"num params: {num_params}")
 
-learning_rate, beta1, beta2, eps_adam = 1e-2, 0.9, 0.95, 1e-8
+learning_rate, beta1, beta2, eps_adam = 1e-2, 0.85, 0.99, 1e-8
 
 def loss_fn(model, input_ids, targets):
     logits = model(input_ids)  # (n, V)
@@ -145,7 +146,7 @@ def loss_fn(model, input_ids, targets):
 loss_and_grad = nn.value_and_grad(model, loss_fn)
 optimizer = optim.Adam(learning_rate=learning_rate, betas=[beta1, beta2], eps=eps_adam)
 
-num_steps = 500
+num_steps = 1000
 for step in range(num_steps):
     doc = docs[step % len(docs)]
     tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
@@ -156,8 +157,8 @@ for step in range(num_steps):
 
     loss_val, grads = loss_and_grad(model, input_ids, targets)
 
-    # Cosine LR decay
-    lr_t = learning_rate * 0.5 * (1 + math.cos(math.pi * step / num_steps))
+    # Linear LR decay
+    lr_t = learning_rate * (1 - step / num_steps)
     optimizer.learning_rate = mx.array(lr_t)
     optimizer.update(model, grads)
     mx.eval(model.parameters(), optimizer.state)
@@ -168,7 +169,7 @@ for step in range(num_steps):
 # Inference
 # ---------------------------------------------------------------------------
 temperature = 0.5
-print("\n--- inference ---")
+print("\n--- inference (new, hallucinated names) ---")
 for sample_idx in range(20):
     tokens = [BOS]
     for _ in range(block_size):

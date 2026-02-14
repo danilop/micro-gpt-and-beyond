@@ -3,7 +3,7 @@ revision = 3
 requires-python = ">=3.13"
 
 [[package]]
-name = "06-mlx"
+name = "07-mlx"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

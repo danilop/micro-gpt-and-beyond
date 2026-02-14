@@ -13,7 +13,7 @@ This project strips a Generative Pre-trained Transformer down to its absolute es
 
 ## What Does It Do?
 
-It trains a tiny GPT on a dataset of ~32,000 human names and learns to generate new, plausible-sounding ones. After 500 training steps, it babbles back invented names like a creative baby naming consultant who's read too many birth certificates.
+It trains a tiny GPT on a dataset of ~32,000 human names and learns to generate new, plausible-sounding ones. After 1000 training steps, it babbles back invented names like a creative baby naming consultant who's read too many birth certificates.
 
 ```
 sample  1: mara
@@ -89,15 +89,15 @@ This is exactly what PyTorch's `autograd` does — just on scalars instead of te
 n_embd = 16      # embedding dimension
 n_head = 4       # number of attention heads
 n_layer = 1      # number of layers
-block_size = 8   # maximum sequence length
+block_size = 16  # maximum sequence length
 ```
 
-The model's knowledge lives in its parameters — matrices of `Value` objects initialized with small random numbers (Gaussian, std=0.02). The `state_dict` contains:
+The model's knowledge lives in its parameters — matrices of `Value` objects initialized with small random numbers (Gaussian, std=0.08). The `state_dict` contains:
 
 | Parameter | Shape | Purpose |
 |-----------|-------|---------|
 | `wte` | (vocab_size, 16) | Token embeddings — a learned vector for each token |
-| `wpe` | (8, 16) | Position embeddings — a learned vector for each position |
+| `wpe` | (16, 16) | Position embeddings — a learned vector for each position |
 | `attn_wq/wk/wv` | (16, 16) | Query, Key, Value projections for attention |
 | `attn_wo` | (16, 16) | Output projection after attention |
 | `mlp_fc1` | (64, 16) | First MLP layer (expands 4x) |
@@ -149,11 +149,11 @@ The KV cache (`keys` and `values` lists) stores previous tokens' K and V vectors
 
 ```python
 x = linear(x, state_dict[f'layer{li}.mlp_fc1'])   # expand: 16 → 64
-x = [xi.relu() ** 2 for xi in x]                    # squared ReLU activation
+x = [xi.relu() for xi in x]                         # ReLU activation
 x = linear(x, state_dict[f'layer{li}.mlp_fc2'])   # contract: 64 → 16
 ```
 
-After attention, each token passes through a two-layer feed-forward network. The hidden dimension is 4× the embedding dimension (a standard GPT convention). The activation function is **squared ReLU** (`max(0, x)²`) instead of GeLU — simpler and still effective.
+After attention, each token passes through a two-layer feed-forward network. The hidden dimension is 4× the embedding dimension (a standard GPT convention). The activation function is **ReLU** (`max(0, x)`) instead of GeLU — simpler and still effective.
 
 #### e) Residual Connections
 
@@ -170,7 +170,7 @@ The final embedding is projected to a vector of size `vocab_size`. Each element 
 ### 6. The Training Loop
 
 ```python
-for step in range(500):
+for step in range(1000):
     doc = docs[step % len(docs)]
     tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
 ```
@@ -199,7 +199,7 @@ One call walks the entire computation graph backward, computing gradients for ev
 #### Adam Optimizer
 
 ```python
-lr_t = learning_rate * 0.5 * (1 + math.cos(math.pi * step / num_steps))
+lr_t = learning_rate * (1 - step / num_steps)
 for i, p in enumerate(params):
     m[i] = beta1 * m[i] + (1 - beta1) * p.grad
     v[i] = beta2 * v[i] + (1 - beta2) * p.grad ** 2
@@ -215,7 +215,7 @@ Adam maintains two running averages per parameter:
 
 The bias correction (`m_hat`, `v_hat`) compensates for the fact that `m` and `v` are initialized at zero.
 
-The learning rate follows a **cosine decay** schedule — starting at `0.01` and smoothly decreasing to 0 over the 500 steps. This is a common trick: large steps early for fast progress, small steps later for fine-tuning.
+The learning rate follows a **linear decay** schedule — starting at `0.01` and decreasing to 0 over the 1000 steps. Large steps early for fast progress, small steps later for fine-tuning.
 
 ### 7. Inference (Text Generation)
 
@@ -241,14 +241,14 @@ This is a faithful miniature of the GPT architecture. Here's what changes when y
 
 | | microGPT | GPT-2 (small) |
 |---|---|---|
-| Parameters | ~7,000 | 124,000,000 |
+| Parameters | ~4,200 | 124,000,000 |
 | Layers | 1 | 12 |
 | Embedding dim | 16 | 768 |
 | Attention heads | 4 | 12 |
-| Context length | 8 | 1024 |
+| Context length | 16 | 1024 |
 | Vocabulary | 27 (characters) | 50,257 (BPE subwords) |
 | Normalization | RMSNorm | LayerNorm |
-| Activation | Squared ReLU | GeLU |
+| Activation | ReLU | GeLU |
 | Compute | Scalar autograd | Tensor operations (CUDA) |
 
 The *algorithm* is the same. The difference is scale and efficiency.
@@ -261,7 +261,7 @@ The *algorithm* is the same. The difference is scale and efficiency.
 python microgpt.py
 ```
 
-That's it. No `pip install` needed. The script will download the names dataset if it's not present, train for 500 steps (takes a few minutes on a laptop), and print 20 generated names.
+That's it. No `pip install` needed. The script will download the names dataset if it's not present, train for 1000 steps (takes a few minutes on a laptop), and print 20 generated names.
 
 ---
 
@@ -269,7 +269,7 @@ That's it. No `pip install` needed. The script will download the names dataset i
 
 Most GPT tutorials either stay at a high level ("attention is all you need") or immediately dive into PyTorch tensors. This project occupies a rare middle ground: every operation is explicit, every gradient is computed from first principles, and the entire thing fits in a single readable file.
 
-If you understand this code, you understand the core algorithm behind ChatGPT, Claude, and every other transformer language model. The rest is engineering.
+If you understand this code, you understand the core algorithm behind every transformer language model. The rest is engineering.
 
 ---
 

@@ -14,12 +14,12 @@ There are no `nn.Module` classes. Parameters are a plain Python dict of JAX arra
 
 ```python
 params = {
-    'wte': init_param(key, (vocab_size, n_embd)),
-    'wpe': init_param(key, (block_size, n_embd)),
-    'lm_head': init_param(key, (vocab_size, n_embd)),
+    'wte': init_param(next(ki), (vocab_size, n_embd)),
+    'wpe': init_param(next(ki), (block_size, n_embd)),
+    'lm_head': init_param(next(ki), (vocab_size, n_embd)),
 }
 for i in range(n_layer):
-    params[f'l{i}.wq'] = init_param(key, (n_embd, n_embd))
+    params[f'l{i}.wq'] = init_param(next(ki), (n_embd, n_embd))
     # ...
 ```
 
@@ -108,4 +108,4 @@ Compare this to PyTorch's `optimizer.step()` which mutates parameters in-place. 
 uv run python main.py
 ```
 
-Trains for 500 steps and generates 20 names. First run may be slow as JAX JIT-compiles the functions; subsequent calls are fast.
+Trains for 1000 steps and generates 20 names. First run may be slow as JAX JIT-compiles the functions; subsequent calls are fast.

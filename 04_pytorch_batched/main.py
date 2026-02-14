@@ -99,7 +99,7 @@ class MLP(nn.Module):
         self.fc2 = nn.Linear(4 * n_embd, n_embd, bias=False)
 
     def forward(self, x):
-        return self.fc2(F.relu(self.fc1(x)) ** 2)
+        return self.fc2(F.relu(self.fc1(x)))
 
 
 class Block(nn.Module):
@@ -125,15 +125,11 @@ class MicroGPT(nn.Module):
         self.layers = nn.ModuleList([Block() for _ in range(n_layer)])
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)  # output over real vocab only
         self.apply(self._init_weights)
-        # Zero-init output projections (wo, fc2) to match original std=0
-        for layer in self.layers:
-            nn.init.zeros_(layer.attn.wo.weight)
-            nn.init.zeros_(layer.mlp.fc2.weight)
 
     @staticmethod
     def _init_weights(module):
         if isinstance(module, (nn.Linear, nn.Embedding)):
-            nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            nn.init.normal_(module.weight, mean=0.0, std=0.08)
 
     def forward(self, idx, pad_mask=None):
         B, T = idx.shape
@@ -184,7 +180,7 @@ device = 'cpu'
 model = MicroGPT().to(device)
 print(f"num params: {sum(p.numel() for p in model.parameters())}")
 
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, betas=(0.9, 0.95), eps=1e-8)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, betas=(0.85, 0.99), eps=1e-8)
 
 for step in range(num_steps):
     input_ids, targets, pad_mask = make_batch(docs, step, batch_size)
@@ -198,7 +194,7 @@ for step in range(num_steps):
     optimizer.zero_grad()
     loss.backward()
 
-    lr_t = 1e-2 * 0.5 * (1 + math.cos(math.pi * step / num_steps))
+    lr_t = 1e-2 * (1 - step / num_steps)
     for pg in optimizer.param_groups:
         pg['lr'] = lr_t
 
@@ -211,7 +207,7 @@ for step in range(num_steps):
 # Inference
 # ---------------------------------------------------------------------------
 temperature = 0.5
-print("\n--- inference ---")
+print("\n--- inference (new, hallucinated names) ---")
 model.eval()
 with torch.no_grad():
     for sample_idx in range(20):

@@ -42,9 +42,9 @@ The `mx.eval` call triggers the entire forward + backward + optimizer update in 
 |---|---|---|
 | Embedding dim | 16 | 64 |
 | Layers | 1 | 2 |
-| Context length | 8 | 16 |
+| Context length | 16 | 16 |
 | Batch size | 1 | 32 |
-| Training steps | 500 | 1000 |
+| Training steps | 1000 | 1000 |
 
 ### Padding and masking — the same work as PyTorch
 

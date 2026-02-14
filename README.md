@@ -18,7 +18,7 @@ data/                      Shared dataset (auto-downloaded on first run).
 
 ## The idea
 
-Every version trains the same architecture — a character-level transformer with RMSNorm, squared ReLU, multi-head attention, and cosine LR decay — on the same names dataset. What changes is *how* the computation is expressed:
+Every version trains the same architecture — a character-level transformer with RMSNorm, ReLU, multi-head attention, and linear LR decay — on the same names dataset. What changes is *how* the computation is expressed:
 
 | Version | Autograd | Tensors | Batching | Hardware |
 |---------|----------|---------|----------|----------|

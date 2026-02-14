@@ -61,14 +61,14 @@ class MicroGPT(nn.Module):
 
 MLX's module system is lighter than PyTorch's — it inspects the object's attributes to find parameters, so you don't need special container types.
 
-### Squared ReLU without F.relu
+### ReLU via mx.maximum
 
-MLX doesn't have a standalone `relu` function in the same way. Instead, you use `mx.maximum`:
+MLX doesn't have a standalone `F.relu` like PyTorch. Instead, you use `mx.maximum`:
 
 ```python
 def __call__(self, x):
     h = self.fc1(x)
-    h = mx.maximum(h, 0) ** 2  # squared ReLU
+    h = mx.maximum(h, 0)  # ReLU
     return self.fc2(h)
 ```
 
@@ -89,4 +89,4 @@ Requires a Mac with Apple Silicon (M1/M2/M3/M4).
 uv run python main.py
 ```
 
-Trains for 500 steps and generates 20 names. Runs on the GPU automatically.
+Trains for 1000 steps and generates 20 names. Runs on the GPU automatically.

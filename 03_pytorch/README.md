@@ -27,7 +27,7 @@ class Block(nn.Module):
         return x
 ```
 
-Compare this to the 150-line forward+backward in version 02. The architecture is identical — RMSNorm, multi-head attention with causal mask, squared ReLU MLP, residual connections — but expressed declaratively.
+Compare this to the 150-line forward+backward in version 02. The architecture is identical — RMSNorm, multi-head attention with causal mask, ReLU MLP, residual connections — but expressed declaratively.
 
 ### Autograd replaces hand-written gradients
 
@@ -41,16 +41,18 @@ PyTorch records every operation during the forward pass and automatically applie
 
 ### Weight initialization
 
-The model matches the original's initialization exactly — `N(0, 0.02)` for all weights, with output projections (`wo`, `fc2`) explicitly zeroed:
+The model matches the original's initialization — `N(0, 0.08)` for all weights:
 
 ```python
+@staticmethod
+def _init_weights(module):
+    if isinstance(module, (nn.Linear, nn.Embedding)):
+        nn.init.normal_(module.weight, mean=0.0, std=0.08)
+
 self.apply(self._init_weights)
-for layer in self.layers:
-    nn.init.zeros_(layer.attn.wo.weight)
-    nn.init.zeros_(layer.mlp.fc2.weight)
 ```
 
-Zero-initializing the output projections means each layer starts as an identity function (the residual connection passes through unchanged). This is a common trick for stable training of deep transformers.
+A larger initial standard deviation (0.08 vs the GPT-2 default of 0.02) works well for this tiny model, giving parameters enough initial variance to learn distinct features quickly.
 
 ### Inference with torch.no_grad
 
@@ -84,4 +86,4 @@ with torch.no_grad():
 uv run python main.py
 ```
 
-Trains for 500 steps and generates 20 names. Same hyperparameters as versions 01 and 02.
+Trains for 1000 steps and generates 20 names. Same hyperparameters as versions 01 and 02.

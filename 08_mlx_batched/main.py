@@ -74,7 +74,6 @@ class CausalSelfAttention(nn.Module):
         self.wk = nn.Linear(n_embd, n_embd, bias=False)
         self.wv = nn.Linear(n_embd, n_embd, bias=False)
         self.wo = nn.Linear(n_embd, n_embd, bias=False)
-        self.wo.weight = mx.zeros((n_embd, n_embd))
 
     def __call__(self, x, pad_mask=None):
         B, T, C = x.shape
@@ -101,11 +100,10 @@ class MLP(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(n_embd, 4 * n_embd, bias=False)
         self.fc2 = nn.Linear(4 * n_embd, n_embd, bias=False)
-        self.fc2.weight = mx.zeros((n_embd, 4 * n_embd))
 
     def __call__(self, x):
         h = self.fc1(x)
-        h = mx.maximum(h, 0) ** 2
+        h = mx.maximum(h, 0)
         return self.fc2(h)
 
 
@@ -179,10 +177,13 @@ def make_batch(docs, step, batch_size):
 # Training
 # ---------------------------------------------------------------------------
 model = MicroGPT()
+# Match original init: N(0, 0.08) for all weights
+model.load_weights([(k, mx.random.normal(v.shape) * 0.08)
+                    for k, v in mlx.utils.tree_flatten(model.parameters())])
 num_params = sum(p.size for _, p in mlx.utils.tree_flatten(model.parameters()))
 print(f"num params: {num_params}")
 
-learning_rate, beta1, beta2, eps_adam = 1e-2, 0.9, 0.95, 1e-8
+learning_rate, beta1, beta2, eps_adam = 1e-2, 0.85, 0.99, 1e-8
 
 def loss_fn(model, input_ids, targets, pad_mask, target_mask):
     logits = model(input_ids, pad_mask)  # (B, T, V)
@@ -204,7 +205,7 @@ for step in range(num_steps):
 
     loss_val, grads = loss_and_grad(model, input_ids, targets, pad_mask, target_mask)
 
-    lr_t = learning_rate * 0.5 * (1 + math.cos(math.pi * step / num_steps))
+    lr_t = learning_rate * (1 - step / num_steps)
     optimizer.learning_rate = mx.array(lr_t)
     optimizer.update(model, grads)
     mx.eval(model.parameters(), optimizer.state)
@@ -216,11 +217,11 @@ for step in range(num_steps):
 # Inference
 # ---------------------------------------------------------------------------
 temperature = 0.5
-print("\n--- inference ---")
+print("\n--- inference (new, hallucinated names) ---")
 for sample_idx in range(20):
     tokens = [BOS]
     for _ in range(block_size):
-        input_ids = mx.array([[tokens[-block_size:]]])  # (1, T)
+        input_ids = mx.array([tokens[-block_size:]])  # (1, T)
         logits = model(input_ids)
         logits = logits[0, -1] / temperature
         token_id = mx.random.categorical(logits).item()

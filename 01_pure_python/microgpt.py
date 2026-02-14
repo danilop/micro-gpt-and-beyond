@@ -27,9 +27,9 @@ BOS = len(uchars) # token id for the special Beginning of Sequence (BOS) token
 vocab_size = len(uchars) + 1 # total number of unique tokens, +1 is for BOS
 print(f"vocab size: {vocab_size}")
 
-# Let there be an Autograd to apply the chain rule recursively across a computation graph
+# Let there be Autograd, to recursively apply the chain rule through a computation graph
 class Value:
-    """Stores a single scalar value and its gradient, as a node in a computation graph."""
+    __slots__ = ('data', 'grad', '_children', '_local_grads') # Python optimization for memory usage
 
     def __init__(self, data, children=(), local_grads=()):
         self.data = data                # scalar value of this node calculated during forward pass
@@ -76,22 +76,22 @@ class Value:
 n_embd = 16     # embedding dimension
 n_head = 4      # number of attention heads
 n_layer = 1     # number of layers
-block_size = 8  # maximum sequence length
+block_size = 16 # maximum sequence length
 head_dim = n_embd // n_head # dimension of each head
-matrix = lambda nout, nin, std=0.02: [[Value(random.gauss(0, std)) for _ in range(nin)] for _ in range(nout)]
+matrix = lambda nout, nin, std=0.08: [[Value(random.gauss(0, std)) for _ in range(nin)] for _ in range(nout)]
 state_dict = {'wte': matrix(vocab_size, n_embd), 'wpe': matrix(block_size, n_embd), 'lm_head': matrix(vocab_size, n_embd)}
 for i in range(n_layer):
     state_dict[f'layer{i}.attn_wq'] = matrix(n_embd, n_embd)
     state_dict[f'layer{i}.attn_wk'] = matrix(n_embd, n_embd)
     state_dict[f'layer{i}.attn_wv'] = matrix(n_embd, n_embd)
-    state_dict[f'layer{i}.attn_wo'] = matrix(n_embd, n_embd, std=0)
+    state_dict[f'layer{i}.attn_wo'] = matrix(n_embd, n_embd)
     state_dict[f'layer{i}.mlp_fc1'] = matrix(4 * n_embd, n_embd)
-    state_dict[f'layer{i}.mlp_fc2'] = matrix(n_embd, 4 * n_embd, std=0)
+    state_dict[f'layer{i}.mlp_fc2'] = matrix(n_embd, 4 * n_embd)
 params = [p for mat in state_dict.values() for row in mat for p in row] # flatten params into a single list[Value]
 print(f"num params: {len(params)}")
 
 # Define the model architecture: a stateless function mapping token sequence and parameters to logits over what comes next.
-# Follow GPT-2, blessed among the GPTs, with minor differences: layernorm -> rmsnorm, no biases, GeLU -> ReLU^2
+# Follow GPT-2, blessed among the GPTs, with minor differences: layernorm -> rmsnorm, no biases, GeLU -> ReLU
 def linear(x, w):
     return [sum(wi * xi for wi, xi in zip(wo, x)) for wo in w]
 
@@ -137,7 +137,7 @@ def gpt(token_id, pos_id, keys, values):
         x_residual = x
         x = rmsnorm(x)
         x = linear(x, state_dict[f'layer{li}.mlp_fc1'])
-        x = [xi.relu() ** 2 for xi in x]
+        x = [xi.relu() for xi in x]
         x = linear(x, state_dict[f'layer{li}.mlp_fc2'])
         x = [a + b for a, b in zip(x, x_residual)]
 
@@ -145,12 +145,12 @@ def gpt(token_id, pos_id, keys, values):
     return logits
 
 # Let there be Adam, the blessed optimizer and its buffers
-learning_rate, beta1, beta2, eps_adam = 1e-2, 0.9, 0.95, 1e-8
+learning_rate, beta1, beta2, eps_adam = 0.01, 0.85, 0.99, 1e-8
 m = [0.0] * len(params) # first moment buffer
 v = [0.0] * len(params) # second moment buffer
 
 # Repeat in sequence
-num_steps = 500 # number of training steps
+num_steps = 1000 # number of training steps
 for step in range(num_steps):
 
     # Take single document, tokenize it, surround it with BOS special token on both sides
@@ -173,7 +173,7 @@ for step in range(num_steps):
     loss.backward()
 
     # Adam optimizer update: update the model parameters based on the corresponding gradients.
-    lr_t = learning_rate * 0.5 * (1 + math.cos(math.pi * step / num_steps)) # cosine learning rate decay
+    lr_t = learning_rate * (1 - step / num_steps) # linear learning rate decay
     for i, p in enumerate(params):
         m[i] = beta1 * m[i] + (1 - beta1) * p.grad
         v[i] = beta2 * v[i] + (1 - beta2) * p.grad ** 2
@@ -186,7 +186,7 @@ for step in range(num_steps):
 
 # Inference: may the model babble back to us
 temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
-print("\n--- inference ---")
+print("\n--- inference (new, hallucinated names) ---")
 for sample_idx in range(20):
     keys, values = [[] for _ in range(n_layer)], [[] for _ in range(n_layer)]
     token_id = BOS

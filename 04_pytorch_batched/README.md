@@ -13,10 +13,10 @@ Versions 01–03 all train on one name at a time. That's simple to understand, b
 | Batch size | 1 | 32 |
 | Embedding dim | 16 | 64 |
 | Layers | 1 | 2 |
-| Context length | 8 | 16 |
-| Training steps | 500 | 1000 |
+| Context length | 16 | 16 |
+| Training steps | 1000 | 1000 |
 
-The model is 4x wider, 2x deeper, sees 32x more data per step, and trains for 2x as many steps. The generated names are noticeably better.
+The model is 4x wider, 2x deeper, and sees 32x more data per step. The generated names are noticeably better.
 
 ## What makes it interesting
 

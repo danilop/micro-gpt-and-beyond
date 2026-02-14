@@ -5,10 +5,10 @@ Same algorithm as microgpt.py (pure-Python scalar version), but using PyTorch
 tensors for efficient computation. Every architectural choice is preserved:
   - Character-level tokenizer
   - RMSNorm (not LayerNorm)
-  - Squared ReLU (not GeLU)
+  - ReLU (not GeLU)
   - No biases
-  - Cosine LR decay
-  - Adam with beta1=0.9, beta2=0.95
+  - Linear LR decay
+  - Adam with beta1=0.85, beta2=0.99
 """
 
 import os
@@ -48,7 +48,7 @@ print(f"vocab size: {vocab_size}")
 n_embd = 16
 n_head = 4
 n_layer = 1
-block_size = 8
+block_size = 16
 head_dim = n_embd // n_head
 
 
@@ -94,7 +94,7 @@ class MLP(nn.Module):
 
     def forward(self, x):
         x = self.fc1(x)
-        x = F.relu(x) ** 2  # squared ReLU, matching the original
+        x = F.relu(x)  # ReLU, matching the original
         return self.fc2(x)
 
 
@@ -121,17 +121,13 @@ class MicroGPT(nn.Module):
         self.layers = nn.ModuleList([Block() for _ in range(n_layer)])
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
 
-        # Match original init: N(0, 0.02) for all weights
+        # Match original init: N(0, 0.08) for all weights
         self.apply(self._init_weights)
-        # Zero-init output projections (wo, fc2) to match original std=0
-        for layer in self.layers:
-            nn.init.zeros_(layer.attn.wo.weight)
-            nn.init.zeros_(layer.mlp.fc2.weight)
 
     @staticmethod
     def _init_weights(module):
         if isinstance(module, (nn.Linear, nn.Embedding)):
-            nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            nn.init.normal_(module.weight, mean=0.0, std=0.08)
 
     def forward(self, idx):
         B, T = idx.shape
@@ -150,8 +146,8 @@ device = 'cpu'
 model = MicroGPT().to(device)
 print(f"num params: {sum(p.numel() for p in model.parameters())}")
 
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, betas=(0.9, 0.95), eps=1e-8)
-num_steps = 500
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, betas=(0.85, 0.99), eps=1e-8)
+num_steps = 1000
 
 for step in range(num_steps):
     doc = docs[step % len(docs)]
@@ -167,8 +163,8 @@ for step in range(num_steps):
     optimizer.zero_grad()
     loss.backward()
 
-    # Cosine LR decay (matching the original schedule)
-    lr_t = 1e-2 * 0.5 * (1 + math.cos(math.pi * step / num_steps))
+    # Linear LR decay (matching the original schedule)
+    lr_t = 1e-2 * (1 - step / num_steps)
     for pg in optimizer.param_groups:
         pg['lr'] = lr_t
 
@@ -180,7 +176,7 @@ for step in range(num_steps):
 # Inference
 # ---------------------------------------------------------------------------
 temperature = 0.5
-print("\n--- inference ---")
+print("\n--- inference (new, hallucinated names) ---")
 model.eval()
 with torch.no_grad():
     for sample_idx in range(20):
