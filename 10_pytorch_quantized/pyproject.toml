@@ -1,0 +1,9 @@
+[project]
+name = "10-pytorch-quantized"
+version = "0.1.0"
+description = "microGPT in PyTorch with INT8 quantization"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "torch>=2.10.0",
+]

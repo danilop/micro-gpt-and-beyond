@@ -70,6 +70,7 @@ This is the manual work that JAX's `vmap` avoids — and the reason the 06 vs 08
 - How padding and masking work with MLX's array API
 - Lazy evaluation becomes more impactful with larger computation graphs
 - The practical tradeoff: MLX's API familiarity vs JAX's functional transformations
+- When to choose MLX: if you're deploying on Apple devices, MLX's unified memory and lazy evaluation can simplify your pipeline compared to PyTorch with MPS backend
 
 ## Run
 

@@ -80,6 +80,7 @@ Small difference, same math.
 - Lazy evaluation and explicit `mx.eval()` for controlling when computation happens
 - MLX's module and optimizer patterns — similar to PyTorch but with key differences
 - What a "native Apple Silicon" ML framework looks like in practice
+- When to choose MLX: if you're deploying on Apple devices, MLX's unified memory and lazy evaluation can simplify your pipeline compared to PyTorch with MPS backend
 
 ## Run
 
