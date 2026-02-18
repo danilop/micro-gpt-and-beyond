@@ -69,9 +69,9 @@ Version 10 returns to the autoregressive model from version 03 but shows how to 
 **Quick start:** Use the `run.py` helper script from the project root:
 
 ```bash
-python3 run.py 01          # Run lab 01 (pure Python)
-python3 run.py 09          # Run lab 09 (text diffusion)
-python3 run.py --list      # List all available labs
+python run.py 01          # Run lab 01 (pure Python)
+python run.py 09          # Run lab 09 (text diffusion)
+python run.py --list      # List all available labs
 ```
 
 **Direct execution:**
@@ -79,8 +79,8 @@ python3 run.py --list      # List all available labs
 `01_pure_python` and `09_text_diffusion` have no dependencies — run them with plain Python:
 
 ```bash
-python3 01_pure_python/microgpt.py
-python3 09_text_diffusion/microdiffusion.py
+python 01_pure_python/microgpt.py
+python 09_text_diffusion/microdiffusion.py
 ```
 
 All other versions (02–08, 10) are managed with [uv](https://docs.astral.sh/uv/) and have their own `pyproject.toml`:
