@@ -13,8 +13,11 @@ import os
 import sys
 import subprocess
 
+# Use the same Python interpreter that's running this script
+PYTHON = sys.executable
+
 LABS = {
-    '01': ('01_pure_python', 'python microgpt.py'),
+    '01': ('01_pure_python', f'{PYTHON} microgpt.py'),
     '02': ('02_numpy_manual_backprop', 'uv run python main.py'),
     '03': ('03_pytorch', 'uv run python main.py'),
     '04': ('04_pytorch_batched', 'uv run python main.py'),
@@ -22,7 +25,7 @@ LABS = {
     '06': ('06_jax_batched', 'uv run python main.py'),
     '07': ('07_mlx', 'uv run python main.py'),
     '08': ('08_mlx_batched', 'uv run python main.py'),
-    '09': ('09_text_diffusion', 'python microdiffusion.py'),
+    '09': ('09_text_diffusion', f'{PYTHON} microdiffusion.py'),
     '10': ('10_pytorch_quantized', 'uv run python main.py'),
 }
 

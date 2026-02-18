@@ -66,7 +66,7 @@ Version 10 returns to the autoregressive model from version 03 but shows how to 
 
 ## Running
 
-You can run any lab from the project root using the `run.py` script:
+**Quick start:** Use the `run.py` helper script from the project root:
 
 ```bash
 python3 run.py 01          # Run lab 01 (pure Python)
@@ -74,7 +74,7 @@ python3 run.py 09          # Run lab 09 (text diffusion)
 python3 run.py --list      # List all available labs
 ```
 
-Or run them directly:
+**Direct execution:**
 
 `01_pure_python` and `09_text_diffusion` have no dependencies — run them with plain Python:
 
