@@ -1,0 +1,9 @@
+[project]
+name = "13-sampling"
+version = "0.1.0"
+description = "microGPT sampling strategies — greedy, temperature, top-k, top-p, min-p"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "torch>=2.10.0",
+]

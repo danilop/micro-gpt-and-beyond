@@ -1,8 +1,8 @@
 # microGPT and Beyond
 
-Fifteen implementations exploring tiny language models, inspired by Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html) — a GPT trained and run in a single file of pure Python. Each version teaches something different about how neural networks are built, trained, and run. The models learn to generate human names from a dataset of ~32,000 real ones.
+Twenty-one implementations exploring tiny language models, inspired by Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html) — a GPT trained and run in a single file of pure Python. Each version teaches something different about how neural networks are built, trained, and run. The models learn to generate human names from a dataset of ~32,000 real ones.
 
-The progression goes from raw first principles to framework-powered GPU code, beyond autoregressive generation, and into inference optimization:
+The progression goes from raw first principles to framework-powered GPU code, modern architecture upgrades, inference optimization, and alternative paradigms:
 
 ```
 01_pure_python/            Karpathy's original code. Zero dependencies. Scalar autograd.
@@ -13,13 +13,19 @@ The progression goes from raw first principles to framework-powered GPU code, be
 06_jax_batched/            jax.vmap — write for one example, run for a batch automatically.
 07_mlx/                    Apple Silicon GPU via MLX. Unified memory, lazy evaluation.
 08_mlx_batched/            Batched MLX — same PyTorch-style padding, but on Apple GPU.
-09_text_diffusion/         Masked diffusion model (MDLM/LLaDA). Names emerge from noise.
-10_pytorch_quantized/      INT8 quantization for inference. FP32 → INT8, 4× smaller, faster.
-11_speculative_decoding/   Draft model guesses, target model verifies. Lossless speedup.
-12_tiled_attention/        FlashAttention algorithm from scratch. Tiling beats the memory wall.
-13_paged_attention/        PagedAttention (vLLM). OS-style virtual memory for KV caches.
-14_soft_thinking/          Concept tokens preserve the full output distribution at inference.
-15_soft_training/          Soft input curriculum closes the train-test gap for concept tokens.
+09_bpe_tokenizer/          Byte-Pair Encoding from scratch. The algorithm behind GPT's tokenizer.
+10_rope/                   Rotary Position Embeddings. How modern LLMs encode position.
+11_gqa/                    Grouped-Query Attention (MHA → GQA → MQA). KV head sharing.
+12_kv_cache/               KV cache for inference. THE fundamental decoding optimization.
+13_sampling/               Sampling strategies: greedy, temperature, top-k, top-p, min-p.
+14_lora/                   LoRA — parameter-efficient fine-tuning with low-rank adapters.
+15_text_diffusion/         Masked diffusion model (MDLM/LLaDA). Names emerge from noise.
+16_pytorch_quantized/      INT8 quantization for inference. FP32 → INT8, 4× smaller, faster.
+17_speculative_decoding/   Draft model guesses, target model verifies. Lossless speedup.
+18_tiled_attention/        FlashAttention algorithm from scratch. Tiling beats the memory wall.
+19_paged_attention/        PagedAttention (vLLM). OS-style virtual memory for KV caches.
+20_soft_thinking/          Concept tokens preserve the full output distribution at inference.
+21_soft_training/          Soft input curriculum closes the train-test gap for concept tokens.
 data/                      Shared dataset (auto-downloaded on first run).
 ```
 
@@ -37,28 +43,36 @@ Every version trains the same architecture — a character-level transformer wit
 | 06 JAX batched | automatic (functional) | yes | yes (32, vmap) | CPU/GPU |
 | 07 MLX | automatic | yes | no | Apple GPU |
 | 08 MLX batched | automatic | yes | yes (32) | Apple GPU |
-| 09 text diffusion | hand-built scalar engine | no | no | CPU (slow) |
-| 10 PyTorch quantized | automatic | yes | no | CPU (INT8) |
-| 11 speculative decoding | automatic | yes | no | CPU |
-| 12 tiled attention | automatic | yes | no | CPU |
-| 13 paged attention | hand-built scalar engine | no | no | CPU (slow) |
-| 14 soft thinking | automatic | yes | no | CPU |
-| 15 soft training | automatic | yes | no | CPU |
+| 09 BPE tokenizer | — (bigram model) | no | no | CPU |
+| 10 RoPE | automatic | yes | no | CPU |
+| 11 GQA | automatic | yes | no | CPU |
+| 12 KV cache | automatic | yes | no | CPU |
+| 13 sampling | automatic | yes | no | CPU |
+| 14 LoRA | automatic | yes | no | CPU |
+| 15 text diffusion | hand-built scalar engine | no | no | CPU (slow) |
+| 16 PyTorch quantized | automatic | yes | no | CPU (INT8) |
+| 17 speculative decoding | automatic | yes | no | CPU |
+| 18 tiled attention | automatic | yes | no | CPU |
+| 19 paged attention | hand-built scalar engine | no | no | CPU (slow) |
+| 20 soft thinking | automatic | yes | no | CPU |
+| 21 soft training | automatic | yes | no | CPU |
 
-Version 09 is different: instead of autoregressive (left-to-right) generation, it uses a **masked diffusion model** (MDLM/LLaDA). Names emerge from pure noise — all [MASK] tokens — through iterative unmasking. Same scalar autograd engine as version 01, same zero dependencies, but a fundamentally different generative paradigm.
+Versions 09–14 extend the base model with **modern architecture and techniques**: BPE tokenization (09), rotary position embeddings (10), grouped-query attention (11), KV caching (12), sampling strategies (13), and LoRA fine-tuning (14).
 
-Version 10 returns to the autoregressive model from version 03 but shows how to deploy it efficiently: **INT8 quantization** compresses the trained model from 32-bit floats to 8-bit integers, reducing size by ~4× and speeding up CPU inference. This is how production models run on edge devices and servers.
+Version 15 is different: instead of autoregressive (left-to-right) generation, it uses a **masked diffusion model** (MDLM/LLaDA). Names emerge from pure noise — all [MASK] tokens — through iterative unmasking. Same scalar autograd engine as version 01, same zero dependencies, but a fundamentally different generative paradigm.
 
-Versions 11–13 explore **inference optimization** — the techniques used by production systems like vLLM, FlashAttention, and TensorRT-LLM. Version 11 demonstrates speculative decoding: a small draft model proposes tokens, a larger target model verifies them in one pass, producing identical output faster. Version 12 implements the FlashAttention tiling algorithm from scratch, showing how restructuring attention to stay in fast on-chip memory avoids the memory wall. Version 13 applies the operating system's virtual memory paging concept to KV caches (PagedAttention), the core innovation behind vLLM's 2-4× throughput gains.
+Version 16 returns to the autoregressive model from version 03 but shows how to deploy it efficiently: **INT8 quantization** compresses the trained model from 32-bit floats to 8-bit integers, reducing size by ~4× and speeding up CPU inference. This is how production models run on edge devices and servers.
 
-Versions 14–15 explore **soft thinking** — preserving the full output distribution instead of collapsing to a single token. Version 14 replaces discrete token embeddings with "concept tokens" (probability-weighted blends of all embeddings) at inference time, showing how information flows through continuous space. Version 15 takes this further by training the model with a curriculum of soft inputs, closing the train-test mismatch that limits inference-only soft thinking.
+Versions 17–19 explore **inference optimization** — the techniques used by production systems like vLLM, FlashAttention, and TensorRT-LLM. Version 17 demonstrates speculative decoding: a small draft model proposes tokens, a larger target model verifies them in one pass, producing identical output faster. Version 18 implements the FlashAttention tiling algorithm from scratch, showing how restructuring attention to stay in fast on-chip memory avoids the memory wall. Version 19 applies the operating system's virtual memory paging concept to KV caches (PagedAttention), the core innovation behind vLLM's 2-4× throughput gains.
+
+Versions 20–21 explore **soft thinking** — preserving the full output distribution instead of collapsing to a single token. Version 20 replaces discrete token embeddings with "concept tokens" (probability-weighted blends of all embeddings) at inference time, showing how information flows through continuous space. Version 21 takes this further by training the model with a curriculum of soft inputs, closing the train-test mismatch that limits inference-only soft thinking.
 
 ## Who is this for?
 
 - **ML students** learning transformers from first principles — start at 01, see the full algorithm, then watch frameworks simplify it
 - **Engineers** comparing framework tradeoffs — see how PyTorch (03), JAX (05), and MLX (07) express the same model differently
-- **Practitioners** scaling to production — learn batching (04), GPU optimization (07/08), and deployment (10)
-- **Researchers** exploring new paradigms — see how diffusion (09) changes the generative process while keeping the same architecture
+- **Practitioners** scaling to production — learn batching (04), GPU optimization (07/08), modern architectures (10-12), and deployment (16)
+- **Researchers** exploring new paradigms — see how diffusion (15) changes the generative process while keeping the same architecture
 
 ## Learning paths
 
@@ -72,20 +86,28 @@ Versions 14–15 explore **soft thinking** — preserving the full output distri
 - `05_jax` (functional, pure functions)
 - `07_mlx` (Apple Silicon, unified memory)
 
+**Modern architecture?** See what changed since the original transformer:
+- `09_bpe_tokenizer` → how real tokenizers work (BPE from scratch)
+- `10_rope` → rotary position embeddings (used by LLaMA, Mistral)
+- `11_gqa` → grouped-query attention (KV head sharing)
+
+**Understanding inference?** Learn why decoding is slow and how to make it fast:
+- `12_kv_cache` → the fundamental inference optimization
+- `13_sampling` → how sampling strategies shape output
+- `17_speculative_decoding` → lossless speedup via draft-and-verify
+- `18_tiled_attention` → the memory wall and how FlashAttention beats it
+- `19_paged_attention` → OS-style memory management for serving at scale
+
+**Fine-tuning and deployment?** Check out:
+- `14_lora` → parameter-efficient fine-tuning with low-rank adapters
+- `16_pytorch_quantized` → compress models 4× for production
+
 **Interested in diffusion?** Go straight to:
-- `09_text_diffusion` — a fundamentally different generative paradigm
-
-**Deploying models?** Check out:
-- `10_pytorch_quantized` — compress models 4× for production
-
-**Optimizing inference?** Learn why decoding is slow and how to make it fast:
-- `12_tiled_attention` → the memory wall and how FlashAttention beats it
-- `11_speculative_decoding` → lossless speedup via draft-and-verify
-- `13_paged_attention` → OS-style memory management for serving at scale
+- `15_text_diffusion` — a fundamentally different generative paradigm
 
 **Exploring soft thinking?** See what happens when you stop discarding information:
-- `14_soft_thinking` → concept tokens preserve the full distribution at inference
-- `15_soft_training` → train the model to expect soft inputs (scheduled curriculum)
+- `20_soft_thinking` → concept tokens preserve the full distribution at inference
+- `21_soft_training` → train the model to expect soft inputs (scheduled curriculum)
 
 ## Running
 
@@ -93,21 +115,22 @@ Versions 14–15 explore **soft thinking** — preserving the full output distri
 
 ```bash
 python run.py 01          # Run lab 01 (pure Python)
-python run.py 09          # Run lab 09 (text diffusion)
+python run.py 09          # Run lab 09 (BPE tokenizer)
 python run.py --list      # List all available labs
 ```
 
 **Direct execution:**
 
-`01_pure_python`, `09_text_diffusion`, and `13_paged_attention` have no dependencies — run them with plain Python:
+`01_pure_python`, `09_bpe_tokenizer`, `15_text_diffusion`, and `19_paged_attention` have no dependencies — run them with plain Python:
 
 ```bash
 python 01_pure_python/microgpt.py
-python 09_text_diffusion/microdiffusion.py
-python 13_paged_attention/main.py
+python 09_bpe_tokenizer/main.py
+python 15_text_diffusion/microdiffusion.py
+python 19_paged_attention/main.py
 ```
 
-All other versions (02–08, 10–12, 14–15) are managed with [uv](https://docs.astral.sh/uv/) and have their own `pyproject.toml`:
+All other versions (02–08, 10–14, 16–18, 20–21) are managed with [uv](https://docs.astral.sh/uv/) and have their own `pyproject.toml`:
 
 ```bash
 cd 02_numpy_manual_backprop
@@ -118,4 +141,4 @@ Each subfolder has its own README with a deeper look at what makes that implemen
 
 ## Credits
 
-This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy) — a GPT trained and run in a single file of pure, dependency-free Python. The `01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). Versions 02–08 and 10 reimplement the same algorithm in different frameworks to show how the same ideas translate across tools. Version 09 uses the same autograd engine to explore a different generative paradigm — masked diffusion. Versions 11–13 implement inference optimization algorithms from scratch — speculative decoding, FlashAttention tiling, and PagedAttention — showing that the core ideas behind production serving systems are accessible at any scale. Versions 14–15 explore soft thinking — preserving probability distributions instead of collapsing to discrete tokens — with Lab 15 building directly on Lab 14's code to show how training can be adapted for continuous inputs.
+This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy) — a GPT trained and run in a single file of pure, dependency-free Python. The `01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). Versions 02–08 reimplement the same algorithm in different frameworks to show how the same ideas translate across tools. Versions 09–14 extend the architecture with modern techniques — BPE tokenization, RoPE, GQA, KV caching, sampling strategies, and LoRA. Version 15 uses the same autograd engine to explore a different generative paradigm — masked diffusion. Versions 16–19 implement inference optimization algorithms from scratch — quantization, speculative decoding, FlashAttention tiling, and PagedAttention — showing that the core ideas behind production serving systems are accessible at any scale. Versions 20–21 explore soft thinking — preserving probability distributions instead of collapsing to discrete tokens — with Lab 21 building directly on Lab 20's code to show how training can be adapted for continuous inputs.

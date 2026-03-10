@@ -5,7 +5,7 @@ Run any lab from the project root.
 Usage:
     python run.py 01          # Run lab 01 (pure Python)
     python run.py 03          # Run lab 03 (PyTorch)
-    python run.py 09          # Run lab 09 (text diffusion)
+    python run.py 09          # Run lab 09 (BPE tokenizer)
     python run.py --list      # List all available labs
 """
 
@@ -25,13 +25,19 @@ LABS = {
     "06": ("06_jax_batched", ["uv", "run", "python", "main.py"]),
     "07": ("07_mlx", ["uv", "run", "python", "main.py"]),
     "08": ("08_mlx_batched", ["uv", "run", "python", "main.py"]),
-    "09": ("09_text_diffusion", [PYTHON, "microdiffusion.py"]),
-    "10": ("10_pytorch_quantized", ["uv", "run", "python", "main.py"]),
-    "11": ("11_speculative_decoding", ["uv", "run", "python", "main.py"]),
-    "12": ("12_tiled_attention", ["uv", "run", "python", "main.py"]),
-    "13": ("13_paged_attention", [PYTHON, "main.py"]),
-    "14": ("14_soft_thinking", ["uv", "run", "python", "main.py"]),
-    "15": ("15_soft_training", ["uv", "run", "python", "main.py"]),
+    "09": ("09_bpe_tokenizer", [PYTHON, "main.py"]),
+    "10": ("10_rope", ["uv", "run", "python", "main.py"]),
+    "11": ("11_gqa", ["uv", "run", "python", "main.py"]),
+    "12": ("12_kv_cache", ["uv", "run", "python", "main.py"]),
+    "13": ("13_sampling", ["uv", "run", "python", "main.py"]),
+    "14": ("14_lora", ["uv", "run", "python", "main.py"]),
+    "15": ("15_text_diffusion", [PYTHON, "microdiffusion.py"]),
+    "16": ("16_pytorch_quantized", ["uv", "run", "python", "main.py"]),
+    "17": ("17_speculative_decoding", ["uv", "run", "python", "main.py"]),
+    "18": ("18_tiled_attention", ["uv", "run", "python", "main.py"]),
+    "19": ("19_paged_attention", [PYTHON, "main.py"]),
+    "20": ("20_soft_thinking", ["uv", "run", "python", "main.py"]),
+    "21": ("21_soft_training", ["uv", "run", "python", "main.py"]),
 }
 
 
@@ -45,13 +51,19 @@ def list_labs():
     print("  06  jax_batched            jax.vmap automatic vectorization")
     print("  07  mlx                    Apple Silicon GPU (M1/M2/M3/M4)")
     print("  08  mlx_batched            Batched MLX on Apple GPU")
-    print("  09  text_diffusion         Masked diffusion model (MDLM/LLaDA)")
-    print("  10  pytorch_quantized      INT8 quantization for inference")
-    print("  11  speculative_decoding   Draft-and-verify lossless speedup")
-    print("  12  tiled_attention        FlashAttention algorithm (memory wall)")
-    print("  13  paged_attention        PagedAttention (vLLM-style KV cache)")
-    print("  14  soft_thinking          Concept tokens preserve full distribution")
-    print("  15  soft_training          Train with soft inputs (scheduled curriculum)")
+    print("  09  bpe_tokenizer          Byte-Pair Encoding from scratch")
+    print("  10  rope                   Rotary Position Embeddings")
+    print("  11  gqa                    Grouped-Query Attention (MHA/GQA/MQA)")
+    print("  12  kv_cache               KV cache for fast inference")
+    print("  13  sampling               Sampling strategies (greedy/top-k/top-p/min-p)")
+    print("  14  lora                   LoRA parameter-efficient fine-tuning")
+    print("  15  text_diffusion         Masked diffusion model (MDLM/LLaDA)")
+    print("  16  pytorch_quantized      INT8 quantization for inference")
+    print("  17  speculative_decoding   Draft-and-verify lossless speedup")
+    print("  18  tiled_attention        FlashAttention algorithm (memory wall)")
+    print("  19  paged_attention        PagedAttention (vLLM-style KV cache)")
+    print("  20  soft_thinking          Concept tokens preserve full distribution")
+    print("  21  soft_training          Train with soft inputs (scheduled curriculum)")
     print("\nUsage: python run.py <lab_number>")
 
 
