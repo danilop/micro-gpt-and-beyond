@@ -38,6 +38,7 @@ LABS = {
     "19": ("19_paged_attention", [PYTHON, "main.py"]),
     "20": ("20_soft_thinking", ["uv", "run", "python", "main.py"]),
     "21": ("21_soft_training", ["uv", "run", "python", "main.py"]),
+    "22": ("22_disaggregated_serving", ["uv", "run", "python", "main.py"]),
 }
 
 
@@ -64,6 +65,7 @@ def list_labs():
     print("  19  paged_attention        PagedAttention (vLLM-style KV cache)")
     print("  20  soft_thinking          Concept tokens preserve full distribution")
     print("  21  soft_training          Train with soft inputs (scheduled curriculum)")
+    print("  22  disaggregated_serving  Split prefill/decode onto separate workers")
     print("\nUsage: python run.py <lab_number>")
 
 

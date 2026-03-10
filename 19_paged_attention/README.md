@@ -90,7 +90,7 @@ For short sequences (which are common in practice), paged allocation uses a frac
 - **SGLang's RadixAttention**: Uses a radix tree (prefix tree) for KV cache reuse, enabling automatic prefix matching across requests. More flexible than vLLM's hash-based caching.
 - **KV cache compression**: Quantize cached values to FP8 or FP4, reducing memory by 2-4× with minimal quality loss. Used in production by Anthropic and others.
 - **KV cache eviction**: When memory is full, intelligently evict less-important tokens. H2O (Heavy Hitter Oracle) keeps tokens with high attention scores. StreamingLLM keeps the first few tokens plus a sliding window.
-- **Disaggregated serving**: Separate the prefill phase (compute-bound, processes the full prompt) from the decode phase (memory-bound, generates tokens). Different hardware is optimal for each.
+- **Disaggregated serving** (lab 22): Separate the prefill phase (compute-bound, processes the full prompt) from the decode phase (memory-bound, generates tokens). Different hardware is optimal for each.
 - **GQA / MQA / MLA**: Architectural changes that reduce KV cache size at the model level. Grouped-Query Attention (Llama 3) uses fewer KV heads than query heads. Multi-Latent Attention (DeepSeek-V3) compresses the KV cache with learned projections.
 - **Prefix caching at scale**: Anthropic reported ~90% cost reduction on repetitive workloads through prefix caching. OpenAI offers ~50% input token cost savings for cached prefixes.
 - **Key papers**: Kwon et al. "Efficient Memory Management for Large Language Model Serving with PagedAttention" (SOSP 2023), Zheng et al. "SGLang: Efficient Execution of Structured Language Model Programs" (NeurIPS 2024).

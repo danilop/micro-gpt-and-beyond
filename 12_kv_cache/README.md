@@ -47,7 +47,7 @@ The reduction factor is `(2T+1)/3`. For T=2048, that is roughly **1365x fewer at
 The entire optimization lives in the attention module — about 20 lines of code:
 
 ```python
-class CausalSelfAttentionKV(nn.Module):
+class CausalSelfAttention(nn.Module):
     def forward(self, x, kv_cache=None):
         B, T_new, C = x.shape
         q = self.wq(x).view(B, T_new, n_head, head_dim).transpose(1, 2)
@@ -83,6 +83,7 @@ This is why GPU memory, not compute, is the bottleneck for LLM serving. Systems 
 
 - **Speculative decoding** (lab 17): a small draft model fills its own KV cache cheaply, then the large model verifies multiple tokens in one forward pass using its cache
 - **PagedAttention** (lab 19): virtual memory management for KV cache blocks, enabling efficient batching of requests with different sequence lengths
+- **Disaggregated serving** (lab 22): separate prefill and decode onto different workers, since they have different hardware profiles
 - **Continuous batching**: new requests join a running batch by allocating fresh cache space
 - **Quantized KV cache**: store cache in int8/int4 to fit more requests in memory
 
