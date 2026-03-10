@@ -234,7 +234,8 @@ for step in range(num_steps):
         p.data -= lr_t * m_hat / (v_hat**0.5 + eps_adam)
         p.grad = 0
 
-    print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.data:.4f}")
+    if (step + 1) % 10 == 0 or step == 0:
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.data:.4f}")
 
 # ---------------------------------------------------------------------------
 # Inference — extract weights to plain floats (no autograd overhead)

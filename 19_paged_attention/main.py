@@ -96,10 +96,8 @@ state_dict = {
     "lm_head": matrix(vocab_size, n_embd),
 }
 for i in range(n_layer):
-    state_dict[f"layer{i}.attn_wq"] = matrix(n_embd, n_embd)
-    state_dict[f"layer{i}.attn_wk"] = matrix(n_embd, n_embd)
-    state_dict[f"layer{i}.attn_wv"] = matrix(n_embd, n_embd)
-    state_dict[f"layer{i}.attn_wo"] = matrix(n_embd, n_embd)
+    for name in ("attn_wq", "attn_wk", "attn_wv", "attn_wo"):
+        state_dict[f"layer{i}.{name}"] = matrix(n_embd, n_embd)
     state_dict[f"layer{i}.mlp_fc1"] = matrix(4 * n_embd, n_embd)
     state_dict[f"layer{i}.mlp_fc2"] = matrix(n_embd, 4 * n_embd)
 params = [p for mat in state_dict.values() for row in mat for p in row]
@@ -122,8 +120,7 @@ def softmax(logits):
 
 
 def rmsnorm(x):
-    ms = sum(xi * xi for xi in x) / len(x)
-    scale = (ms + 1e-5) ** -0.5
+    scale = (sum(xi * xi for xi in x) / len(x) + 1e-5) ** -0.5
     return [xi * scale for xi in x]
 
 
@@ -259,16 +256,12 @@ class PagedKVCache:
 def gpt(token_id, pos_id, cache, seq_id=0, W=None):
     if W is None:
         W = state_dict
-    tok_emb = W["wte"][token_id]
-    pos_emb = W["wpe"][pos_id]
-    x = [t + p for t, p in zip(tok_emb, pos_emb)]
+    x = [t + p for t, p in zip(W["wte"][token_id], W["wpe"][pos_id])]
     x = rmsnorm(x)
     for li in range(n_layer):
         x_res = x
         x = rmsnorm(x)
-        q = linear(x, W[f"layer{li}.attn_wq"])
-        k = linear(x, W[f"layer{li}.attn_wk"])
-        v = linear(x, W[f"layer{li}.attn_wv"])
+        q, k, v = (linear(x, W[f"layer{li}.attn_w{n}"]) for n in ("q", "k", "v"))
         cache.append(seq_id, li, k, v)
         all_k, all_v = cache.get_kv(seq_id, li)
         x_attn = []
@@ -322,7 +315,8 @@ for step in range(num_steps):
         v_hat = v[i] / (1 - beta2 ** (step + 1))
         p.data -= lr_t * m_hat / (v_hat**0.5 + eps_adam)
         p.grad = 0
-    print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.data:.4f}")
+    if (step + 1) % 10 == 0 or step == 0:
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.data:.4f}")
 
 # ---------------------------------------------------------------------------
 # Inference setup
@@ -332,8 +326,7 @@ W = {name: [[v.data for v in row] for row in mat] for name, mat in state_dict.it
 
 def generate(cache, seq_id=0, max_len=block_size, temperature=0.5):
     cache.new_sequence(seq_id)
-    token_id = BOS
-    sample = []
+    token_id, sample = BOS, []
     for pos_id in range(max_len):
         logits = gpt(token_id, pos_id, cache, seq_id=seq_id, W=W)
         probs = softmax([l / temperature for l in logits])
@@ -353,19 +346,17 @@ cache_c = ContiguousKVCache(block_size, n_layer, n_embd)
 random.seed(100)
 sample_c, _ = generate(cache_c)
 name_c = "".join(uchars[t] for t in sample_c)
+used_c = cache_c.length * n_layer * n_embd * 2
 print(f"contiguous: '{name_c}' ({cache_c.length} tokens)")
-print(
-    f"  allocated {cache_c.allocated} slots, used {cache_c.length * n_layer * n_embd * 2} ({cache_c.utilization():.0%} utilization)"
-)
+print(f"  allocated {cache_c.allocated} slots, used {used_c} ({cache_c.utilization():.0%} utilization)")
 
 total_blocks = 32
 paged = PagedKVCache(total_blocks, n_layer, n_embd)
 random.seed(100)
 sample_p, _ = generate(paged, seq_id=0)
 name_p = "".join(uchars[t] for t in sample_p)
-used_blocks = total_blocks - len(paged.free_blocks)
 print(f"paged:      '{name_p}' ({paged.seq_lengths[0]} tokens)")
-print(f"  {used_blocks} blocks allocated on demand ({paged.utilization():.0%} utilization)")
+print(f"  {total_blocks - len(paged.free_blocks)} blocks allocated on demand ({paged.utilization():.0%} utilization)")
 assert name_c == name_p, f"Outputs differ: {name_c} vs {name_p}"
 print("  -> identical output, paged allocates only what's needed")
 
@@ -381,17 +372,15 @@ for pos_id, token_id in enumerate(prefix_tokens):
     gpt(token_id, pos_id, prefix_cache, seq_id="prefix", W=W)
 
 prefix_len = prefix_cache.seq_lengths["prefix"]
-blocks_before = prefix_cache.total_blocks - len(prefix_cache.free_blocks)
-print(f"prefix 'an' cached: {prefix_len} tokens, {blocks_before} blocks")
+used_blk = prefix_cache.total_blocks - len(prefix_cache.free_blocks)
+print(f"prefix 'an' cached: {prefix_len} tokens, {used_blk} blocks")
 
 n_shared = 3
 for i in range(n_shared):
     shared = prefix_cache.share_prefix("prefix", f"req_{i}", prefix_len)
     print(f"  req_{i}: shared {shared} blocks (zero-copy)")
-
-blocks_after = prefix_cache.total_blocks - len(prefix_cache.free_blocks)
-print(f"blocks: {blocks_before} total — sharing adds zero new allocations")
-print(f"without sharing: {blocks_before * (1 + n_shared)} blocks ({blocks_before} x {1 + n_shared})")
+print(f"blocks: {used_blk} total — sharing adds zero new allocations")
+print(f"without sharing: {used_blk * (1 + n_shared)} blocks ({used_blk} x {1 + n_shared})")
 
 print("""
 At production scale (Llama 3 70B, 8K context, 100 requests):
@@ -402,7 +391,6 @@ another 30-50%. This is why vLLM achieves 2-4x higher throughput.
 # ---------------------------------------------------------------------------
 # Inference — generate names (using paged KV cache)
 # ---------------------------------------------------------------------------
-temperature = 0.5
 print("--- inference (paged KV cache) ---")
 final_cache = PagedKVCache(total_blocks=128, n_layers=n_layer, dims=n_embd)
 for sample_idx in range(20):

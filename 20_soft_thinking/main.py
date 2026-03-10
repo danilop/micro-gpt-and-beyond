@@ -194,13 +194,12 @@ if __name__ == "__main__":
 
         optimizer.zero_grad()
         loss.backward()
-
         lr_t = 1e-2 * (1 - step / num_steps)
         for pg in optimizer.param_groups:
             pg["lr"] = lr_t
-
         optimizer.step()
-        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
+        if (step + 1) % 10 == 0 or step == 0:
+            print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
 
     # Inference — hard vs. soft decoding at different temperatures
     print("\n--- soft thinking comparison ---\n")

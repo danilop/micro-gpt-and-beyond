@@ -31,25 +31,22 @@ input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dat
 if not os.path.exists(input_path):
     import urllib.request
 
-    url = "https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt"
-    urllib.request.urlretrieve(url, input_path)
+    urllib.request.urlretrieve(
+        "https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt", input_path
+    )
 
 docs = [l.strip() for l in open(input_path).read().strip().split("\n") if l.strip()]
 random.shuffle(docs)
 print(f"num docs: {len(docs)}")
 
 uchars = sorted(set("".join(docs)))
-BOS = len(uchars)
-vocab_size = len(uchars) + 1
+BOS, vocab_size = len(uchars), len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # ---------------------------------------------------------------------------
 # Model (PyTorch — identical architecture to Lab 03)
 # ---------------------------------------------------------------------------
-n_embd = 16
-n_head = 4
-n_layer = 1
-block_size = 16
+n_embd, n_head, n_layer, block_size = 16, 4, 1, 16
 head_dim = n_embd // n_head
 
 
@@ -142,7 +139,8 @@ for step in range(num_steps):
     for pg in optimizer.param_groups:
         pg["lr"] = lr_t
     optimizer.step()
-    print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
+    if (step + 1) % 10 == 0 or step == 0:
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
 
 # ---------------------------------------------------------------------------
 # Extract trained weights to NumPy for attention experiments
@@ -152,15 +150,14 @@ for step in range(num_steps):
 sd = {k: v.detach().numpy() for k, v in model.state_dict().items()}
 P = {"wte": sd["wte.weight"], "wpe": sd["wpe.weight"], "lm_head": sd["lm_head.weight"]}
 for i in range(n_layer):
-    for name in ["wq", "wk", "wv", "wo"]:
-        P[f"l{i}.{name}"] = sd[f"layers.{i}.attn.{name}.weight"].T
-    P[f"l{i}.fc1"] = sd[f"layers.{i}.fc1.weight"].T
-    P[f"l{i}.fc2"] = sd[f"layers.{i}.fc2.weight"].T
+    for w in ("wq", "wk", "wv", "wo"):
+        P[f"l{i}.{w}"] = sd[f"layers.{i}.attn.{w}.weight"].T
+    for w in ("fc1", "fc2"):
+        P[f"l{i}.{w}"] = sd[f"layers.{i}.{w}.weight"].T
 
 
 def softmax_np(logits):
-    shifted = logits - logits.max(axis=-1, keepdims=True)
-    exps = np.exp(shifted)
+    exps = np.exp(logits - logits.max(axis=-1, keepdims=True))
     return exps / exps.sum(axis=-1, keepdims=True)
 
 
@@ -182,12 +179,9 @@ def inference_forward(token_ids, attn_fn):
     for li in range(n_layer):
         x_res = x.copy()
         x_n = rmsnorm_np(x)
-        Q = x_n @ P[f"l{li}.wq"]
-        K = x_n @ P[f"l{li}.wk"]
-        V = x_n @ P[f"l{li}.wv"]
-        Q_h = Q.reshape(n, n_head, head_dim).transpose(1, 0, 2)
-        K_h = K.reshape(n, n_head, head_dim).transpose(1, 0, 2)
-        V_h = V.reshape(n, n_head, head_dim).transpose(1, 0, 2)
+        Q_h, K_h, V_h = (
+            (x_n @ P[f"l{li}.{w}"]).reshape(n, n_head, head_dim).transpose(1, 0, 2) for w in ("wq", "wk", "wv")
+        )
         attn_out, last_stats = attn_fn(Q_h, K_h, V_h, n)
         x = attn_out.transpose(1, 0, 2).reshape(n, n_embd) @ P[f"l{li}.wo"] + x_res
         x_res = x.copy()
@@ -322,23 +316,21 @@ def tiled_attention(Q, K, V, seq_len, block_size_tile=4):
 # ---------------------------------------------------------------------------
 # Compare all three on the same input
 # ---------------------------------------------------------------------------
-sample_doc = docs[0]
-sample_tokens = np.array([BOS] + [uchars.index(ch) for ch in sample_doc])
-seq_len = min(block_size, len(sample_tokens))
-sample_tokens = sample_tokens[:seq_len]
+sample_tokens = np.array([BOS] + [uchars.index(ch) for ch in docs[0]])[:block_size]
+seq_len = len(sample_tokens)
 
 logits_std, stats_std = inference_forward(sample_tokens, standard_attention)
 logits_online, stats_online = inference_forward(sample_tokens, online_softmax_attention)
 logits_tiled, stats_tiled = inference_forward(sample_tokens, tiled_attention)
 
-diff_online = np.max(np.abs(logits_std - logits_online))
-diff_tiled = np.max(np.abs(logits_std - logits_tiled))
-
+diffs = [
+    ("online softmax", np.max(np.abs(logits_std - logits_online)), 1e-10),
+    ("tiled", np.max(np.abs(logits_std - logits_tiled)), 1e-6),
+]
 print(f"sequence length: {seq_len}")
-print(f"max diff (standard vs online softmax): {diff_online:.2e}")
-print(f"max diff (standard vs tiled):          {diff_tiled:.2e}")
-assert diff_online < 1e-10, f"Online softmax diverged: {diff_online}"
-assert diff_tiled < 1e-6, f"Tiled attention diverged: {diff_tiled}"
+for label, diff, tol in diffs:
+    print(f"max diff (standard vs {label + '):':<16s} {diff:.2e}")
+    assert diff < tol, f"{label} diverged: {diff}"
 print("All three produce identical output (within floating-point tolerance).\n")
 
 # ---------------------------------------------------------------------------
@@ -346,7 +338,7 @@ print("All three produce identical output (within floating-point tolerance).\n")
 # ---------------------------------------------------------------------------
 print("--- memory operation counts (HBM reads + writes) ---\n")
 
-all_stats = [
+for name, stats, note in [
     ("Standard attention", stats_std, "writes N*N attention matrix to HBM, reads it back for softmax"),
     ("Online softmax", stats_online, "never stores N*N matrix (processes one key at a time)"),
     (
@@ -354,18 +346,18 @@ all_stats = [
         stats_tiled,
         "reads K/V in blocks (amortizes HBM access), vectorized compute",
     ),
-]
-for name, stats, note in all_stats:
-    total = stats["hbm_reads"] + stats["hbm_writes"]
-    print(f"{name}:")
-    print(f"  HBM reads: {stats['hbm_reads']:>6d}  writes: {stats['hbm_writes']:>6d}  total: {total:>6d}")
+]:
+    r, w = stats["hbm_reads"], stats["hbm_writes"]
+    print(f"{name}:\n  HBM reads: {r:>6d}  writes: {w:>6d}  total: {r + w:>6d}")
     print(f"  Key insight: {note}\n")
 
 N, d, nh = seq_len, head_dim, n_head
-print("Summary:")
-print(f"  Standard writes {2 * nh * N * N:>5d} elements for the attention matrix (O(N^2))")
-print(f"  Tiled and online write only {nh * N * d:>5d} elements for the output (O(N*d))")
-print("  At GPT-3 scale (N=2048, d=128): that's 16M vs 1M elements per head")
+print(
+    f"Summary:\n"
+    f"  Standard writes {2 * nh * N * N:>5d} elements for the attention matrix (O(N^2))\n"
+    f"  Tiled and online write only {nh * N * d:>5d} elements for the output (O(N*d))\n"
+    f"  At GPT-3 scale (N=2048, d=128): that's 16M vs 1M elements per head"
+)
 
 # ---------------------------------------------------------------------------
 # GPU memory hierarchy context

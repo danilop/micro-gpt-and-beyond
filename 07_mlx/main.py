@@ -87,9 +87,7 @@ class MLP(nn.Module):
         self.fc2 = nn.Linear(4 * n_embd, n_embd, bias=False)
 
     def __call__(self, x):
-        h = self.fc1(x)
-        h = mx.maximum(h, 0)  # ReLU
-        return self.fc2(h)
+        return self.fc2(mx.maximum(self.fc1(x), 0))
 
 
 class Block(nn.Module):
@@ -166,7 +164,8 @@ for step in range(num_steps):
     optimizer.update(model, grads)
     mx.eval(model.parameters(), optimizer.state)
 
-    print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val.item():.4f}")
+    if (step + 1) % 10 == 0 or step == 0:
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val.item():.4f}")
 
 # ---------------------------------------------------------------------------
 # Inference

@@ -196,11 +196,9 @@ for step in range(num_steps):
 
     optimizer.zero_grad()
     loss.backward()
-
     lr_t = 1e-2 * (1 - step / num_steps)
     for pg in optimizer.param_groups:
         pg["lr"] = lr_t
-
     optimizer.step()
 
     if (step + 1) % 10 == 0 or step == 0:

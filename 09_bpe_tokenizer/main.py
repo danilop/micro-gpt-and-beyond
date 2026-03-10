@@ -355,18 +355,10 @@ print(f"\n{'=' * 60}")
 print("KEY TAKEAWAY")
 print(f"{'=' * 60}")
 print(f"""
-BPE compresses the corpus from {total_char_tokens} tokens to {total_bpe_tokens} tokens ({total_char_tokens / total_bpe_tokens:.1f}x shorter)
+BPE compresses the corpus from {total_char_tokens} to {total_bpe_tokens} tokens ({total_char_tokens / total_bpe_tokens:.1f}x shorter)
 by learning {NUM_MERGES} merge rules that capture common character sequences.
+Vocab grows from {char_vocab_size} to {vocab_size} tokens (more embedding params, but shorter sequences).
 
-Each BPE bigram step now spans multiple characters (e.g., "an" -> "na" instead
-of "a" -> "n" -> "n" -> "a"), so the model captures longer-range patterns in
-fewer steps. The tradeoff: the vocab grows from {char_vocab_size} to {vocab_size} tokens, meaning
-more parameters in any embedding table.
-
-At this tiny scale (names), character-level works well. At GPT scale (internet
-text), BPE with 50K-100K merges is essential — without it, sequences would be
-thousands of tokens long and attention would be impossibly expensive.
-
-This is exactly the algorithm behind GPT-2's tokenizer, LLaMA's tokenizer,
-and most modern LLM tokenizers. The only difference is scale.
+This is the algorithm behind GPT-2, LLaMA, and most modern LLM tokenizers.
+At GPT scale, BPE with 50K-100K merges is essential to keep sequences tractable.
 """)

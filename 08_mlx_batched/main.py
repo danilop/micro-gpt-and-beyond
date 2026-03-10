@@ -105,9 +105,7 @@ class MLP(nn.Module):
         self.fc2 = nn.Linear(4 * n_embd, n_embd, bias=False)
 
     def __call__(self, x):
-        h = self.fc1(x)
-        h = mx.maximum(h, 0)
-        return self.fc2(h)
+        return self.fc2(mx.maximum(self.fc1(x), 0))
 
 
 class Block(nn.Module):

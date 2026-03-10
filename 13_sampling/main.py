@@ -19,7 +19,7 @@ random.seed(42)
 torch.manual_seed(42)
 
 # ---------------------------------------------------------------------------
-# Dataset
+# Dataset & Tokenizer
 # ---------------------------------------------------------------------------
 input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "input.txt")
 if not os.path.exists(input_path):
@@ -31,10 +31,6 @@ if not os.path.exists(input_path):
 docs = [l.strip() for l in open(input_path).read().strip().split("\n") if l.strip()]
 random.shuffle(docs)
 print(f"num docs: {len(docs)}")
-
-# ---------------------------------------------------------------------------
-# Tokenizer (character-level, identical to the original)
-# ---------------------------------------------------------------------------
 uchars = sorted(set("".join(docs)))
 BOS = len(uchars)
 vocab_size = len(uchars) + 1
@@ -89,9 +85,7 @@ class MLP(nn.Module):
         self.fc2 = nn.Linear(4 * n_embd, n_embd, bias=False)
 
     def forward(self, x):
-        x = self.fc1(x)
-        x = F.relu(x)
-        return self.fc2(x)
+        return self.fc2(F.relu(self.fc1(x)))
 
 
 class Block(nn.Module):
@@ -116,7 +110,6 @@ class MicroGPT(nn.Module):
         self.norm_in = RMSNorm(n_embd)
         self.layers = nn.ModuleList([Block() for _ in range(n_layer)])
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
-
         self.apply(self._init_weights)
 
     @staticmethod
@@ -157,11 +150,9 @@ for step in range(num_steps):
 
     optimizer.zero_grad()
     loss.backward()
-
     lr_t = 1e-2 * (1 - step / num_steps)
     for pg in optimizer.param_groups:
         pg["lr"] = lr_t
-
     optimizer.step()
 
     if (step + 1) % 200 == 0 or step == 0:

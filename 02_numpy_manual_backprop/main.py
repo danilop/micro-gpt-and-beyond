@@ -307,7 +307,8 @@ for step in range(num_steps):
         v_hat = Vb[k] / (1 - beta2 ** (step + 1))
         P[k] -= lr_t * m_hat / (np.sqrt(v_hat) + eps_adam)
 
-    print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss:.4f}")
+    if (step + 1) % 10 == 0 or step == 0:
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss:.4f}")
 
 # ---------------------------------------------------------------------------
 # Inference

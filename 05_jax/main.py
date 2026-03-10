@@ -184,7 +184,8 @@ for step in range(num_steps):
     lr_t = learning_rate * (1 - step / num_steps)
     params, m_state, v_state = adam_update(params, grads, m_state, v_state, step, lr_t)
 
-    print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val:.4f}")
+    if (step + 1) % 10 == 0 or step == 0:
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val:.4f}")
 
 # ---------------------------------------------------------------------------
 # Inference

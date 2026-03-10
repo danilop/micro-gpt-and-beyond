@@ -21,7 +21,7 @@ random.seed(42)
 torch.manual_seed(42)
 
 # ---------------------------------------------------------------------------
-# Dataset
+# Dataset & Tokenizer
 # ---------------------------------------------------------------------------
 input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "input.txt")
 if not os.path.exists(input_path):
@@ -33,10 +33,6 @@ if not os.path.exists(input_path):
 docs = [l.strip() for l in open(input_path).read().strip().split("\n") if l.strip()]
 random.shuffle(docs)
 print(f"num docs: {len(docs)}")
-
-# ---------------------------------------------------------------------------
-# Tokenizer (character-level, identical to the original)
-# ---------------------------------------------------------------------------
 uchars = sorted(set("".join(docs)))
 BOS = len(uchars)
 vocab_size = len(uchars) + 1
@@ -201,11 +197,9 @@ def train(model, label, num_steps=1000):
 
         optimizer.zero_grad()
         loss.backward()
-
         lr_t = 1e-2 * (1 - step / num_steps)
         for pg in optimizer.param_groups:
             pg["lr"] = lr_t
-
         optimizer.step()
         losses.append(loss.item())
 

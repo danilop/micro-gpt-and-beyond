@@ -62,15 +62,14 @@ def train_model(model, name, soft_mix=False):
 
         optimizer.zero_grad()
         loss.backward()
-
         lr_t = 1e-2 * (1 - step / num_steps)
         for pg in optimizer.param_groups:
             pg["lr"] = lr_t
-
         optimizer.step()
 
-        extra = f" | mix {mix:.2f}" if soft_mix and n > 1 else ""
-        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}{extra}")
+        if (step + 1) % 10 == 0 or step == 0:
+            extra = f" | mix {mix:.2f}" if soft_mix and n > 1 else ""
+            print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}{extra}")
 
 
 # ---------------------------------------------------------------------------

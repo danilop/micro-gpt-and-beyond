@@ -114,9 +114,7 @@ class MLP(nn.Module):
         self.fc2 = nn.Linear(4 * n_embd, n_embd, bias=False)
 
     def forward(self, x):
-        x = self.fc1(x)
-        x = F.relu(x)
-        return self.fc2(x)
+        return self.fc2(F.relu(self.fc1(x)))
 
 
 class Block(nn.Module):
@@ -141,7 +139,6 @@ class MicroGPT(nn.Module):
         self.norm_in = RMSNorm(n_embd)
         self.layers = nn.ModuleList([Block() for _ in range(n_layer)])
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
-
         self.apply(self._init_weights)
 
     @staticmethod
@@ -201,11 +198,9 @@ def train_step(model, optimizer, doc, step, num_steps, base_lr=1e-2):
 
     optimizer.zero_grad()
     loss.backward()
-
     lr_t = base_lr * (1 - step / num_steps)
     for pg in optimizer.param_groups:
         pg["lr"] = lr_t
-
     optimizer.step()
     return loss.item()
 
