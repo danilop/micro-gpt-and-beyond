@@ -12,9 +12,10 @@ to include a batch dimension and write the forward pass to handle (B, T, ...).
 Same idea, same manual padding — unified memory is the difference.
 """
 
-import os
 import math
+import os
 import random
+
 import mlx.core as mx
 import mlx.nn as nn
 import mlx.optimizers as optim
@@ -26,17 +27,18 @@ mx.random.seed(42)
 # ---------------------------------------------------------------------------
 # Dataset & Tokenizer
 # ---------------------------------------------------------------------------
-input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'input.txt')
+input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "input.txt")
 if not os.path.exists(input_path):
     import urllib.request
-    url = 'https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt'
+
+    url = "https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt"
     urllib.request.urlretrieve(url, input_path)
 
-docs = [l.strip() for l in open(input_path).read().strip().split('\n') if l.strip()]
+docs = [l.strip() for l in open(input_path).read().strip().split("\n") if l.strip()]
 random.shuffle(docs)
 print(f"num docs: {len(docs)}")
 
-uchars = sorted(set(''.join(docs)))
+uchars = sorted(set("".join(docs)))
 BOS = len(uchars)
 vocab_size = len(uchars) + 1
 PAD = vocab_size
@@ -54,11 +56,12 @@ head_dim = n_embd // n_head
 batch_size = 32
 num_steps = 1000
 
+
 # ---------------------------------------------------------------------------
 # Model
 # ---------------------------------------------------------------------------
 class RMSNorm(nn.Module):
-    def __init__(self, dim):
+    def __init__(self, _dim):
         super().__init__()
         self.eps = 1e-5
 
@@ -149,7 +152,7 @@ def make_batch(docs, step, batch_size):
     sequences = []
     for doc in batch_docs:
         toks = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
-        toks = toks[:block_size + 1]
+        toks = toks[: block_size + 1]
         sequences.append(toks)
 
     max_len = max(len(s) for s in sequences)
@@ -157,7 +160,7 @@ def make_batch(docs, step, batch_size):
     for s in sequences:
         n = len(s) - 1
         inp = s[:n] + [PAD] * (max_len - 1 - n)
-        tgt = s[1:n+1] + [0] * (max_len - 1 - n)
+        tgt = s[1 : n + 1] + [0] * (max_len - 1 - n)
         pmask = [False] * n + [True] * (max_len - 1 - n)
         tmask = [1.0] * n + [0.0] * (max_len - 1 - n)
         input_ids.append(inp)
@@ -178,24 +181,23 @@ def make_batch(docs, step, batch_size):
 # ---------------------------------------------------------------------------
 model = MicroGPT()
 # Match original init: N(0, 0.08) for all weights
-model.load_weights([(k, mx.random.normal(v.shape) * 0.08)
-                    for k, v in mlx.utils.tree_flatten(model.parameters())])
+model.load_weights([(k, mx.random.normal(v.shape) * 0.08) for k, v in mlx.utils.tree_flatten(model.parameters())])
 num_params = sum(p.size for _, p in mlx.utils.tree_flatten(model.parameters()))
 print(f"num params: {num_params}")
 
 learning_rate, beta1, beta2, eps_adam = 1e-2, 0.85, 0.99, 1e-8
+
 
 def loss_fn(model, input_ids, targets, pad_mask, target_mask):
     logits = model(input_ids, pad_mask)  # (B, T, V)
     log_probs = logits - mx.logsumexp(logits, axis=-1, keepdims=True)
     B, T, V = log_probs.shape
     # Gather log-probs for target tokens
-    target_log_probs = log_probs[
-        mx.arange(B)[:, None], mx.arange(T)[None, :], targets
-    ]
+    target_log_probs = log_probs[mx.arange(B)[:, None], mx.arange(T)[None, :], targets]
     target_log_probs = target_log_probs * target_mask
     loss = -mx.sum(target_log_probs) / mx.sum(target_mask)
     return loss
+
 
 loss_and_grad = nn.value_and_grad(model, loss_fn)
 optimizer = optim.Adam(learning_rate=learning_rate, betas=[beta1, beta2], eps=eps_adam)
@@ -211,7 +213,7 @@ for step in range(num_steps):
     mx.eval(model.parameters(), optimizer.state)
 
     if (step + 1) % 10 == 0 or step == 0:
-        print(f"step {step+1:4d} / {num_steps:4d} | loss {loss_val.item():.4f}")
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val.item():.4f}")
 
 # ---------------------------------------------------------------------------
 # Inference
@@ -228,5 +230,5 @@ for sample_idx in range(20):
         if token_id == BOS:
             break
         tokens.append(token_id)
-    name = ''.join(uchars[t] for t in tokens[1:])
-    print(f"sample {sample_idx+1:2d}: {name}")
+    name = "".join(uchars[t] for t in tokens[1:])
+    print(f"sample {sample_idx + 1:2d}: {name}")

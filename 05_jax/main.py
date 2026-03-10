@@ -11,9 +11,10 @@ Same architecture as the PyTorch version, but in JAX's functional style:
 This shows how the same transformer looks in a purely functional framework.
 """
 
-import os
 import math
+import os
 import random
+
 import jax
 import jax.numpy as jnp
 from jax import grad, jit
@@ -23,17 +24,18 @@ random.seed(42)
 # ---------------------------------------------------------------------------
 # Dataset & Tokenizer
 # ---------------------------------------------------------------------------
-input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'input.txt')
+input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "input.txt")
 if not os.path.exists(input_path):
     import urllib.request
-    url = 'https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt'
+
+    url = "https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt"
     urllib.request.urlretrieve(url, input_path)
 
-docs = [l.strip() for l in open(input_path).read().strip().split('\n') if l.strip()]
+docs = [l.strip() for l in open(input_path).read().strip().split("\n") if l.strip()]
 random.shuffle(docs)
 print(f"num docs: {len(docs)}")
 
-uchars = sorted(set(''.join(docs)))
+uchars = sorted(set("".join(docs)))
 BOS = len(uchars)
 vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
@@ -49,37 +51,42 @@ head_dim = n_embd // n_head
 
 key = jax.random.PRNGKey(42)
 
+
 def init_param(key, shape, std=0.08):
     return jax.random.normal(key, shape) * std
 
+
 def split_keys(key, n):
     return jax.random.split(key, n)
+
 
 keys = split_keys(key, 20)
 ki = iter(keys)
 
 params = {
-    'wte': init_param(next(ki), (vocab_size, n_embd)),
-    'wpe': init_param(next(ki), (block_size, n_embd)),
-    'lm_head': init_param(next(ki), (vocab_size, n_embd)),
+    "wte": init_param(next(ki), (vocab_size, n_embd)),
+    "wpe": init_param(next(ki), (block_size, n_embd)),
+    "lm_head": init_param(next(ki), (vocab_size, n_embd)),
 }
 for i in range(n_layer):
-    params[f'l{i}.wq'] = init_param(next(ki), (n_embd, n_embd))
-    params[f'l{i}.wk'] = init_param(next(ki), (n_embd, n_embd))
-    params[f'l{i}.wv'] = init_param(next(ki), (n_embd, n_embd))
-    params[f'l{i}.wo'] = init_param(next(ki), (n_embd, n_embd))
-    params[f'l{i}.fc1'] = init_param(next(ki), (n_embd, 4 * n_embd))
-    params[f'l{i}.fc2'] = init_param(next(ki), (4 * n_embd, n_embd))
+    params[f"l{i}.wq"] = init_param(next(ki), (n_embd, n_embd))
+    params[f"l{i}.wk"] = init_param(next(ki), (n_embd, n_embd))
+    params[f"l{i}.wv"] = init_param(next(ki), (n_embd, n_embd))
+    params[f"l{i}.wo"] = init_param(next(ki), (n_embd, n_embd))
+    params[f"l{i}.fc1"] = init_param(next(ki), (n_embd, 4 * n_embd))
+    params[f"l{i}.fc2"] = init_param(next(ki), (4 * n_embd, n_embd))
 
 num_params = sum(p.size for p in jax.tree.leaves(params))
 print(f"num params: {num_params}")
+
 
 # ---------------------------------------------------------------------------
 # Pure-function forward pass
 # ---------------------------------------------------------------------------
 def rmsnorm(x):
-    ms = jnp.mean(x ** 2, axis=-1, keepdims=True)
+    ms = jnp.mean(x**2, axis=-1, keepdims=True)
     return x / jnp.sqrt(ms + 1e-5)
+
 
 def forward(params, input_ids):
     """
@@ -88,17 +95,17 @@ def forward(params, input_ids):
     Returns: logits (n, vocab_size)
     """
     n = input_ids.shape[0]
-    tok_emb = params['wte'][input_ids]          # (n, D)
-    pos_emb = params['wpe'][jnp.arange(n)]      # (n, D)
+    tok_emb = params["wte"][input_ids]  # (n, D)
+    pos_emb = params["wpe"][jnp.arange(n)]  # (n, D)
     x = rmsnorm(tok_emb + pos_emb)
 
     for li in range(n_layer):
         x_res = x
         x_n = rmsnorm(x)
 
-        Q = x_n @ params[f'l{li}.wq']  # (n, D)
-        K = x_n @ params[f'l{li}.wk']
-        V = x_n @ params[f'l{li}.wv']
+        Q = x_n @ params[f"l{li}.wq"]  # (n, D)
+        K = x_n @ params[f"l{li}.wk"]
+        V = x_n @ params[f"l{li}.wv"]
 
         # Multi-head reshape: (n, nh, hd) -> (nh, n, hd)
         Q_h = Q.reshape(n, n_head, head_dim).transpose(1, 0, 2)
@@ -112,16 +119,16 @@ def forward(params, input_ids):
 
         attn_out = att @ V_h  # (nh, n, hd)
         attn_cat = attn_out.transpose(1, 0, 2).reshape(n, n_embd)
-        x = attn_cat @ params[f'l{li}.wo'] + x_res
+        x = attn_cat @ params[f"l{li}.wo"] + x_res
 
         # MLP
         x_res2 = x
         x_n2 = rmsnorm(x)
-        h = x_n2 @ params[f'l{li}.fc1']
+        h = x_n2 @ params[f"l{li}.fc1"]
         h = jax.nn.relu(h)
-        x = h @ params[f'l{li}.fc2'] + x_res2
+        x = h @ params[f"l{li}.fc2"] + x_res2
 
-    logits = x @ params['lm_head'].T  # (n, V)
+    logits = x @ params["lm_head"].T  # (n, V)
     return logits
 
 
@@ -133,6 +140,7 @@ def loss_fn(params, input_ids, targets):
     loss = -jnp.mean(log_probs[jnp.arange(n), targets])
     return loss
 
+
 # JIT-compile the gradient function
 grad_fn = jit(grad(loss_fn))
 loss_fn_jit = jit(loss_fn)
@@ -143,6 +151,7 @@ loss_fn_jit = jit(loss_fn)
 learning_rate, beta1, beta2, eps_adam = 1e-2, 0.85, 0.99, 1e-8
 m_state = jax.tree.map(jnp.zeros_like, params)
 v_state = jax.tree.map(jnp.zeros_like, params)
+
 
 def adam_update(params, grads, m_state, v_state, step, lr):
     new_params = {}
@@ -156,6 +165,7 @@ def adam_update(params, grads, m_state, v_state, step, lr):
         new_params[k] = params[k] - lr * m_hat / (jnp.sqrt(v_hat) + eps_adam)
     return new_params, new_m, new_v
 
+
 # ---------------------------------------------------------------------------
 # Training loop
 # ---------------------------------------------------------------------------
@@ -166,7 +176,7 @@ for step in range(num_steps):
     n = min(block_size, len(tokens) - 1)
 
     input_ids = jnp.array(tokens[:n])
-    targets = jnp.array(tokens[1:n+1])
+    targets = jnp.array(tokens[1 : n + 1])
 
     loss_val = loss_fn_jit(params, input_ids, targets)
     grads = grad_fn(params, input_ids, targets)
@@ -174,7 +184,7 @@ for step in range(num_steps):
     lr_t = learning_rate * (1 - step / num_steps)
     params, m_state, v_state = adam_update(params, grads, m_state, v_state, step, lr_t)
 
-    print(f"step {step+1:4d} / {num_steps:4d} | loss {loss_val:.4f}")
+    print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val:.4f}")
 
 # ---------------------------------------------------------------------------
 # Inference
@@ -193,5 +203,5 @@ for sample_idx in range(20):
         if token_id == BOS:
             break
         tokens.append(token_id)
-    name = ''.join(uchars[t] for t in tokens[1:])
-    print(f"sample {sample_idx+1:2d}: {name}")
+    name = "".join(uchars[t] for t in tokens[1:])
+    print(f"sample {sample_idx + 1:2d}: {name}")

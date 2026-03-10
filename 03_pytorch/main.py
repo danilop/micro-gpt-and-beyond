@@ -11,9 +11,10 @@ tensors for efficient computation. Every architectural choice is preserved:
   - Adam with beta1=0.85, beta2=0.99
 """
 
-import os
 import math
+import os
 import random
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -24,20 +25,21 @@ torch.manual_seed(42)
 # ---------------------------------------------------------------------------
 # Dataset
 # ---------------------------------------------------------------------------
-input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'input.txt')
+input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "input.txt")
 if not os.path.exists(input_path):
     import urllib.request
-    url = 'https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt'
+
+    url = "https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt"
     urllib.request.urlretrieve(url, input_path)
 
-docs = [l.strip() for l in open(input_path).read().strip().split('\n') if l.strip()]
+docs = [l.strip() for l in open(input_path).read().strip().split("\n") if l.strip()]
 random.shuffle(docs)
 print(f"num docs: {len(docs)}")
 
 # ---------------------------------------------------------------------------
 # Tokenizer (character-level, identical to the original)
 # ---------------------------------------------------------------------------
-uchars = sorted(set(''.join(docs)))
+uchars = sorted(set("".join(docs)))
 BOS = len(uchars)
 vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
@@ -53,7 +55,7 @@ head_dim = n_embd // n_head
 
 
 class RMSNorm(nn.Module):
-    def __init__(self, dim, eps=1e-5):
+    def __init__(self, _dim, eps=1e-5):
         super().__init__()
         self.eps = eps
 
@@ -79,7 +81,7 @@ class CausalSelfAttention(nn.Module):
         # Scaled dot-product attention with causal mask
         att = (q @ k.transpose(-2, -1)) / math.sqrt(head_dim)
         mask = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
-        att = att.masked_fill(mask, float('-inf'))
+        att = att.masked_fill(mask, float("-inf"))
         att = F.softmax(att, dim=-1)
 
         out = (att @ v).transpose(1, 2).contiguous().view(B, T, C)
@@ -142,7 +144,7 @@ class MicroGPT(nn.Module):
 # ---------------------------------------------------------------------------
 # Training
 # ---------------------------------------------------------------------------
-device = 'cpu'
+device = "cpu"
 model = MicroGPT().to(device)
 print(f"num params: {sum(p.numel() for p in model.parameters())}")
 
@@ -154,10 +156,10 @@ for step in range(num_steps):
     tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
     n = min(block_size, len(tokens) - 1)
 
-    input_ids = torch.tensor([tokens[:n]], device=device)       # (1, n)
-    targets = torch.tensor([tokens[1:n+1]], device=device)      # (1, n)
+    input_ids = torch.tensor([tokens[:n]], device=device)  # (1, n)
+    targets = torch.tensor([tokens[1 : n + 1]], device=device)  # (1, n)
 
-    logits = model(input_ids)                                    # (1, n, vocab_size)
+    logits = model(input_ids)  # (1, n, vocab_size)
     loss = F.cross_entropy(logits.view(-1, vocab_size), targets.view(-1))
 
     optimizer.zero_grad()
@@ -166,11 +168,11 @@ for step in range(num_steps):
     # Linear LR decay (matching the original schedule)
     lr_t = 1e-2 * (1 - step / num_steps)
     for pg in optimizer.param_groups:
-        pg['lr'] = lr_t
+        pg["lr"] = lr_t
 
     optimizer.step()
 
-    print(f"step {step+1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
+    print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
 
 # ---------------------------------------------------------------------------
 # Inference
@@ -190,5 +192,5 @@ with torch.no_grad():
             if token_id == BOS:
                 break
             tokens.append(token_id)
-        name = ''.join(uchars[t] for t in tokens[1:])
-        print(f"sample {sample_idx+1:2d}: {name}")
+        name = "".join(uchars[t] for t in tokens[1:])
+        print(f"sample {sample_idx + 1:2d}: {name}")

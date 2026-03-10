@@ -1,0 +1,67 @@
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+exclude = ["01_pure_python"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",      # pycodestyle
+    "F",            # pyflakes
+    "I",            # isort
+    "UP",           # pyupgrade (modern Python idioms)
+    "B",            # flake8-bugbear
+    "SIM",          # flake8-simplify
+    "C4",           # flake8-comprehensions
+    "RUF",          # ruff-specific rules
+    "PERF",         # perflint (performance anti-patterns)
+    "PIE",          # flake8-pie (misc. lints)
+    "T20",          # flake8-print (detect print statements)
+    "S",            # bandit rules (via ruff, in addition to standalone)
+]
+ignore = [
+    "T201",         # print() is the primary output mechanism in every lab
+    "E501",         # line length handled by ruff-format
+    "E741",         # ambiguous variable name `l` — used consistently in all labs for line comprehensions
+    "F841",         # assigned-but-unused locals appear in educational code
+    "S310",         # urllib.urlretrieve is safe here — URL is hardcoded for dataset download
+    "S311",         # random module is fine for name generation (not crypto)
+    "S101",         # assert used for verification in labs 12/13
+    "SIM115",       # open() without context manager — one-shot reads are idiomatic in scripts
+    "PERF203",      # try-except in loop
+    "B007",         # unused loop variable (for _ in range patterns)
+    "UP015",        # unnecessary open mode parameter (readability)
+    "SIM108",       # ternary operator (readability preference)
+    "RUF001",       # ambiguous unicode (box-drawing chars in output)
+    "RUF002",       # ambiguous unicode in docstring
+    "RUF059",       # unused unpacked variables — `B, T = x.shape` is idiomatic PyTorch readability
+    "B905",         # zip() without strict= — educational code matches Karpathy's patterns
+    "S603",         # subprocess call with hardcoded commands in run.py
+]
+
+[tool.ruff.lint.per-file-ignores]
+"01_pure_python/*" = ["ALL"]
+
+[tool.vulture]
+paths = ["."]
+exclude = ["01_pure_python", ".venv", "*/.venv"]
+min_confidence = 90
+
+[tool.bandit]
+exclude_dirs = ["01_pure_python", ".venv"]
+skips = ["B101", "B310", "B311", "B404", "B602", "B603"]
+
+[tool.codespell]
+skip = "*.lock,01_pure_python/*,.venv/*,*/.venv/*,data/*"
+ignore-words-list = "uchars,amin,numer,dout,nin"
+
+[tool.ty]
+
+[tool.ty.environment]
+python-version = "3.13"
+
+[tool.ty.src]
+exclude = ["01_pure_python"]
+
+[tool.ty.rules]
+# Each lab has its own venv; ty runs from project root and can't resolve third-party packages
+unresolved-import = "ignore"

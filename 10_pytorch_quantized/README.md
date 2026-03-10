@@ -25,7 +25,7 @@ class QuantizedLinear(nn.Module):
         weight_int8 = torch.round(weight / scale).to(torch.int8)
         self.register_buffer('weight_int8', weight_int8)
         self.register_buffer('scale', torch.tensor(scale))
-        
+
     def forward(self, x):
         weight_fp32 = self.weight_int8.to(x.dtype) * self.scale
         return F.linear(x, weight_fp32, self.bias)

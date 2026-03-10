@@ -10,24 +10,30 @@ Usage:
 """
 
 import os
-import sys
 import subprocess
+import sys
 
 # Use the same Python interpreter that's running this script
 PYTHON = sys.executable
 
 LABS = {
-    '01': ('01_pure_python', f'{PYTHON} microgpt.py'),
-    '02': ('02_numpy_manual_backprop', 'uv run python main.py'),
-    '03': ('03_pytorch', 'uv run python main.py'),
-    '04': ('04_pytorch_batched', 'uv run python main.py'),
-    '05': ('05_jax', 'uv run python main.py'),
-    '06': ('06_jax_batched', 'uv run python main.py'),
-    '07': ('07_mlx', 'uv run python main.py'),
-    '08': ('08_mlx_batched', 'uv run python main.py'),
-    '09': ('09_text_diffusion', f'{PYTHON} microdiffusion.py'),
-    '10': ('10_pytorch_quantized', 'uv run python main.py'),
+    "01": ("01_pure_python", [PYTHON, "microgpt.py"]),
+    "02": ("02_numpy_manual_backprop", ["uv", "run", "python", "main.py"]),
+    "03": ("03_pytorch", ["uv", "run", "python", "main.py"]),
+    "04": ("04_pytorch_batched", ["uv", "run", "python", "main.py"]),
+    "05": ("05_jax", ["uv", "run", "python", "main.py"]),
+    "06": ("06_jax_batched", ["uv", "run", "python", "main.py"]),
+    "07": ("07_mlx", ["uv", "run", "python", "main.py"]),
+    "08": ("08_mlx_batched", ["uv", "run", "python", "main.py"]),
+    "09": ("09_text_diffusion", [PYTHON, "microdiffusion.py"]),
+    "10": ("10_pytorch_quantized", ["uv", "run", "python", "main.py"]),
+    "11": ("11_speculative_decoding", ["uv", "run", "python", "main.py"]),
+    "12": ("12_tiled_attention", ["uv", "run", "python", "main.py"]),
+    "13": ("13_paged_attention", [PYTHON, "main.py"]),
+    "14": ("14_soft_thinking", ["uv", "run", "python", "main.py"]),
+    "15": ("15_soft_training", ["uv", "run", "python", "main.py"]),
 }
+
 
 def list_labs():
     print("Available labs:\n")
@@ -41,37 +47,43 @@ def list_labs():
     print("  08  mlx_batched            Batched MLX on Apple GPU")
     print("  09  text_diffusion         Masked diffusion model (MDLM/LLaDA)")
     print("  10  pytorch_quantized      INT8 quantization for inference")
+    print("  11  speculative_decoding   Draft-and-verify lossless speedup")
+    print("  12  tiled_attention        FlashAttention algorithm (memory wall)")
+    print("  13  paged_attention        PagedAttention (vLLM-style KV cache)")
+    print("  14  soft_thinking          Concept tokens preserve full distribution")
+    print("  15  soft_training          Train with soft inputs (scheduled curriculum)")
     print("\nUsage: python run.py <lab_number>")
+
 
 def run_lab(lab_num):
     if lab_num not in LABS:
         print(f"Error: Lab '{lab_num}' not found.")
         print("Run 'python run.py --list' to see available labs.")
         sys.exit(1)
-    
+
     lab_dir, command = LABS[lab_num]
     lab_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), lab_dir)
-    
+
     if not os.path.exists(lab_path):
         print(f"Error: Directory '{lab_dir}' not found.")
         sys.exit(1)
-    
+
     print(f"Running lab {lab_num}: {lab_dir}")
-    print(f"Command: {command}\n")
+    print(f"Command: {' '.join(command)}\n")
     print("-" * 79)
-    
-    # Run the command in the lab directory
-    result = subprocess.run(command, shell=True, cwd=lab_path)
+
+    result = subprocess.run(command, cwd=lab_path)
     sys.exit(result.returncode)
 
-if __name__ == '__main__':
-    if len(sys.argv) < 2 or sys.argv[1] in ['-h', '--help']:
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2 or sys.argv[1] in ["-h", "--help"]:
         print(__doc__)
         sys.exit(0)
-    
-    if sys.argv[1] in ['-l', '--list']:
+
+    if sys.argv[1] in ["-l", "--list"]:
         list_labs()
         sys.exit(0)
-    
+
     lab_num = sys.argv[1].zfill(2)  # '1' -> '01'
     run_lab(lab_num)

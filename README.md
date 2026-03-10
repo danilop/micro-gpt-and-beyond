@@ -1,8 +1,8 @@
 # microGPT and Beyond
 
-Ten implementations exploring tiny language models, inspired by Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html) — a GPT trained and run in a single file of pure Python. Each version teaches something different about how neural networks are built, trained, and run. The models learn to generate human names from a dataset of ~32,000 real ones.
+Fifteen implementations exploring tiny language models, inspired by Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html) — a GPT trained and run in a single file of pure Python. Each version teaches something different about how neural networks are built, trained, and run. The models learn to generate human names from a dataset of ~32,000 real ones.
 
-The progression goes from raw first principles to framework-powered GPU code, and beyond autoregressive generation:
+The progression goes from raw first principles to framework-powered GPU code, beyond autoregressive generation, and into inference optimization:
 
 ```
 01_pure_python/            Karpathy's original code. Zero dependencies. Scalar autograd.
@@ -15,6 +15,11 @@ The progression goes from raw first principles to framework-powered GPU code, an
 08_mlx_batched/            Batched MLX — same PyTorch-style padding, but on Apple GPU.
 09_text_diffusion/         Masked diffusion model (MDLM/LLaDA). Names emerge from noise.
 10_pytorch_quantized/      INT8 quantization for inference. FP32 → INT8, 4× smaller, faster.
+11_speculative_decoding/   Draft model guesses, target model verifies. Lossless speedup.
+12_tiled_attention/        FlashAttention algorithm from scratch. Tiling beats the memory wall.
+13_paged_attention/        PagedAttention (vLLM). OS-style virtual memory for KV caches.
+14_soft_thinking/          Concept tokens preserve the full output distribution at inference.
+15_soft_training/          Soft input curriculum closes the train-test gap for concept tokens.
 data/                      Shared dataset (auto-downloaded on first run).
 ```
 
@@ -34,10 +39,19 @@ Every version trains the same architecture — a character-level transformer wit
 | 08 MLX batched | automatic | yes | yes (32) | Apple GPU |
 | 09 text diffusion | hand-built scalar engine | no | no | CPU (slow) |
 | 10 PyTorch quantized | automatic | yes | no | CPU (INT8) |
+| 11 speculative decoding | automatic | yes | no | CPU |
+| 12 tiled attention | automatic | yes | no | CPU |
+| 13 paged attention | hand-built scalar engine | no | no | CPU (slow) |
+| 14 soft thinking | automatic | yes | no | CPU |
+| 15 soft training | automatic | yes | no | CPU |
 
 Version 09 is different: instead of autoregressive (left-to-right) generation, it uses a **masked diffusion model** (MDLM/LLaDA). Names emerge from pure noise — all [MASK] tokens — through iterative unmasking. Same scalar autograd engine as version 01, same zero dependencies, but a fundamentally different generative paradigm.
 
 Version 10 returns to the autoregressive model from version 03 but shows how to deploy it efficiently: **INT8 quantization** compresses the trained model from 32-bit floats to 8-bit integers, reducing size by ~4× and speeding up CPU inference. This is how production models run on edge devices and servers.
+
+Versions 11–13 explore **inference optimization** — the techniques used by production systems like vLLM, FlashAttention, and TensorRT-LLM. Version 11 demonstrates speculative decoding: a small draft model proposes tokens, a larger target model verifies them in one pass, producing identical output faster. Version 12 implements the FlashAttention tiling algorithm from scratch, showing how restructuring attention to stay in fast on-chip memory avoids the memory wall. Version 13 applies the operating system's virtual memory paging concept to KV caches (PagedAttention), the core innovation behind vLLM's 2-4× throughput gains.
+
+Versions 14–15 explore **soft thinking** — preserving the full output distribution instead of collapsing to a single token. Version 14 replaces discrete token embeddings with "concept tokens" (probability-weighted blends of all embeddings) at inference time, showing how information flows through continuous space. Version 15 takes this further by training the model with a curriculum of soft inputs, closing the train-test mismatch that limits inference-only soft thinking.
 
 ## Who is this for?
 
@@ -64,6 +78,15 @@ Version 10 returns to the autoregressive model from version 03 but shows how to 
 **Deploying models?** Check out:
 - `10_pytorch_quantized` — compress models 4× for production
 
+**Optimizing inference?** Learn why decoding is slow and how to make it fast:
+- `12_tiled_attention` → the memory wall and how FlashAttention beats it
+- `11_speculative_decoding` → lossless speedup via draft-and-verify
+- `13_paged_attention` → OS-style memory management for serving at scale
+
+**Exploring soft thinking?** See what happens when you stop discarding information:
+- `14_soft_thinking` → concept tokens preserve the full distribution at inference
+- `15_soft_training` → train the model to expect soft inputs (scheduled curriculum)
+
 ## Running
 
 **Quick start:** Use the `run.py` helper script from the project root:
@@ -76,14 +99,15 @@ python run.py --list      # List all available labs
 
 **Direct execution:**
 
-`01_pure_python` and `09_text_diffusion` have no dependencies — run them with plain Python:
+`01_pure_python`, `09_text_diffusion`, and `13_paged_attention` have no dependencies — run them with plain Python:
 
 ```bash
 python 01_pure_python/microgpt.py
 python 09_text_diffusion/microdiffusion.py
+python 13_paged_attention/main.py
 ```
 
-All other versions (02–08, 10) are managed with [uv](https://docs.astral.sh/uv/) and have their own `pyproject.toml`:
+All other versions (02–08, 10–12, 14–15) are managed with [uv](https://docs.astral.sh/uv/) and have their own `pyproject.toml`:
 
 ```bash
 cd 02_numpy_manual_backprop
@@ -94,4 +118,4 @@ Each subfolder has its own README with a deeper look at what makes that implemen
 
 ## Credits
 
-This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy) — a GPT trained and run in a single file of pure, dependency-free Python. The `01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). Versions 02–08 and 10 reimplement the same algorithm in different frameworks to show how the same ideas translate across tools. Version 09 uses the same autograd engine to explore a different generative paradigm — masked diffusion.
+This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy) — a GPT trained and run in a single file of pure, dependency-free Python. The `01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). Versions 02–08 and 10 reimplement the same algorithm in different frameworks to show how the same ideas translate across tools. Version 09 uses the same autograd engine to explore a different generative paradigm — masked diffusion. Versions 11–13 implement inference optimization algorithms from scratch — speculative decoding, FlashAttention tiling, and PagedAttention — showing that the core ideas behind production serving systems are accessible at any scale. Versions 14–15 explore soft thinking — preserving probability distributions instead of collapsing to discrete tokens — with Lab 15 building directly on Lab 14's code to show how training can be adapted for continuous inputs.
