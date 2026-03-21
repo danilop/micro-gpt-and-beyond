@@ -1,6 +1,6 @@
-# microGPT and Beyond — JAX Batched
+# microGPT and Beyond, JAX Batched
 
-Same architecture as `05_jax`, but with mini-batch training — and this is where JAX's design really shines. Instead of rewriting the forward pass to handle a batch dimension, you use `jax.vmap` to automatically vectorize the single-example code across a batch.
+Same architecture as `05_jax`, but with mini-batch training, and this is where JAX's design really shines. Instead of rewriting the forward pass to handle a batch dimension, you use `jax.vmap` to automatically vectorize the single-example code across a batch.
 
 ## Why this version exists
 
@@ -16,7 +16,7 @@ The core trick is a single line. `forward_single` takes one sequence. `vmap` lif
 forward_batch = vmap(forward_single, in_axes=(None, 0, 0))
 ```
 
-`in_axes=(None, 0, 0)` means: params are shared (not batched), input_ids are batched along axis 0, pad_mask is batched along axis 0. JAX compiles this into efficient batched operations — you never write a `(B, T, ...)` reshape yourself.
+`in_axes=(None, 0, 0)` means: params are shared (not batched), input_ids are batched along axis 0, pad_mask is batched along axis 0. JAX compiles this into efficient batched operations, so you never write a `(B, T, ...)` reshape yourself.
 
 ### The forward pass stays clean
 
@@ -35,7 +35,7 @@ No batch dimension anywhere. `vmap` adds it automatically at call time.
 
 ### Padding still happens at the data level
 
-You still need to pad sequences to the same length within a batch — `vmap` requires all inputs to have the same shape. But the model code doesn't know about padding. The mask is just another input that `vmap` broadcasts:
+You still need to pad sequences to the same length within a batch because `vmap` requires all inputs to have the same shape. But the model code doesn't know about padding. The mask is just another input that `vmap` broadcasts:
 
 ```python
 input_ids, targets, pad_mask, target_mask = make_batch(docs, step, batch_size)
@@ -56,7 +56,7 @@ Like the PyTorch batched version, this uses a bigger model to make batching wort
 
 ### Loss masking
 
-The loss function uses a `target_mask` to ignore padded positions — same idea as PyTorch's `ignore_index=-100`, but done explicitly with a mask since JAX doesn't have a built-in convention:
+The loss function uses a `target_mask` to ignore padded positions, the same idea as PyTorch's `ignore_index=-100`, but done explicitly with a mask since JAX doesn't have a built-in convention:
 
 ```python
 def loss_fn(params, input_ids, targets, pad_mask, target_mask):
@@ -71,10 +71,10 @@ def loss_fn(params, input_ids, targets, pad_mask, target_mask):
 
 ## What you learn here
 
-- `jax.vmap` — automatic vectorization without rewriting model code
+- `jax.vmap` for automatic vectorization without rewriting model code
 - How `in_axes` controls which arguments get batched and which are shared
 - The JAX philosophy: transformations (`grad`, `jit`, `vmap`) compose over pure functions
-- Why functional purity pays off — `vmap` only works on side-effect-free functions
+- Why functional purity pays off, since `vmap` only works on side-effect-free functions
 
 ## Run
 

@@ -1,10 +1,10 @@
-# microGPT and Beyond — MLX Batched
+# microGPT and Beyond, MLX Batched
 
-Same architecture as `07_mlx`, scaled up with mini-batch training on Apple Silicon. This version follows the same batching approach as `04_pytorch_batched` — padding, masking, and explicit `(B, T, ...)` tensor shapes — because MLX's API is intentionally PyTorch-like.
+Same architecture as `07_mlx`, scaled up with mini-batch training on Apple Silicon. This version follows the same batching approach as `04_pytorch_batched` (padding, masking, and explicit `(B, T, ...)` tensor shapes) because MLX's API is intentionally PyTorch-like.
 
 ## Why this version exists
 
-After seeing JAX's `vmap` approach in `06_jax_batched`, this version shows the contrast: MLX doesn't have a `vmap` equivalent. Batching in MLX means the same manual work as PyTorch — reshape your model to handle a batch dimension, pad sequences, thread masks through attention. The difference is where it runs: unified memory on Apple Silicon, with lazy evaluation.
+After seeing JAX's `vmap` approach in `06_jax_batched`, this version shows the contrast: MLX doesn't have a `vmap` equivalent. Batching in MLX means the same manual work as PyTorch: reshape your model to handle a batch dimension, pad sequences, thread masks through attention. The difference is where it runs: unified memory on Apple Silicon, with lazy evaluation.
 
 ## What makes it interesting
 
@@ -22,7 +22,7 @@ def __call__(self, x, pad_mask=None):
         att = mx.where(pad_mask[:, None, None, :], mx.array(-1e9), att)
 ```
 
-The shapes, the masking, the reshapes — all the same. What's different is that this runs on the Apple GPU through unified memory, with no explicit device transfers.
+The shapes, the masking, the reshapes are all the same. What's different is that this runs on the Apple GPU through unified memory, with no explicit device transfers.
 
 ### Lazy evaluation with batches
 
@@ -46,7 +46,7 @@ The `mx.eval` call triggers the entire forward + backward + optimizer update in 
 | Batch size | 1 | 32 |
 | Training steps | 1000 | 1000 |
 
-### Padding and masking — the same work as PyTorch
+### Padding and masking, the same work as PyTorch
 
 The `make_batch` function pads sequences and builds masks, just like `04_pytorch_batched`. The only difference is `mx.array` instead of `torch.tensor`:
 
@@ -62,11 +62,11 @@ def make_batch(docs, step, batch_size):
     return mx.array(input_ids), mx.array(target_ids), mx.array(pad_masks), mx.array(target_masks)
 ```
 
-This is the manual work that JAX's `vmap` avoids — and the reason the 06 vs 08 comparison is instructive.
+This is the manual work that JAX's `vmap` avoids, and the reason the 06 vs 08 comparison is instructive.
 
 ## What you learn here
 
-- MLX batching follows the PyTorch pattern — no `vmap` shortcut
+- MLX batching follows the PyTorch pattern with no `vmap` shortcut
 - How padding and masking work with MLX's array API
 - Lazy evaluation becomes more impactful with larger computation graphs
 - The practical tradeoff: MLX's API familiarity vs JAX's functional transformations

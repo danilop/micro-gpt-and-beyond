@@ -1,10 +1,10 @@
-# microGPT and Beyond — PyTorch Batched
+# microGPT and Beyond, PyTorch Batched
 
 Same PyTorch architecture as version 03, but scaled up with mini-batch training. This is the version that bridges the gap between "educational toy" and "how real models are trained."
 
 ## Why this version exists
 
-Versions 01–03 all train on one name at a time. That's simple to understand, but wasteful — the GPU (or CPU) could process dozens of sequences in parallel. This version adds batching, padding, and attention masking, which are the engineering pieces you need to train efficiently.
+Versions 01–03 all train on one name at a time. That's simple to understand, but wasteful because the GPU (or CPU) could process dozens of sequences in parallel. This version adds batching, padding, and attention masking, which are the engineering pieces you need to train efficiently.
 
 ## What's different
 
@@ -40,11 +40,11 @@ def make_batch(docs, step, batch_size):
         mask = [False] * n + [True] * (max_len - 1 - n)
 ```
 
-The `-100` target value is PyTorch's convention for `ignore_index` in `F.cross_entropy` — padded positions don't contribute to the loss.
+The `-100` target value is PyTorch's convention for `ignore_index` in `F.cross_entropy`, so padded positions don't contribute to the loss.
 
 ### Attention mask stacking
 
-The attention layer now combines two masks — the causal mask (can't look ahead) and the padding mask (can't attend to PAD tokens):
+The attention layer now combines two masks: the causal mask (can't look ahead) and the padding mask (can't attend to PAD tokens):
 
 ```python
 def forward(self, x, pad_mask=None):
@@ -57,7 +57,7 @@ def forward(self, x, pad_mask=None):
     att = torch.nan_to_num(att)  # handle all-masked rows
 ```
 
-The `nan_to_num` call handles edge cases where a row is entirely masked (all `-inf` → softmax produces NaN). This is a practical detail that doesn't come up in single-sequence training.
+The `nan_to_num` call handles edge cases where a row is entirely masked (all `-inf` causes softmax to produce NaN). This is a practical detail that doesn't come up in single-sequence training.
 
 ### Separate embedding for PAD
 
@@ -67,7 +67,7 @@ The embedding table has `vocab_size + 1` entries, with `padding_idx=PAD` so the 
 self.wte = nn.Embedding(vocab_size_with_pad, n_embd, padding_idx=PAD)
 ```
 
-But the output head only projects to `vocab_size` — the model can never predict PAD as a next token.
+But the output head only projects to `vocab_size`, so the model can never predict PAD as a next token.
 
 ## What you learn here
 

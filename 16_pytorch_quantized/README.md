@@ -1,6 +1,6 @@
-# microGPT and Beyond — PyTorch Quantized
+# microGPT and Beyond, PyTorch Quantized
 
-Same architecture as the batched versions (04/06/08), but with inference-only quantization. This version shows how to compress a trained model from 32-bit floats (FP32) to 8-bit integers (INT8) — the technique used to deploy models on phones, edge devices, and production servers.
+Same architecture as the batched versions (04/06/08), but with inference-only quantization. This version shows how to compress a trained model from 32-bit floats (FP32) to 8-bit integers (INT8), the technique used to deploy models on phones, edge devices, and production servers.
 
 ## Why this version exists
 
@@ -10,7 +10,7 @@ After training a model in PyTorch (version 03), you often want to deploy it some
 
 ### Training stays FP32
 
-The model trains identically to version 03 — full 32-bit precision, Adam optimizer, 1000 steps. Quantization happens *after* training, so you don't sacrifice accuracy during learning.
+The model trains identically to version 03: full 32-bit precision, Adam optimizer, 1000 steps. Quantization happens *after* training, so you don't sacrifice accuracy during learning.
 
 ### Dynamic quantization
 
@@ -49,7 +49,7 @@ For this model (~30,000 parameters), the results show:
 
 The reduction approaches 25% (4× compression) as the proportion of Linear layer parameters increases. Embeddings aren't quantized in this implementation, which is why it's not exactly 25%.
 
-For a 7B parameter model, that's 28 GB → 7 GB — the difference between fitting in VRAM or not.
+For a 7B parameter model, that's 28 GB to 7 GB, the difference between fitting in VRAM or not.
 
 ### Inference speed comparison
 
@@ -59,7 +59,7 @@ Production quantization systems (TensorRT, ONNX Runtime, PyTorch native) use spe
 
 ### Output quality
 
-The script generates 10 samples from both FP32 and INT8 models. The outputs should be nearly identical — quantization introduces small numerical differences, but the model's behavior is preserved.
+The script generates 10 samples from both FP32 and INT8 models. The outputs should be nearly identical, as quantization introduces small numerical differences, but the model's behavior is preserved.
 
 If outputs diverge significantly, it means the model is sensitive to precision. For production, you'd use more sophisticated quantization schemes:
 - **Per-channel quantization**: Different scale factors per output channel (better accuracy)
@@ -84,7 +84,7 @@ If outputs diverge significantly, it means the model is sensitive to precision. 
 - **INT8 kernels**: Specialized implementations that operate directly on INT8
 - **4-bit quantization**: GPTQ, GGUF, and other extreme compression schemes
 
-This version focuses on the core idea: FP32 → INT8 weight compression for memory savings.
+This version focuses on the core idea: FP32 to INT8 weight compression for memory savings.
 
 ## Run
 
@@ -93,12 +93,12 @@ uv run python main.py
 ```
 
 Trains for 1000 steps, quantizes the model, compares size and speed, and generates 10 samples from each version. The output shows:
-- Model size reduction (FP32 → INT8)
+- Model size reduction (FP32 to INT8)
 - Inference time comparison
 - Sample quality comparison
 
 ## Why quantization matters
 
-Modern LLMs have billions of parameters. A 7B model in FP32 is 28 GB — too large for most GPUs. In INT8, it's 7 GB — fits in consumer hardware. In 4-bit (not covered here), it's 3.5 GB — runs on a phone.
+Modern LLMs have billions of parameters. A 7B model in FP32 is 28 GB, too large for most GPUs. In INT8, it's 7 GB, which fits in consumer hardware. In 4-bit (not covered here), it's 3.5 GB, small enough to run on a phone.
 
 Quantization is the reason you can run Llama 3 on a laptop. This version shows the core idea at microGPT scale.

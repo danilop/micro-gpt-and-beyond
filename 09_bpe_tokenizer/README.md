@@ -1,10 +1,10 @@
-# microGPT and Beyond — BPE Tokenizer
+# microGPT and Beyond, BPE Tokenizer
 
-Byte-Pair Encoding from scratch, then a side-by-side comparison of character-level vs BPE tokenization on the names dataset. Zero dependencies — pure Python.
+Byte-Pair Encoding from scratch, then a side-by-side comparison of character-level vs BPE tokenization on the names dataset. Zero dependencies, pure Python.
 
 ## Why this version exists
 
-Every lab so far uses character-level tokenization: 26 letters + BOS (Beginning of Sequence) = 27 tokens. This works fine for short names, but real LLMs tokenize text with BPE (50K–100K tokens). This lab implements the exact algorithm behind GPT-2's, LLaMA's, and most modern tokenizers — just at names-dataset scale.
+Every lab so far uses character-level tokenization: 26 letters + BOS (Beginning of Sequence) = 27 tokens. This works fine for short names, but real LLMs tokenize text with BPE (50K–100K tokens). This lab implements the exact algorithm behind GPT-2's, LLaMA's, and most modern tokenizers, just at names-dataset scale.
 
 ## What makes it interesting
 
@@ -27,11 +27,11 @@ The fundamental tradeoff: larger vocabulary = shorter sequences = faster trainin
 
 ### Bigram model comparison
 
-To show how tokenization affects sequence modeling, the lab trains a simple bigram model (just a transition probability table — no neural network) with both tokenizations. With BPE, each bigram step spans multiple characters, capturing longer-range patterns.
+To show how tokenization affects sequence modeling, the lab trains a simple bigram model (just a transition probability table, no neural network) with both tokenizations. With BPE, each bigram step spans multiple characters, capturing longer-range patterns.
 
 ## What you learn here
 
-- The BPE training algorithm (pair counting + merging) — the same algorithm behind GPT-2/3/4
+- The BPE training algorithm (pair counting + merging), the same algorithm behind GPT-2/3/4
 - BPE encoding and decoding (applying learned merges to new text)
 - The vocabulary size vs sequence length tradeoff
 - How tokenization choices affect downstream modeling

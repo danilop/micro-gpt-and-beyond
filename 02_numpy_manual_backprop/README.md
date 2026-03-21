@@ -1,6 +1,6 @@
-# microGPT and Beyond — NumPy with Manual Backpropagation
+# microGPT and Beyond, NumPy with Manual Backpropagation
 
-Same GPT architecture as the pure-Python version, but using NumPy arrays for vectorized matrix operations. The key twist: every gradient is derived by hand and coded explicitly. There is no autograd — you *are* the autograd.
+Same GPT architecture as the pure-Python version, but using NumPy arrays for vectorized matrix operations. The key twist: every gradient is derived by hand and coded explicitly. There is no autograd. You *are* the autograd.
 
 ## Why this version exists
 
@@ -12,7 +12,7 @@ The result is the most educational version in the series for anyone who wants to
 
 ### Hand-written gradient functions
 
-Every forward operation has a matching backward function. Here's RMSNorm — the forward pass normalizes by root-mean-square, and the backward pass applies the chain rule through that normalization:
+Every forward operation has a matching backward function. Here's RMSNorm as an example: the forward pass normalizes by root-mean-square, and the backward pass applies the chain rule through that normalization:
 
 ```python
 def rmsnorm_fwd(x):
@@ -28,7 +28,7 @@ def rmsnorm_bwd(dout, cache):
     return dx
 ```
 
-The forward pass returns a `cache` tuple — the intermediate values the backward pass needs. This is exactly the pattern PyTorch uses internally for custom autograd functions.
+The forward pass returns a `cache` tuple containing the intermediate values the backward pass needs. This is exactly the pattern PyTorch uses internally for custom autograd functions.
 
 ### Softmax backward
 
@@ -40,11 +40,11 @@ def softmax_bwd(probs, dprobs):
     return probs * (dprobs - s)
 ```
 
-If you've ever wondered what the Jacobian of softmax looks like in practice — this is it, collapsed into two lines using the identity `∂softmax_i/∂z_j = p_i(δ_ij - p_j)`.
+If you've ever wondered what the Jacobian of softmax looks like in practice, this is it, collapsed into two lines using the identity `∂softmax_i/∂z_j = p_i(δ_ij - p_j)`.
 
 ### The full backward pass
 
-The `backward()` function walks the computation graph in reverse, layer by layer, accumulating gradients into the `G` dict. The attention backward is the most involved — it threads gradients back through the multi-head reshape, the softmax, the QKV projections, and the causal mask:
+The `backward()` function walks the computation graph in reverse, layer by layer, accumulating gradients into the `G` dict. The attention backward is the most involved, threading gradients back through the multi-head reshape, the softmax, the QKV projections, and the causal mask:
 
 ```python
 # Attention scores backward: att = Q_h @ K_h^T / sqrt(d)
@@ -54,13 +54,13 @@ dK_h = datt.transpose(0, 2, 1) @ Q_h  # (nh, n, hd)
 
 ### Caching strategy
 
-The forward pass stores everything the backward pass needs in a `cache` dict — activations, pre-softmax scores, intermediate norms. This is the same memory-vs-compute tradeoff that every deep learning framework makes: store activations during the forward pass so you don't have to recompute them during backward.
+The forward pass stores everything the backward pass needs in a `cache` dict: activations, pre-softmax scores, and intermediate norms. This is the same memory-vs-compute tradeoff that every deep learning framework makes: store activations during the forward pass so you don't have to recompute them during backward.
 
 ## What you learn here
 
 - How to derive matrix-level gradients for every transformer operation
 - The cache/checkpoint pattern that all autograd systems use internally
-- Why autograd exists — after writing 150 lines of backward pass, you'll appreciate `loss.backward()`
+- Why autograd exists: after writing 150 lines of backward pass, you'll appreciate `loss.backward()`
 - The exact relationship between the scalar chain rule (01) and the matrix chain rule (this version)
 
 ## Run

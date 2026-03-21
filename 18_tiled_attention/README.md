@@ -1,16 +1,16 @@
-# microGPT and Beyond — Tiled Attention (FlashAttention)
+# microGPT and Beyond, Tiled Attention (FlashAttention)
 
-Same architecture as the PyTorch version (03), but with three attention implementations for inference: standard, online softmax, and tiled (the FlashAttention algorithm). All three produce identical outputs — the difference is how many trips to slow memory they need. This shows why FlashAttention is the single most impactful optimization in modern LLM inference.
+Same architecture as the PyTorch version (03), but with three attention implementations for inference: standard, online softmax, and tiled (the FlashAttention algorithm). All three produce identical outputs, and the difference is how many trips to slow memory they need. This shows why FlashAttention is the single most impactful optimization in modern LLM inference.
 
 ## Why this version exists
 
-Attention is the bottleneck. Not because the math is hard (it's just matrix multiplications), but because the standard implementation writes a huge intermediate matrix to slow GPU memory. FlashAttention fixes this by tiling the computation so it stays in fast on-chip memory — and it does so using an elegant incremental softmax algorithm that this lab implements from scratch.
+Attention is the bottleneck. Not because the math is hard (it's just matrix multiplications), but because the standard implementation writes a huge intermediate matrix to slow GPU memory. FlashAttention fixes this by tiling the computation so it stays in fast on-chip memory, using an elegant incremental softmax algorithm that this lab implements from scratch.
 
 ## What makes it interesting
 
 ### The memory wall
 
-Modern GPUs can do trillions of math operations per second, but they can only move data at ~2 TB/s from their main memory (HBM). Attention is **memory-bound**: it spends more time moving data than computing. The key metric isn't FLOPs — it's bytes transferred.
+Modern GPUs can do trillions of math operations per second, but they can only move data at ~2 TB/s from their main memory (HBM). Attention is **memory-bound**: it spends more time moving data than computing. The key metric isn't FLOPs but bytes transferred.
 
 Standard attention computes the full N×N attention matrix and writes it to HBM:
 
@@ -20,7 +20,7 @@ S → P = softmax(S)     (read N×N, write N×N to HBM)
 P, V → O = P @ V       (read N×N from HBM)
 ```
 
-For a 2048-token sequence with 32 heads, that's 32 × 2048² = 134M elements written to slow memory — just for the intermediate attention matrix that gets used once and discarded.
+For a 2048-token sequence with 32 heads, that's 32 × 2048² = 134M elements written to slow memory, all for the intermediate attention matrix that gets used once and discarded.
 
 ### Online softmax (Milakov & Gimelshein, 2018)
 
@@ -47,7 +47,7 @@ The correction factor `exp(old_max - new_max)` rescales all previously accumulat
 
 ### Tiled attention (FlashAttention)
 
-Online softmax processes one key at a time. FlashAttention processes **blocks** of keys at once — getting the memory benefits of online softmax with the compute efficiency of matrix multiplication:
+Online softmax processes one key at a time. FlashAttention processes **blocks** of keys at once, getting the memory benefits of online softmax with the compute efficiency of matrix multiplication:
 
 ```
 For each block of Q rows (Br rows):
@@ -71,7 +71,7 @@ The lab counts "HBM operations" for each implementation and reports them. For a 
 | Online softmax | O(hN²d) | No N×N matrix, but reads K/V per query position |
 | Tiled | O(hNd × N/Bc) | Block reads amortize HBM access by factor Bc |
 
-At scale (N=2048, d=128, Bc=256), tiled attention does ~8× fewer HBM operations than standard — and that directly translates to ~2-4× wall-clock speedup on real GPUs.
+At scale (N=2048, d=128, Bc=256), tiled attention does ~8× fewer HBM operations than standard, and that directly translates to ~2-4× wall-clock speedup on real GPUs.
 
 ## The GPU memory hierarchy
 
@@ -84,7 +84,7 @@ HBM (VRAM)    ~80 GB      ~2 TB/s        Where tensors live (10x slower)
 CPU DRAM      ~TBs        ~50 GB/s        Overflow / CPU offloading
 ```
 
-The insight: SRAM is ~10× faster than HBM, but ~4000× smaller. Algorithms that keep their working set in SRAM — even at the cost of extra computation — win. FlashAttention does ~2× more FLOPs than standard attention (recomputing rather than storing intermediate results), but runs 2-4× faster because it avoids slow memory.
+The insight: SRAM is ~10× faster than HBM, but ~4000× smaller. Algorithms that keep their working set in SRAM, even at the cost of extra computation, win. FlashAttention does ~2× more FLOPs than standard attention (recomputing rather than storing intermediate results), but runs 2-4× faster because it avoids slow memory.
 
 ## What you learn here
 
@@ -101,7 +101,7 @@ The insight: SRAM is ~10× faster than HBM, but ~4000× smaller. Algorithms that
 - **The roofline model**: A framework for analyzing whether an operation is memory-bound or compute-bound. Attention is memory-bound during decoding (low arithmetic intensity), compute-bound during prefill (high arithmetic intensity).
 - **Kernel fusion**: Combining multiple operations (attention + softmax + masking) into a single GPU kernel to avoid intermediate HBM writes. FlashAttention is a fused kernel.
 - **Triton**: A Python-based GPU programming language that makes writing custom kernels accessible. FlashAttention-2's reference implementation is in Triton.
-- **Hardware evolution**: HBM4 (~8 TB/s), Groq LPU (SRAM-only, no HBM bottleneck), Apple Silicon (unified memory — CPU and GPU share the same physical RAM).
+- **Hardware evolution**: HBM4 (~8 TB/s), Groq LPU (SRAM-only, no HBM bottleneck), Apple Silicon (unified memory, where CPU and GPU share the same physical RAM).
 - **Key papers**: Dao et al. "FlashAttention" (NeurIPS 2022), Dao "FlashAttention-2" (2023), Milakov & Gimelshein "Online normalizer calculation for softmax" (2018).
 
 ## Run
@@ -114,4 +114,4 @@ Trains for 1000 steps, then runs all three attention implementations on the same
 
 ## Why the memory wall matters
 
-Every major inference optimization — FlashAttention, speculative decoding, KV cache paging, continuous batching — exists because of the memory wall. The GPU can compute far faster than it can move data. Understanding this one constraint explains why these algorithms exist, why they work, and why they're essential for serving LLMs at scale.
+Every major inference optimization, including FlashAttention, speculative decoding, KV cache paging, and continuous batching, exists because of the memory wall. The GPU can compute far faster than it can move data. Understanding this one constraint explains why these algorithms exist, why they work, and why they're essential for serving LLMs at scale.

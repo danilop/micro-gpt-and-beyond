@@ -1,10 +1,10 @@
-# microGPT and Beyond — KV Cache
+# microGPT and Beyond, KV Cache
 
 Same model as lab 03, but with the single most important inference optimization in all of LLM serving: caching Key and Value tensors so each new token only computes attention for ONE position instead of reprocessing the entire sequence.
 
 ## Why KV cache exists
 
-During autoregressive generation, a transformer produces tokens one at a time. At step `t`, the standard approach feeds all `t` tokens through the model to get the next one. But the Keys and Values for positions `1..t-1` are identical to what was computed at step `t-1` — we are recomputing them for nothing.
+During autoregressive generation, a transformer produces tokens one at a time. At step `t`, the standard approach feeds all `t` tokens through the model to get the next one. But the Keys and Values for positions `1..t-1` are identical to what was computed at step `t-1`, so we are recomputing them for nothing.
 
 KV cache eliminates this redundancy: store the K,V tensors, and at each new step only compute the new position's Q, K, V. Attention is then computed between the single new query and ALL cached keys/values.
 
@@ -12,9 +12,9 @@ KV cache eliminates this redundancy: store the K,V tensors, and at each new step
 
 Generation has two phases:
 
-1. **Prefill**: process the initial prompt (or just `[BOS]` — Beginning of Sequence). Compute Q, K, V for all positions. Store K, V in the cache. This is compute-bound — a large matrix multiply.
+1. **Prefill**: process the initial prompt (or just `[BOS]`, Beginning of Sequence). Compute Q, K, V for all positions. Store K, V in the cache. This is compute-bound, essentially a large matrix multiply.
 
-2. **Decode**: generate tokens one at a time. Each step computes Q, K, V for ONE new position, appends K, V to the cache, and computes attention of the new Q against the full cached K, V. This is memory-bound — dominated by reading the cache from memory.
+2. **Decode**: generate tokens one at a time. Each step computes Q, K, V for ONE new position, appends K, V to the cache, and computes attention of the new Q against the full cached K, V. This is memory-bound, dominated by reading the cache from memory.
 
 ## The computation reduction
 
@@ -44,7 +44,7 @@ The reduction factor is `(2T+1)/3`. For T=2048, that is roughly **1365x fewer at
 
 ## The core change
 
-The entire optimization lives in the attention module — about 20 lines of code:
+The entire optimization lives in the attention module, about 20 lines of code:
 
 ```python
 class CausalSelfAttention(nn.Module):
@@ -66,7 +66,7 @@ class CausalSelfAttention(nn.Module):
         return self.wo(out), new_cache
 ```
 
-During prefill, `kv_cache=None` and it behaves like standard attention. During decode, `T_new=1` and the cached K,V are prepended — so the single new query attends to the full history.
+During prefill, `kv_cache=None` and it behaves like standard attention. During decode, `T_new=1` and the cached K,V are prepended, so the single new query attends to the full history.
 
 ## At scale
 

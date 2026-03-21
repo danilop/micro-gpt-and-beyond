@@ -1,14 +1,14 @@
-# microGPT and Beyond — MLX (Apple Silicon)
+# microGPT and Beyond, MLX (Apple Silicon)
 
-Same architecture, running on Apple Silicon GPU via [MLX](https://ml-explore.github.io/mlx/). MLX is Apple's array framework for machine learning — it has a NumPy-like API, automatic differentiation, and runs natively on the M-series GPU.
+Same architecture, running on Apple Silicon GPU via [MLX](https://ml-explore.github.io/mlx/). MLX is Apple's array framework for machine learning. It has a NumPy-like API, automatic differentiation, and runs natively on the M-series GPU.
 
 ## Why this version exists
 
-If you have a Mac with Apple Silicon, this version trains on the GPU with zero configuration. No CUDA, no driver installs, no `device='cuda'` — arrays live in unified memory that both CPU and GPU can access directly.
+If you have a Mac with Apple Silicon, this version trains on the GPU with zero configuration. No CUDA, no driver installs, no `device='cuda'`. Arrays live in unified memory that both CPU and GPU can access directly.
 
 ## What makes it interesting
 
-### Unified memory — no transfers
+### Unified memory without transfers
 
 In PyTorch, you move tensors between CPU and GPU with `.to(device)`. In MLX, there's no transfer because CPU and GPU share the same memory:
 
@@ -33,7 +33,7 @@ This lets MLX fuse operations and optimize the computation graph before hitting 
 
 ### nn.value_and_grad
 
-MLX's differentiation API is clean — `nn.value_and_grad` returns both the loss and the gradients in one call:
+MLX's differentiation API is clean. `nn.value_and_grad` returns both the loss and the gradients in one call:
 
 ```python
 loss_and_grad = nn.value_and_grad(model, loss_fn)
@@ -59,7 +59,7 @@ class MicroGPT(nn.Module):
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
 ```
 
-MLX's module system is lighter than PyTorch's — it inspects the object's attributes to find parameters, so you don't need special container types.
+MLX's module system is lighter than PyTorch's. It inspects the object's attributes to find parameters, so you don't need special container types.
 
 ### ReLU via mx.maximum
 
@@ -76,9 +76,9 @@ Small difference, same math.
 
 ## What you learn here
 
-- How unified memory changes the programming model (no CPU↔GPU transfers)
+- How unified memory changes the programming model (no CPU-to-GPU transfers)
 - Lazy evaluation and explicit `mx.eval()` for controlling when computation happens
-- MLX's module and optimizer patterns — similar to PyTorch but with key differences
+- MLX's module and optimizer patterns, which are similar to PyTorch but with key differences
 - What a "native Apple Silicon" ML framework looks like in practice
 - When to choose MLX: if you're deploying on Apple devices, MLX's unified memory and lazy evaluation can simplify your pipeline compared to PyTorch with MPS backend
 

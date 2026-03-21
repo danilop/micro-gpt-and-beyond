@@ -1,16 +1,16 @@
-# microGPT and Beyond — PyTorch
+# microGPT and Beyond, PyTorch
 
 Same architecture as versions 01 and 02, but now PyTorch handles the tensors *and* the gradients. This is where you see how much boilerplate disappears when you let a framework do the differentiation.
 
 ## Why this version exists
 
-After writing every gradient by hand in version 02, this version shows what you get in return for adopting PyTorch: the same model, the same training loop, the same results — but the entire backward pass is replaced by a single call to `loss.backward()`.
+After writing every gradient by hand in version 02, this version shows what you get in return for adopting PyTorch: the same model, the same training loop, the same results, but the entire backward pass is replaced by a single call to `loss.backward()`.
 
 ## What makes it interesting
 
 ### nn.Module structure
 
-The model is decomposed into clean, composable modules — the standard PyTorch pattern:
+The model is decomposed into clean, composable modules following the standard PyTorch pattern:
 
 ```python
 class Block(nn.Module):
@@ -27,7 +27,7 @@ class Block(nn.Module):
         return x
 ```
 
-Compare this to the 150-line forward+backward in version 02. The architecture is identical — RMSNorm, multi-head attention with causal mask, ReLU MLP, residual connections — but expressed declaratively.
+Compare this to the 150-line forward+backward in version 02. The architecture is identical (RMSNorm, multi-head attention with causal mask, ReLU MLP, residual connections) but expressed declaratively.
 
 ### Autograd replaces hand-written gradients
 
@@ -41,7 +41,7 @@ PyTorch records every operation during the forward pass and automatically applie
 
 ### Weight initialization
 
-The model matches the original's initialization — `N(0, 0.08)` for all weights:
+The model matches the original's initialization, using `N(0, 0.08)` for all weights:
 
 ```python
 @staticmethod
@@ -56,7 +56,7 @@ A larger initial standard deviation (0.08 vs the GPT-2 default of 0.02) works we
 
 ### Inference with torch.no_grad
 
-Generation switches to `model.eval()` and `torch.no_grad()` — disabling dropout (if any) and skipping gradient tracking for efficiency:
+Generation switches to `model.eval()` and `torch.no_grad()`, disabling dropout (if any) and skipping gradient tracking for efficiency:
 
 ```python
 model.eval()
@@ -71,14 +71,14 @@ with torch.no_grad():
             token_id = torch.multinomial(probs, 1).item()
 ```
 
-`torch.multinomial` replaces `random.choices` — same sampling, but on tensors.
+`torch.multinomial` replaces `random.choices` for the same sampling logic, but on tensors.
 
 ## What you learn here
 
 - How `nn.Module` organizes a transformer into composable pieces
 - The relationship between manual gradients (02) and autograd (this version)
 - PyTorch idioms: `F.cross_entropy`, `torch.multinomial`, parameter groups, LR scheduling
-- Why the forward pass alone fully defines the model — the backward pass is derived automatically
+- Why the forward pass alone fully defines the model, since the backward pass is derived automatically
 
 ## Run
 

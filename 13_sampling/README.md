@@ -1,6 +1,6 @@
-# microGPT and Beyond — Sampling Strategies
+# microGPT and Beyond, Sampling Strategies
 
-Same microGPT architecture as the PyTorch edition (03), trained identically, but focused entirely on what happens after training: how you turn logits into tokens. Five sampling strategies — greedy, temperature, top-k, top-p (nucleus), min-p — each producing completely different output from the same model.
+Same microGPT architecture as the PyTorch edition (03), trained identically, but focused entirely on what happens after training: how you turn logits into tokens. Five sampling strategies (greedy, temperature, top-k, top-p/nucleus, min-p), each producing completely different output from the same model.
 
 ## Why sampling matters
 
@@ -10,7 +10,7 @@ A language model outputs a probability distribution over the vocabulary at each 
 
 ### Greedy
 
-Always pick the highest-probability token. Deterministic — run it twice, get the same output. Tends to produce repetitive, generic results because it never explores lower-probability paths.
+Always pick the highest-probability token. Deterministic: run it twice, get the same output. Tends to produce repetitive, generic results because it never explores lower-probability paths.
 
 ```python
 return logits.argmax().item()
@@ -67,7 +67,7 @@ Keep tokens whose probability is at least `min_p * max_probability`. The simples
 - **Peaked distribution**: max probability is high, threshold is high, few tokens pass.
 - **Flat distribution**: max probability is low, threshold is low, many tokens pass.
 
-Achieves similar adaptivity to top-p with a more intuitive parameter. Newer — gaining adoption in llama.cpp and related projects.
+Achieves similar adaptivity to top-p with a more intuitive parameter. Newer and gaining adoption in llama.cpp and related projects.
 
 ```python
 probs = F.softmax(logits / T, dim=-1)

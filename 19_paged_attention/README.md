@@ -1,12 +1,12 @@
-# microGPT and Beyond — Paged KV Cache (PagedAttention)
+# microGPT and Beyond, Paged KV Cache (PagedAttention)
 
-Same architecture as the pure-Python version (01), but with two KV cache implementations for inference: contiguous (wasteful pre-allocation) and paged (on-demand block allocation). PagedAttention is the core innovation in vLLM — it applies the operating system's virtual memory paging concept to KV caches, reducing memory waste from 60-80% to near zero.
+Same architecture as the pure-Python version (01), but with two KV cache implementations for inference: contiguous (wasteful pre-allocation) and paged (on-demand block allocation). PagedAttention is the core innovation in vLLM. It applies the operating system's virtual memory paging concept to KV caches, reducing memory waste from 60-80% to near zero.
 
 Zero dependencies. Pure Python. The algorithms are pure data structures.
 
 ## Why this version exists
 
-When serving LLMs to many users simultaneously, the KV cache — not model weights — becomes the memory bottleneck. Each active request needs its own KV cache, and the naive approach (pre-allocate for maximum sequence length) wastes most of the GPU memory. PagedAttention solves this with an idea borrowed from operating systems: virtual memory paging.
+When serving LLMs to many users simultaneously, the KV cache, not model weights, becomes the memory bottleneck. Each active request needs its own KV cache, and the naive approach (pre-allocate for maximum sequence length) wastes most of the GPU memory. PagedAttention solves this with an idea borrowed from operating systems: virtual memory paging.
 
 ## What makes it interesting
 
@@ -18,9 +18,9 @@ For a model like Llama 3 70B serving 100 concurrent requests:
 - KV cache per token: ~1 MB (80 layers × 8 KV heads × 128 dim × 2 (K+V) × 2 bytes)
 - Max context length: 8,192 tokens
 - **Per request (contiguous)**: 8,192 × 1 MB = **8 GB**
-- **100 requests**: 800 GB — far beyond any GPU
+- **100 requests**: 800 GB, far beyond any GPU
 
-But most requests use far less than max context. Average length might be 500 tokens — meaning 94% of pre-allocated memory is wasted.
+But most requests use far less than max context. Average length might be 500 tokens, meaning 94% of pre-allocated memory is wasted.
 
 ### Virtual memory for KV caches
 
@@ -50,7 +50,7 @@ Sequence "req_1", Layer 0:
   Logical block 2 → Physical block 5   (tokens 8-11)
 ```
 
-Physical blocks can be anywhere in memory — they don't need to be contiguous. The attention computation gathers K/V vectors by following the block table (scattered reads).
+Physical blocks can be anywhere in memory and don't need to be contiguous. The attention computation gathers K/V vectors by following the block table (scattered reads).
 
 ### Prefix sharing (copy-on-write)
 
@@ -65,7 +65,7 @@ When multiple requests share a common prefix (e.g., a system prompt), their bloc
 "req_2": [Physical 2, Physical 4, Physical 15] ← shares prefix blocks
 ```
 
-No data is copied — only block IDs are shared. When a sequence needs to modify a shared block (diverges from the prefix), a new physical block is allocated and the data is copied (copy-on-write). This is exactly how `fork()` works in Unix.
+No data is copied; only block IDs are shared. When a sequence needs to modify a shared block (diverges from the prefix), a new physical block is allocated and the data is copied (copy-on-write). This is exactly how `fork()` works in Unix.
 
 ### Memory utilization comparison
 
@@ -105,4 +105,4 @@ Trains for 1000 steps (pure Python, ~2 min), then demonstrates contiguous vs. pa
 
 ## Why memory management matters
 
-The most impactful LLM serving optimization isn't a faster attention kernel or a better quantization scheme — it's better memory management. vLLM's PagedAttention showed that applying a 50-year-old OS concept (virtual memory) to a new domain (KV caches) can double or triple serving throughput. The algorithms are simple data structures. The insight is knowing where to apply them.
+The most impactful LLM serving optimization isn't a faster attention kernel or a better quantization scheme. It's better memory management. vLLM's PagedAttention showed that applying a 50-year-old OS concept (virtual memory) to a new domain (KV caches) can double or triple serving throughput. The algorithms are simple data structures. The insight is knowing where to apply them.

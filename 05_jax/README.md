@@ -1,10 +1,10 @@
-# microGPT and Beyond — JAX
+# microGPT and Beyond, JAX
 
-Same architecture, but written in JAX's purely functional style. No classes, no hidden state, no mutation. Every function takes its inputs and returns its outputs — nothing else.
+Same architecture, but written in JAX's purely functional style. No classes, no hidden state, no mutation. Every function takes its inputs and returns its outputs, nothing else.
 
 ## Why this version exists
 
-PyTorch is object-oriented: models are classes, parameters live inside `self`, optimizers maintain internal state. JAX takes the opposite approach — everything is a pure function, and all state is passed explicitly. This version shows how the same transformer looks when you commit fully to functional programming.
+PyTorch is object-oriented: models are classes, parameters live inside `self`, optimizers maintain internal state. JAX takes the opposite approach where everything is a pure function, and all state is passed explicitly. This version shows how the same transformer looks when you commit fully to functional programming.
 
 ## What makes it interesting
 
@@ -23,7 +23,7 @@ for i in range(n_layer):
     # ...
 ```
 
-This dict *is* the model. There's no wrapper object, no registration, no `state_dict()` — just data.
+This dict *is* the model. There's no wrapper object, no registration, no `state_dict()`. Just data.
 
 ### The forward pass is a pure function
 
@@ -47,7 +47,7 @@ def forward(params, input_ids):
     return x @ params['lm_head'].T
 ```
 
-Because it's pure, JAX can transform it — differentiate it with `grad`, compile it with `jit`, vectorize it with `vmap` — all automatically.
+Because it's pure, JAX can transform it: differentiate it with `grad`, compile it with `jit`, vectorize it with `vmap`, all automatically.
 
 ### Gradients via function transformation
 
@@ -75,11 +75,11 @@ for sample_idx in range(20):
     token_id = jax.random.categorical(subkey, logits).item()
 ```
 
-This makes randomness reproducible and parallelizable — two things that are hard with global state.
+This makes randomness reproducible and parallelizable, two things that are hard with global state.
 
 ### Functional Adam optimizer
 
-The optimizer is a pure function too. No internal state mutation — it takes the old state and returns the new state:
+The optimizer is a pure function too. No internal state mutation. It takes the old state and returns the new state:
 
 ```python
 def adam_update(params, grads, m_state, v_state, step, lr):
@@ -98,7 +98,7 @@ Compare this to PyTorch's `optimizer.step()` which mutates parameters in-place. 
 ## What you learn here
 
 - How to express a neural network as pure functions with no hidden state
-- JAX's `grad` + `jit` composition — differentiation and compilation as function transforms
+- JAX's `grad` + `jit` composition, where differentiation and compilation are function transforms
 - Explicit PRNG key management and why it matters for reproducibility
 - The functional programming paradigm applied to deep learning
 

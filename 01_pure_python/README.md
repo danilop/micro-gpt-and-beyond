@@ -1,9 +1,9 @@
-# microGPT and Beyond — Pure Python
+# microGPT and Beyond, Pure Python
 
 > *"This file is the complete algorithm. Everything else is just efficiency."*
-> — Andrej Karpathy
+> -- Andrej Karpathy
 
-This is Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html) — a GPT language model trained and run in a single Python file, with zero dependencies beyond the standard library. No PyTorch. No TensorFlow. No NumPy. Just `math`, `random`, and `os`.
+This is Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html), a GPT language model trained and run in a single Python file, with zero dependencies beyond the standard library. No PyTorch. No TensorFlow. No NumPy. Just `math`, `random`, and `os`.
 
 The code in `microgpt.py` is Karpathy's original, included here unchanged (the only edit is the dataset file path, adjusted to fit the project layout).
 
@@ -23,7 +23,7 @@ sample  4: elina
 ...
 ```
 
-The names aren't memorized — they're *generated* by a model that has learned the statistical patterns of how characters combine in English names.
+The names aren't memorized. They're *generated* by a model that has learned the statistical patterns of how characters combine in English names.
 
 ---
 
@@ -37,7 +37,7 @@ Let's walk through the entire file, section by section. Every piece of a modern 
 docs = [l.strip() for l in open(input_path).read().strip().split('\n') if l.strip()]
 ```
 
-The training data is a list of names (one per line), loaded from `../data/input.txt`. Each name is treated as a "document" — a short sequence of characters. If the file doesn't exist, the script downloads Karpathy's `names.txt` dataset automatically.
+The training data is a list of names (one per line), loaded from `../data/input.txt`. Each name is treated as a "document", a short sequence of characters. If the file doesn't exist, the script downloads Karpathy's `names.txt` dataset automatically.
 
 The names are shuffled with a fixed seed (`random.seed(42)`) so training order is randomized but reproducible.
 
@@ -51,7 +51,7 @@ vocab_size = len(uchars) + 1
 
 Tokenization here is character-level. Every unique character in the dataset gets an integer ID. One special token is added: `BOS` (Beginning of Sequence), which acts as both the start and end marker for each name.
 
-Real-world GPTs use subword tokenizers (like BPE) with vocabularies of 50k+ tokens. Here, the vocabulary is just the 26 lowercase letters plus BOS — 27 tokens total. Same idea, smaller scale.
+Real-world GPTs use subword tokenizers (like BPE) with vocabularies of 50k+ tokens. Here, the vocabulary is just the 26 lowercase letters plus BOS, for 27 tokens total. Same idea, smaller scale.
 
 ### 3. The Autograd Engine
 
@@ -81,7 +81,7 @@ def backward(self):
             child.grad += local_grad * v.grad
 ```
 
-This is exactly what PyTorch's `autograd` does — just on scalars instead of tensors. Every parameter gets a `.grad` that tells the optimizer how to nudge it to reduce the loss.
+This is exactly what PyTorch's `autograd` does, just on scalars instead of tensors. Every parameter gets a `.grad` that tells the optimizer how to nudge it to reduce the loss.
 
 ### 4. The Parameters
 
@@ -92,12 +92,12 @@ n_layer = 1      # number of layers
 block_size = 16  # maximum sequence length
 ```
 
-The model's knowledge lives in its parameters — matrices of `Value` objects initialized with small random numbers (Gaussian, std=0.08). The `state_dict` contains:
+The model's knowledge lives in its parameters, matrices of `Value` objects initialized with small random numbers (Gaussian, std=0.08). The `state_dict` contains:
 
 | Parameter | Shape | Purpose |
 |-----------|-------|---------|
-| `wte` | (vocab_size, 16) | Token embeddings — a learned vector for each token |
-| `wpe` | (16, 16) | Position embeddings — a learned vector for each position |
+| `wte` | (vocab_size, 16) | Token embeddings, a learned vector for each token |
+| `wpe` | (16, 16) | Position embeddings, a learned vector for each position |
 | `attn_wq/wk/wv` | (16, 16) | Query, Key, Value projections for attention |
 | `attn_wo` | (16, 16) | Output projection after attention |
 | `mlp_fc1` | (64, 16) | First MLP layer (expands 4x) |
@@ -130,7 +130,7 @@ def rmsnorm(x):
     return [xi * scale for xi in x]
 ```
 
-Instead of LayerNorm (used in the original GPT-2), this implementation uses RMSNorm — a simpler variant that normalizes by the root mean square of the activations. It stabilizes training by keeping activation magnitudes in check, without needing to compute the mean.
+Instead of LayerNorm (used in the original GPT-2), this implementation uses RMSNorm, a simpler variant that normalizes by the root mean square of the activations. It stabilizes training by keeping activation magnitudes in check, without needing to compute the mean.
 
 #### c) Multi-Head Self-Attention
 
@@ -143,7 +143,7 @@ This is the mechanism that lets the model look at all previous tokens when decid
 5. The weighted sum of V vectors becomes the head's output
 6. All heads are concatenated and projected back to the embedding dimension
 
-The KV cache (`keys` and `values` lists) stores previous tokens' K and V vectors so they don't need to be recomputed — the same optimization used in production LLM inference.
+The KV cache (`keys` and `values` lists) stores previous tokens' K and V vectors so they don't need to be recomputed. This is the same optimization used in production LLM inference.
 
 #### d) MLP Block (Feed-Forward Network)
 
@@ -153,7 +153,7 @@ x = [xi.relu() for xi in x]                         # ReLU activation
 x = linear(x, state_dict[f'layer{li}.mlp_fc2'])   # contract: 64 → 16
 ```
 
-After attention, each token passes through a two-layer feed-forward network. The hidden dimension is 4× the embedding dimension (a standard GPT convention). The activation function is **ReLU** (`max(0, x)`) instead of GeLU — simpler and still effective.
+After attention, each token passes through a two-layer feed-forward network. The hidden dimension is 4× the embedding dimension (a standard GPT convention). The activation function is **ReLU** (`max(0, x)`) instead of GeLU, which is simpler and still effective.
 
 #### e) Residual Connections
 
@@ -184,7 +184,7 @@ probs = softmax(logits)
 loss_t = -probs[target_id].log()
 ```
 
-For each position, the model outputs a probability distribution over the vocabulary. The loss is the **negative log-likelihood** of the correct next token — the standard language modeling objective. If the model assigns probability 1.0 to the right answer, the loss is 0. If it assigns 0.01, the loss is 4.6. The model is incentivized to put as much probability mass as possible on the correct next token.
+For each position, the model outputs a probability distribution over the vocabulary. The loss is the **negative log-likelihood** of the correct next token, which is the standard language modeling objective. If the model assigns probability 1.0 to the right answer, the loss is 0. If it assigns 0.01, the loss is 4.6. The model is incentivized to put as much probability mass as possible on the correct next token.
 
 The final loss is the average across all positions in the sequence.
 
@@ -194,7 +194,7 @@ The final loss is the average across all positions in the sequence.
 loss.backward()
 ```
 
-One call walks the entire computation graph backward, computing gradients for every parameter. This is the chain rule applied recursively — the same algorithm that powers all of deep learning.
+One call walks the entire computation graph backward, computing gradients for every parameter. This is the chain rule applied recursively, the same algorithm that powers all of deep learning.
 
 #### Adam Optimizer
 
@@ -210,12 +210,12 @@ for i, p in enumerate(params):
 ```
 
 Adam maintains two running averages per parameter:
-- **m**: the mean of recent gradients (momentum — keeps updates moving in a consistent direction)
+- **m**: the mean of recent gradients (momentum, which keeps updates moving in a consistent direction)
 - **v**: the mean of recent squared gradients (adapts the learning rate per-parameter)
 
 The bias correction (`m_hat`, `v_hat`) compensates for the fact that `m` and `v` are initialized at zero.
 
-The learning rate follows a **linear decay** schedule — starting at `0.01` and decreasing to 0 over the 1000 steps. Large steps early for fast progress, small steps later for fine-tuning.
+The learning rate follows a **linear decay** schedule, starting at `0.01` and decreasing to 0 over the 1000 steps. Large steps early for fast progress, small steps later for fine-tuning.
 
 ### 7. Inference (Text Generation)
 
@@ -229,9 +229,9 @@ token_id = random.choices(range(vocab_size), weights=[p.data for p in probs])[0]
 Generation is autoregressive: start with BOS, predict the next token, feed it back in, repeat until BOS appears again (signaling end of name) or the maximum length is reached.
 
 The **temperature** parameter controls randomness:
-- `temperature → 0`: always pick the most likely token (deterministic, repetitive)
+- `temperature` approaching 0: always pick the most likely token (deterministic, repetitive)
 - `temperature = 1.0`: sample from the raw distribution (creative, sometimes chaotic)
-- `temperature = 0.5`: a middle ground — diverse but coherent
+- `temperature = 0.5`: a middle ground that is diverse but coherent
 
 ---
 
@@ -275,4 +275,4 @@ If you understand this code, you understand the core algorithm behind every tran
 
 ## Credits
 
-`microgpt.py` is written by [Andrej Karpathy](https://github.com/karpathy) and published at [karpathy.ai/microgpt.html](https://karpathy.ai/microgpt.html). It is included here with attribution (see the [LICENSE](../LICENSE) in the project root). The autograd engine is a spiritual descendant of [micrograd](https://github.com/karpathy/micrograd), and the model architecture follows [nanoGPT](https://github.com/karpathy/nanoGPT) — both excellent companion projects.
+`microgpt.py` is written by [Andrej Karpathy](https://github.com/karpathy) and published at [karpathy.ai/microgpt.html](https://karpathy.ai/microgpt.html). It is included here with attribution (see the [LICENSE](../LICENSE) in the project root). The autograd engine is a spiritual descendant of [micrograd](https://github.com/karpathy/micrograd), and the model architecture follows [nanoGPT](https://github.com/karpathy/nanoGPT), both excellent companion projects.

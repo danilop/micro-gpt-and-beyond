@@ -1,4 +1,4 @@
-# microGPT and Beyond — Rotary Position Embeddings (RoPE)
+# microGPT and Beyond, Rotary Position Embeddings (RoPE)
 
 Same architecture as version 03 (PyTorch), but learned positional embeddings are replaced with Rotary Position Embeddings. RoPE encodes position by rotating query and key vectors in complex space, so the attention dot product naturally captures *relative* position without any learned parameters.
 
@@ -7,9 +7,9 @@ Same architecture as version 03 (PyTorch), but learned positional embeddings are
 Learned positional embeddings (like `wpe` in version 03) have two problems:
 
 1. **They don't generalize.** A model trained with `block_size=16` has no embedding for position 17. At inference time, you cannot process longer sequences than you trained on.
-2. **They lose relative information.** The model has to *learn* that position 5 and position 7 are two apart. This relationship is not built into the representation — the model must discover it from data.
+2. **They lose relative information.** The model has to *learn* that position 5 and position 7 are two apart. This relationship is not built into the representation, so the model must discover it from data.
 
-RoPE solves both problems by encoding position through rotation rather than addition. Every modern large language model — LLaMA, Mistral, GPT-NeoX, Gemma — uses RoPE.
+RoPE solves both problems by encoding position through rotation rather than addition. Every modern large language model (LLaMA, Mistral, GPT-NeoX, Gemma) uses RoPE.
 
 ## What makes it interesting
 
@@ -41,7 +41,7 @@ def apply_rope(x, cos_freqs, sin_freqs):
     return torch.stack((out1, out2), dim=-1).flatten(-2)
 ```
 
-This is just the 2D rotation matrix applied to each pair independently. RoPE is applied to Q and K only — not V, because values carry content, not position.
+This is just the 2D rotation matrix applied to each pair independently. RoPE is applied to Q and K only, not V, because values carry content, not position.
 
 ### Why relative position emerges
 
@@ -52,7 +52,7 @@ q_m . k_n = Re[(q * e^{i*m*theta}) . conj(k * e^{i*n*theta})]
            = Re[(q . conj(k)) * e^{i*(m-n)*theta}]
 ```
 
-The dot product depends only on `(m-n)` — the relative distance — not on the absolute positions `m` and `n` separately. This is exactly what we want: the attention between "the" and "cat" should be the same whether they appear at positions (2,4) or (100,102).
+The dot product depends only on `(m-n)`, the relative distance, not on the absolute positions `m` and `n` separately. This is exactly what we want: the attention between "the" and "cat" should be the same whether they appear at positions (2,4) or (100,102).
 
 ### No learned parameters
 
