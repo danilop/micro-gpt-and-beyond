@@ -48,11 +48,11 @@ print(f"vocab size: {vocab_size} (+1 pad = {vocab_size_with_pad})")
 # ---------------------------------------------------------------------------
 # Hyperparameters (scaled up)
 # ---------------------------------------------------------------------------
-n_embd = 64
-n_head = 4
-n_layer = 2
-block_size = 16
-head_dim = n_embd // n_head
+n_embd = 64     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 2     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
 batch_size = 32
 num_steps = 1000
 
@@ -179,7 +179,8 @@ def make_batch(docs, step, batch_size):
 # ---------------------------------------------------------------------------
 model = MicroGPT()
 # Match original init: N(0, 0.08) for all weights
-model.load_weights([(k, mx.random.normal(v.shape) * 0.08) for k, v in mlx.utils.tree_flatten(model.parameters())])
+weights = mlx.utils.tree_flatten(model.parameters())
+model.load_weights([(k, mx.random.normal(v.shape) * 0.08) for k, v in weights])
 num_params = sum(p.size for _, p in mlx.utils.tree_flatten(model.parameters()))
 print(f"num params: {num_params}")
 
@@ -216,7 +217,7 @@ for step in range(num_steps):
 # ---------------------------------------------------------------------------
 # Inference
 # ---------------------------------------------------------------------------
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 print("\n--- inference (new, hallucinated names) ---")
 for sample_idx in range(20):
     tokens = [BOS]

@@ -43,11 +43,11 @@ print(f"vocab size: {vocab_size}")
 # ---------------------------------------------------------------------------
 # Model config
 # ---------------------------------------------------------------------------
-n_embd = 16
-n_head = 4
-n_layer = 1
-block_size = 16
-head_dim = n_embd // n_head
+n_embd = 16     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 1     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
 
 # ===========================================================================
 # Unified model — supports both standard and KV-cached inference
@@ -98,7 +98,7 @@ class CausalSelfAttention(nn.Module):
         att = att.masked_fill(mask, float("-inf"))
         att = F.softmax(att, dim=-1)
 
-        out = (att @ v).transpose(1, 2).contiguous().view(B, T_new, C)
+        out = (att @ v).transpose(1, 2).reshape(B, T_new, C)
         return self.wo(out), new_cache
 
 
@@ -190,9 +190,14 @@ for step in range(num_steps):
 # Inference comparison — naive (no cache) vs KV cache
 # ===========================================================================
 # Same model, same weights — two generation strategies.
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 num_samples = 20
 model.eval()
+
+
+def sample_token(logits):
+    probs = F.softmax(logits[0, -1] / temperature, dim=-1)
+    return torch.multinomial(probs, 1).item()
 
 
 def generate_naive(num_samples=20):
@@ -207,8 +212,7 @@ def generate_naive(num_samples=20):
             T = idx.shape[1]
             total_attn_ops += T * T * n_head
             logits, _ = model(idx)  # no cache — recomputes everything
-            probs = F.softmax(logits[0, -1] / temperature, dim=-1)
-            token_id = torch.multinomial(probs, 1).item()
+            token_id = sample_token(logits)
             if token_id == BOS:
                 break
             tokens.append(token_id)
@@ -233,8 +237,7 @@ def generate_with_cache(num_samples=20):
                 T_new, start_pos = 1, len(tokens) - 1
             total_attn_ops += T_new * len(tokens) * n_head
             logits, past_caches = model(idx, past_caches=past_caches, start_pos=start_pos)
-            probs = F.softmax(logits[0, -1] / temperature, dim=-1)
-            token_id = torch.multinomial(probs, 1).item()
+            token_id = sample_token(logits)
             if token_id == BOS:
                 break
             tokens.append(token_id)

@@ -20,7 +20,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 random.seed(42)
-np.random.seed(42)
+rng = np.random.default_rng(42)
 torch.manual_seed(42)
 torch.set_default_dtype(torch.float64)
 
@@ -75,7 +75,7 @@ class CausalSelfAttention(nn.Module):
         att = (q @ k.transpose(-2, -1)) / math.sqrt(head_dim)
         mask = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
         att = att.masked_fill(mask, float("-inf"))
-        out = (F.softmax(att, dim=-1) @ v).transpose(1, 2).contiguous().view(B, T, C)
+        out = (F.softmax(att, dim=-1) @ v).transpose(1, 2).reshape(B, T, C)
         return self.wo(out)
 
 
@@ -187,7 +187,7 @@ def inference_forward(token_ids, attn_fn):
         x_res = x.copy()
         x_n = rmsnorm_np(x)
         h = x_n @ P[f"l{li}.fc1"]
-        x = (h * (h > 0).astype(h.dtype)) @ P[f"l{li}.fc2"] + x_res
+        x = np.maximum(h, 0) @ P[f"l{li}.fc2"] + x_res
     return x @ P["lm_head"].T, last_stats
 
 
@@ -379,7 +379,7 @@ materializing the full matrix. Same math, ~2-4x faster on real hardware.""")
 # ---------------------------------------------------------------------------
 # Inference — generate names using tiled attention
 # ---------------------------------------------------------------------------
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 print("\n--- inference (tiled attention) ---")
 for sample_idx in range(20):
     generated = [BOS]
@@ -388,7 +388,7 @@ for sample_idx in range(20):
         logits, _ = inference_forward(np.array(generated), tiled_attention)
         logits = logits[-1] / temperature
         probs = softmax_np(logits.reshape(1, -1))[0]
-        token_id = np.random.choice(vocab_size, p=probs)
+        token_id = rng.choice(vocab_size, p=probs)
         if token_id == BOS:
             break
         generated.append(token_id)

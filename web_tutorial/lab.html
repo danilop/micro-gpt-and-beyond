@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab — microGPT and Beyond</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-dim: #1f6feb22;
+    --line-highlight: #1f6feb33;
+    --comment-block: #f0883e18;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .back-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  .back-link:hover { color: var(--accent); }
+  .header h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .header .tagline {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin-left: 12px;
+  }
+
+  /* Main layout */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Code panel */
+  .code-panel {
+    flex: 1;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+    min-width: 0;
+  }
+  .code-panel pre {
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+  }
+  .code-panel code {
+    background: transparent !important;
+    font-size: 13px;
+    line-height: 1.65;
+    font-family: "SF Mono", "Fira Code", "JetBrains Mono", Consolas, monospace;
+  }
+
+  /* Line-level styling */
+  .code-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .code-table td {
+    padding: 0;
+    vertical-align: top;
+    white-space: pre;
+    font-family: "SF Mono", "Fira Code", "JetBrains Mono", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .line-num {
+    width: 48px;
+    min-width: 48px;
+    text-align: right;
+    padding-right: 12px !important;
+    color: var(--text-muted);
+    opacity: 0.5;
+    user-select: none;
+    cursor: pointer;
+  }
+  .line-content {
+    padding-left: 8px !important;
+    padding-right: 16px !important;
+  }
+  .code-line {
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .code-line:hover {
+    background: var(--accent-dim);
+  }
+  .code-line.selected .line-num {
+    opacity: 1;
+    color: var(--accent);
+  }
+  .code-line.selected {
+    background: var(--line-highlight);
+  }
+  .code-line.context {
+    background: var(--comment-block);
+  }
+
+  /* Explanation panel */
+  .explain-panel {
+    width: 380px;
+    min-width: 320px;
+    max-width: 420px;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .explain-empty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 40px;
+    text-align: center;
+  }
+  .explain-line-ref {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-family: monospace;
+  }
+  .explain-text {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--text);
+  }
+  .explain-text code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.85em;
+  }
+  .stale-warning {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #d2992233;
+    border: 1px solid #d2992255;
+    border-radius: 6px;
+    padding: 4px 10px;
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: #d29922;
+  }
+  .stale-dot {
+    width: 8px;
+    height: 8px;
+    background: #d29922;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .code-line.stale .line-num {
+    color: #d29922;
+  }
+
+  /* Play / Stop buttons */
+  .play-btn, .stop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+  .play-btn:hover { border-color: #3fb950; color: #3fb950; }
+  .play-btn .icon { color: #3fb950; }
+  .stop-btn { display: none; }
+  .stop-btn:hover { border-color: #f85149; color: #f85149; }
+  .stop-btn .icon { color: #f85149; }
+
+  /* Terminal panel */
+  .terminal-panel {
+    display: none;
+    flex-direction: column;
+    border-top: 2px solid var(--border);
+    background: #010409;
+    flex-shrink: 0;
+    height: 260px;
+    min-height: 120px;
+  }
+  .terminal-panel.open { display: flex; }
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: #161b22;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+  .terminal-title {
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .terminal-status {
+    color: var(--text-muted);
+    font-family: monospace;
+    font-size: 0.75rem;
+  }
+  .terminal-status.running { color: #3fb950; }
+  .terminal-status.error { color: #f85149; }
+  .terminal-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .terminal-close:hover { background: var(--border); color: var(--text); }
+  .terminal-output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    font-family: "SF Mono", "Fira Code", "JetBrains Mono", Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #c9d1d9;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .terminal-output .cmd { color: #8b949e; }
+  .terminal-spinner {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border: 2px solid #3fb950;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .terminal-panel.fullscreen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    height: 100vh;
+    z-index: 100;
+    border-top: none;
+  }
+
+  @media (max-width: 900px) {
+    .main { flex-direction: column; }
+    .explain-panel {
+      width: 100%;
+      max-width: 100%;
+      border-top: 1px solid var(--border);
+      max-height: 40vh;
+    }
+    .code-panel { border-right: none; }
+    .header .tagline { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="/" class="back-link">&larr; Labs</a>
+  <h1 id="lab-title"></h1>
+  <span class="tagline" id="lab-tagline"></span>
+  <button class="play-btn" id="play-btn" onclick="runLab()">
+    <span class="icon">&#9654;</span> Run
+  </button>
+  <button class="stop-btn" id="stop-btn" onclick="stopLab()">
+    <span class="icon">&#9632;</span> Stop
+  </button>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <table class="code-table" id="code-table"></table>
+  </div>
+  <div class="explain-panel" id="explain-panel">
+    <div class="explain-empty" id="explain-empty">Click a line to see its explanation</div>
+    <div id="explain-content" style="display:none">
+      <div class="explain-line-ref" id="explain-ref"></div>
+      <div class="explain-text" id="explain-text"></div>
+    </div>
+  </div>
+</div>
+
+<div class="terminal-panel" id="terminal-panel">
+  <div class="terminal-header">
+    <span class="terminal-title">
+      <span>Terminal</span>
+      <span class="terminal-status" id="terminal-status"></span>
+    </span>
+    <button class="terminal-close" id="terminal-maximize" onclick="toggleTerminalSize()" title="Toggle fullscreen">&#x26F6;</button>
+    <button class="terminal-close" id="terminal-close" onclick="closeTerminal()" title="Stop and close">&times;</button>
+  </div>
+  <div class="terminal-output" id="terminal-output"></div>
+</div>
+
+<script>
+// Detect lab ID from URL path (/lab/ID) or query param (?lab=ID)
+const labId = window.location.pathname.includes("/lab/")
+  ? window.location.pathname.split("/lab/")[1]
+  : new URLSearchParams(window.location.search).get("lab");
+
+let explanations = {};
+let codeLines = [];
+let selectedLine = null;
+let staleLines = new Set();
+let serverMode = false; // true when local server is available
+
+// Simple hash matching the Python side: SHA-256 first 8 hex chars of stripped line
+async function lineHash(text) {
+  const data = new TextEncoder().encode(text.trim());
+  const buf = await crypto.subtle.digest("SHA-256", data);
+  const arr = Array.from(new Uint8Array(buf));
+  return arr.map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 8);
+}
+
+// Detect mode and load data
+async function init() {
+  let labMeta, codeText, expData;
+
+  // Try server API first
+  try {
+    const r = await fetch("/api/labs");
+    if (r.ok) {
+      serverMode = true;
+      const labs = await r.json();
+      labMeta = labs.find(l => l.id === labId);
+      const [expRes, codeRes] = await Promise.all([
+        fetch(`/api/explanations/${labId}`).then(r => r.json()),
+        fetch(`/api/code/${labId}`).then(r => r.json()),
+      ]);
+      expData = expRes;
+      codeText = codeRes.code;
+    }
+  } catch (e) {}
+
+  // Static fallback (GitHub Pages)
+  if (!serverMode) {
+    const r = await fetch("data/labs.json");
+    const allLabs = await r.json();
+    const lab = allLabs.find(l => l.id === labId);
+    if (!lab) { document.body.textContent = "Lab not found"; return; }
+    labMeta = lab;
+    codeText = lab.code;
+    expData = lab.explanations;
+  }
+
+  // Hide Run button in static mode
+  if (!serverMode) {
+    document.getElementById("play-btn").style.display = "none";
+  }
+
+  // Set header
+  if (labMeta) {
+    document.getElementById("lab-title").textContent = labMeta.title;
+    document.getElementById("lab-tagline").textContent = labMeta.tagline;
+    document.title = `${labMeta.title} — microGPT and Beyond`;
+  }
+
+  // Back link: use index.html in static mode
+  if (!serverMode) {
+    document.querySelector(".back-link").href = "index.html";
+  }
+
+  explanations = expData;
+  codeLines = codeText.split("\n");
+
+  // Check for stale explanations
+  for (const [lineNum, entry] of Object.entries(explanations)) {
+    if (typeof entry === "object" && entry.hash) {
+      const idx = parseInt(lineNum) - 1;
+      if (idx >= 0 && idx < codeLines.length) {
+        const currentHash = await lineHash(codeLines[idx]);
+        if (currentHash !== entry.hash) {
+          staleLines.add(parseInt(lineNum));
+        }
+      }
+    }
+  }
+
+  renderCode(codeText);
+  selectFirstCodeLine();
+
+  if (staleLines.size > 0) {
+    const tag = document.createElement("span");
+    tag.className = "stale-warning";
+    tag.innerHTML = `<span class="stale-dot"></span>${staleLines.size} annotation${staleLines.size > 1 ? "s" : ""} may be outdated`;
+    document.querySelector(".header").appendChild(tag);
+  }
+}
+
+init();
+
+// Build list of "annotated lines" — code lines that have explanations.
+// Each is the anchor of a block that includes its preceding comments.
+let annotatedLines = []; // sorted list of line numbers that are navigable
+
+function buildAnnotatedLines() {
+  annotatedLines = Object.keys(explanations)
+    .map(Number)
+    .sort((a, b) => a - b);
+}
+
+// Find which annotated line "owns" a given line (the line itself, or the
+// next code line below if clicking on a comment/blank that precedes it).
+function ownerOf(lineNum) {
+  // If this line is annotated, it owns itself
+  if (annotatedLines.includes(lineNum)) return lineNum;
+  // Walk down to find the next annotated line (this comment belongs to it)
+  for (const al of annotatedLines) {
+    if (al > lineNum) return al;
+  }
+  // Walk up to find the previous annotated line (trailing blank/comment)
+  for (let i = annotatedLines.length - 1; i >= 0; i--) {
+    if (annotatedLines[i] < lineNum) return annotatedLines[i];
+  }
+  return annotatedLines[0] || 1;
+}
+
+function renderCode(code) {
+  const highlighted = hljs.highlight(code, {language: "python"}).value;
+  const htmlLines = highlighted.split("\n");
+  const table = document.getElementById("code-table");
+
+  htmlLines.forEach((htmlLine, i) => {
+    const lineNum = i + 1;
+    const tr = document.createElement("tr");
+    tr.className = "code-line";
+    if (staleLines.has(lineNum)) tr.classList.add("stale");
+    tr.dataset.line = lineNum;
+    tr.innerHTML = `<td class="line-num">${lineNum}</td><td class="line-content">${htmlLine || " "}</td>`;
+    // Click on any line snaps to its owning annotated line
+    tr.addEventListener("click", () => selectLine(ownerOf(lineNum)));
+    table.appendChild(tr);
+  });
+}
+
+function selectFirstCodeLine() {
+  buildAnnotatedLines();
+  if (annotatedLines.length > 0) {
+    selectLine(annotatedLines[0]);
+  } else {
+    selectLine(1);
+  }
+}
+
+function selectLine(lineNum) {
+  // Clear previous selection
+  document.querySelectorAll(".code-line.selected, .code-line.context").forEach(el => {
+    el.classList.remove("selected", "context");
+  });
+
+  selectedLine = lineNum;
+  const row = document.querySelector(`.code-line[data-line="${lineNum}"]`);
+  if (row) {
+    row.classList.add("selected");
+    highlightContext(lineNum);
+    // Scroll context into view (topmost highlighted line)
+    const firstContext = document.querySelector(".code-line.context") || row;
+    firstContext.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+
+  showExplanation(lineNum);
+}
+
+function highlightContext(lineNum) {
+  // Walk backwards to find preceding comment/blank lines that belong to this code line
+  let i = lineNum - 2; // 0-indexed, one line above
+  while (i >= 0) {
+    const trimmed = codeLines[i].trim();
+    if (trimmed.startsWith("#") || trimmed === "") {
+      if (trimmed.startsWith("#")) {
+        const row = document.querySelector(`.code-line[data-line="${i + 1}"]`);
+        if (row) row.classList.add("context");
+      }
+      i--;
+    } else {
+      break;
+    }
+  }
+}
+
+function getExplanationText(key) {
+  const entry = explanations[key];
+  if (!entry) return null;
+  // Support both old format (string) and new format ({text, hash})
+  return typeof entry === "object" ? entry.text : entry;
+}
+
+function showExplanation(lineNum) {
+  const key = String(lineNum);
+  const empty = document.getElementById("explain-empty");
+  const content = document.getElementById("explain-content");
+  const ref = document.getElementById("explain-ref");
+  const text = document.getElementById("explain-text");
+
+  const codeLine = codeLines[lineNum - 1] || "";
+  ref.textContent = `Line ${lineNum}`;
+
+  const expText = getExplanationText(key);
+  if (expText) {
+    empty.style.display = "none";
+    content.style.display = "block";
+    let html = expText;
+    if (staleLines.has(lineNum)) {
+      html += `<div class="stale-warning"><span class="stale-dot"></span>Code changed since this annotation was written</div>`;
+    }
+    text.innerHTML = html;
+  } else {
+    empty.style.display = "none";
+    content.style.display = "block";
+    const trimmed = codeLine.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      text.innerHTML = `<span style="color:var(--text-muted)">${trimmed ? "Comment line" : "Empty line"}</span>`;
+    } else {
+      text.innerHTML = `<span style="color:var(--text-muted)">No annotation available for this line.</span>`;
+    }
+  }
+}
+
+// Keyboard navigation — jump between annotated blocks
+document.addEventListener("keydown", (e) => {
+  if (!selectedLine || annotatedLines.length === 0) return;
+  const idx = annotatedLines.indexOf(selectedLine);
+
+  if (e.key === "ArrowDown" || e.key === "j") {
+    e.preventDefault();
+    const next = idx >= 0 ? idx + 1 : annotatedLines.findIndex(l => l > selectedLine);
+    if (next >= 0 && next < annotatedLines.length) selectLine(annotatedLines[next]);
+  } else if (e.key === "ArrowUp" || e.key === "k") {
+    e.preventDefault();
+    let prev;
+    if (idx > 0) {
+      prev = idx - 1;
+    } else if (idx < 0) {
+      // Find last annotated line before current
+      prev = annotatedLines.filter(l => l < selectedLine).length - 1;
+    } else {
+      prev = -1;
+    }
+    if (prev >= 0) selectLine(annotatedLines[prev]);
+  }
+});
+
+// --- Terminal: Run / Stop ---
+let eventSource = null;
+let labRunning = false;
+
+function runLab() {
+  if (labRunning) return;
+  labRunning = true;
+
+  // Show terminal, swap buttons
+  const panel = document.getElementById("terminal-panel");
+  const output = document.getElementById("terminal-output");
+  const status = document.getElementById("terminal-status");
+  const playBtn = document.getElementById("play-btn");
+  const stopBtn = document.getElementById("stop-btn");
+
+  panel.classList.add("open");
+  output.textContent = "";
+  status.textContent = "";
+  status.className = "terminal-status";
+  playBtn.style.display = "none";
+  stopBtn.style.display = "inline-flex";
+
+  eventSource = new EventSource(`/api/run/${labId}`);
+
+  eventSource.addEventListener("status", (e) => {
+    const data = JSON.parse(e.data);
+    if (data.state === "running") {
+      status.innerHTML = `<span class="terminal-spinner"></span> running`;
+      status.className = "terminal-status running";
+      output.innerHTML = `<span class="cmd">$ ${escapeHtml(data.cmd)}</span>\n`;
+    } else if (data.state === "done") {
+      eventSource.close();
+      eventSource = null;
+      labRunning = false;
+      if (data.exit_code === 0) {
+        status.textContent = "done";
+        status.className = "terminal-status";
+      } else {
+        status.textContent = `exit ${data.exit_code}`;
+        status.className = "terminal-status error";
+      }
+      stopBtn.style.display = "none";
+      playBtn.style.display = "inline-flex";
+    }
+  });
+
+  eventSource.addEventListener("output", (e) => {
+    const data = JSON.parse(e.data);
+    output.textContent += data.text;
+    output.scrollTop = output.scrollHeight;
+  });
+
+  eventSource.onerror = () => {
+    if (eventSource) {
+      eventSource.close();
+      eventSource = null;
+    }
+    if (labRunning) {
+      labRunning = false;
+      status.textContent = "connection lost";
+      status.className = "terminal-status error";
+      stopBtn.style.display = "none";
+      playBtn.style.display = "inline-flex";
+    }
+  };
+}
+
+function stopLab() {
+  // Kill process on server
+  fetch(`/api/stop/${labId}`);
+  // Close SSE
+  if (eventSource) {
+    eventSource.close();
+    eventSource = null;
+  }
+  labRunning = false;
+  closeTerminal();
+}
+
+function closeTerminal() {
+  // If still running, stop first
+  if (labRunning) {
+    fetch(`/api/stop/${labId}`);
+    if (eventSource) { eventSource.close(); eventSource = null; }
+    labRunning = false;
+  }
+  const panel = document.getElementById("terminal-panel");
+  panel.classList.remove("open", "fullscreen");
+  document.getElementById("terminal-maximize").innerHTML = "&#x26F6;";
+  document.getElementById("stop-btn").style.display = "none";
+  document.getElementById("play-btn").style.display = "inline-flex";
+}
+
+function toggleTerminalSize() {
+  const panel = document.getElementById("terminal-panel");
+  const btn = document.getElementById("terminal-maximize");
+  panel.classList.toggle("fullscreen");
+  // Swap icon: ⛶ (maximize) ↔ ⧉ (restore)
+  btn.innerHTML = panel.classList.contains("fullscreen") ? "&#x29C9;" : "&#x26F6;";
+  btn.title = panel.classList.contains("fullscreen") ? "Restore" : "Maximize";
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>
+</body>
+</html>

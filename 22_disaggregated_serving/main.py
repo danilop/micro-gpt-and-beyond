@@ -44,11 +44,11 @@ vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # Model config
-n_embd = 16
-n_head = 4
-n_layer = 1
-block_size = 16
-head_dim = n_embd // n_head
+n_embd = 16     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 1     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
 
 
 # Model with KV cache (reuses the pattern from lab 12)
@@ -81,7 +81,7 @@ class CausalSelfAttention(nn.Module):
         att = (q @ k.transpose(-2, -1)) / math.sqrt(head_dim)
         mask = torch.triu(torch.ones(T_new, T_total, device=x.device, dtype=torch.bool), diagonal=T_total - T_new + 1)
         att = F.softmax(att.masked_fill(mask, float("-inf")), dim=-1)
-        out = (att @ v).transpose(1, 2).contiguous().view(B, T_new, C)
+        out = (att @ v).transpose(1, 2).reshape(B, T_new, C)
         return self.wo(out), (k, v)
 
 
@@ -219,7 +219,7 @@ print("=" * 70)
 print("PART 2: COLOCATED vs DISAGGREGATED SERVING")
 print("=" * 70)
 
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 PREFILL_COST_MS = 0.5  # ms per prompt token (simulated)
 DECODE_COST_MS = 0.3  # ms per decode step (simulated)
 

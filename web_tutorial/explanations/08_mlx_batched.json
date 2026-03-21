@@ -1,0 +1,510 @@
+{
+  "14": {
+    "text": "Math for attention scaling.",
+    "hash": "e3b0c442"
+  },
+  "15": {
+    "text": "File path handling.",
+    "hash": "b67c9dde"
+  },
+  "16": {
+    "text": "Python random for shuffling.",
+    "hash": "de2abade"
+  },
+  "19": {
+    "text": "MLX core \u2014 Apple Silicon tensor library with unified memory.",
+    "hash": "00d25044"
+  },
+  "20": {
+    "text": "Neural network modules.",
+    "hash": "826b699d"
+  },
+  "21": {
+    "text": "Built-in optimizers.",
+    "hash": "8ee68a62"
+  },
+  "22": {
+    "text": "Parameter tree utilities.",
+    "hash": "adb10b27"
+  },
+  "24": {
+    "text": "Python seed.",
+    "hash": "f0726c6e"
+  },
+  "25": {
+    "text": "MLX seed.",
+    "hash": "f9057c48"
+  },
+  "30": {
+    "text": "Dataset path.",
+    "hash": "180b0553"
+  },
+  "31": {
+    "text": "Auto-download.",
+    "hash": "9667c968"
+  },
+  "34": {
+    "text": "Download URL.",
+    "hash": "5e579f27"
+  },
+  "37": {
+    "text": "Load documents.",
+    "hash": "2f367d0b"
+  },
+  "38": {
+    "text": "Shuffle.",
+    "hash": "c8f1cb86"
+  },
+  "41": {
+    "text": "Character vocabulary.",
+    "hash": "5f7ca3bb"
+  },
+  "42": {
+    "text": "BOS token.",
+    "hash": "476ca504"
+  },
+  "43": {
+    "text": "Real vocab: 27.",
+    "hash": "0a38d2ba"
+  },
+  "44": {
+    "text": "PAD token for batch alignment.",
+    "hash": "615f41c9"
+  },
+  "45": {
+    "text": "28 tokens including PAD.",
+    "hash": "f3abd8f4"
+  },
+  "51": {
+    "text": "4x larger than lab 07 \u2014 same scale-up as PyTorch batched (lab 04).",
+    "hash": "203d0348"
+  },
+  "52": {
+    "text": "4 heads, 16 dims each.",
+    "hash": "5b7ba4c9"
+  },
+  "53": {
+    "text": "2 layers.",
+    "hash": "0a695db7"
+  },
+  "54": {
+    "text": "16-char context.",
+    "hash": "4f3059d5"
+  },
+  "55": {
+    "text": "16 dims per head.",
+    "hash": "1892cf11"
+  },
+  "56": {
+    "text": "32 sequences per batch.",
+    "hash": "d607968f"
+  },
+  "57": {
+    "text": "1000 steps.",
+    "hash": "f105aa30"
+  },
+  "63": {
+    "text": "RMSNorm \u2014 identical to lab 07.",
+    "hash": "69fade3d"
+  },
+  "66": {
+    "text": "Epsilon.",
+    "hash": "a6082d20"
+  },
+  "68": {
+    "text": "Forward pass.",
+    "hash": "54e7034e"
+  },
+  "69": {
+    "text": "Mean of squares.",
+    "hash": "f12ba3c4"
+  },
+  "70": {
+    "text": "Scale by inverse RMS.",
+    "hash": "9989efa7"
+  },
+  "73": {
+    "text": "Attention module \u2014 now handles (B, T, C) shapes and padding masks, like lab 04.",
+    "hash": "c20aaac2"
+  },
+  "76": {
+    "text": "Q projection.",
+    "hash": "433b771f"
+  },
+  "77": {
+    "text": "K projection.",
+    "hash": "bf2475c8"
+  },
+  "78": {
+    "text": "V projection.",
+    "hash": "d1a077cb"
+  },
+  "79": {
+    "text": "Output projection.",
+    "hash": "887b9875"
+  },
+  "81": {
+    "text": "Forward with optional padding mask.",
+    "hash": "6736f90f"
+  },
+  "82": {
+    "text": "Unpack batch, time, channel dims.",
+    "hash": "4584ac61"
+  },
+  "83": {
+    "text": "Q reshape: (B, T, D) -> (B, T, nh, hd) -> (B, nh, T, hd). Note the 4D transpose \u2014 batch dimension is preserved, unlike lab 07's 3D version.",
+    "hash": "e50e37bd"
+  },
+  "84": {
+    "text": "K reshape.",
+    "hash": "d98e3c16"
+  },
+  "85": {
+    "text": "V reshape.",
+    "hash": "6371da67"
+  },
+  "87": {
+    "text": "Attention scores.",
+    "hash": "a0d7787c"
+  },
+  "89": {
+    "text": "Causal mask.",
+    "hash": "9a239573"
+  },
+  "90": {
+    "text": "Apply causal mask.",
+    "hash": "8625aed2"
+  },
+  "92": {
+    "text": "Padding mask handling \u2014 identical logic to lab 04's PyTorch version.",
+    "hash": "6e5b0338"
+  },
+  "93": {
+    "text": "Expand pad_mask to (B, 1, 1, T) and fill PAD positions with -inf.",
+    "hash": "169b172f"
+  },
+  "94": {
+    "text": "Softmax over keys.",
+    "hash": "ebebc376"
+  },
+  "95": {
+    "text": "Replace NaN with 0 for fully-masked rows. MLX doesn't have <code>nan_to_num</code>, so we use <code>where(isnan, 0, att)</code>.",
+    "hash": "fb8a223a"
+  },
+  "97": {
+    "text": "Attention output, transpose, reshape.",
+    "hash": "e6fc56cb"
+  },
+  "98": {
+    "text": "Output projection.",
+    "hash": "36f2db67"
+  },
+  "101": {
+    "text": "MLP \u2014 same as lab 07.",
+    "hash": "3ad666a1"
+  },
+  "104": {
+    "text": "Expand 4x.",
+    "hash": "8e9f0642"
+  },
+  "105": {
+    "text": "Contract back.",
+    "hash": "62c4768b"
+  },
+  "107": {
+    "text": "Forward pass.",
+    "hash": "54e7034e"
+  },
+  "108": {
+    "text": "<code>mx.maximum(x, 0)</code> for ReLU.",
+    "hash": "3aa8c8cc"
+  },
+  "111": {
+    "text": "Transformer block with padding mask.",
+    "hash": "4bcc8ea8"
+  },
+  "114": {
+    "text": "Pre-attention norm.",
+    "hash": "e92b587d"
+  },
+  "115": {
+    "text": "Attention.",
+    "hash": "95b016d9"
+  },
+  "116": {
+    "text": "Pre-MLP norm.",
+    "hash": "f58a7657"
+  },
+  "117": {
+    "text": "MLP.",
+    "hash": "17fdd551"
+  },
+  "119": {
+    "text": "Forward passes mask through to attention.",
+    "hash": "6736f90f"
+  },
+  "120": {
+    "text": "Attention with residual and padding mask.",
+    "hash": "5c9f1363"
+  },
+  "121": {
+    "text": "MLP with residual.",
+    "hash": "50e2183f"
+  },
+  "125": {
+    "text": "Complete batched model.",
+    "hash": "e94c5dc2"
+  },
+  "128": {
+    "text": "Embedding table with PAD token. Like lab 04, the embedding table has <code>vocab_size_with_pad</code> rows.",
+    "hash": "fadfb807"
+  },
+  "129": {
+    "text": "Position embeddings.",
+    "hash": "5338449e"
+  },
+  "130": {
+    "text": "Initial norm.",
+    "hash": "5caa073e"
+  },
+  "131": {
+    "text": "Transformer layers.",
+    "hash": "7efcda6b"
+  },
+  "132": {
+    "text": "Output head maps to real vocab (no PAD).",
+    "hash": "1774314d"
+  },
+  "134": {
+    "text": "Forward pass with optional padding mask.",
+    "hash": "2de15fc3"
+  },
+  "135": {
+    "text": "Batch and time dimensions.",
+    "hash": "47cad82b"
+  },
+  "136": {
+    "text": "Token embeddings.",
+    "hash": "8d137e9c"
+  },
+  "137": {
+    "text": "Position embeddings broadcast across the batch.",
+    "hash": "63121461"
+  },
+  "138": {
+    "text": "Fuse and normalize.",
+    "hash": "b88a95ea"
+  },
+  "139": {
+    "text": "Process through layers.",
+    "hash": "359aba32"
+  },
+  "140": {
+    "text": "Pass padding mask to each layer.",
+    "hash": "3b78410a"
+  },
+  "141": {
+    "text": "Output logits.",
+    "hash": "9ef9adcf"
+  },
+  "147": {
+    "text": "Batch creation \u2014 same strategy as labs 04 and 06.",
+    "hash": "b170f5cb"
+  },
+  "149": {
+    "text": "Select batch_size documents.",
+    "hash": "84e051fc"
+  },
+  "151": {
+    "text": "Tokenize each document.",
+    "hash": "0f605b9f"
+  },
+  "152": {
+    "text": "BOS + chars + BOS.",
+    "hash": "9fe8ad12"
+  },
+  "153": {
+    "text": "Truncate to max context.",
+    "hash": "fd45d40a"
+  },
+  "156": {
+    "text": "Pad to longest sequence in batch.",
+    "hash": "d5c54ef8"
+  },
+  "157": {
+    "text": "Build aligned arrays.",
+    "hash": "4fa495a3"
+  },
+  "159": {
+    "text": "Actual sequence length.",
+    "hash": "52424931"
+  },
+  "160": {
+    "text": "Input: real tokens + PAD.",
+    "hash": "9de6a4a2"
+  },
+  "161": {
+    "text": "Targets: shifted + dummy 0s.",
+    "hash": "32a8915b"
+  },
+  "162": {
+    "text": "Padding mask.",
+    "hash": "0e6e57e9"
+  },
+  "163": {
+    "text": "Target mask for loss weighting.",
+    "hash": "5f83ca8d"
+  },
+  "169": {
+    "text": "Convert all to MLX arrays.",
+    "hash": "fc4c1868"
+  },
+  "170": {
+    "text": "Targets.",
+    "hash": "b305741c"
+  },
+  "171": {
+    "text": "Padding mask.",
+    "hash": "b011dad8"
+  },
+  "172": {
+    "text": "Target mask.",
+    "hash": "2d2a300b"
+  },
+  "180": {
+    "text": "Instantiate the scaled-up model.",
+    "hash": "15299a22"
+  },
+  "182": {
+    "text": "Flatten parameter tree for re-initialization.",
+    "hash": "b00451e2"
+  },
+  "183": {
+    "text": "N(0, 0.08) initialization \u2014 match all other labs.",
+    "hash": "606b1ac0"
+  },
+  "184": {
+    "text": "Count parameters.",
+    "hash": "339de0cf"
+  },
+  "187": {
+    "text": "Adam hyperparameters.",
+    "hash": "dca02c26"
+  },
+  "190": {
+    "text": "Loss function. Takes the model as first arg for MLX's autograd.",
+    "hash": "24f01561"
+  },
+  "191": {
+    "text": "Batched forward pass with padding mask.",
+    "hash": "f95b7eef"
+  },
+  "192": {
+    "text": "Log-softmax for numerical stability.",
+    "hash": "e8b01f5c"
+  },
+  "193": {
+    "text": "Unpack shape.",
+    "hash": "6fd1445a"
+  },
+  "195": {
+    "text": "Gather target log-probs via fancy indexing. Same pattern as lab 06.",
+    "hash": "f3e3ebd2"
+  },
+  "196": {
+    "text": "Zero out padding positions.",
+    "hash": "04bbd9c3"
+  },
+  "197": {
+    "text": "Normalize by real token count \u2014 same as lab 06.",
+    "hash": "3c4cc88b"
+  },
+  "201": {
+    "text": "Value-and-grad: compute loss and gradients simultaneously.",
+    "hash": "fc7d4fe4"
+  },
+  "202": {
+    "text": "Built-in Adam optimizer.",
+    "hash": "d828d8b5"
+  },
+  "204": {
+    "text": "Training loop.",
+    "hash": "53f56939"
+  },
+  "205": {
+    "text": "Create padded batch.",
+    "hash": "e9483f2a"
+  },
+  "207": {
+    "text": "Compute loss and gradients.",
+    "hash": "e4b3bfdd"
+  },
+  "209": {
+    "text": "Linear LR decay.",
+    "hash": "a7ee9183"
+  },
+  "210": {
+    "text": "Update optimizer learning rate.",
+    "hash": "945beed3"
+  },
+  "211": {
+    "text": "Apply gradients.",
+    "hash": "f28c1e54"
+  },
+  "212": {
+    "text": "Force lazy evaluation. Without this, MLX builds up a huge unevaluated computation graph that eventually exhausts memory.",
+    "hash": "172e53fd"
+  },
+  "214": {
+    "text": "Log every 10 steps.",
+    "hash": "cf37956f"
+  },
+  "220": {
+    "text": "Temperature for generation.",
+    "hash": "d66aa849"
+  },
+  "222": {
+    "text": "Generate 20 names.",
+    "hash": "64d836c5"
+  },
+  "223": {
+    "text": "Start with BOS.",
+    "hash": "5c52ddc4"
+  },
+  "224": {
+    "text": "Generate characters.",
+    "hash": "ab05dc73"
+  },
+  "225": {
+    "text": "Feed as (1, T) batch \u2014 the batched model always expects a batch dimension.",
+    "hash": "637b4070"
+  },
+  "226": {
+    "text": "Forward pass.",
+    "hash": "17df3885"
+  },
+  "227": {
+    "text": "Last position's logits, temperature-scaled.",
+    "hash": "e1a1328f"
+  },
+  "228": {
+    "text": "Sample from distribution.",
+    "hash": "eae262da"
+  },
+  "229": {
+    "text": "BOS = end of name.",
+    "hash": "41a35c11"
+  },
+  "231": {
+    "text": "Extend sequence.",
+    "hash": "a1ca669a"
+  },
+  "232": {
+    "text": "Convert to characters.",
+    "hash": "b4368128"
+  },
+  "233": {
+    "text": "Print generated name.",
+    "hash": "f9d6f741"
+  }
+}

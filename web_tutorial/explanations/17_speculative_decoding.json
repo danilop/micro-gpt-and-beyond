@@ -1,0 +1,926 @@
+{
+  "14": {
+    "text": "Standard math library for attention scaling.",
+    "hash": "b67c9dde"
+  },
+  "15": {
+    "text": "File path handling for the dataset.",
+    "hash": "de2abade"
+  },
+  "16": {
+    "text": "Random number generation for sampling and shuffling.",
+    "hash": "7e18ed42"
+  },
+  "17": {
+    "text": "<code>time</code> for benchmarking speculative vs autoregressive decoding speed.",
+    "hash": "4f9b8491"
+  },
+  "19": {
+    "text": "PyTorch — this lab uses real tensors because we need two full models and speed benchmarks.",
+    "hash": "cf1070d3"
+  },
+  "20": {
+    "text": "Neural network building blocks.",
+    "hash": "b802910c"
+  },
+  "21": {
+    "text": "Functional API for softmax, ReLU, cross-entropy.",
+    "hash": "5af419e1"
+  },
+  "23": {
+    "text": "Fix Python's random seed for reproducible shuffling.",
+    "hash": "f0726c6e"
+  },
+  "24": {
+    "text": "Fix PyTorch's random seed for reproducible weight initialization and sampling.",
+    "hash": "7e7dcf46"
+  },
+  "29": {
+    "text": "Builds the path to the dataset file relative to this script.",
+    "hash": "180b0553"
+  },
+  "30": {
+    "text": "Auto-download if missing.",
+    "hash": "9667c968"
+  },
+  "31": {
+    "text": "Lazy import of <code>urllib</code>.",
+    "hash": "84cdb92b"
+  },
+  "33": {
+    "text": "Karpathy's makemore names dataset URL.",
+    "hash": "5e579f27"
+  },
+  "34": {
+    "text": "Download and save locally.",
+    "hash": "25ec775b"
+  },
+  "36": {
+    "text": "Load all names, one per line.",
+    "hash": "2f367d0b"
+  },
+  "37": {
+    "text": "Shuffle to prevent memorizing alphabetical order.",
+    "hash": "c8f1cb86"
+  },
+  "38": {
+    "text": "Print dataset size.",
+    "hash": "08bb2551"
+  },
+  "40": {
+    "text": "Build character vocabulary from unique characters in all names.",
+    "hash": "5f7ca3bb"
+  },
+  "41": {
+    "text": "<code>BOS</code> (beginning-of-sequence) token, also used as end-of-sequence.",
+    "hash": "476ca504"
+  },
+  "42": {
+    "text": "Vocabulary = characters + 1 special token.",
+    "hash": "0a38d2ba"
+  },
+  "43": {
+    "text": "Print vocab size.",
+    "hash": "1cb38e2c"
+  },
+  "48": {
+    "text": "Max sequence length for all models — names rarely exceed 16 characters.",
+    "hash": "4f3059d5"
+  },
+  "51": {
+    "text": "RMSNorm: cheaper than LayerNorm, just rescales by inverse root-mean-square.",
+    "hash": "69fade3d"
+  },
+  "52": {
+    "text": "Dimension parameter unused but kept for API consistency.",
+    "hash": "d1f0a37b"
+  },
+  "53": {
+    "text": "Standard PyTorch module initialization.",
+    "hash": "7678213b"
+  },
+  "54": {
+    "text": "Small epsilon prevents division by zero.",
+    "hash": "7cedf2b6"
+  },
+  "56": {
+    "text": "Forward pass.",
+    "hash": "a87869a2"
+  },
+  "57": {
+    "text": "Scale x by inverse RMS — <code>rsqrt</code> computes 1/sqrt efficiently.",
+    "hash": "53678ba7"
+  },
+  "60": {
+    "text": "Causal (left-to-right) attention — both draft and target use the same architecture, just different sizes.",
+    "hash": "c20aaac2"
+  },
+  "61": {
+    "text": "Constructor takes embedding dimension and number of heads.",
+    "hash": "fd88ecfc"
+  },
+  "62": {
+    "text": "Module init.",
+    "hash": "7678213b"
+  },
+  "63": {
+    "text": "Store head count for reshaping.",
+    "hash": "495be473"
+  },
+  "64": {
+    "text": "Compute per-head dimension.",
+    "hash": "24fcedf7"
+  },
+  "65": {
+    "text": "Query projection.",
+    "hash": "433b771f"
+  },
+  "66": {
+    "text": "Key projection.",
+    "hash": "bf2475c8"
+  },
+  "67": {
+    "text": "Value projection.",
+    "hash": "d1a077cb"
+  },
+  "68": {
+    "text": "Output projection to recombine heads.",
+    "hash": "887b9875"
+  },
+  "70": {
+    "text": "Forward pass through attention.",
+    "hash": "a87869a2"
+  },
+  "71": {
+    "text": "Unpack batch size, sequence length, and embedding dimension.",
+    "hash": "4584ac61"
+  },
+  "72": {
+    "text": "Project to queries and reshape: (B, T, C) → (B, n_head, T, head_dim). This splits the embedding into independent heads.",
+    "hash": "30a1c8b6"
+  },
+  "73": {
+    "text": "Same reshape for keys.",
+    "hash": "dcae243b"
+  },
+  "74": {
+    "text": "Same reshape for values.",
+    "hash": "9931351d"
+  },
+  "75": {
+    "text": "Scaled dot-product attention: Q·K^T / sqrt(d). The scaling prevents softmax from saturating in high dimensions.",
+    "hash": "636b2645"
+  },
+  "76": {
+    "text": "Upper triangular mask: prevents each position from attending to future positions. This is what makes it causal.",
+    "hash": "14eeec63"
+  },
+  "77": {
+    "text": "Fill future positions with -inf so softmax gives them zero weight.",
+    "hash": "a2e76efa"
+  },
+  "78": {
+    "text": "Softmax over the key dimension gives attention weights.",
+    "hash": "62dc999a"
+  },
+  "79": {
+    "text": "Weighted sum of values, then reshape back to (B, T, C).",
+    "hash": "a1aef68f"
+  },
+  "80": {
+    "text": "Output projection mixes information across heads.",
+    "hash": "36f2db67"
+  },
+  "83": {
+    "text": "Feed-forward network: expand then contract, with nonlinearity in between.",
+    "hash": "3ad666a1"
+  },
+  "84": {
+    "text": "Constructor takes embedding dimension.",
+    "hash": "691e76ef"
+  },
+  "85": {
+    "text": "Module init.",
+    "hash": "7678213b"
+  },
+  "86": {
+    "text": "Expand to 4x width — the MLP's \"thinking space\".",
+    "hash": "8e9f0642"
+  },
+  "87": {
+    "text": "Contract back to model dimension.",
+    "hash": "62c4768b"
+  },
+  "89": {
+    "text": "Forward pass.",
+    "hash": "a87869a2"
+  },
+  "90": {
+    "text": "ReLU sandwiched between two linear layers.",
+    "hash": "8aa6bebb"
+  },
+  "93": {
+    "text": "A transformer block: attention + MLP with residual connections.",
+    "hash": "4bcc8ea8"
+  },
+  "94": {
+    "text": "Takes embedding and head dimensions.",
+    "hash": "fd88ecfc"
+  },
+  "95": {
+    "text": "Module init.",
+    "hash": "7678213b"
+  },
+  "96": {
+    "text": "Pre-attention normalization.",
+    "hash": "e92b587d"
+  },
+  "97": {
+    "text": "Multi-head causal self-attention.",
+    "hash": "e35ec662"
+  },
+  "98": {
+    "text": "Pre-MLP normalization.",
+    "hash": "f58a7657"
+  },
+  "99": {
+    "text": "Feed-forward network.",
+    "hash": "3768d0e9"
+  },
+  "101": {
+    "text": "Forward pass.",
+    "hash": "a87869a2"
+  },
+  "102": {
+    "text": "Attention with residual connection (pre-norm style).",
+    "hash": "5133b743"
+  },
+  "103": {
+    "text": "MLP with residual connection.",
+    "hash": "50e2183f"
+  },
+  "104": {
+    "text": "Return the updated representations.",
+    "hash": "30239a61"
+  },
+  "107": {
+    "text": "The full GPT model — used for both draft and target, just with different sizes.",
+    "hash": "e94c5dc2"
+  },
+  "108": {
+    "text": "Parameterized constructor: embedding size, heads, and layers are configurable for creating differently-sized models.",
+    "hash": "68116235"
+  },
+  "109": {
+    "text": "Module init.",
+    "hash": "7678213b"
+  },
+  "110": {
+    "text": "Token embedding: maps token IDs to dense vectors.",
+    "hash": "2a2b79bb"
+  },
+  "111": {
+    "text": "Position embedding: maps positions to dense vectors.",
+    "hash": "5338449e"
+  },
+  "112": {
+    "text": "Input normalization after embedding.",
+    "hash": "5caa073e"
+  },
+  "113": {
+    "text": "Stack of transformer blocks — the draft model gets 1, the target gets 2.",
+    "hash": "08b0a2bd"
+  },
+  "114": {
+    "text": "Language model head: projects hidden states to vocabulary logits.",
+    "hash": "1774314d"
+  },
+  "115": {
+    "text": "Apply weight initialization to all submodules.",
+    "hash": "e4941829"
+  },
+  "117": {
+    "text": "Static method — no <code>self</code> needed.",
+    "hash": "ab645c3c"
+  },
+  "118": {
+    "text": "Weight initialization function.",
+    "hash": "2e476132"
+  },
+  "119": {
+    "text": "Only initialize Linear and Embedding layers.",
+    "hash": "e2ce6cde"
+  },
+  "120": {
+    "text": "Small Gaussian initialization (std=0.08) prevents exploding activations.",
+    "hash": "9677d3fd"
+  },
+  "122": {
+    "text": "Forward pass: token IDs in, logits out.",
+    "hash": "1bc7099c"
+  },
+  "123": {
+    "text": "Unpack batch and sequence dimensions.",
+    "hash": "47cad82b"
+  },
+  "124": {
+    "text": "Look up token embeddings.",
+    "hash": "8d137e9c"
+  },
+  "125": {
+    "text": "Look up position embeddings.",
+    "hash": "2b319b15"
+  },
+  "126": {
+    "text": "Add token + position embeddings, then normalize.",
+    "hash": "b88a95ea"
+  },
+  "127": {
+    "text": "Pass through each transformer layer.",
+    "hash": "359aba32"
+  },
+  "128": {
+    "text": "Apply one block.",
+    "hash": "41f1e6d2"
+  },
+  "129": {
+    "text": "Project to vocabulary logits — one score per token in the vocabulary.",
+    "hash": "9ef9adcf"
+  },
+  "135": {
+    "text": "CPU for this demo — the speedup story is cleaner on GPU where memory-boundedness is stark.",
+    "hash": "b39e14b0"
+  },
+  "138": {
+    "text": "Draft model: 32-dim embeddings, 4 heads, 1 layer. Small and fast, but less accurate. It will propose tokens cheaply.",
+    "hash": "c2fd330d"
+  },
+  "140": {
+    "text": "Target model: 64-dim embeddings, 4 heads, 2 layers. Better quality, but 4x slower per forward pass. This is the model whose distribution we want.",
+    "hash": "88d76868"
+  },
+  "143": {
+    "text": "Shared training function — both models train the same way, just with different architectures.",
+    "hash": "d325649d"
+  },
+  "144": {
+    "text": "Print model name and parameter count.",
+    "hash": "5bc76c01"
+  },
+  "145": {
+    "text": "Adam optimizer with the standard hyperparameters.",
+    "hash": "92d21e78"
+  },
+  "146": {
+    "text": "Training loop.",
+    "hash": "53f56939"
+  },
+  "147": {
+    "text": "Cycle through the dataset.",
+    "hash": "47ec0e2c"
+  },
+  "148": {
+    "text": "Tokenize: BOS + characters + BOS (BOS doubles as EOS).",
+    "hash": "ae86abd0"
+  },
+  "149": {
+    "text": "Clip to max sequence length.",
+    "hash": "3d9da8cd"
+  },
+  "150": {
+    "text": "Input: all tokens except the last.",
+    "hash": "968a3346"
+  },
+  "151": {
+    "text": "Target: all tokens except the first (shifted by one).",
+    "hash": "1b63fd95"
+  },
+  "152": {
+    "text": "Forward pass through the model.",
+    "hash": "17df3885"
+  },
+  "153": {
+    "text": "Cross-entropy loss across all positions.",
+    "hash": "4f1dd754"
+  },
+  "154": {
+    "text": "Zero out gradients from the previous step.",
+    "hash": "fbede2b3"
+  },
+  "155": {
+    "text": "Backpropagate through the computation graph.",
+    "hash": "227fe80d"
+  },
+  "156": {
+    "text": "Linear learning rate decay.",
+    "hash": "60602e3a"
+  },
+  "157": {
+    "text": "Apply to all parameter groups.",
+    "hash": "9f6d3592"
+  },
+  "158": {
+    "text": "Set the new learning rate.",
+    "hash": "3030870a"
+  },
+  "159": {
+    "text": "Update parameters.",
+    "hash": "d9e59d7e"
+  },
+  "160": {
+    "text": "Log progress periodically.",
+    "hash": "cf37956f"
+  },
+  "161": {
+    "text": "Print step and loss.",
+    "hash": "63e6c4e6"
+  },
+  "164": {
+    "text": "Create the draft model from config and move to device.",
+    "hash": "46302ef4"
+  },
+  "165": {
+    "text": "Create the target model — same architecture class, different size.",
+    "hash": "6d2a9a75"
+  },
+  "167": {
+    "text": "Train the draft model.",
+    "hash": "a94382d2"
+  },
+  "168": {
+    "text": "Train the target model separately — in production these would be pre-trained independently.",
+    "hash": "d13af9ff"
+  },
+  "173": {
+    "text": "Temperature 0.5: moderate creativity. Lower values make output more deterministic.",
+    "hash": "d66aa849"
+  },
+  "176": {
+    "text": "Disable gradient computation for inference — saves memory and speeds things up.",
+    "hash": "eec96875"
+  },
+  "177": {
+    "text": "Helper: run a model on tokens and return the probability distribution for every position.",
+    "hash": "89055e96"
+  },
+  "179": {
+    "text": "Wrap tokens in a tensor, keeping only the last <code>block_size</code> tokens (sliding window).",
+    "hash": "ce311cc5"
+  },
+  "180": {
+    "text": "Forward pass and apply temperature. Index <code>[0]</code> removes the batch dimension.",
+    "hash": "b681aa4b"
+  },
+  "181": {
+    "text": "Softmax converts logits to probabilities. Returns (T, V) — one distribution per position.",
+    "hash": "5ec5b6a6"
+  },
+  "187": {
+    "text": "Standard autoregressive generation: one token, one forward pass, repeat. This is the baseline we want to beat.",
+    "hash": "a79a3548"
+  },
+  "189": {
+    "text": "Start with just the BOS token.",
+    "hash": "5c52ddc4"
+  },
+  "190": {
+    "text": "No gradients needed for generation.",
+    "hash": "d4f61231"
+  },
+  "191": {
+    "text": "Generate up to <code>max_len</code> tokens.",
+    "hash": "75241adf"
+  },
+  "192": {
+    "text": "Get probabilities for the last position only.",
+    "hash": "4dedce91"
+  },
+  "193": {
+    "text": "Sample one token from the distribution.",
+    "hash": "5b83becd"
+  },
+  "194": {
+    "text": "BOS signals end-of-sequence.",
+    "hash": "41a35c11"
+  },
+  "195": {
+    "text": "Stop generating.",
+    "hash": "14ebe56a"
+  },
+  "196": {
+    "text": "Append the new token and continue.",
+    "hash": "a1ca669a"
+  },
+  "197": {
+    "text": "Return the generated sequence, stripping the initial BOS.",
+    "hash": "464c2a60"
+  },
+  "203": {
+    "text": "The heart of the lab: speculative decoding with draft model <code>draft</code> and target model <code>target</code>. <code>K=4</code> means the draft model guesses 4 tokens ahead.",
+    "hash": "dce5929f"
+  },
+  "219": {
+    "text": "Start the sequence with BOS.",
+    "hash": "5c52ddc4"
+  },
+  "220": {
+    "text": "Statistics tracking: how many tokens drafted, accepted, and how many forward passes each model ran.",
+    "hash": "b73d7772"
+  },
+  "222": {
+    "text": "No gradients for inference.",
+    "hash": "d4f61231"
+  },
+  "223": {
+    "text": "Keep generating until we hit <code>max_len</code>.",
+    "hash": "7c604905"
+  },
+  "225": {
+    "text": "Copy current tokens — the draft model will extend this speculatively.",
+    "hash": "4837adfa"
+  },
+  "226": {
+    "text": "Track each drafted token and its probability under the draft model.",
+    "hash": "0846c6cd"
+  },
+  "227": {
+    "text": "Draft K tokens ahead.",
+    "hash": "f4a4cd2e"
+  },
+  "228": {
+    "text": "Stop if we've hit the length limit.",
+    "hash": "1f53d53a"
+  },
+  "229": {
+    "text": "Break out of the draft loop.",
+    "hash": "14ebe56a"
+  },
+  "230": {
+    "text": "Get draft model's next-token probabilities. This is cheap because the draft model is small.",
+    "hash": "6e0b49ad"
+  },
+  "231": {
+    "text": "Count draft forward passes.",
+    "hash": "f561adb3"
+  },
+  "232": {
+    "text": "Sample a token from the draft distribution.",
+    "hash": "3723de77"
+  },
+  "233": {
+    "text": "Record the token and its draft probability q(x) — we'll need q(x) for the acceptance ratio.",
+    "hash": "32e20527"
+  },
+  "234": {
+    "text": "Extend the draft sequence.",
+    "hash": "9cba9599"
+  },
+  "236": {
+    "text": "Edge case: no tokens were drafted.",
+    "hash": "0261cebb"
+  },
+  "237": {
+    "text": "Nothing to verify, exit.",
+    "hash": "14ebe56a"
+  },
+  "239": {
+    "text": "Record how many tokens the draft model proposed.",
+    "hash": "00687dd2"
+  },
+  "243": {
+    "text": "The key efficiency win: the target model scores ALL drafted positions in ONE forward pass. Autoregressive decoding would need K separate forward passes. Since inference is memory-bound (reading weights dominates), one pass costs almost the same as K.",
+    "hash": "d0b3fd8d"
+  },
+  "244": {
+    "text": "Count target forward passes — should be much fewer than autoregressive.",
+    "hash": "83bb73cd"
+  },
+  "247": {
+    "text": "Track how many consecutive drafts get accepted in this round.",
+    "hash": "f092ada8"
+  },
+  "248": {
+    "text": "Verify each drafted token against the target model's distribution.",
+    "hash": "b7444825"
+  },
+  "251": {
+    "text": "Map draft position to target's output position.",
+    "hash": "e0e1822c"
+  },
+  "252": {
+    "text": "Bounds check.",
+    "hash": "f492de16"
+  },
+  "253": {
+    "text": "Out of range, stop.",
+    "hash": "14ebe56a"
+  },
+  "254": {
+    "text": "Get the target model's probability p(x) for the exact token the draft proposed.",
+    "hash": "5ca7363f"
+  },
+  "257": {
+    "text": "Zero draft probability means the draft model would never have picked this token — reject.",
+    "hash": "bcfac76e"
+  },
+  "258": {
+    "text": "Can't compute the ratio, stop.",
+    "hash": "14ebe56a"
+  },
+  "259": {
+    "text": "The acceptance probability: min(1, p(x)/q(x)). If the target likes this token at least as much as the draft, always accept. If the target likes it less, accept proportionally. This ratio is what guarantees the output distribution matches the target exactly.",
+    "hash": "60a6d497"
+  },
+  "261": {
+    "text": "Coin flip: accept with the computed probability.",
+    "hash": "cb62d5aa"
+  },
+  "263": {
+    "text": "Token accepted — add to the final sequence.",
+    "hash": "16ea5fe1"
+  },
+  "264": {
+    "text": "Increment acceptance count.",
+    "hash": "e613048a"
+  },
+  "265": {
+    "text": "Special case: accepted token is BOS (end of sequence).",
+    "hash": "f0c84d0e"
+  },
+  "266": {
+    "text": "Remove BOS from the output and stop generating.",
+    "hash": "08b8f3af"
+  },
+  "267": {
+    "text": "Update stats (don't count BOS as accepted).",
+    "hash": "5a85493f"
+  },
+  "268": {
+    "text": "Return the generated sequence and statistics.",
+    "hash": "372ace73"
+  },
+  "271": {
+    "text": "Get the target's full distribution at this position.",
+    "hash": "a7495bf8"
+  },
+  "272": {
+    "text": "Reconstruct the draft context up to the rejected position.",
+    "hash": "d03263c8"
+  },
+  "273": {
+    "text": "Re-run draft model to get its full distribution (needed for the correction term).",
+    "hash": "d39990aa"
+  },
+  "274": {
+    "text": "The rejection correction: max(0, p(x) - q(x)). This subtracts the draft's contribution, leaving only the \"extra\" probability mass that the target assigns. After normalization, sampling from this corrected distribution guarantees overall samples come from p(x).",
+    "hash": "9d703b3f"
+  },
+  "275": {
+    "text": "Sum for normalization check.",
+    "hash": "36838d92"
+  },
+  "276": {
+    "text": "If there's positive mass in the adjusted distribution...",
+    "hash": "87db8376"
+  },
+  "277": {
+    "text": "Normalize to a proper probability distribution.",
+    "hash": "8c9b1e0e"
+  },
+  "279": {
+    "text": "Fallback: if adjustment zeroes everything out, use the target's raw distribution.",
+    "hash": "87d5e833"
+  },
+  "280": {
+    "text": "Sample from the corrected distribution.",
+    "hash": "bd17f113"
+  },
+  "281": {
+    "text": "Check for end-of-sequence.",
+    "hash": "41a35c11"
+  },
+  "282": {
+    "text": "Update stats and return.",
+    "hash": "1bda14d8"
+  },
+  "283": {
+    "text": "Return generated sequence.",
+    "hash": "372ace73"
+  },
+  "284": {
+    "text": "Append the corrected token.",
+    "hash": "a1ca669a"
+  },
+  "285": {
+    "text": "After rejection, restart the draft loop from the new position. Don't try to reuse remaining drafts.",
+    "hash": "cfc086b1"
+  },
+  "287": {
+    "text": "Python for-else: this runs if the loop completed without <code>break</code> — meaning ALL K tokens were accepted.",
+    "hash": "675c27cf"
+  },
+  "289": {
+    "text": "When all K drafts are accepted, we get a bonus: the target already computed the probability distribution for the position after the last draft.",
+    "hash": "a2b946dd"
+  },
+  "290": {
+    "text": "Bounds check on the bonus position.",
+    "hash": "155d652c"
+  },
+  "291": {
+    "text": "Get the target's distribution for the bonus position.",
+    "hash": "dc58e240"
+  },
+  "292": {
+    "text": "Sample a bonus token — a free extra token from the target with no additional cost.",
+    "hash": "6a6b2052"
+  },
+  "293": {
+    "text": "Don't append BOS (that ends the sequence).",
+    "hash": "68d99af9"
+  },
+  "294": {
+    "text": "Append the bonus token.",
+    "hash": "a1ca669a"
+  },
+  "296": {
+    "text": "Update accepted count at end of round.",
+    "hash": "1bda14d8"
+  },
+  "298": {
+    "text": "Return the completed sequence and statistics.",
+    "hash": "372ace73"
+  },
+  "304": {
+    "text": "Section header for the comparison.",
+    "hash": "da1b818f"
+  },
+  "306": {
+    "text": "Switch draft model to evaluation mode (disables dropout if any).",
+    "hash": "a69e26c9"
+  },
+  "307": {
+    "text": "Switch target model to evaluation mode.",
+    "hash": "2f69986e"
+  },
+  "308": {
+    "text": "50 samples gives stable timing statistics.",
+    "hash": "c16f0427"
+  },
+  "311": {
+    "text": "Utility: time a generation function over <code>n_samples</code> runs.",
+    "hash": "9333c84d"
+  },
+  "312": {
+    "text": "Print what we're benchmarking.",
+    "hash": "1cdb4b94"
+  },
+  "313": {
+    "text": "Start the timer.",
+    "hash": "25ba4727"
+  },
+  "314": {
+    "text": "Generate all samples.",
+    "hash": "6f1ccdfe"
+  },
+  "315": {
+    "text": "Measure elapsed time.",
+    "hash": "d80dc743"
+  },
+  "316": {
+    "text": "Print total and per-sample timing.",
+    "hash": "aa62e7b4"
+  },
+  "317": {
+    "text": "Return samples and elapsed time for further analysis.",
+    "hash": "a21709a1"
+  },
+  "320": {
+    "text": "Benchmark 1: standard autoregressive decoding with the target model (the baseline).",
+    "hash": "62ef3537"
+  },
+  "321": {
+    "text": "One forward pass per token — the slowest approach.",
+    "hash": "42a3ce54"
+  },
+  "325": {
+    "text": "Initialize stat counters.",
+    "hash": "6849487d"
+  },
+  "326": {
+    "text": "List to collect results with stats.",
+    "hash": "da0ad394"
+  },
+  "328": {
+    "text": "Benchmark 2: speculative decoding (draft proposes, target verifies).",
+    "hash": "fed6e54e"
+  },
+  "329": {
+    "text": "K=4: draft guesses 4 tokens per round.",
+    "hash": "23650bad"
+  },
+  "330": {
+    "text": "Lambda collects both the tokens and the acceptance statistics from each generation.",
+    "hash": "1ec7317b"
+  },
+  "332": {
+    "text": "Aggregate statistics across all samples.",
+    "hash": "83007b46"
+  },
+  "333": {
+    "text": "Sum each stat category.",
+    "hash": "1a9652bb"
+  },
+  "334": {
+    "text": "Accumulate into totals.",
+    "hash": "ef0d7ac5"
+  },
+  "336": {
+    "text": "Benchmark 3: draft-only autoregressive (for reference — fast but lower quality).",
+    "hash": "d294c37a"
+  },
+  "337": {
+    "text": "Uses the small draft model alone.",
+    "hash": "06166649"
+  },
+  "343": {
+    "text": "Acceptance rate: what fraction of draft tokens the target model approved. Higher means the draft model closely matches the target.",
+    "hash": "2544a55d"
+  },
+  "344": {
+    "text": "Average target forward passes per sample — should be much less than the average token count.",
+    "hash": "4259692d"
+  },
+  "345": {
+    "text": "Average draft forward passes per sample.",
+    "hash": "761a49f5"
+  },
+  "346": {
+    "text": "Average tokens generated autoregressively (for comparison).",
+    "hash": "011f967c"
+  },
+  "347": {
+    "text": "Average tokens generated speculatively (should match autoregressive closely).",
+    "hash": "0610655c"
+  },
+  "349": {
+    "text": "Print results header.",
+    "hash": "8a6ef687"
+  },
+  "350": {
+    "text": "Show acceptance rate.",
+    "hash": "c1a71ee9"
+  },
+  "351": {
+    "text": "Compare forward pass counts — this is the efficiency win.",
+    "hash": "8e8be9a8"
+  },
+  "352": {
+    "text": "Draft forward passes (cheap, small model).",
+    "hash": "0fac71bb"
+  },
+  "353": {
+    "text": "Wall-clock speedup ratio: how much faster speculative is.",
+    "hash": "27db6f53"
+  },
+  "354": {
+    "text": "Token counts should be similar — the distribution is mathematically identical.",
+    "hash": "a4d7def5"
+  },
+  "379": {
+    "text": "Show actual generated names from each method.",
+    "hash": "a3e3e588"
+  },
+  "380": {
+    "text": "Iterate over all three approaches.",
+    "hash": "8ed9bbcc"
+  },
+  "381": {
+    "text": "Autoregressive target samples.",
+    "hash": "a0559c23"
+  },
+  "382": {
+    "text": "Speculative decoding samples.",
+    "hash": "5f7b3a2f"
+  },
+  "383": {
+    "text": "Draft-only samples (for comparison).",
+    "hash": "ddc013ad"
+  },
+  "385": {
+    "text": "Print the method label.",
+    "hash": "a3b8d2cf"
+  },
+  "386": {
+    "text": "Show the first 10 samples from each method.",
+    "hash": "5da4a4c3"
+  },
+  "387": {
+    "text": "Decode token IDs back to characters and print.",
+    "hash": "2a0d1a6c"
+  },
+  "388": {
+    "text": "Blank line between methods.",
+    "hash": "525d5133"
+  }
+}

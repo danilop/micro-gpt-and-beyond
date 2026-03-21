@@ -1,6 +1,8 @@
 # microGPT and Beyond
 
-Twenty-two implementations exploring tiny language models, inspired by Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html) — a GPT trained and run in a single file of pure Python. Each version teaches something different about how neural networks are built, trained, and run. The models learn to generate human names from a dataset of ~32,000 real ones.
+A progressive series of labs exploring tiny language models, inspired by Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html) — a GPT trained and run in a single file of pure Python. Each lab teaches something different about how neural networks are built, trained, and served. The models learn to generate human names from a dataset of ~32,000 real ones.
+
+**[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** — browse the code with line-by-line explanations.
 
 The progression goes from raw first principles to framework-powered GPU code, modern architecture upgrades, inference optimization, and alternative paradigms:
 
@@ -27,7 +29,7 @@ The progression goes from raw first principles to framework-powered GPU code, mo
 20_soft_thinking/          Concept tokens preserve the full output distribution at inference.
 21_soft_training/          Soft input curriculum closes the train-test gap for concept tokens.
 22_disaggregated_serving/  Split prefill/decode onto separate workers. No more head-of-line blocking.
-data/                      Shared dataset (auto-downloaded on first run).
+data/                      Shared dataset (auto-downloaded on first run if not present).
 ```
 
 ## The idea
@@ -59,22 +61,22 @@ Every version trains the same architecture — a character-level transformer wit
 | 21 soft training | automatic | yes | no | CPU |
 | 22 disaggregated serving | automatic | yes | no | CPU |
 
-Versions 09–14 extend the base model with **modern architecture and techniques**: BPE tokenization (09), rotary position embeddings (10), grouped-query attention (11), KV caching (12), sampling strategies (13), and LoRA fine-tuning (14).
+Beyond the framework comparisons, the labs extend the base model with **modern architecture and techniques**: BPE tokenization, rotary position embeddings, grouped-query attention, KV caching, sampling strategies, and LoRA fine-tuning.
 
-Version 15 is different: instead of autoregressive (left-to-right) generation, it uses a **masked diffusion model** (MDLM/LLaDA). Names emerge from pure noise — all [MASK] tokens — through iterative unmasking. Same scalar autograd engine as version 01, same zero dependencies, but a fundamentally different generative paradigm.
+The text diffusion lab takes a different path: instead of autoregressive (left-to-right) generation, it uses a **masked diffusion model** (MDLM/LLaDA). Names emerge from pure noise — all [MASK] tokens — through iterative unmasking. Same scalar autograd engine as the pure Python version, same zero dependencies, but a fundamentally different generative paradigm.
 
-Version 16 returns to the autoregressive model from version 03 but shows how to deploy it efficiently: **INT8 quantization** compresses the trained model from 32-bit floats to 8-bit integers, reducing size by ~4× and speeding up CPU inference. This is how production models run on edge devices and servers.
+The quantization lab shows how to deploy efficiently: **INT8 quantization** compresses a trained model from 32-bit floats to 8-bit integers, reducing size by ~4× and speeding up inference. This is how production models run on edge devices and servers.
 
-Versions 17–19 and 22 explore **inference optimization** — the techniques used by production systems like vLLM, FlashAttention, and TensorRT-LLM. Version 17 demonstrates speculative decoding: a small draft model proposes tokens, a larger target model verifies them in one pass, producing identical output faster. Version 18 implements the FlashAttention tiling algorithm from scratch, showing how restructuring attention to stay in fast on-chip memory avoids the memory wall. Version 19 applies the operating system's virtual memory paging concept to KV caches (PagedAttention), the core innovation behind vLLM's 2-4× throughput gains. Version 22 disaggregates the prefill and decode phases onto separate workers, eliminating the head-of-line blocking that plagues colocated serving.
+Several labs explore **inference optimization** — the techniques used by production systems like vLLM, FlashAttention, and TensorRT-LLM. Speculative decoding uses a small draft model to propose tokens while a larger target model verifies them in one pass. FlashAttention restructures attention to stay in fast on-chip memory. PagedAttention applies OS-style virtual memory paging to KV caches. Disaggregated serving splits prefill and decode onto separate workers, eliminating head-of-line blocking.
 
-Versions 20–21 explore **soft thinking** — preserving the full output distribution instead of collapsing to a single token. Version 20 replaces discrete token embeddings with "concept tokens" (probability-weighted blends of all embeddings) at inference time, showing how information flows through continuous space. Version 21 takes this further by training the model with a curriculum of soft inputs, closing the train-test mismatch that limits inference-only soft thinking.
+The soft thinking and soft training labs explore **preserving the full output distribution** instead of collapsing to a single token — passing "concept tokens" (probability-weighted blends of all embeddings) forward, and training the model to work with its own uncertain outputs.
 
 ## Who is this for?
 
-- **ML students** learning transformers from first principles — start at 01, see the full algorithm, then watch frameworks simplify it
-- **Engineers** comparing framework tradeoffs — see how PyTorch (03), JAX (05), and MLX (07) express the same model differently
-- **Practitioners** scaling to production — learn batching (04), GPU optimization (07/08), modern architectures (10-12), and deployment (16)
-- **Researchers** exploring new paradigms — see how diffusion (15) changes the generative process while keeping the same architecture
+- **ML students** learning transformers from first principles — start with pure Python, see the full algorithm, then watch frameworks simplify it
+- **Engineers** comparing framework tradeoffs — see how PyTorch, JAX, and MLX express the same model differently
+- **Practitioners** scaling to production — learn batching, GPU optimization, modern architectures, and deployment techniques
+- **Researchers** exploring new paradigms — see how diffusion and soft thinking change the generative process
 
 ## Learning paths
 
@@ -114,6 +116,14 @@ Versions 20–21 explore **soft thinking** — preserving the full output distri
 
 ## Running
 
+**Browse online:** Visit the **[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** to read the code with line-by-line explanations — no installation needed.
+
+**Run locally with the tutorial:** Start the web tutorial server to browse code AND run labs from the browser:
+
+```bash
+./start_tutorial.sh
+```
+
 **Quick start:** Use the `run.py` helper script from the project root:
 
 ```bash
@@ -144,4 +154,4 @@ Each subfolder has its own README with a deeper look at what makes that implemen
 
 ## Credits
 
-This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy) — a GPT trained and run in a single file of pure, dependency-free Python. The `01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). Versions 02–08 reimplement the same algorithm in different frameworks to show how the same ideas translate across tools. Versions 09–14 extend the architecture with modern techniques — BPE tokenization, RoPE, GQA, KV caching, sampling strategies, and LoRA. Version 15 uses the same autograd engine to explore a different generative paradigm — masked diffusion. Versions 16–19 and 22 implement inference optimization algorithms from scratch — quantization, speculative decoding, FlashAttention tiling, PagedAttention, and disaggregated serving — showing that the core ideas behind production serving systems are accessible at any scale. Versions 20–21 explore soft thinking — preserving probability distributions instead of collapsing to discrete tokens — with Lab 21 building directly on Lab 20's code to show how training can be adapted for continuous inputs.
+This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy) — a GPT trained and run in a single file of pure, dependency-free Python. The `01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). The framework labs reimplement the same algorithm in NumPy, PyTorch, JAX, and MLX to show how the same ideas translate across tools. Further labs extend the architecture with modern techniques and explore inference optimization, alternative generation paradigms, and production serving — showing that the core ideas behind today's LLM systems are accessible at any scale.

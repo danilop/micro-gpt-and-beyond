@@ -37,11 +37,11 @@ vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # Model (larger than 03 to show quantization benefits)
-n_embd = 64
-n_head = 4
-n_layer = 2
-block_size = 16
-head_dim = n_embd // n_head
+n_embd = 64     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 2     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
 
 
 class RMSNorm(nn.Module):
@@ -72,7 +72,7 @@ class CausalSelfAttention(nn.Module):
         att = att.masked_fill(mask, float("-inf"))
         att = F.softmax(att, dim=-1)
 
-        out = (att @ v).transpose(1, 2).contiguous().view(B, T, C)
+        out = (att @ v).transpose(1, 2).reshape(B, T, C)
         return self.wo(out)
 
 
@@ -186,7 +186,7 @@ def quantize_model(model):
 # ---------------------------------------------------------------------------
 # Inference & Benchmark
 # ---------------------------------------------------------------------------
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 
 
 @torch.no_grad()

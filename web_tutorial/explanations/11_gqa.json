@@ -1,0 +1,486 @@
+{
+  "13": {
+    "text": "Standard library imports.",
+    "hash": "b67c9dde"
+  },
+  "14": {
+    "text": "Path operations for dataset loading.",
+    "hash": "de2abade"
+  },
+  "15": {
+    "text": "Reproducibility seed.",
+    "hash": "7e18ed42"
+  },
+  "17": {
+    "text": "PyTorch core.",
+    "hash": "cf1070d3"
+  },
+  "18": {
+    "text": "Neural network layers.",
+    "hash": "b802910c"
+  },
+  "19": {
+    "text": "Functional API for softmax, cross-entropy, etc.",
+    "hash": "5af419e1"
+  },
+  "21": {
+    "text": "Pin both seeds for reproducible comparison across MHA/GQA/MQA variants.",
+    "hash": "f0726c6e"
+  },
+  "22": {
+    "text": "PyTorch random seed.",
+    "hash": "7e7dcf46"
+  },
+  "27": {
+    "text": "Portable dataset path.",
+    "hash": "180b0553"
+  },
+  "28": {
+    "text": "Auto-download on first run.",
+    "hash": "9667c968"
+  },
+  "34": {
+    "text": "Load the names corpus.",
+    "hash": "2f367d0b"
+  },
+  "35": {
+    "text": "Shuffle for random training order.",
+    "hash": "c8f1cb86"
+  },
+  "37": {
+    "text": "Build character vocabulary.",
+    "hash": "5f7ca3bb"
+  },
+  "38": {
+    "text": "BOS token id.",
+    "hash": "476ca504"
+  },
+  "39": {
+    "text": "27 tokens: 26 letters + BOS.",
+    "hash": "0a38d2ba"
+  },
+  "45": {
+    "text": "Same small model config as previous labs \u2014 differences will come from KV head sharing.",
+    "hash": "eb81fecf"
+  },
+  "46": {
+    "text": "4 query heads \u2014 this stays constant across all three variants.",
+    "hash": "5b7ba4c9"
+  },
+  "47": {
+    "text": "Single layer keeps the comparison focused on attention architecture.",
+    "hash": "9068cb85"
+  },
+  "48": {
+    "text": "Max sequence length.",
+    "hash": "4f3059d5"
+  },
+  "49": {
+    "text": "Each head operates on 4 dimensions.",
+    "hash": "1892cf11"
+  },
+  "55": {
+    "text": "RMSNorm \u2014 same lightweight normalization as lab 10.",
+    "hash": "69fade3d"
+  },
+  "61": {
+    "text": "Normalize by root-mean-square, no learned parameters.",
+    "hash": "53678ba7"
+  },
+  "64": {
+    "text": "The star of this lab: one attention class that handles MHA, GQA, and MQA by varying <code>n_kv_head</code>.",
+    "hash": "ba43db0f"
+  },
+  "67": {
+    "text": "The only parameter that changes between variants: how many KV heads to use.",
+    "hash": "0646abe2"
+  },
+  "69": {
+    "text": "Store KV head count.",
+    "hash": "d86b0b25"
+  },
+  "70": {
+    "text": "Query heads must divide evenly into KV groups \u2014 each group of query heads shares one KV head.",
+    "hash": "a6ff69d4"
+  },
+  "71": {
+    "text": "How many query heads share each KV head. MHA: 1 (no sharing). GQA: 2. MQA: 4 (all share one).",
+    "hash": "cd9ee927"
+  },
+  "74": {
+    "text": "Queries always have the full <code>n_head</code> heads \u2014 query capacity is never reduced.",
+    "hash": "433b771f"
+  },
+  "76": {
+    "text": "Keys use fewer heads \u2014 this is where the memory saving comes from. With MQA, this is just <code>1 * head_dim = 4</code> parameters per position instead of <code>4 * head_dim = 16</code>.",
+    "hash": "1283664d"
+  },
+  "77": {
+    "text": "Values match keys \u2014 always the same number of KV heads. The KV cache stores these, so fewer heads = less memory during inference.",
+    "hash": "3af97cec"
+  },
+  "79": {
+    "text": "Output projection is always full-sized \u2014 it recombines all query heads.",
+    "hash": "887b9875"
+  },
+  "81": {
+    "text": "Forward pass \u2014 project, expand KV if needed, attend.",
+    "hash": "a87869a2"
+  },
+  "82": {
+    "text": "Unpack batch, sequence length, embedding dimension.",
+    "hash": "4584ac61"
+  },
+  "85": {
+    "text": "Queries: always full heads. Shape: (B, n_head, T, head_dim).",
+    "hash": "c1bb875a"
+  },
+  "86": {
+    "text": "Keys: only <code>n_kv_head</code> heads. With MQA this is (B, 1, T, head_dim) \u2014 4x smaller than queries.",
+    "hash": "34f334f2"
+  },
+  "87": {
+    "text": "Values: same reduced shape as keys.",
+    "hash": "c5f1b741"
+  },
+  "90": {
+    "text": "If KV heads < query heads, we need to expand KV to match. This is the GQA/MQA trick.",
+    "hash": "11eb7909"
+  },
+  "91": {
+    "text": "Repeat each KV head to serve its group of query heads. Logically shared, but physically copied for the matmul. In practice, this repeat is nearly free \u2014 it's a view/broadcast, not a memcpy.",
+    "hash": "8e93f815"
+  },
+  "92": {
+    "text": "Same expansion for values.",
+    "hash": "a5bf0970"
+  },
+  "95": {
+    "text": "Standard scaled dot-product attention \u2014 identical for all three variants after KV expansion.",
+    "hash": "308b188d"
+  },
+  "96": {
+    "text": "Causal mask: no peeking at future tokens.",
+    "hash": "14eeec63"
+  },
+  "97": {
+    "text": "Mask out future positions with -infinity.",
+    "hash": "a2e76efa"
+  },
+  "98": {
+    "text": "Softmax over the key dimension.",
+    "hash": "62dc999a"
+  },
+  "100": {
+    "text": "Weighted sum of values, reshape back to (B, T, C).",
+    "hash": "a1aef68f"
+  },
+  "101": {
+    "text": "Output projection.",
+    "hash": "36f2db67"
+  },
+  "104": {
+    "text": "Standard MLP \u2014 unchanged across variants.",
+    "hash": "3ad666a1"
+  },
+  "107": {
+    "text": "Expand to 4x dimension.",
+    "hash": "8e9f0642"
+  },
+  "108": {
+    "text": "Project back down.",
+    "hash": "62c4768b"
+  },
+  "110": {
+    "text": "Forward pass.",
+    "hash": "a87869a2"
+  },
+  "111": {
+    "text": "Two-layer MLP with ReLU activation.",
+    "hash": "8aa6bebb"
+  },
+  "114": {
+    "text": "Transformer block parameterized by KV head count.",
+    "hash": "4bcc8ea8"
+  },
+  "115": {
+    "text": "Pass KV head count through to attention.",
+    "hash": "0646abe2"
+  },
+  "117": {
+    "text": "Pre-norm before attention.",
+    "hash": "e92b587d"
+  },
+  "118": {
+    "text": "Attention with configurable KV sharing.",
+    "hash": "cd033512"
+  },
+  "119": {
+    "text": "Pre-norm before MLP.",
+    "hash": "f58a7657"
+  },
+  "122": {
+    "text": "Forward: residual connections around attention and MLP.",
+    "hash": "a87869a2"
+  },
+  "123": {
+    "text": "Attention with residual.",
+    "hash": "5133b743"
+  },
+  "124": {
+    "text": "MLP with residual.",
+    "hash": "50e2183f"
+  },
+  "128": {
+    "text": "Full model \u2014 takes <code>n_kv_head</code> to configure the attention variant.",
+    "hash": "e94c5dc2"
+  },
+  "129": {
+    "text": "KV head count flows from model to block to attention.",
+    "hash": "0646abe2"
+  },
+  "131": {
+    "text": "Token embeddings.",
+    "hash": "2a2b79bb"
+  },
+  "132": {
+    "text": "Learned positional embeddings.",
+    "hash": "5338449e"
+  },
+  "133": {
+    "text": "Input normalization.",
+    "hash": "5caa073e"
+  },
+  "134": {
+    "text": "Stack of transformer blocks, all with the same KV head configuration.",
+    "hash": "0eef0b77"
+  },
+  "135": {
+    "text": "Vocabulary projection.",
+    "hash": "1774314d"
+  },
+  "136": {
+    "text": "Weight initialization.",
+    "hash": "e4941829"
+  },
+  "139": {
+    "text": "Init function applied to all modules.",
+    "hash": "2e476132"
+  },
+  "141": {
+    "text": "Small Gaussian init.",
+    "hash": "9677d3fd"
+  },
+  "143": {
+    "text": "Forward pass.",
+    "hash": "1bc7099c"
+  },
+  "144": {
+    "text": "Unpack dimensions.",
+    "hash": "47cad82b"
+  },
+  "145": {
+    "text": "Token embeddings.",
+    "hash": "8d137e9c"
+  },
+  "146": {
+    "text": "Position embeddings.",
+    "hash": "2b319b15"
+  },
+  "147": {
+    "text": "Combine and normalize.",
+    "hash": "b88a95ea"
+  },
+  "148": {
+    "text": "Pass through transformer blocks.",
+    "hash": "359aba32"
+  },
+  "150": {
+    "text": "Project to vocabulary logits.",
+    "hash": "9ef9adcf"
+  },
+  "156": {
+    "text": "Run on CPU \u2014 fine for this tiny model.",
+    "hash": "b39e14b0"
+  },
+  "157": {
+    "text": "1000 training steps for each variant.",
+    "hash": "f105aa30"
+  },
+  "158": {
+    "text": "Temperature 0.5 for generation \u2014 moderately creative.",
+    "hash": "d66aa849"
+  },
+  "160": {
+    "text": "Three variants to compare, all using the same model class with different <code>n_kv_head</code> values.",
+    "hash": "826c0643"
+  },
+  "161": {
+    "text": "MHA: <code>n_kv_head=4</code> (same as <code>n_head</code>) \u2014 every query head gets its own K,V. The standard approach from labs 01-08.",
+    "hash": "46cb8003"
+  },
+  "162": {
+    "text": "GQA: <code>n_kv_head=2</code> \u2014 two groups of two query heads, each group sharing one K,V pair. The sweet spot used by LLaMA-2 70B.",
+    "hash": "73e4025f"
+  },
+  "163": {
+    "text": "MQA: <code>n_kv_head=1</code> \u2014 all query heads share a single K,V pair. Maximum compression, used by PaLM and Falcon.",
+    "hash": "eeea829c"
+  },
+  "166": {
+    "text": "Shared generation function for all variants.",
+    "hash": "9f2a2f34"
+  },
+  "168": {
+    "text": "Switch to eval mode.",
+    "hash": "45bf010c"
+  },
+  "170": {
+    "text": "No gradients needed during generation.",
+    "hash": "d4f61231"
+  },
+  "171": {
+    "text": "Generate 10 sample names.",
+    "hash": "bb36d13f"
+  },
+  "172": {
+    "text": "Start from BOS.",
+    "hash": "5c52ddc4"
+  },
+  "173": {
+    "text": "Generate up to <code>block_size</code> tokens.",
+    "hash": "ab05dc73"
+  },
+  "174": {
+    "text": "Feed current sequence through the model.",
+    "hash": "ce311cc5"
+  },
+  "175": {
+    "text": "Get next-token logits.",
+    "hash": "7d28f274"
+  },
+  "176": {
+    "text": "Scale by temperature.",
+    "hash": "e1a1328f"
+  },
+  "177": {
+    "text": "Convert to probabilities.",
+    "hash": "93ed4206"
+  },
+  "178": {
+    "text": "Sample next token.",
+    "hash": "5b83becd"
+  },
+  "179": {
+    "text": "Stop if BOS is generated (end of name).",
+    "hash": "41a35c11"
+  },
+  "181": {
+    "text": "Append and continue.",
+    "hash": "a1ca669a"
+  },
+  "182": {
+    "text": "Decode to string.",
+    "hash": "b4368128"
+  },
+  "186": {
+    "text": "Train each variant in sequence with identical data and seeds.",
+    "hash": "8725aa67"
+  },
+  "192": {
+    "text": "Reset seeds before each variant for a fair comparison \u2014 same random init and data order.",
+    "hash": "f0726c6e"
+  },
+  "193": {
+    "text": "Same PyTorch seed.",
+    "hash": "7e7dcf46"
+  },
+  "194": {
+    "text": "Re-shuffle to the same order.",
+    "hash": "c8f1cb86"
+  },
+  "196": {
+    "text": "Create model with this variant's KV head count.",
+    "hash": "a668b5fa"
+  },
+  "197": {
+    "text": "Count total parameters \u2014 fewer KV heads = fewer KV projection parameters.",
+    "hash": "3ba34a25"
+  },
+  "201": {
+    "text": "KV cache memory estimate \u2014 the key metric for inference. Fewer KV heads = proportionally less cache memory. At 7B scale with 2048 context, this difference is gigabytes per request.",
+    "hash": "e1d9a6c7"
+  },
+  "207": {
+    "text": "Same optimizer for all variants.",
+    "hash": "92d21e78"
+  },
+  "209": {
+    "text": "Standard training loop.",
+    "hash": "53f56939"
+  },
+  "210": {
+    "text": "Cycle through shuffled names.",
+    "hash": "47ec0e2c"
+  },
+  "211": {
+    "text": "Tokenize: BOS + chars + BOS.",
+    "hash": "ae86abd0"
+  },
+  "212": {
+    "text": "Clip to block_size.",
+    "hash": "3d9da8cd"
+  },
+  "214": {
+    "text": "Input tokens.",
+    "hash": "968a3346"
+  },
+  "215": {
+    "text": "Target tokens (shifted by one).",
+    "hash": "1b63fd95"
+  },
+  "217": {
+    "text": "Forward pass.",
+    "hash": "17df3885"
+  },
+  "218": {
+    "text": "Cross-entropy loss.",
+    "hash": "4f1dd754"
+  },
+  "220": {
+    "text": "Zero gradients.",
+    "hash": "fbede2b3"
+  },
+  "221": {
+    "text": "Backpropagate.",
+    "hash": "227fe80d"
+  },
+  "222": {
+    "text": "Linear LR decay.",
+    "hash": "60602e3a"
+  },
+  "223": {
+    "text": "Apply decayed LR.",
+    "hash": "9f6d3592"
+  },
+  "225": {
+    "text": "Update weights.",
+    "hash": "d9e59d7e"
+  },
+  "231": {
+    "text": "Generate sample names from this variant.",
+    "hash": "3da05715"
+  },
+  "239": {
+    "text": "Summary table: show how KV sharing affects parameter count and cache size.",
+    "hash": "8725aa67"
+  },
+  "240": {
+    "text": "Calculate KV projection parameters (wk + wv weights) for each variant.",
+    "hash": "0c2c323d"
+  },
+  "241": {
+    "text": "Calculate KV cache memory in bytes (fp16 inference).",
+    "hash": "ce9d8873"
+  }
+}

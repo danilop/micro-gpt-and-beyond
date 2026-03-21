@@ -1,0 +1,434 @@
+{
+  "9": {
+    "text": "Math for attention scaling.",
+    "hash": "b67c9dde"
+  },
+  "10": {
+    "text": "File path handling.",
+    "hash": "de2abade"
+  },
+  "11": {
+    "text": "Python random for shuffling.",
+    "hash": "7e18ed42"
+  },
+  "13": {
+    "text": "<code>mlx.core</code> is MLX's tensor library \u2014 similar to NumPy but runs on Apple Silicon GPU. Arrays live in unified memory shared between CPU and GPU.",
+    "hash": "00d25044"
+  },
+  "14": {
+    "text": "<code>mlx.nn</code> provides neural network modules \u2014 feels like PyTorch's <code>nn</code> module.",
+    "hash": "826b699d"
+  },
+  "15": {
+    "text": "Built-in optimizers, including Adam.",
+    "hash": "8ee68a62"
+  },
+  "16": {
+    "text": "Utility functions for working with MLX's parameter trees.",
+    "hash": "adb10b27"
+  },
+  "18": {
+    "text": "Python seed for dataset shuffling.",
+    "hash": "f0726c6e"
+  },
+  "19": {
+    "text": "MLX has its own RNG, seeded separately.",
+    "hash": "f9057c48"
+  },
+  "24": {
+    "text": "Dataset path \u2014 shared across all labs.",
+    "hash": "180b0553"
+  },
+  "25": {
+    "text": "Auto-download if missing.",
+    "hash": "9667c968"
+  },
+  "28": {
+    "text": "Download URL.",
+    "hash": "5e579f27"
+  },
+  "31": {
+    "text": "Load and split documents.",
+    "hash": "2f367d0b"
+  },
+  "32": {
+    "text": "Shuffle.",
+    "hash": "c8f1cb86"
+  },
+  "35": {
+    "text": "Character vocabulary.",
+    "hash": "5f7ca3bb"
+  },
+  "36": {
+    "text": "BOS token.",
+    "hash": "476ca504"
+  },
+  "37": {
+    "text": "27 tokens total.",
+    "hash": "0a38d2ba"
+  },
+  "43": {
+    "text": "Same tiny architecture as labs 01-03, 05.",
+    "hash": "eb81fecf"
+  },
+  "44": {
+    "text": "4 attention heads.",
+    "hash": "5b7ba4c9"
+  },
+  "45": {
+    "text": "1 transformer layer.",
+    "hash": "9068cb85"
+  },
+  "46": {
+    "text": "16-character context.",
+    "hash": "4f3059d5"
+  },
+  "47": {
+    "text": "4 dims per head.",
+    "hash": "1892cf11"
+  },
+  "50": {
+    "text": "RMSNorm module. MLX uses <code>__call__</code> instead of PyTorch's <code>forward</code> \u2014 Python convention for callable objects.",
+    "hash": "69fade3d"
+  },
+  "53": {
+    "text": "Epsilon for numerical stability.",
+    "hash": "a6082d20"
+  },
+  "55": {
+    "text": "MLX uses <code>__call__</code> for the forward pass, not <code>forward</code>. A stylistic choice \u2014 both work.",
+    "hash": "54e7034e"
+  },
+  "56": {
+    "text": "Element-wise square, then mean. MLX arrays support the same operations as NumPy.",
+    "hash": "f12ba3c4"
+  },
+  "57": {
+    "text": "Scale by inverse RMS. <code>mx.rsqrt</code> is a fused reciprocal square root.",
+    "hash": "9989efa7"
+  },
+  "60": {
+    "text": "Self-attention module \u2014 structurally identical to PyTorch's version in lab 03.",
+    "hash": "c20aaac2"
+  },
+  "63": {
+    "text": "<code>nn.Linear</code> in MLX works just like PyTorch's \u2014 stores a weight matrix, applies matrix multiply.",
+    "hash": "433b771f"
+  },
+  "64": {
+    "text": "Key projection.",
+    "hash": "bf2475c8"
+  },
+  "65": {
+    "text": "Value projection.",
+    "hash": "d1a077cb"
+  },
+  "66": {
+    "text": "Output projection.",
+    "hash": "887b9875"
+  },
+  "68": {
+    "text": "Forward pass. No batch dimension here \u2014 MLX's single-example version operates on (T, C) tensors.",
+    "hash": "54e7034e"
+  },
+  "69": {
+    "text": "Sequence length.",
+    "hash": "6d73e61f"
+  },
+  "70": {
+    "text": "Reshape into heads: (T, D) -> (T, nh, hd) -> (nh, T, hd). Same pattern across every lab.",
+    "hash": "3bceeb3a"
+  },
+  "71": {
+    "text": "Keys reshaped to heads.",
+    "hash": "4e29a648"
+  },
+  "72": {
+    "text": "Values reshaped to heads.",
+    "hash": "1af5e7c2"
+  },
+  "74": {
+    "text": "Scaled dot-product attention.",
+    "hash": "518be9ea"
+  },
+  "75": {
+    "text": "Causal mask. MLX's <code>triu</code> works identically to NumPy/PyTorch.",
+    "hash": "455ce6c1"
+  },
+  "76": {
+    "text": "Apply mask with <code>mx.where</code>.",
+    "hash": "81e451a7"
+  },
+  "77": {
+    "text": "Softmax over keys.",
+    "hash": "ebebc376"
+  },
+  "79": {
+    "text": "Attention output: weighted sum, transpose back, reshape to (T, D).",
+    "hash": "8f6932fc"
+  },
+  "80": {
+    "text": "Output projection.",
+    "hash": "36f2db67"
+  },
+  "83": {
+    "text": "MLP module \u2014 expand, activate, contract.",
+    "hash": "3ad666a1"
+  },
+  "86": {
+    "text": "Expand to 4x dimension.",
+    "hash": "8e9f0642"
+  },
+  "87": {
+    "text": "Contract back.",
+    "hash": "62c4768b"
+  },
+  "89": {
+    "text": "Forward pass.",
+    "hash": "54e7034e"
+  },
+  "90": {
+    "text": "<code>mx.maximum(x, 0)</code> is MLX's ReLU. No separate <code>F.relu</code> function \u2014 just use the element-wise maximum.",
+    "hash": "3aa8c8cc"
+  },
+  "93": {
+    "text": "Transformer block \u2014 same norm-attend-add, norm-MLP-add pattern.",
+    "hash": "4bcc8ea8"
+  },
+  "96": {
+    "text": "Pre-attention norm.",
+    "hash": "e92b587d"
+  },
+  "97": {
+    "text": "Attention.",
+    "hash": "95b016d9"
+  },
+  "98": {
+    "text": "Pre-MLP norm.",
+    "hash": "f58a7657"
+  },
+  "99": {
+    "text": "MLP.",
+    "hash": "17fdd551"
+  },
+  "101": {
+    "text": "Forward: same two-line transformer block as PyTorch.",
+    "hash": "54e7034e"
+  },
+  "102": {
+    "text": "Attention with residual.",
+    "hash": "5133b743"
+  },
+  "103": {
+    "text": "MLP with residual.",
+    "hash": "50e2183f"
+  },
+  "107": {
+    "text": "Complete GPT model.",
+    "hash": "e94c5dc2"
+  },
+  "110": {
+    "text": "Token embedding table.",
+    "hash": "2a2b79bb"
+  },
+  "111": {
+    "text": "Position embedding table.",
+    "hash": "5338449e"
+  },
+  "112": {
+    "text": "Initial normalization.",
+    "hash": "5caa073e"
+  },
+  "113": {
+    "text": "Transformer layers. MLX uses a plain Python list (not <code>ModuleList</code>) \u2014 the framework still discovers parameters through its tree-walking utilities.",
+    "hash": "7efcda6b"
+  },
+  "114": {
+    "text": "Output projection to vocabulary.",
+    "hash": "1774314d"
+  },
+  "116": {
+    "text": "Model forward pass.",
+    "hash": "cb4d4151"
+  },
+  "117": {
+    "text": "Sequence length.",
+    "hash": "d6b49487"
+  },
+  "118": {
+    "text": "Token embeddings.",
+    "hash": "8d137e9c"
+  },
+  "119": {
+    "text": "Position embeddings using <code>mx.arange</code>.",
+    "hash": "5d1cbfec"
+  },
+  "120": {
+    "text": "Fuse and normalize.",
+    "hash": "b88a95ea"
+  },
+  "121": {
+    "text": "Process through layers.",
+    "hash": "359aba32"
+  },
+  "122": {
+    "text": "Each layer transforms the hidden state.",
+    "hash": "41f1e6d2"
+  },
+  "123": {
+    "text": "Project to vocabulary logits.",
+    "hash": "9ef9adcf"
+  },
+  "129": {
+    "text": "Instantiate the model. No <code>.to(device)</code> needed \u2014 MLX's unified memory means arrays are already accessible by both CPU and GPU.",
+    "hash": "15299a22"
+  },
+  "131": {
+    "text": "Flatten the parameter tree for re-initialization.",
+    "hash": "b00451e2"
+  },
+  "132": {
+    "text": "Replace all weights with N(0, 0.08) random values. MLX doesn't have PyTorch's <code>apply</code> method, so we reinitialize through <code>load_weights</code>.",
+    "hash": "606b1ac0"
+  },
+  "133": {
+    "text": "Count parameters.",
+    "hash": "339de0cf"
+  },
+  "136": {
+    "text": "Adam hyperparameters \u2014 same across all labs.",
+    "hash": "dca02c26"
+  },
+  "139": {
+    "text": "Loss function takes the MODEL as its first argument \u2014 this is how MLX's <code>value_and_grad</code> knows which parameters to differentiate.",
+    "hash": "57a973e1"
+  },
+  "140": {
+    "text": "Forward pass.",
+    "hash": "a11c998f"
+  },
+  "142": {
+    "text": "Manual log-softmax: <code>logits - logsumexp(logits)</code>. More numerically stable than <code>log(softmax(x))</code>.",
+    "hash": "e8b01f5c"
+  },
+  "143": {
+    "text": "Sequence length.",
+    "hash": "e7cfde06"
+  },
+  "144": {
+    "text": "Gather target log-probs and negate their mean \u2014 cross-entropy loss.",
+    "hash": "caed3810"
+  },
+  "148": {
+    "text": "<code>nn.value_and_grad</code> creates a function that returns both the loss value and gradients in one call. MLX's equivalent of PyTorch's forward + backward.",
+    "hash": "fc7d4fe4"
+  },
+  "149": {
+    "text": "MLX's built-in Adam optimizer. Unlike JAX where we wrote Adam manually, MLX provides a stateful optimizer like PyTorch.",
+    "hash": "d828d8b5"
+  },
+  "151": {
+    "text": "1000 training steps.",
+    "hash": "f105aa30"
+  },
+  "152": {
+    "text": "Training loop.",
+    "hash": "53f56939"
+  },
+  "153": {
+    "text": "Cycle through documents.",
+    "hash": "47ec0e2c"
+  },
+  "154": {
+    "text": "Tokenize.",
+    "hash": "ae86abd0"
+  },
+  "155": {
+    "text": "Clip to context length.",
+    "hash": "3d9da8cd"
+  },
+  "157": {
+    "text": "Convert to MLX array.",
+    "hash": "db32d2a5"
+  },
+  "158": {
+    "text": "Targets as MLX array.",
+    "hash": "5e5b4baf"
+  },
+  "160": {
+    "text": "Compute loss and gradients in one call. Clean and efficient.",
+    "hash": "b8e0d912"
+  },
+  "163": {
+    "text": "Linear LR decay.",
+    "hash": "a7ee9183"
+  },
+  "164": {
+    "text": "Update the optimizer's learning rate. Must wrap in <code>mx.array</code> \u2014 MLX is strict about types.",
+    "hash": "945beed3"
+  },
+  "165": {
+    "text": "Apply gradient update to model parameters.",
+    "hash": "f28c1e54"
+  },
+  "166": {
+    "text": "Force evaluation. MLX uses lazy evaluation \u2014 operations build a computation graph but don't execute until you call <code>mx.eval</code>. This lets MLX fuse and optimize operations. Without this call, nothing would actually compute.",
+    "hash": "172e53fd"
+  },
+  "168": {
+    "text": "Log every 10 steps.",
+    "hash": "cf37956f"
+  },
+  "169": {
+    "text": "<code>.item()</code> extracts a Python scalar from an MLX array.",
+    "hash": "d1dac45a"
+  },
+  "174": {
+    "text": "Temperature for generation.",
+    "hash": "d66aa849"
+  },
+  "176": {
+    "text": "Generate 20 names.",
+    "hash": "64d836c5"
+  },
+  "177": {
+    "text": "Start with BOS.",
+    "hash": "5c52ddc4"
+  },
+  "178": {
+    "text": "Generate characters.",
+    "hash": "ab05dc73"
+  },
+  "179": {
+    "text": "Convert tokens to MLX array.",
+    "hash": "93c068a4"
+  },
+  "180": {
+    "text": "Forward pass.",
+    "hash": "17df3885"
+  },
+  "181": {
+    "text": "Last position's logits, temperature-scaled.",
+    "hash": "083e8501"
+  },
+  "182": {
+    "text": "Sample from categorical distribution. MLX's RNG doesn't require explicit key management like JAX.",
+    "hash": "eae262da"
+  },
+  "183": {
+    "text": "BOS signals name completion.",
+    "hash": "41a35c11"
+  },
+  "185": {
+    "text": "Extend sequence.",
+    "hash": "a1ca669a"
+  },
+  "186": {
+    "text": "Convert to characters.",
+    "hash": "b4368128"
+  },
+  "187": {
+    "text": "Print generated name.",
+    "hash": "f9d6f741"
+  }
+}

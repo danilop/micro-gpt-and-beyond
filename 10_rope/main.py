@@ -41,11 +41,11 @@ print(f"vocab size: {vocab_size}")
 # ---------------------------------------------------------------------------
 # Model config
 # ---------------------------------------------------------------------------
-n_embd = 16
-n_head = 4
-n_layer = 1
-block_size = 16
-head_dim = n_embd // n_head
+n_embd = 16     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 1     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ class CausalSelfAttention(nn.Module):
         att = att.masked_fill(mask, float("-inf"))
         att = F.softmax(att, dim=-1)
 
-        out = (att @ v).transpose(1, 2).contiguous().view(B, T, C)
+        out = (att @ v).transpose(1, 2).reshape(B, T, C)
         return self.wo(out)
 
 

@@ -1,0 +1,614 @@
+{
+  "11": {
+    "text": "<code>copy</code> for deep-copying the base model state before LoRA injection.",
+    "hash": "e3b0c442"
+  },
+  "12": {
+    "text": "Math for attention scaling.",
+    "hash": "37effa9c"
+  },
+  "13": {
+    "text": "Path operations.",
+    "hash": "b67c9dde"
+  },
+  "14": {
+    "text": "Shuffle seed.",
+    "hash": "de2abade"
+  },
+  "16": {
+    "text": "PyTorch core.",
+    "hash": "e3b0c442"
+  },
+  "17": {
+    "text": "Neural network layers.",
+    "hash": "cf1070d3"
+  },
+  "18": {
+    "text": "Functional API.",
+    "hash": "b802910c"
+  },
+  "20": {
+    "text": "Pin seeds.",
+    "hash": "e3b0c442"
+  },
+  "21": {
+    "text": "PyTorch seed.",
+    "hash": "f0726c6e"
+  },
+  "27": {
+    "text": "Dataset path.",
+    "hash": "180b0553"
+  },
+  "28": {
+    "text": "Auto-download.",
+    "hash": "9667c968"
+  },
+  "34": {
+    "text": "Load names.",
+    "hash": "2f367d0b"
+  },
+  "35": {
+    "text": "Shuffle.",
+    "hash": "c8f1cb86"
+  },
+  "36": {
+    "text": "Character vocabulary.",
+    "hash": "5f7ca3bb"
+  },
+  "37": {
+    "text": "BOS token.",
+    "hash": "476ca504"
+  },
+  "38": {
+    "text": "27 tokens.",
+    "hash": "0a38d2ba"
+  },
+  "47": {
+    "text": "The LoRA wrapper: the key innovation of this lab. Wraps an existing <code>nn.Linear</code> and adds two tiny matrices that learn to \"steer\" the original layer's output.",
+    "hash": "56c214a9"
+  },
+  "54": {
+    "text": "Takes an existing trained linear layer and wraps it with low-rank adapters.",
+    "hash": "d5672e28"
+  },
+  "56": {
+    "text": "Detach the base weight from the model. The frozen base weight holds the pre-trained knowledge.",
+    "hash": "fb91133f"
+  },
+  "57": {
+    "text": "Freeze the base weight \u2014 its <code>requires_grad</code> is now False. During fine-tuning, no gradients flow here.",
+    "hash": "4cbc2b29"
+  },
+  "58": {
+    "text": "Read the dimensions from the existing weight matrix.",
+    "hash": "b42859f3"
+  },
+  "59": {
+    "text": "<code>lora_A</code>: the \"down-projection\" (rank x d_in). Random init \u2014 this matrix learns to read important features from the input. Small random values to break symmetry.",
+    "hash": "8abdc7cd"
+  },
+  "60": {
+    "text": "<code>lora_B</code>: the \"up-projection\" (d_out x rank). Zero init is crucial \u2014 it makes the adapter a no-op at the start. The model behaves exactly like the base model until training begins to shift B away from zero.",
+    "hash": "fcda10d1"
+  },
+  "62": {
+    "text": "Forward: base output + adapter output. Two paths, summed.",
+    "hash": "a87869a2"
+  },
+  "65": {
+    "text": "The math: <code>W*x + B*A*x</code>. Since B starts at zero, the adapter contributes nothing initially. As B learns non-zero values, the adapter gently steers the output. With rank=4, A is (4, d_in) and B is (d_out, 4) \u2014 tiny compared to W's (d_out, d_in).",
+    "hash": "80aaecdf"
+  },
+  "71": {
+    "text": "Same model config as lab 03.",
+    "hash": "eb81fecf"
+  },
+  "72": {
+    "text": "4 attention heads.",
+    "hash": "5b7ba4c9"
+  },
+  "73": {
+    "text": "Single layer.",
+    "hash": "9068cb85"
+  },
+  "74": {
+    "text": "Max sequence length.",
+    "hash": "4f3059d5"
+  },
+  "75": {
+    "text": "4 dimensions per head.",
+    "hash": "1892cf11"
+  },
+  "78": {
+    "text": "RMSNorm.",
+    "hash": "69fade3d"
+  },
+  "84": {
+    "text": "Normalize by root-mean-square.",
+    "hash": "53678ba7"
+  },
+  "87": {
+    "text": "Standard causal attention \u2014 identical to lab 03.",
+    "hash": "c20aaac2"
+  },
+  "90": {
+    "text": "Q, K, V, output projections. These will be wrapped with LoRA later.",
+    "hash": "433b771f"
+  },
+  "91": {
+    "text": "Key projection.",
+    "hash": "bf2475c8"
+  },
+  "92": {
+    "text": "Value projection.",
+    "hash": "d1a077cb"
+  },
+  "93": {
+    "text": "Output projection.",
+    "hash": "887b9875"
+  },
+  "95": {
+    "text": "Forward pass \u2014 standard attention.",
+    "hash": "a87869a2"
+  },
+  "96": {
+    "text": "Unpack dimensions.",
+    "hash": "4584ac61"
+  },
+  "97": {
+    "text": "Project queries.",
+    "hash": "d0c33c49"
+  },
+  "98": {
+    "text": "Project keys.",
+    "hash": "a48e9c7a"
+  },
+  "99": {
+    "text": "Project values.",
+    "hash": "7fcca8ac"
+  },
+  "101": {
+    "text": "Scaled dot-product.",
+    "hash": "308b188d"
+  },
+  "102": {
+    "text": "Causal mask.",
+    "hash": "14eeec63"
+  },
+  "103": {
+    "text": "Mask future positions.",
+    "hash": "a2e76efa"
+  },
+  "104": {
+    "text": "Softmax.",
+    "hash": "62dc999a"
+  },
+  "106": {
+    "text": "Weighted sum of values.",
+    "hash": "a1aef68f"
+  },
+  "107": {
+    "text": "Output projection.",
+    "hash": "36f2db67"
+  },
+  "110": {
+    "text": "Standard MLP.",
+    "hash": "3ad666a1"
+  },
+  "113": {
+    "text": "Expand 4x.",
+    "hash": "8e9f0642"
+  },
+  "114": {
+    "text": "Project back.",
+    "hash": "62c4768b"
+  },
+  "116": {
+    "text": "Forward.",
+    "hash": "a87869a2"
+  },
+  "117": {
+    "text": "Two-layer MLP with ReLU.",
+    "hash": "8aa6bebb"
+  },
+  "120": {
+    "text": "Transformer block.",
+    "hash": "4bcc8ea8"
+  },
+  "123": {
+    "text": "Pre-norm.",
+    "hash": "e92b587d"
+  },
+  "124": {
+    "text": "Attention.",
+    "hash": "95b016d9"
+  },
+  "125": {
+    "text": "Pre-norm.",
+    "hash": "f58a7657"
+  },
+  "126": {
+    "text": "MLP.",
+    "hash": "17fdd551"
+  },
+  "128": {
+    "text": "Forward with residual connections.",
+    "hash": "a87869a2"
+  },
+  "129": {
+    "text": "Attention + residual.",
+    "hash": "5133b743"
+  },
+  "130": {
+    "text": "MLP + residual.",
+    "hash": "50e2183f"
+  },
+  "134": {
+    "text": "Full model \u2014 identical to lab 03 for pre-training.",
+    "hash": "e94c5dc2"
+  },
+  "137": {
+    "text": "Token embeddings.",
+    "hash": "2a2b79bb"
+  },
+  "138": {
+    "text": "Position embeddings.",
+    "hash": "5338449e"
+  },
+  "139": {
+    "text": "Input norm.",
+    "hash": "5caa073e"
+  },
+  "140": {
+    "text": "Transformer blocks.",
+    "hash": "d10311df"
+  },
+  "141": {
+    "text": "Output projection.",
+    "hash": "1774314d"
+  },
+  "142": {
+    "text": "Weight init.",
+    "hash": "e4941829"
+  },
+  "146": {
+    "text": "Small Gaussian init.",
+    "hash": "e2ce6cde"
+  },
+  "149": {
+    "text": "Forward pass.",
+    "hash": "1bc7099c"
+  },
+  "150": {
+    "text": "Unpack.",
+    "hash": "47cad82b"
+  },
+  "151": {
+    "text": "Token embeddings.",
+    "hash": "8d137e9c"
+  },
+  "152": {
+    "text": "Position embeddings.",
+    "hash": "2b319b15"
+  },
+  "153": {
+    "text": "Combine and normalize.",
+    "hash": "b88a95ea"
+  },
+  "154": {
+    "text": "Through blocks.",
+    "hash": "359aba32"
+  },
+  "156": {
+    "text": "Project to logits.",
+    "hash": "9ef9adcf"
+  },
+  "162": {
+    "text": "Run on CPU.",
+    "hash": "b39e14b0"
+  },
+  "163": {
+    "text": "Temperature 0.5 for generation.",
+    "hash": "d66aa849"
+  },
+  "166": {
+    "text": "Generate names from the model (used for both base and LoRA-adapted models).",
+    "hash": "4dbeac18"
+  },
+  "168": {
+    "text": "Eval mode.",
+    "hash": "45bf010c"
+  },
+  "170": {
+    "text": "No gradients.",
+    "hash": "d4f61231"
+  },
+  "172": {
+    "text": "Start from BOS.",
+    "hash": "5c52ddc4"
+  },
+  "173": {
+    "text": "Generate up to <code>block_size</code> tokens.",
+    "hash": "ab05dc73"
+  },
+  "174": {
+    "text": "Feed current sequence.",
+    "hash": "ce311cc5"
+  },
+  "175": {
+    "text": "Get logits.",
+    "hash": "7d28f274"
+  },
+  "176": {
+    "text": "Temperature scaling.",
+    "hash": "e1a1328f"
+  },
+  "177": {
+    "text": "Softmax.",
+    "hash": "93ed4206"
+  },
+  "178": {
+    "text": "Sample.",
+    "hash": "5b83becd"
+  },
+  "179": {
+    "text": "Stop at BOS.",
+    "hash": "41a35c11"
+  },
+  "181": {
+    "text": "Append.",
+    "hash": "a1ca669a"
+  },
+  "182": {
+    "text": "Decode.",
+    "hash": "b4368128"
+  },
+  "189": {
+    "text": "Shared training step \u2014 used for both pre-training and LoRA fine-tuning.",
+    "hash": "7a5b2a72"
+  },
+  "191": {
+    "text": "Tokenize the name.",
+    "hash": "ae86abd0"
+  },
+  "192": {
+    "text": "Clip to block_size.",
+    "hash": "3d9da8cd"
+  },
+  "193": {
+    "text": "Input tokens.",
+    "hash": "968a3346"
+  },
+  "194": {
+    "text": "Target tokens.",
+    "hash": "1b63fd95"
+  },
+  "196": {
+    "text": "Forward pass.",
+    "hash": "17df3885"
+  },
+  "197": {
+    "text": "Cross-entropy loss.",
+    "hash": "4f1dd754"
+  },
+  "199": {
+    "text": "Zero gradients.",
+    "hash": "fbede2b3"
+  },
+  "200": {
+    "text": "Backprop \u2014 during LoRA fine-tuning, gradients only flow into the unfrozen LoRA parameters.",
+    "hash": "227fe80d"
+  },
+  "201": {
+    "text": "Linear LR decay.",
+    "hash": "68079a2b"
+  },
+  "203": {
+    "text": "Apply LR.",
+    "hash": "3030870a"
+  },
+  "204": {
+    "text": "Update \u2014 only LoRA parameters move because base weights are frozen.",
+    "hash": "d9e59d7e"
+  },
+  "215": {
+    "text": "Create the base model for pre-training on all names.",
+    "hash": "40b7fcd9"
+  },
+  "216": {
+    "text": "Total parameter count before LoRA.",
+    "hash": "fff12737"
+  },
+  "219": {
+    "text": "Adam optimizer for full pre-training.",
+    "hash": "92d21e78"
+  },
+  "220": {
+    "text": "1000 steps of pre-training.",
+    "hash": "f105aa30"
+  },
+  "222": {
+    "text": "Pre-training loop \u2014 standard next-token prediction on the full names corpus.",
+    "hash": "53f56939"
+  },
+  "223": {
+    "text": "Cycle through all names.",
+    "hash": "47ec0e2c"
+  },
+  "224": {
+    "text": "Train step.",
+    "hash": "ddca3f41"
+  },
+  "229": {
+    "text": "Generate some baseline names to see the pre-trained model's behavior.",
+    "hash": "7104c2dd"
+  },
+  "232": {
+    "text": "Save the pre-trained state so we can compare with LoRA later. Deep copy because LoRA will modify the model in-place.",
+    "hash": "b4f86bc0"
+  },
+  "237": {
+    "text": "Choose a fine-tuning target: names starting with 'm'. LoRA will shift the distribution toward these.",
+    "hash": "bb5f62b5"
+  },
+  "238": {
+    "text": "Filter the dataset to only 'm' names.",
+    "hash": "b8e39399"
+  },
+  "251": {
+    "text": "Rank 4: the adapter matrices are (4 x d_in) and (d_out x 4). Tiny compared to the full weight matrices.",
+    "hash": "5398c240"
+  },
+  "254": {
+    "text": "Recursively walk the model and wrap every <code>nn.Linear</code> with <code>LoRALinear</code>.",
+    "hash": "bc715ec6"
+  },
+  "256": {
+    "text": "Find linear layers in the module tree.",
+    "hash": "e21a43a2"
+  },
+  "257": {
+    "text": "Found one \u2014 replace it with a LoRA wrapper.",
+    "hash": "2993579f"
+  },
+  "258": {
+    "text": "Swap the original linear layer for the LoRA-wrapped version in-place.",
+    "hash": "32034e5f"
+  },
+  "260": {
+    "text": "Recurse into child modules to find nested linear layers.",
+    "hash": "6ebee192"
+  },
+  "264": {
+    "text": "Only inject LoRA into the transformer layers \u2014 not embeddings or lm_head. Embedding layers don't benefit from LoRA at this scale.",
+    "hash": "b9774c64"
+  },
+  "265": {
+    "text": "Apply LoRA to each transformer layer's attention and MLP sublayers.",
+    "hash": "613da4c2"
+  },
+  "267": {
+    "text": "Recount parameters \u2014 total grows slightly because of the LoRA matrices.",
+    "hash": "fff12737"
+  },
+  "268": {
+    "text": "Count trainable parameters \u2014 only the LoRA A and B matrices have <code>requires_grad=True</code>.",
+    "hash": "737983cd"
+  },
+  "269": {
+    "text": "Frozen parameters = total - trainable.",
+    "hash": "b74154d2"
+  },
+  "270": {
+    "text": "What percentage of parameters are trainable? Expect ~5-15% depending on architecture.",
+    "hash": "9ae4ae1a"
+  },
+  "284": {
+    "text": "Only feed LoRA parameters to the optimizer \u2014 the frozen base weights are excluded.",
+    "hash": "320761bc"
+  },
+  "285": {
+    "text": "Fresh optimizer for fine-tuning \u2014 only LoRA parameters.",
+    "hash": "e1b6c784"
+  },
+  "286": {
+    "text": "500 fine-tuning steps \u2014 less than pre-training because we're making a small adjustment.",
+    "hash": "17a9764e"
+  },
+  "288": {
+    "text": "Fine-tuning loop \u2014 same training step, but on 'm'-filtered data.",
+    "hash": "bb777943"
+  },
+  "289": {
+    "text": "Cycle through only 'm' names.",
+    "hash": "7807be38"
+  },
+  "290": {
+    "text": "Train step \u2014 gradients flow through LoRA A and B only.",
+    "hash": "959582a5"
+  },
+  "303": {
+    "text": "Seed for reproducible generation.",
+    "hash": "7e7dcf46"
+  },
+  "304": {
+    "text": "Generate 20 names from the LoRA-adapted model \u2014 expect a strong bias toward 'm' names.",
+    "hash": "46057e63"
+  },
+  "307": {
+    "text": "Reload the original pre-trained weights (without LoRA) for comparison.",
+    "hash": "5d75fbef"
+  },
+  "308": {
+    "text": "Restore the saved base model state.",
+    "hash": "ff9bd5a6"
+  },
+  "310": {
+    "text": "Same seed for fair comparison.",
+    "hash": "7e7dcf46"
+  },
+  "311": {
+    "text": "Generate from the base model \u2014 these should show the original, unbiased distribution.",
+    "hash": "83de5633"
+  },
+  "314": {
+    "text": "Count 'm' names from the LoRA model \u2014 should be substantially higher than base.",
+    "hash": "d6ed3e89"
+  },
+  "315": {
+    "text": "Count 'm' names from the base model \u2014 should reflect the natural ~4% rate.",
+    "hash": "a4c8bda0"
+  },
+  "330": {
+    "text": "Merge LoRA: fold the learned adapter weights back into the base weight matrix. After merging, the model is a standard <code>nn.Linear</code> again with zero runtime overhead.",
+    "hash": "3ad0043d"
+  },
+  "332": {
+    "text": "Walk the module tree looking for LoRA-wrapped layers.",
+    "hash": "e21a43a2"
+  },
+  "333": {
+    "text": "Found a LoRA layer \u2014 merge it back.",
+    "hash": "688eb191"
+  },
+  "334": {
+    "text": "Create a fresh <code>nn.Linear</code> with the merged weights.",
+    "hash": "0b035ba4"
+  },
+  "340": {
+    "text": "The merge: <code>W_new = W_base + B @ A</code>. This is mathematically identical to the LoRA forward pass but baked into a single weight matrix. No adapter overhead at inference time.",
+    "hash": "d0560a6d"
+  },
+  "341": {
+    "text": "Replace the LoRA wrapper with the merged standard linear layer.",
+    "hash": "7914129c"
+  },
+  "343": {
+    "text": "Recurse into children.",
+    "hash": "fd09d577"
+  },
+  "346": {
+    "text": "Merge all LoRA layers in the model.",
+    "hash": "398ebef7"
+  },
+  "352": {
+    "text": "Same seed \u2014 merged model should produce IDENTICAL output to the LoRA model.",
+    "hash": "7e7dcf46"
+  },
+  "353": {
+    "text": "Generate from the merged model.",
+    "hash": "4cb44661"
+  },
+  "355": {
+    "text": "Verify every name matches \u2014 merging is exact, not an approximation.",
+    "hash": "9bee822f"
+  },
+  "358": {
+    "text": "After merging, parameter count should equal the original base model \u2014 LoRA overhead is gone.",
+    "hash": "f0f2148c"
+  },
+  "359": {
+    "text": "Confirm: same size as the original model, but with the fine-tuned behavior baked in.",
+    "hash": "71877c1a"
+  }
+}

@@ -45,7 +45,7 @@ print(f"vocab size: {vocab_size}")
 # ---------------------------------------------------------------------------
 # Model — two sizes: a small draft model and a larger target model
 # ---------------------------------------------------------------------------
-block_size = 16
+block_size = 16 # maximum sequence length
 
 
 class RMSNorm(nn.Module):
@@ -76,7 +76,7 @@ class CausalSelfAttention(nn.Module):
         mask = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
         att = att.masked_fill(mask, float("-inf"))
         att = F.softmax(att, dim=-1)
-        out = (att @ v).transpose(1, 2).contiguous().view(B, T, C)
+        out = (att @ v).transpose(1, 2).reshape(B, T, C)
         return self.wo(out)
 
 
@@ -170,7 +170,7 @@ train_model(target_model, "target")
 # ---------------------------------------------------------------------------
 # Inference methods
 # ---------------------------------------------------------------------------
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 
 
 @torch.no_grad()
@@ -269,7 +269,8 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
                 else:
                     # Reject: sample from adjusted distribution max(0, p - q)
                     pos_probs = target_probs[pos]
-                    draft_full = get_probs(draft, tokens + draft_tokens[len(tokens) : len(tokens) + i + 1])[-1]
+                    accepted_drafts = draft_tokens[len(tokens) : len(tokens) + i + 1]
+                    draft_full = get_probs(draft, tokens + accepted_drafts)[-1]
                     adjusted = torch.clamp(pos_probs - draft_full, min=0)
                     adj_sum = adjusted.sum()
                     if adj_sum > 0:
@@ -322,16 +323,15 @@ auto_samples, auto_time = timed_generate(
 
 # Speculative: also collect accept/reject stats
 total_stats = {"drafted": 0, "accepted": 0, "target_fwd": 0, "draft_fwd": 0}
+spec_results = []
 
-
-def _spec():
-    s, stats = generate_speculative(draft_model, target_model, K=4)
+spec_samples, spec_time = timed_generate(
+    "speculative decoding (K=4)",
+    lambda: spec_results.append(generate_speculative(draft_model, target_model, K=4)) or spec_results[-1][0],
+)
+for _, stats in spec_results:
     for k in total_stats:
         total_stats[k] += stats[k]
-    return s
-
-
-spec_samples, spec_time = timed_generate("speculative decoding (K=4)", _spec)
 
 draft_samples, draft_time = timed_generate(
     "autoregressive decoding (draft)", lambda: generate_autoregressive(draft_model)

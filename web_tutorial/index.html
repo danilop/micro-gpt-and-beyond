@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>microGPT and Beyond</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-dim: #1f6feb33;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .container { max-width: 860px; margin: 0 auto; padding: 60px 24px; }
+  h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+  }
+  .tagline {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    margin-bottom: 48px;
+    max-width: 600px;
+  }
+  .lab-list { list-style: none; }
+  .lab-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .lab-item:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .lab-item a {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .lab-num {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 28px;
+  }
+  .lab-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .lab-tagline {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    text-align: right;
+    max-width: 45%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (max-width: 700px) {
+    .lab-item a { flex-wrap: wrap; }
+    .lab-tagline { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>microGPT and Beyond</h1>
+  <p class="tagline">Build a GPT from scratch, one concept at a time — from pure Python to production serving.</p>
+  <ul class="lab-list" id="labs"></ul>
+</div>
+<script>
+// Try API first (local server), fall back to static bundle (GitHub Pages)
+async function loadLabs() {
+  try {
+    const r = await fetch("/api/labs");
+    if (r.ok) return await r.json();
+  } catch (e) {}
+  // Static fallback
+  const r = await fetch("data/labs.json");
+  return (await r.json()).map(l => ({id: l.id, title: l.title, tagline: l.tagline}));
+}
+
+loadLabs().then(labs => {
+  const ul = document.getElementById("labs");
+  labs.forEach((lab, i) => {
+    const li = document.createElement("li");
+    li.className = "lab-item";
+    const num = String(i + 1).padStart(2, "0");
+    const href = `lab.html?lab=${lab.id}`;
+    li.innerHTML = `<a href="${href}">
+      <span class="lab-num">${num}</span>
+      <span class="lab-title">${lab.title}</span>
+      <span class="lab-tagline">${lab.tagline}</span>
+    </a>`;
+    ul.appendChild(li);
+  });
+});
+</script>
+</body>
+</html>

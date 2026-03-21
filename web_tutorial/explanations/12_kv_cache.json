@@ -1,0 +1,614 @@
+{
+  "12": {
+    "text": "Standard imports.",
+    "hash": "b67c9dde"
+  },
+  "13": {
+    "text": "Path operations.",
+    "hash": "de2abade"
+  },
+  "14": {
+    "text": "Shuffle seed.",
+    "hash": "7e18ed42"
+  },
+  "15": {
+    "text": "Wall-clock timing for the naive vs cached benchmark.",
+    "hash": "4f9b8491"
+  },
+  "17": {
+    "text": "PyTorch core.",
+    "hash": "cf1070d3"
+  },
+  "18": {
+    "text": "Neural network layers.",
+    "hash": "b802910c"
+  },
+  "19": {
+    "text": "Functional API.",
+    "hash": "5af419e1"
+  },
+  "21": {
+    "text": "Pin seeds for reproducible benchmarks.",
+    "hash": "f0726c6e"
+  },
+  "22": {
+    "text": "PyTorch seed.",
+    "hash": "7e7dcf46"
+  },
+  "27": {
+    "text": "Portable dataset path.",
+    "hash": "180b0553"
+  },
+  "28": {
+    "text": "Auto-download on first run.",
+    "hash": "9667c968"
+  },
+  "34": {
+    "text": "Load names corpus.",
+    "hash": "2f367d0b"
+  },
+  "35": {
+    "text": "Shuffle.",
+    "hash": "c8f1cb86"
+  },
+  "38": {
+    "text": "Build character vocabulary.",
+    "hash": "5f7ca3bb"
+  },
+  "39": {
+    "text": "BOS token.",
+    "hash": "476ca504"
+  },
+  "40": {
+    "text": "27 tokens.",
+    "hash": "0a38d2ba"
+  },
+  "46": {
+    "text": "Same tiny model config as lab 03 \u2014 the model is identical, only inference changes.",
+    "hash": "eb81fecf"
+  },
+  "47": {
+    "text": "4 attention heads.",
+    "hash": "5b7ba4c9"
+  },
+  "48": {
+    "text": "Single layer.",
+    "hash": "9068cb85"
+  },
+  "49": {
+    "text": "Max sequence length.",
+    "hash": "4f3059d5"
+  },
+  "50": {
+    "text": "4 dimensions per head.",
+    "hash": "1892cf11"
+  },
+  "60": {
+    "text": "RMSNorm \u2014 same as previous labs.",
+    "hash": "69fade3d"
+  },
+  "66": {
+    "text": "Normalize by root-mean-square.",
+    "hash": "53678ba7"
+  },
+  "69": {
+    "text": "The critical change: attention now accepts an optional KV cache. Same weights, two inference paths.",
+    "hash": "c20aaac2"
+  },
+  "72": {
+    "text": "Constructor is unchanged from lab 03.",
+    "hash": "220b14ab"
+  },
+  "74": {
+    "text": "Q, K, V, and output projections \u2014 identical to the uncached version.",
+    "hash": "433b771f"
+  },
+  "75": {
+    "text": "Key projection.",
+    "hash": "bf2475c8"
+  },
+  "76": {
+    "text": "Value projection.",
+    "hash": "d1a077cb"
+  },
+  "77": {
+    "text": "Output projection.",
+    "hash": "887b9875"
+  },
+  "79": {
+    "text": "Forward now takes an optional <code>kv_cache</code> \u2014 this is the entire innovation of this lab.",
+    "hash": "8644a184"
+  },
+  "80": {
+    "text": "<code>T_new</code> is 1 during cached inference (just the new token) vs. full sequence length without cache.",
+    "hash": "dbcc0799"
+  },
+  "81": {
+    "text": "Project queries for the new positions only. During cached inference, this is a single token.",
+    "hash": "9e163990"
+  },
+  "82": {
+    "text": "Project keys for the new positions only.",
+    "hash": "c90e879b"
+  },
+  "83": {
+    "text": "Project values for the new positions only.",
+    "hash": "01144d94"
+  },
+  "85": {
+    "text": "If we have a cache from previous steps, prepend it.",
+    "hash": "aa6ad26f"
+  },
+  "86": {
+    "text": "Unpack the cached K and V tensors from previous positions.",
+    "hash": "328b177d"
+  },
+  "87": {
+    "text": "Concatenate cached keys with the new key. Now K covers all positions seen so far.",
+    "hash": "a418bc9d"
+  },
+  "88": {
+    "text": "Same for values. The new token can attend to the full history without recomputing it.",
+    "hash": "2f424894"
+  },
+  "90": {
+    "text": "Save the updated cache for the next step \u2014 it grows by one position each time.",
+    "hash": "1bfbdd29"
+  },
+  "91": {
+    "text": "<code>T_total</code> = total sequence length including cached positions.",
+    "hash": "49990b2c"
+  },
+  "93": {
+    "text": "Attention: Q is (B, heads, T_new, hd), K is (B, heads, T_total, hd). The result is (B, heads, T_new, T_total).",
+    "hash": "308b188d"
+  },
+  "95": {
+    "text": "Custom causal mask: each new query position can see all cached positions plus itself, but not future positions.",
+    "hash": "9003f392"
+  },
+  "96": {
+    "text": "Build the mask row by row. Row i (absolute position T_total-T_new+i) masks out everything after itself.",
+    "hash": "64643be0"
+  },
+  "97": {
+    "text": "Mask future positions for this query position.",
+    "hash": "d4d3a8cd"
+  },
+  "98": {
+    "text": "Apply mask: future = -inf so softmax gives zero weight.",
+    "hash": "a2e76efa"
+  },
+  "99": {
+    "text": "Softmax to get attention weights.",
+    "hash": "62dc999a"
+  },
+  "101": {
+    "text": "Weighted sum of values and reshape.",
+    "hash": "bc3bf4e4"
+  },
+  "102": {
+    "text": "Return both the output AND the updated cache \u2014 the cache is passed to the next step.",
+    "hash": "2c3a1768"
+  },
+  "105": {
+    "text": "Standard MLP \u2014 unchanged.",
+    "hash": "3ad666a1"
+  },
+  "108": {
+    "text": "Expand to 4x.",
+    "hash": "8e9f0642"
+  },
+  "109": {
+    "text": "Project back.",
+    "hash": "62c4768b"
+  },
+  "111": {
+    "text": "Forward pass.",
+    "hash": "a87869a2"
+  },
+  "112": {
+    "text": "Two-layer MLP with ReLU.",
+    "hash": "8aa6bebb"
+  },
+  "115": {
+    "text": "Transformer block \u2014 now threads the KV cache through.",
+    "hash": "4bcc8ea8"
+  },
+  "118": {
+    "text": "Pre-norm before attention.",
+    "hash": "e92b587d"
+  },
+  "119": {
+    "text": "Attention with optional cache.",
+    "hash": "95b016d9"
+  },
+  "123": {
+    "text": "Forward now accepts and returns a cache.",
+    "hash": "8644a184"
+  },
+  "124": {
+    "text": "Attention: receives cache, returns updated cache.",
+    "hash": "1e4dac19"
+  },
+  "125": {
+    "text": "Residual connection around attention.",
+    "hash": "d038b58c"
+  },
+  "126": {
+    "text": "MLP with residual (MLP doesn't need a cache).",
+    "hash": "50e2183f"
+  },
+  "127": {
+    "text": "Return both the output and the new cache for this layer.",
+    "hash": "20dd8643"
+  },
+  "130": {
+    "text": "Full model \u2014 threads caches through all layers.",
+    "hash": "e94c5dc2"
+  },
+  "133": {
+    "text": "Token embeddings.",
+    "hash": "2a2b79bb"
+  },
+  "134": {
+    "text": "Positional embeddings \u2014 <code>start_pos</code> will offset these during cached inference.",
+    "hash": "5338449e"
+  },
+  "135": {
+    "text": "Input normalization.",
+    "hash": "5caa073e"
+  },
+  "136": {
+    "text": "Stack of transformer blocks.",
+    "hash": "d10311df"
+  },
+  "137": {
+    "text": "Output projection.",
+    "hash": "1774314d"
+  },
+  "138": {
+    "text": "Weight initialization.",
+    "hash": "e4941829"
+  },
+  "141": {
+    "text": "Init function for all modules.",
+    "hash": "2e476132"
+  },
+  "143": {
+    "text": "Small Gaussian init.",
+    "hash": "9677d3fd"
+  },
+  "145": {
+    "text": "Forward now takes <code>past_caches</code> and <code>start_pos</code> \u2014 the KV cache interface.",
+    "hash": "6203bc9f"
+  },
+  "146": {
+    "text": "Unpack dimensions.",
+    "hash": "47cad82b"
+  },
+  "147": {
+    "text": "Token embeddings.",
+    "hash": "8d137e9c"
+  },
+  "148": {
+    "text": "Position embeddings offset by <code>start_pos</code>. During cached inference, this is the position of the new token, not 0. Without this offset, the model would think every new token is at position 0.",
+    "hash": "3c913831"
+  },
+  "149": {
+    "text": "Combine token and position embeddings, normalize.",
+    "hash": "b88a95ea"
+  },
+  "150": {
+    "text": "Collect updated caches from each layer.",
+    "hash": "b2039659"
+  },
+  "151": {
+    "text": "Thread caches through each layer.",
+    "hash": "065d031b"
+  },
+  "152": {
+    "text": "Grab the cache for this layer (or None on the first pass).",
+    "hash": "f7722f87"
+  },
+  "153": {
+    "text": "Forward through the layer, receiving the updated cache.",
+    "hash": "10fa535b"
+  },
+  "154": {
+    "text": "Store the updated cache.",
+    "hash": "7c160f4c"
+  },
+  "155": {
+    "text": "Return logits AND the full cache stack for the next generation step.",
+    "hash": "7c352239"
+  },
+  "161": {
+    "text": "Run on CPU.",
+    "hash": "b39e14b0"
+  },
+  "162": {
+    "text": "Create the model \u2014 identical architecture to lab 03.",
+    "hash": "40b7fcd9"
+  },
+  "163": {
+    "text": "Same parameter count as lab 03.",
+    "hash": "ea4a5d11"
+  },
+  "165": {
+    "text": "Adam optimizer.",
+    "hash": "92d21e78"
+  },
+  "166": {
+    "text": "1000 training steps.",
+    "hash": "f105aa30"
+  },
+  "168": {
+    "text": "Training loop \u2014 caches are ignored during training (standard teacher-forced training).",
+    "hash": "53f56939"
+  },
+  "169": {
+    "text": "Cycle through names.",
+    "hash": "47ec0e2c"
+  },
+  "170": {
+    "text": "Tokenize.",
+    "hash": "ae86abd0"
+  },
+  "171": {
+    "text": "Clip to block_size.",
+    "hash": "3d9da8cd"
+  },
+  "173": {
+    "text": "Input tokens.",
+    "hash": "968a3346"
+  },
+  "174": {
+    "text": "Target tokens.",
+    "hash": "1b63fd95"
+  },
+  "176": {
+    "text": "Forward pass. The <code>_</code> discards caches \u2014 training doesn't need them.",
+    "hash": "495ef1c7"
+  },
+  "177": {
+    "text": "Cross-entropy loss.",
+    "hash": "4f1dd754"
+  },
+  "179": {
+    "text": "Zero gradients.",
+    "hash": "fbede2b3"
+  },
+  "180": {
+    "text": "Backpropagate.",
+    "hash": "227fe80d"
+  },
+  "181": {
+    "text": "Linear LR decay.",
+    "hash": "60602e3a"
+  },
+  "182": {
+    "text": "Apply decayed LR.",
+    "hash": "9f6d3592"
+  },
+  "184": {
+    "text": "Update weights.",
+    "hash": "d9e59d7e"
+  },
+  "193": {
+    "text": "Temperature for sampling.",
+    "hash": "d66aa849"
+  },
+  "194": {
+    "text": "20 samples for a meaningful benchmark.",
+    "hash": "c7ed7c80"
+  },
+  "195": {
+    "text": "Switch to eval mode for inference.",
+    "hash": "45bf010c"
+  },
+  "198": {
+    "text": "Shared sampling helper: take logits, apply temperature, sample one token.",
+    "hash": "2b1aaf78"
+  },
+  "199": {
+    "text": "Temperature-scaled softmax on the last position's logits.",
+    "hash": "36be8315"
+  },
+  "200": {
+    "text": "Multinomial sampling \u2014 stochastic generation.",
+    "hash": "56925d03"
+  },
+  "203": {
+    "text": "Naive generation: re-run the FULL sequence through the model at every step. This is O(n^3) total attention.",
+    "hash": "0f384532"
+  },
+  "205": {
+    "text": "Track attention operations to quantify the difference.",
+    "hash": "720e096c"
+  },
+  "207": {
+    "text": "Fixed seed per sample so naive and cached produce identical outputs.",
+    "hash": "bb36d13f"
+  },
+  "208": {
+    "text": "Same seed as cached generation \u2014 outputs MUST match.",
+    "hash": "79dd3c9e"
+  },
+  "209": {
+    "text": "Start with BOS.",
+    "hash": "5c52ddc4"
+  },
+  "210": {
+    "text": "Generate up to <code>block_size</code> tokens.",
+    "hash": "ab05dc73"
+  },
+  "211": {
+    "text": "Feed the ENTIRE sequence so far. This is the waste \u2014 we recompute Q/K/V for all previous tokens.",
+    "hash": "ce311cc5"
+  },
+  "212": {
+    "text": "Count attention operations: T*T per head, for all heads.",
+    "hash": "8ef73feb"
+  },
+  "213": {
+    "text": "O(T^2) per step, and T grows each step, giving O(T^3) total.",
+    "hash": "7ba66460"
+  },
+  "214": {
+    "text": "No cache \u2014 everything is recomputed from scratch every step.",
+    "hash": "403effec"
+  },
+  "215": {
+    "text": "Sample next token.",
+    "hash": "abb8f162"
+  },
+  "216": {
+    "text": "Stop at BOS.",
+    "hash": "41a35c11"
+  },
+  "218": {
+    "text": "Append and continue.",
+    "hash": "a1ca669a"
+  },
+  "219": {
+    "text": "Decode to string.",
+    "hash": "40b7dea8"
+  },
+  "223": {
+    "text": "KV-cached generation: only process the NEW token each step. O(n^2) total attention.",
+    "hash": "ff9fc7d9"
+  },
+  "225": {
+    "text": "Track operations for comparison.",
+    "hash": "720e096c"
+  },
+  "228": {
+    "text": "Same seed \u2014 outputs will be identical.",
+    "hash": "79dd3c9e"
+  },
+  "229": {
+    "text": "Start with BOS.",
+    "hash": "5c52ddc4"
+  },
+  "230": {
+    "text": "Cache starts empty.",
+    "hash": "fcf1f5af"
+  },
+  "231": {
+    "text": "Generate up to <code>block_size</code> tokens.",
+    "hash": "ab05dc73"
+  },
+  "232": {
+    "text": "First step: no cache yet, process the full initial sequence (just BOS).",
+    "hash": "d58e196e"
+  },
+  "233": {
+    "text": "Feed the full initial token(s).",
+    "hash": "187c396f"
+  },
+  "234": {
+    "text": "Start at position 0.",
+    "hash": "aef55fa6"
+  },
+  "236": {
+    "text": "Subsequent steps: only feed the LAST token. This is the key optimization \u2014 one token instead of the full sequence.",
+    "hash": "b07d8397"
+  },
+  "237": {
+    "text": "Start position = where this token sits in the sequence.",
+    "hash": "1a56faac"
+  },
+  "238": {
+    "text": "Attention ops: T_new * T_total per head. With T_new=1, this is just T_total \u2014 linear, not quadratic.",
+    "hash": "bafa485e"
+  },
+  "239": {
+    "text": "Forward with cache. The cache grows by one position. Past K/V are NOT recomputed.",
+    "hash": "b589a835"
+  },
+  "240": {
+    "text": "Sample next token.",
+    "hash": "abb8f162"
+  },
+  "241": {
+    "text": "Stop at BOS.",
+    "hash": "41a35c11"
+  },
+  "243": {
+    "text": "Append and continue.",
+    "hash": "a1ca669a"
+  },
+  "244": {
+    "text": "Decode to string.",
+    "hash": "40b7dea8"
+  },
+  "252": {
+    "text": "Run both strategies inside no_grad for fair timing.",
+    "hash": "d4f61231"
+  },
+  "253": {
+    "text": "Time the naive approach.",
+    "hash": "d5030329"
+  },
+  "254": {
+    "text": "Generate 20 names without cache.",
+    "hash": "9727a1df"
+  },
+  "255": {
+    "text": "Wall-clock time for naive generation.",
+    "hash": "b7fd7b6d"
+  },
+  "257": {
+    "text": "Time the cached approach.",
+    "hash": "d5030329"
+  },
+  "258": {
+    "text": "Generate 20 names with cache.",
+    "hash": "b8f48f56"
+  },
+  "259": {
+    "text": "Wall-clock time for cached generation.",
+    "hash": "9e5e9e06"
+  },
+  "263": {
+    "text": "Verify outputs are IDENTICAL \u2014 the cache is an optimization, not an approximation. Same model, same weights, same random seed = same output.",
+    "hash": "b0668b1e"
+  },
+  "264": {
+    "text": "Side-by-side comparison of every generated name.",
+    "hash": "7a273596"
+  },
+  "265": {
+    "text": "Flag any mismatch (there shouldn't be any).",
+    "hash": "fca8de5d"
+  },
+  "267": {
+    "text": "All outputs should match perfectly.",
+    "hash": "a3e7d637"
+  },
+  "273": {
+    "text": "The headline metric: how many fewer attention operations the cache requires.",
+    "hash": "96bb0a87"
+  },
+  "279": {
+    "text": "Real timing comparison. At this tiny scale the speedup is modest; at 7B scale it's 100x+.",
+    "hash": "a9dfb8a0"
+  },
+  "283": {
+    "text": "Theoretical analysis of the complexity difference.",
+    "hash": "8d29f04a"
+  },
+  "286": {
+    "text": "Naive: sum of t^2 for t=1..T = T(T+1)(2T+1)/6. Cubic growth.",
+    "hash": "2187acfc"
+  },
+  "287": {
+    "text": "Cached: sum of t for t=1..T = T(T+1)/2. Quadratic growth.",
+    "hash": "d4da27bf"
+  },
+  "288": {
+    "text": "The ratio grows linearly with sequence length \u2014 longer sequences benefit more from caching.",
+    "hash": "e0bd336a"
+  }
+}

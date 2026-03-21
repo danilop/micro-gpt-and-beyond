@@ -194,13 +194,7 @@ example_names = ["emma", "olivia", "charlotte", "alexander", "ann", "lee"]
 # Also pick some random names from the dataset
 example_names += random.sample(docs, 4)
 # Deduplicate while preserving order
-seen = set()
-unique_examples = []
-for n in example_names:
-    if n not in seen:
-        seen.add(n)
-        unique_examples.append(n)
-example_names = unique_examples[:10]
+example_names = list(dict.fromkeys(example_names))[:10]
 
 print(f"\n{'Name':<14} {'Char tokens':>11} {'BPE tokens':>10}  {'Compression':>11}  BPE encoding")
 print("-" * 75)

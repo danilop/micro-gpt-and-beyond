@@ -13,21 +13,165 @@ predictions, closing the train-test gap that limits inference-only soft thinking
 
 import math
 import os
-import sys
+import random
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
-# Build on Lab 20: reuse model architecture and soft generation
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "20_soft_thinking"))
-from main import BOS, MicroGPT, block_size, device, docs, generate, num_steps, uchars, vocab_size
+random.seed(42)
+torch.manual_seed(42)
+
+# ---------------------------------------------------------------------------
+# Dataset & Tokenizer
+# ---------------------------------------------------------------------------
+input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "input.txt")
+if not os.path.exists(input_path):
+    import urllib.request
+
+    url = "https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt"
+    urllib.request.urlretrieve(url, input_path)
+
+docs = [l.strip() for l in open(input_path).read().strip().split("\n") if l.strip()]
+random.shuffle(docs)
+print(f"num docs: {len(docs)}")
+
+uchars = sorted(set("".join(docs)))
+BOS = len(uchars)
+vocab_size = len(uchars) + 1
+print(f"vocab size: {vocab_size}")
+
+# ---------------------------------------------------------------------------
+# Model (same as Lab 20 — supports both token IDs and raw embeddings)
+# ---------------------------------------------------------------------------
+n_embd = 16     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 1     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
+device = "cpu"
+
+
+class RMSNorm(nn.Module):
+    def __init__(self, _dim, eps=1e-5):
+        super().__init__()
+        self.eps = eps
+
+    def forward(self, x):
+        return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
+
+
+class CausalSelfAttention(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.wq = nn.Linear(n_embd, n_embd, bias=False)
+        self.wk = nn.Linear(n_embd, n_embd, bias=False)
+        self.wv = nn.Linear(n_embd, n_embd, bias=False)
+        self.wo = nn.Linear(n_embd, n_embd, bias=False)
+
+    def forward(self, x):
+        B, T, C = x.shape
+        q = self.wq(x).view(B, T, n_head, head_dim).transpose(1, 2)
+        k = self.wk(x).view(B, T, n_head, head_dim).transpose(1, 2)
+        v = self.wv(x).view(B, T, n_head, head_dim).transpose(1, 2)
+        att = (q @ k.transpose(-2, -1)) / math.sqrt(head_dim)
+        mask = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
+        att = att.masked_fill(mask, float("-inf"))
+        att = F.softmax(att, dim=-1)
+        out = (att @ v).transpose(1, 2).reshape(B, T, C)
+        return self.wo(out)
+
+
+class MLP(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(n_embd, 4 * n_embd, bias=False)
+        self.fc2 = nn.Linear(4 * n_embd, n_embd, bias=False)
+
+    def forward(self, x):
+        return self.fc2(F.relu(self.fc1(x)))
+
+
+class Block(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.norm1 = RMSNorm(n_embd)
+        self.attn = CausalSelfAttention()
+        self.norm2 = RMSNorm(n_embd)
+        self.mlp = MLP()
+
+    def forward(self, x):
+        x = x + self.attn(self.norm1(x))
+        x = x + self.mlp(self.norm2(x))
+        return x
+
+
+class MicroGPT(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.wte = nn.Embedding(vocab_size, n_embd)
+        self.wpe = nn.Embedding(block_size, n_embd)
+        self.norm_in = RMSNorm(n_embd)
+        self.layers = nn.ModuleList([Block() for _ in range(n_layer)])
+        self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
+        self.apply(self._init_weights)
+
+    @staticmethod
+    def _init_weights(module):
+        if isinstance(module, (nn.Linear, nn.Embedding)):
+            nn.init.normal_(module.weight, mean=0.0, std=0.08)
+
+    def forward(self, idx=None, inputs_embeds=None):
+        tok_emb = self.wte(idx) if idx is not None else inputs_embeds
+        assert tok_emb is not None, "provide idx or inputs_embeds"
+        T = tok_emb.shape[1]
+        pos_emb = self.wpe(torch.arange(T, device=tok_emb.device))
+        x = self.norm_in(tok_emb + pos_emb)
+        for layer in self.layers:
+            x = layer(x)
+        return self.lm_head(x)
+
+
+# ---------------------------------------------------------------------------
+# Generation — hard (discrete) or soft (concept token) decoding
+# ---------------------------------------------------------------------------
+num_steps = 1000
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
+soft_temp = 1.0
+
+
+@torch.no_grad()
+def generate(model, mode="hard", soft_temp=1.0):
+    """Generate a name using hard (discrete) or soft (concept token) decoding."""
+    model.eval()
+    tokens, entropies = [], []
+    embeds = model.wte(torch.tensor([[BOS]], device=device))
+
+    for _ in range(block_size):
+        logits = model(inputs_embeds=embeds)[0, -1]
+
+        probs = F.softmax(logits / temperature, dim=-1)
+        token_id = torch.multinomial(probs, 1).item()
+        if token_id == BOS:
+            break
+        tokens.append(token_id)
+
+        entropies.append(-(probs * probs.clamp(min=1e-10).log()).sum().item())
+
+        if mode == "hard":
+            next_emb = model.wte(torch.tensor([[token_id]], device=device))
+        else:
+            soft_probs = F.softmax(logits / soft_temp, dim=-1)
+            next_emb = (soft_probs @ model.wte.weight).view(1, 1, -1)
+
+        embeds = torch.cat([embeds, next_emb], dim=1)[:, -block_size:]
+
+    return tokens, entropies
+
 
 # ---------------------------------------------------------------------------
 # Training — standard vs. soft input mixing
 # ---------------------------------------------------------------------------
-soft_temp = 1.0
-
-
 def train_model(model, name, soft_mix=False):
     """Train with standard teacher forcing, or with soft input curriculum."""
     print(f"\n--- training {name} ({sum(p.numel() for p in model.parameters())} params) ---")

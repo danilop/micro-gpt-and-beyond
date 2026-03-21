@@ -45,11 +45,11 @@ print(f"vocab size: {vocab_size} (+1 pad = {vocab_size_with_pad})")
 # ---------------------------------------------------------------------------
 # Hyperparameters (scaled up from the single-sample version)
 # ---------------------------------------------------------------------------
-n_embd = 64
-n_head = 4
-n_layer = 2
-block_size = 16
-head_dim = n_embd // n_head
+n_embd = 64     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 2     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
 batch_size = 32
 num_steps = 1000
 
@@ -91,7 +91,7 @@ class CausalSelfAttention(nn.Module):
         att = F.softmax(att, dim=-1)
         att = torch.nan_to_num(att)  # handle all-masked rows
 
-        out = (att @ v).transpose(1, 2).contiguous().view(B, T, C)
+        out = (att @ v).transpose(1, 2).reshape(B, T, C)
         return self.wo(out)
 
 
@@ -149,9 +149,9 @@ class MicroGPT(nn.Module):
 # ---------------------------------------------------------------------------
 def make_batch(docs, step, batch_size):
     """Create a padded batch of token sequences."""
-    batch_docs = [docs[(step * batch_size + i) % len(docs)] for i in range(batch_size)]
     sequences = []
-    for doc in batch_docs:
+    for i in range(batch_size):
+        doc = docs[(step * batch_size + i) % len(docs)]
         toks = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
         toks = toks[: block_size + 1]  # truncate to max length
         sequences.append(toks)
@@ -207,7 +207,7 @@ for step in range(num_steps):
 # ---------------------------------------------------------------------------
 # Inference
 # ---------------------------------------------------------------------------
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 print("\n--- inference (new, hallucinated names) ---")
 model.eval()
 with torch.no_grad():

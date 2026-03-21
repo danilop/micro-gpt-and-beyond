@@ -42,11 +42,11 @@ print(f"vocab size: {vocab_size}")
 # ---------------------------------------------------------------------------
 # Model config
 # ---------------------------------------------------------------------------
-n_embd = 16
-n_head = 4
-n_layer = 1
-block_size = 16
-head_dim = n_embd // n_head
+n_embd = 16     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 1     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
 
 
 # ---------------------------------------------------------------------------
@@ -97,7 +97,7 @@ class FlexAttention(nn.Module):
         att = att.masked_fill(mask, float("-inf"))
         att = F.softmax(att, dim=-1)
 
-        out = (att @ v).transpose(1, 2).contiguous().view(B, T, C)
+        out = (att @ v).transpose(1, 2).reshape(B, T, C)
         return self.wo(out)
 
 
@@ -155,13 +155,33 @@ class MicroGPT(nn.Module):
 # ---------------------------------------------------------------------------
 device = "cpu"
 num_steps = 1000
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 
 variants = [
     ("MHA", n_head),  # 4 KV heads — standard multi-head attention
     ("GQA", 2),  # 2 KV heads — grouped-query attention
     ("MQA", 1),  # 1 KV head  — multi-query attention
 ]
+
+def generate(model, label, num_samples=10):
+    """Generate names from a trained model."""
+    model.eval()
+    print(f"\n  --- {label} generated names ---")
+    with torch.no_grad():
+        for sample_idx in range(num_samples):
+            tokens = [BOS]
+            for _ in range(block_size):
+                idx = torch.tensor([tokens[-block_size:]], device=device)
+                logits = model(idx)
+                logits = logits[0, -1] / temperature
+                probs = F.softmax(logits, dim=-1)
+                token_id = torch.multinomial(probs, 1).item()
+                if token_id == BOS:
+                    break
+                tokens.append(token_id)
+            name = "".join(uchars[t] for t in tokens[1:])
+            print(f"  sample {sample_idx + 1:2d}: {name}")
+
 
 for variant_name, n_kv_head in variants:
     print(f"\n{'=' * 60}")
@@ -208,24 +228,7 @@ for variant_name, n_kv_head in variants:
             print(f"  step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
 
     print(f"\n  {variant_name} final loss: {loss.item():.4f}")
-
-    # Inference
-    print(f"\n  --- {variant_name} generated names ---")
-    model.eval()
-    with torch.no_grad():
-        for sample_idx in range(10):
-            tokens = [BOS]
-            for _ in range(block_size):
-                idx = torch.tensor([tokens[-block_size:]], device=device)
-                logits = model(idx)
-                logits = logits[0, -1] / temperature
-                probs = F.softmax(logits, dim=-1)
-                token_id = torch.multinomial(probs, 1).item()
-                if token_id == BOS:
-                    break
-                tokens.append(token_id)
-            name = "".join(uchars[t] for t in tokens[1:])
-            print(f"  sample {sample_idx + 1:2d}: {name}")
+    generate(model, variant_name)
 
 # ---------------------------------------------------------------------------
 # Summary

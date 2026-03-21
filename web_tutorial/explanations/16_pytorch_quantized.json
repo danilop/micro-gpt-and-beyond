@@ -1,0 +1,510 @@
+{
+  "9": {
+    "text": "Math for attention scaling.",
+    "hash": "b67c9dde"
+  },
+  "10": {
+    "text": "Path operations.",
+    "hash": "de2abade"
+  },
+  "11": {
+    "text": "Shuffle seed.",
+    "hash": "7e18ed42"
+  },
+  "12": {
+    "text": "Wall-clock timing for the FP32 vs INT8 benchmark.",
+    "hash": "4f9b8491"
+  },
+  "14": {
+    "text": "PyTorch core.",
+    "hash": "cf1070d3"
+  },
+  "15": {
+    "text": "Neural network layers.",
+    "hash": "b802910c"
+  },
+  "16": {
+    "text": "Functional API.",
+    "hash": "5af419e1"
+  },
+  "18": {
+    "text": "Pin seeds.",
+    "hash": "f0726c6e"
+  },
+  "19": {
+    "text": "PyTorch seed.",
+    "hash": "7e7dcf46"
+  },
+  "22": {
+    "text": "Dataset path.",
+    "hash": "180b0553"
+  },
+  "23": {
+    "text": "Auto-download.",
+    "hash": "9667c968"
+  },
+  "29": {
+    "text": "Load names.",
+    "hash": "2f367d0b"
+  },
+  "30": {
+    "text": "Shuffle.",
+    "hash": "c8f1cb86"
+  },
+  "34": {
+    "text": "Character vocabulary.",
+    "hash": "5f7ca3bb"
+  },
+  "35": {
+    "text": "BOS token.",
+    "hash": "476ca504"
+  },
+  "36": {
+    "text": "27 tokens.",
+    "hash": "0a38d2ba"
+  },
+  "40": {
+    "text": "Larger model than lab 03 (64 vs 16 embedding dim) to make quantization effects visible. At 16 dimensions the savings are tiny; at 64 the 4x compression is meaningful.",
+    "hash": "203d0348"
+  },
+  "41": {
+    "text": "4 attention heads, each with 16 dimensions.",
+    "hash": "5b7ba4c9"
+  },
+  "42": {
+    "text": "2 layers \u2014 more parameters to compress.",
+    "hash": "0a695db7"
+  },
+  "43": {
+    "text": "Max sequence length.",
+    "hash": "4f3059d5"
+  },
+  "44": {
+    "text": "16 dimensions per head.",
+    "hash": "1892cf11"
+  },
+  "47": {
+    "text": "RMSNorm.",
+    "hash": "69fade3d"
+  },
+  "53": {
+    "text": "Normalize by root-mean-square.",
+    "hash": "53678ba7"
+  },
+  "56": {
+    "text": "Standard causal attention \u2014 same as lab 03.",
+    "hash": "c20aaac2"
+  },
+  "59": {
+    "text": "Q, K, V, output projections. These are the weights that will be quantized to INT8.",
+    "hash": "433b771f"
+  },
+  "60": {
+    "text": "Key projection.",
+    "hash": "bf2475c8"
+  },
+  "61": {
+    "text": "Value projection.",
+    "hash": "d1a077cb"
+  },
+  "62": {
+    "text": "Output projection.",
+    "hash": "887b9875"
+  },
+  "64": {
+    "text": "Forward pass.",
+    "hash": "a87869a2"
+  },
+  "65": {
+    "text": "Unpack dimensions.",
+    "hash": "4584ac61"
+  },
+  "66": {
+    "text": "Project queries.",
+    "hash": "d0c33c49"
+  },
+  "67": {
+    "text": "Project keys.",
+    "hash": "a48e9c7a"
+  },
+  "68": {
+    "text": "Project values.",
+    "hash": "7fcca8ac"
+  },
+  "70": {
+    "text": "Scaled dot-product attention.",
+    "hash": "308b188d"
+  },
+  "71": {
+    "text": "Causal mask.",
+    "hash": "14eeec63"
+  },
+  "72": {
+    "text": "Mask future positions.",
+    "hash": "a2e76efa"
+  },
+  "73": {
+    "text": "Softmax.",
+    "hash": "62dc999a"
+  },
+  "75": {
+    "text": "Weighted sum of values.",
+    "hash": "a1aef68f"
+  },
+  "76": {
+    "text": "Output projection.",
+    "hash": "36f2db67"
+  },
+  "79": {
+    "text": "Standard MLP.",
+    "hash": "3ad666a1"
+  },
+  "82": {
+    "text": "Expand to 4x (256 dimensions).",
+    "hash": "8e9f0642"
+  },
+  "83": {
+    "text": "Project back to 64.",
+    "hash": "62c4768b"
+  },
+  "85": {
+    "text": "Forward.",
+    "hash": "a87869a2"
+  },
+  "86": {
+    "text": "Two-layer MLP with ReLU.",
+    "hash": "8aa6bebb"
+  },
+  "89": {
+    "text": "Transformer block.",
+    "hash": "4bcc8ea8"
+  },
+  "92": {
+    "text": "Pre-norm.",
+    "hash": "e92b587d"
+  },
+  "93": {
+    "text": "Attention.",
+    "hash": "95b016d9"
+  },
+  "94": {
+    "text": "Pre-norm.",
+    "hash": "f58a7657"
+  },
+  "95": {
+    "text": "MLP.",
+    "hash": "17fdd551"
+  },
+  "97": {
+    "text": "Forward with residual connections.",
+    "hash": "a87869a2"
+  },
+  "98": {
+    "text": "Attention + residual.",
+    "hash": "5133b743"
+  },
+  "99": {
+    "text": "MLP + residual.",
+    "hash": "50e2183f"
+  },
+  "103": {
+    "text": "Full model \u2014 same architecture as lab 03 but larger (64-dim instead of 16-dim).",
+    "hash": "e94c5dc2"
+  },
+  "106": {
+    "text": "Token embeddings: 27 x 64.",
+    "hash": "2a2b79bb"
+  },
+  "107": {
+    "text": "Position embeddings: 16 x 64.",
+    "hash": "5338449e"
+  },
+  "108": {
+    "text": "Input norm.",
+    "hash": "5caa073e"
+  },
+  "109": {
+    "text": "Transformer blocks.",
+    "hash": "d10311df"
+  },
+  "110": {
+    "text": "Output projection: 64 -> 27.",
+    "hash": "1774314d"
+  },
+  "111": {
+    "text": "Weight init.",
+    "hash": "e4941829"
+  },
+  "115": {
+    "text": "Small Gaussian init.",
+    "hash": "e2ce6cde"
+  },
+  "118": {
+    "text": "Forward pass.",
+    "hash": "1bc7099c"
+  },
+  "119": {
+    "text": "Unpack.",
+    "hash": "47cad82b"
+  },
+  "120": {
+    "text": "Token embeddings.",
+    "hash": "8d137e9c"
+  },
+  "121": {
+    "text": "Position embeddings.",
+    "hash": "2b319b15"
+  },
+  "122": {
+    "text": "Combine and normalize.",
+    "hash": "b88a95ea"
+  },
+  "123": {
+    "text": "Through blocks.",
+    "hash": "359aba32"
+  },
+  "125": {
+    "text": "Project to logits.",
+    "hash": "9ef9adcf"
+  },
+  "129": {
+    "text": "Run on CPU.",
+    "hash": "b39e14b0"
+  },
+  "130": {
+    "text": "Create the model.",
+    "hash": "40b7fcd9"
+  },
+  "131": {
+    "text": "Show parameter count \u2014 larger than lab 03 to make quantization meaningful.",
+    "hash": "ea4a5d11"
+  },
+  "133": {
+    "text": "Adam optimizer.",
+    "hash": "92d21e78"
+  },
+  "134": {
+    "text": "1000 training steps.",
+    "hash": "f105aa30"
+  },
+  "136": {
+    "text": "Standard training loop \u2014 identical to other labs.",
+    "hash": "53f56939"
+  },
+  "137": {
+    "text": "Cycle through names.",
+    "hash": "47ec0e2c"
+  },
+  "138": {
+    "text": "Tokenize.",
+    "hash": "ae86abd0"
+  },
+  "139": {
+    "text": "Clip to block_size.",
+    "hash": "3d9da8cd"
+  },
+  "141": {
+    "text": "Input tokens.",
+    "hash": "968a3346"
+  },
+  "142": {
+    "text": "Target tokens.",
+    "hash": "1b63fd95"
+  },
+  "144": {
+    "text": "Forward.",
+    "hash": "17df3885"
+  },
+  "145": {
+    "text": "Cross-entropy loss.",
+    "hash": "4f1dd754"
+  },
+  "147": {
+    "text": "Zero gradients.",
+    "hash": "fbede2b3"
+  },
+  "148": {
+    "text": "Backprop.",
+    "hash": "227fe80d"
+  },
+  "149": {
+    "text": "LR decay.",
+    "hash": "60602e3a"
+  },
+  "150": {
+    "text": "Apply LR.",
+    "hash": "9f6d3592"
+  },
+  "152": {
+    "text": "Update.",
+    "hash": "d9e59d7e"
+  },
+  "163": {
+    "text": "The quantized linear layer: stores weights as INT8 integers (1 byte each) instead of FP32 floats (4 bytes each). A single scale factor maps between the two representations.",
+    "hash": "4dc60741"
+  },
+  "164": {
+    "text": "Takes a trained FP32 linear layer and quantizes its weights.",
+    "hash": "c6f83bf2"
+  },
+  "166": {
+    "text": "Get the FP32 weight matrix.",
+    "hash": "f998db9f"
+  },
+  "167": {
+    "text": "Compute the scale factor: map the weight range [-max, +max] to [-127, +127]. This single scalar is the key \u2014 it determines the precision of the quantization.",
+    "hash": "c992b589"
+  },
+  "168": {
+    "text": "Round to nearest integer and cast to INT8. Each weight now fits in 1 byte instead of 4. The <code>register_buffer</code> saves it as a non-parameter tensor (no gradients).",
+    "hash": "54b4244c"
+  },
+  "169": {
+    "text": "Store the scale factor for dequantization during inference.",
+    "hash": "b13e9ab7"
+  },
+  "170": {
+    "text": "Carry over bias if the original layer had one (ours don't).",
+    "hash": "88995ffb"
+  },
+  "172": {
+    "text": "Forward: dequantize on-the-fly by casting back to float and multiplying by scale. In production, INT8 matmul kernels avoid this cast entirely \u2014 they compute directly in integer arithmetic.",
+    "hash": "a87869a2"
+  },
+  "173": {
+    "text": "Cast INT8 to float, multiply by scale, then do the matrix multiply. Mathematically: <code>x @ (W_int8 * scale)^T</code>. The approximation error is small because neural network weights are typically well-distributed.",
+    "hash": "d5e435df"
+  },
+  "176": {
+    "text": "Quantize the entire model: create a fresh copy and replace all Linear layers with QuantizedLinear.",
+    "hash": "26d31172"
+  },
+  "177": {
+    "text": "Create a new model instance of the same type.",
+    "hash": "ee92562a"
+  },
+  "178": {
+    "text": "Load the trained FP32 weights into the new model.",
+    "hash": "2d07d5d9"
+  },
+  "179": {
+    "text": "Walk every module in the model.",
+    "hash": "cc42539c"
+  },
+  "180": {
+    "text": "Look for Linear layers to quantize.",
+    "hash": "e21a43a2"
+  },
+  "181": {
+    "text": "Found one \u2014 replace with quantized version.",
+    "hash": "2993579f"
+  },
+  "182": {
+    "text": "Swap in the quantized layer.",
+    "hash": "06bbc60d"
+  },
+  "189": {
+    "text": "Temperature for generation.",
+    "hash": "d66aa849"
+  },
+  "192": {
+    "text": "Decorator: no gradient tracking needed for inference.",
+    "hash": "eec96875"
+  },
+  "193": {
+    "text": "Generate names \u2014 same function for both FP32 and INT8 models.",
+    "hash": "03d99faf"
+  },
+  "194": {
+    "text": "Eval mode.",
+    "hash": "45bf010c"
+  },
+  "196": {
+    "text": "Generate n samples.",
+    "hash": "925b5120"
+  },
+  "197": {
+    "text": "Start from BOS.",
+    "hash": "5c52ddc4"
+  },
+  "198": {
+    "text": "Generate up to block_size tokens.",
+    "hash": "ab05dc73"
+  },
+  "199": {
+    "text": "Feed current sequence.",
+    "hash": "ce311cc5"
+  },
+  "200": {
+    "text": "Temperature-scaled softmax and sample in one line.",
+    "hash": "77b96a33"
+  },
+  "201": {
+    "text": "Sample next token.",
+    "hash": "5b83becd"
+  },
+  "202": {
+    "text": "Stop at BOS.",
+    "hash": "41a35c11"
+  },
+  "204": {
+    "text": "Append.",
+    "hash": "a1ca669a"
+  },
+  "209": {
+    "text": "Benchmark: measure model size on disk and generation speed.",
+    "hash": "e0eb508b"
+  },
+  "210": {
+    "text": "Temp file import for saving the model.",
+    "hash": "09d25239"
+  },
+  "212": {
+    "text": "Save to a temp file to measure size.",
+    "hash": "9074b473"
+  },
+  "214": {
+    "text": "Serialize the state dict \u2014 this is what you'd ship to production.",
+    "hash": "f2a9c859"
+  },
+  "215": {
+    "text": "File size in MB \u2014 INT8 should be roughly 4x smaller.",
+    "hash": "401a2a26"
+  },
+  "216": {
+    "text": "Time 100 generations for a stable measurement.",
+    "hash": "25ba4727"
+  },
+  "217": {
+    "text": "Generate 100 names.",
+    "hash": "5d140f22"
+  },
+  "218": {
+    "text": "Return size and per-sample time.",
+    "hash": "50c117a4"
+  },
+  "221": {
+    "text": "Benchmark the original FP32 model.",
+    "hash": "b66a958d"
+  },
+  "224": {
+    "text": "Quantize the trained model to INT8.",
+    "hash": "9eddf55e"
+  },
+  "225": {
+    "text": "Benchmark the quantized model.",
+    "hash": "82b004f1"
+  },
+  "232": {
+    "text": "Side-by-side comparison: generate 10 names from each model. Quality should be nearly identical despite 4x compression.",
+    "hash": "3f78e613"
+  },
+  "234": {
+    "text": "Show samples from both models.",
+    "hash": "828817a8"
+  },
+  "235": {
+    "text": "Decode and print each generated name.",
+    "hash": "2a0d1a6c"
+  }
+}

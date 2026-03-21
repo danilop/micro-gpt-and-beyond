@@ -13,7 +13,7 @@ import random
 import numpy as np
 
 random.seed(42)
-np.random.seed(42)
+rng = np.random.default_rng(42)
 
 # ---------------------------------------------------------------------------
 # Dataset & Tokenizer
@@ -37,15 +37,15 @@ print(f"vocab size: {vocab_size}")
 # ---------------------------------------------------------------------------
 # Parameters — plain NumPy arrays + matching gradient arrays
 # ---------------------------------------------------------------------------
-n_embd = 16
-n_head = 4
-n_layer = 1
-block_size = 16
-head_dim = n_embd // n_head
+n_embd = 16     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 1     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
 
 
 def param(shape, std=0.08):
-    return np.random.randn(*shape).astype(np.float64) * std
+    return rng.standard_normal(shape) * std
 
 
 # All parameters stored as a dict of arrays
@@ -111,21 +111,17 @@ def relu_bwd(dout, cache):
     return dout * mask
 
 
-def forward(tokens_np):
+def forward(token_ids):
     """
-    tokens_np: (T,) int array of token ids
-    Returns: loss (scalar), cache dict for backward
+    token_ids: (n,) int array of token ids
+    Returns: logits (n, vocab_size), cache dict (for backward)
     """
-    T = len(tokens_np)
-    n = min(block_size, T - 1)
-    input_ids = tokens_np[:n]  # (n,)
-    targets = tokens_np[1 : n + 1]  # (n,)
-
+    n = len(token_ids)
     cache = {}
 
     # Embeddings
-    tok_emb = P["wte"][input_ids]  # (n, D)
-    pos_emb = P["wpe"][np.arange(n)]  # (n, D)
+    tok_emb = P["wte"][token_ids]  # (n, D)
+    pos_emb = P["wpe"][:n]  # (n, D)
     x = tok_emb + pos_emb
 
     # Initial RMSNorm
@@ -181,19 +177,31 @@ def forward(tokens_np):
 
     # LM head
     logits = x @ P["lm_head"].T  # (n, vocab_size)
+    cache["final_x"] = x
+    return logits, cache
+
+
+def loss_and_cache(tokens_np):
+    """Forward + cross-entropy loss for training. Returns: loss, cache for backward."""
+    T = len(tokens_np)
+    n = min(block_size, T - 1)
+    input_ids = tokens_np[:n]
+    targets = tokens_np[1 : n + 1]
+
+    logits, cache = forward(input_ids)
 
     # Loss: cross-entropy
     probs = softmax_fwd(logits)  # (n, vocab_size)
     log_probs = -np.log(probs[np.arange(n), targets] + 1e-10)
     loss = log_probs.mean()
 
-    cache["final"] = (x, logits, probs, targets, input_ids, n)
+    cache["final"] = (cache["final_x"], logits, probs, targets, input_ids, n)
     return loss, cache
 
 
 def backward(cache):
     """Compute gradients for all parameters, accumulate into G."""
-    x, _logits, probs, targets, input_ids, n = cache["final"]
+    x, logits, probs, targets, input_ids, n = cache["final"]
 
     # d(loss)/d(logits) via softmax + cross-entropy shortcut
     dlogits = probs.copy()  # (n, V)
@@ -206,7 +214,7 @@ def backward(cache):
 
     for li in reversed(range(n_layer)):
         # --- MLP backward ---
-        _x_res2, x_normed2, _hidden, act = cache[f"l{li}.mlp"]
+        x_res2, x_normed2, hidden, act = cache[f"l{li}.mlp"]
 
         dx_res2 = dx.copy()
         # mlp_out = act @ fc2
@@ -271,7 +279,6 @@ def backward(cache):
     # Embedding gradients
     for i, tid in enumerate(input_ids):
         G["wte"][tid] += dx[i]
-    for i in range(n):
         G["wpe"][i] += dx[i]
 
 
@@ -295,7 +302,7 @@ for step in range(num_steps):
     for k in G:
         G[k].fill(0.0)
 
-    loss, cache = forward(tokens_np)
+    loss, cache = loss_and_cache(tokens_np)
     backward(cache)
 
     # Adam update with linear LR decay
@@ -313,50 +320,18 @@ for step in range(num_steps):
 # ---------------------------------------------------------------------------
 # Inference
 # ---------------------------------------------------------------------------
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 print("\n--- inference (new, hallucinated names) ---")
-
-
-def inference_forward(token_ids):
-    """Simplified forward pass for inference (no loss, no cache needed)."""
-    n = len(token_ids)
-    tok_emb = P["wte"][token_ids]
-    pos_emb = P["wpe"][np.arange(n)]
-    x = tok_emb + pos_emb
-    x, _ = rmsnorm_fwd(x)
-    for li in range(n_layer):
-        x_res = x.copy()
-        x_n, _ = rmsnorm_fwd(x)
-        Q = x_n @ P[f"l{li}.wq"]
-        K = x_n @ P[f"l{li}.wk"]
-        V_val = x_n @ P[f"l{li}.wv"]
-        Q_h = Q.reshape(n, n_head, head_dim).transpose(1, 0, 2)
-        K_h = K.reshape(n, n_head, head_dim).transpose(1, 0, 2)
-        V_h = V_val.reshape(n, n_head, head_dim).transpose(1, 0, 2)
-        att = Q_h @ K_h.transpose(0, 2, 1) / math.sqrt(head_dim)
-        causal_mask = np.triu(np.ones((n, n)), k=1).astype(bool)
-        att = np.where(causal_mask, -1e9, att)
-        att_probs = softmax_fwd(att)
-        attn_out = att_probs @ V_h
-        attn_cat = attn_out.transpose(1, 0, 2).reshape(n, n_embd)
-        x = attn_cat @ P[f"l{li}.wo"] + x_res
-        x_res2 = x.copy()
-        x_n2, _ = rmsnorm_fwd(x)
-        h = x_n2 @ P[f"l{li}.fc1"]
-        mask = (h > 0).astype(h.dtype)
-        h = h * mask
-        x = h @ P[f"l{li}.fc2"] + x_res2
-    return x @ P["lm_head"].T  # (n, V)
 
 
 for sample_idx in range(20):
     generated = [BOS]
     sample = []
     for _ in range(block_size):
-        logits = inference_forward(np.array(generated))
+        logits, _ = forward(np.array(generated))
         logits = logits[-1] / temperature
         probs = softmax_fwd(logits.reshape(1, -1))[0]
-        token_id = np.random.choice(vocab_size, p=probs)
+        token_id = rng.choice(vocab_size, p=probs)
         if token_id == BOS:
             break
         generated.append(token_id)

@@ -45,11 +45,11 @@ print(f"vocab size: {vocab_size} (+1 pad = {vocab_size_with_pad})")
 # ---------------------------------------------------------------------------
 # Hyperparameters (scaled up)
 # ---------------------------------------------------------------------------
-n_embd = 64
-n_head = 4
-n_layer = 2
-block_size = 16
-head_dim = n_embd // n_head
+n_embd = 64     # embedding dimension
+n_head = 4      # number of attention heads
+n_layer = 2     # number of layers
+block_size = 16 # maximum sequence length
+head_dim = n_embd // n_head # dimension of each head
 batch_size = 32
 num_steps = 1000
 
@@ -63,11 +63,7 @@ def init_param(key, shape, std=0.08):
     return jax.random.normal(key, shape) * std
 
 
-def split_keys(key, n):
-    return jax.random.split(key, n)
-
-
-keys = split_keys(key, 30)
+keys = jax.random.split(key, 30)
 ki = iter(keys)
 
 params = {
@@ -240,7 +236,7 @@ for step in range(num_steps):
 # ---------------------------------------------------------------------------
 # Inference (single-example, no vmap needed)
 # ---------------------------------------------------------------------------
-temperature = 0.5
+temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 print("\n--- inference (new, hallucinated names) ---")
 rng_key = jax.random.PRNGKey(0)
 for sample_idx in range(20):

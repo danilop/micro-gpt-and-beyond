@@ -1,0 +1,450 @@
+{
+  "14": {
+    "text": "Standard math for entropy calculations.",
+    "hash": "b67c9dde"
+  },
+  "15": {
+    "text": "File path handling.",
+    "hash": "de2abade"
+  },
+  "16": {
+    "text": "Reproducible shuffling.",
+    "hash": "7e18ed42"
+  },
+  "18": {
+    "text": "PyTorch for model and inference.",
+    "hash": "cf1070d3"
+  },
+  "19": {
+    "text": "Neural network layers.",
+    "hash": "b802910c"
+  },
+  "20": {
+    "text": "Softmax, cross-entropy \u2014 and crucially, the softmax that creates concept tokens.",
+    "hash": "5af419e1"
+  },
+  "22": {
+    "text": "Fix seeds for reproducible comparisons between hard and soft decoding.",
+    "hash": "f0726c6e"
+  },
+  "23": {
+    "text": "PyTorch seed.",
+    "hash": "7e7dcf46"
+  },
+  "28": {
+    "text": "Resolve dataset path.",
+    "hash": "180b0553"
+  },
+  "29": {
+    "text": "Download if missing.",
+    "hash": "9667c968"
+  },
+  "35": {
+    "text": "One name per line.",
+    "hash": "2f367d0b"
+  },
+  "36": {
+    "text": "Shuffle for training.",
+    "hash": "c8f1cb86"
+  },
+  "39": {
+    "text": "Character vocabulary.",
+    "hash": "5f7ca3bb"
+  },
+  "40": {
+    "text": "BOS/EOS token.",
+    "hash": "476ca504"
+  },
+  "41": {
+    "text": "Vocab size: characters + BOS.",
+    "hash": "0a38d2ba"
+  },
+  "47": {
+    "text": "Small model \u2014 same architecture as Lab 03, but with one crucial addition: the forward pass accepts pre-computed embeddings, not just token IDs.",
+    "hash": "eb81fecf"
+  },
+  "48": {
+    "text": "4 attention heads.",
+    "hash": "5b7ba4c9"
+  },
+  "49": {
+    "text": "Single layer.",
+    "hash": "9068cb85"
+  },
+  "50": {
+    "text": "Context window.",
+    "hash": "4f3059d5"
+  },
+  "51": {
+    "text": "Head dimension.",
+    "hash": "1892cf11"
+  },
+  "52": {
+    "text": "CPU inference.",
+    "hash": "b39e14b0"
+  },
+  "55": {
+    "text": "RMSNorm \u2014 same as all previous labs.",
+    "hash": "69fade3d"
+  },
+  "60": {
+    "text": "Normalize by root-mean-square.",
+    "hash": "a87869a2"
+  },
+  "64": {
+    "text": "Causal self-attention \u2014 unchanged from Lab 03.",
+    "hash": "c20aaac2"
+  },
+  "67": {
+    "text": "Q, K, V, and output projections.",
+    "hash": "433b771f"
+  },
+  "72": {
+    "text": "Attention forward pass.",
+    "hash": "a87869a2"
+  },
+  "73": {
+    "text": "Unpack dimensions.",
+    "hash": "4584ac61"
+  },
+  "74": {
+    "text": "Multi-head reshape for queries.",
+    "hash": "d0c33c49"
+  },
+  "75": {
+    "text": "Keys.",
+    "hash": "a48e9c7a"
+  },
+  "76": {
+    "text": "Values.",
+    "hash": "7fcca8ac"
+  },
+  "77": {
+    "text": "Scaled dot-product attention.",
+    "hash": "308b188d"
+  },
+  "78": {
+    "text": "Causal mask \u2014 no peeking at future tokens.",
+    "hash": "14eeec63"
+  },
+  "79": {
+    "text": "Mask with -inf.",
+    "hash": "a2e76efa"
+  },
+  "80": {
+    "text": "Softmax to get attention weights.",
+    "hash": "62dc999a"
+  },
+  "81": {
+    "text": "Weighted value aggregation + reshape.",
+    "hash": "a1aef68f"
+  },
+  "82": {
+    "text": "Output projection.",
+    "hash": "36f2db67"
+  },
+  "85": {
+    "text": "MLP sublayer.",
+    "hash": "3ad666a1"
+  },
+  "88": {
+    "text": "Up-projection to 4x embedding dim.",
+    "hash": "8e9f0642"
+  },
+  "89": {
+    "text": "Down-projection back.",
+    "hash": "62c4768b"
+  },
+  "92": {
+    "text": "ReLU nonlinearity.",
+    "hash": "8aa6bebb"
+  },
+  "95": {
+    "text": "Transformer block.",
+    "hash": "4bcc8ea8"
+  },
+  "98": {
+    "text": "Pre-norm before attention.",
+    "hash": "e92b587d"
+  },
+  "99": {
+    "text": "Attention sublayer.",
+    "hash": "95b016d9"
+  },
+  "100": {
+    "text": "Pre-norm before MLP.",
+    "hash": "f58a7657"
+  },
+  "101": {
+    "text": "MLP sublayer.",
+    "hash": "17fdd551"
+  },
+  "103": {
+    "text": "Block forward with residual connections.",
+    "hash": "a87869a2"
+  },
+  "104": {
+    "text": "Residual around attention.",
+    "hash": "5133b743"
+  },
+  "105": {
+    "text": "Residual around MLP.",
+    "hash": "50e2183f"
+  },
+  "109": {
+    "text": "The model \u2014 now with a key difference from earlier labs.",
+    "hash": "e94c5dc2"
+  },
+  "112": {
+    "text": "Token embedding table \u2014 this does double duty in soft thinking: it maps token IDs to embeddings AND is the table we blend against to create concept tokens.",
+    "hash": "2a2b79bb"
+  },
+  "113": {
+    "text": "Position embeddings.",
+    "hash": "5338449e"
+  },
+  "114": {
+    "text": "Input normalization.",
+    "hash": "5caa073e"
+  },
+  "115": {
+    "text": "Transformer blocks.",
+    "hash": "d10311df"
+  },
+  "116": {
+    "text": "LM head: embeddings -> vocabulary logits.",
+    "hash": "1774314d"
+  },
+  "117": {
+    "text": "Weight initialization.",
+    "hash": "e4941829"
+  },
+  "121": {
+    "text": "Small normal init for all weights.",
+    "hash": "e2ce6cde"
+  },
+  "124": {
+    "text": "The critical change: <code>forward</code> accepts either token IDs OR pre-computed embeddings. This is what enables soft thinking \u2014 we can feed in concept tokens (weighted blends) instead of discrete token embeddings.",
+    "hash": "5a8ff8fb"
+  },
+  "125": {
+    "text": "If <code>idx</code> is provided, look up embeddings normally. Otherwise, use the pre-computed <code>inputs_embeds</code> directly.",
+    "hash": "2a3ddfa7"
+  },
+  "126": {
+    "text": "Safety check: must provide one or the other.",
+    "hash": "0d6f662b"
+  },
+  "127": {
+    "text": "Get sequence length from whichever input we have.",
+    "hash": "5051a42d"
+  },
+  "128": {
+    "text": "Position embeddings work the same either way.",
+    "hash": "7c34b10b"
+  },
+  "129": {
+    "text": "Normalize the combined embeddings.",
+    "hash": "b88a95ea"
+  },
+  "130": {
+    "text": "Process through transformer blocks.",
+    "hash": "359aba32"
+  },
+  "132": {
+    "text": "Project to vocabulary logits.",
+    "hash": "9ef9adcf"
+  },
+  "138": {
+    "text": "1000 training steps \u2014 shared with Lab 21.",
+    "hash": "f105aa30"
+  },
+  "141": {
+    "text": "No gradients during generation \u2014 pure inference.",
+    "hash": "eec96875"
+  },
+  "142": {
+    "text": "The generation function: supports both hard (standard) and soft (concept token) decoding. This is where the magic happens.",
+    "hash": "ae96d1e2"
+  },
+  "144": {
+    "text": "Switch to eval mode.",
+    "hash": "45bf010c"
+  },
+  "145": {
+    "text": "Track generated tokens and per-step entropy (measures how uncertain the model is).",
+    "hash": "72b2c0dd"
+  },
+  "146": {
+    "text": "Start with the BOS token embedding \u2014 same for both modes.",
+    "hash": "16371ae3"
+  },
+  "148": {
+    "text": "Generate up to <code>block_size</code> tokens.",
+    "hash": "ab05dc73"
+  },
+  "149": {
+    "text": "Forward pass using embeddings (not token IDs) \u2014 this is how concept tokens flow through the model.",
+    "hash": "3c166ac3"
+  },
+  "152": {
+    "text": "Apply sampling temperature to get the token probabilities.",
+    "hash": "42c9b900"
+  },
+  "153": {
+    "text": "Sample a discrete token \u2014 needed for output text and stopping condition, regardless of mode.",
+    "hash": "5b83becd"
+  },
+  "154": {
+    "text": "BOS means end-of-name.",
+    "hash": "41a35c11"
+  },
+  "156": {
+    "text": "Record the sampled token.",
+    "hash": "a1ca669a"
+  },
+  "159": {
+    "text": "Shannon entropy of the distribution: measures how spread out the model's beliefs are. Low entropy = confident, high entropy = uncertain. We'll compare this across decoding modes.",
+    "hash": "4aa43c79"
+  },
+  "162": {
+    "text": "Hard decoding: collapse to a single token, throw away the distribution. Standard approach.",
+    "hash": "0e27bbb0"
+  },
+  "163": {
+    "text": "Look up the single selected token's embedding \u2014 all information about alternatives is lost.",
+    "hash": "e0217c97"
+  },
+  "165": {
+    "text": "Soft decoding: preserve the full distribution as a \"concept token.\"",
+    "hash": "b3811453"
+  },
+  "166": {
+    "text": "Soft temperature controls how blended the concept token is. Lower T = more peaked (closer to hard). Higher T = more spread (more tokens contribute).",
+    "hash": "aa93a434"
+  },
+  "167": {
+    "text": "THE key line: <code>softmax(logits/T) @ embedding_table</code>. This creates a weighted average of ALL token embeddings, where the weights are the model's probabilities. The concept token lives in the same embedding space as regular tokens, but encodes the full uncertainty of what the model \"wanted to say.\"",
+    "hash": "e1a0c30a"
+  },
+  "169": {
+    "text": "Append the new embedding (hard or soft) and truncate to context window. The model now sees concept tokens as part of its history.",
+    "hash": "6e2e1538"
+  },
+  "177": {
+    "text": "Only run training and inference when executed directly \u2014 Lab 21 imports from this file.",
+    "hash": "3412809c"
+  },
+  "178": {
+    "text": "Instantiate the model.",
+    "hash": "40b7fcd9"
+  },
+  "182": {
+    "text": "Adam optimizer \u2014 same settings as Lab 03.",
+    "hash": "92d21e78"
+  },
+  "184": {
+    "text": "Standard teacher-forcing training loop.",
+    "hash": "53f56939"
+  },
+  "185": {
+    "text": "One name per step.",
+    "hash": "47ec0e2c"
+  },
+  "186": {
+    "text": "Encode: BOS + characters + BOS.",
+    "hash": "ae86abd0"
+  },
+  "187": {
+    "text": "Clip to context window.",
+    "hash": "3d9da8cd"
+  },
+  "189": {
+    "text": "Input sequence.",
+    "hash": "968a3346"
+  },
+  "190": {
+    "text": "Target sequence (shifted right by one).",
+    "hash": "1b63fd95"
+  },
+  "192": {
+    "text": "Forward pass with token IDs (standard training, no soft tokens yet).",
+    "hash": "17df3885"
+  },
+  "193": {
+    "text": "Cross-entropy loss.",
+    "hash": "4f1dd754"
+  },
+  "195": {
+    "text": "Clear gradients.",
+    "hash": "fbede2b3"
+  },
+  "196": {
+    "text": "Backpropagate.",
+    "hash": "227fe80d"
+  },
+  "197": {
+    "text": "Linear learning rate decay.",
+    "hash": "60602e3a"
+  },
+  "198": {
+    "text": "Apply decayed learning rate.",
+    "hash": "9f6d3592"
+  },
+  "200": {
+    "text": "Weight update.",
+    "hash": "d9e59d7e"
+  },
+  "205": {
+    "text": "Compare hard vs. soft decoding at different soft temperatures.",
+    "hash": "f6903af1"
+  },
+  "206": {
+    "text": "20 samples per configuration.",
+    "hash": "ba8d14e2"
+  },
+  "207": {
+    "text": "Maximum possible entropy: ln(vocab_size). This is the \"uniform distribution\" ceiling.",
+    "hash": "430f12d4"
+  },
+  "209": {
+    "text": "Test four configurations: hard baseline plus three soft temperatures.",
+    "hash": "869e4f57"
+  },
+  "210": {
+    "text": "Hard decoding (standard), mild soft, moderate soft, and very diffuse soft.",
+    "hash": "ce9bdb11"
+  },
+  "215": {
+    "text": "Print configuration label.",
+    "hash": "a3b8d2cf"
+  },
+  "217": {
+    "text": "Generate samples for this configuration.",
+    "hash": "567e2f37"
+  },
+  "218": {
+    "text": "Generate one name, collecting entropy at each step.",
+    "hash": "c6a33d5a"
+  },
+  "219": {
+    "text": "Decode token IDs to characters.",
+    "hash": "9e3829cc"
+  },
+  "220": {
+    "text": "Average entropy across generation steps \u2014 how uncertain was the model on average?",
+    "hash": "8eb7b603"
+  },
+  "222": {
+    "text": "Show first 10 names with their entropy.",
+    "hash": "5416cee6"
+  },
+  "223": {
+    "text": "Display name and entropy relative to maximum. Higher entropy in soft mode shows the distribution is spreading \u2014 the concept tokens carry more information forward.",
+    "hash": "a88cbba7"
+  },
+  "224": {
+    "text": "Average entropy across all samples \u2014 the summary statistic.",
+    "hash": "1abb3755"
+  }
+}
