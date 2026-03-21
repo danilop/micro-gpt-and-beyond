@@ -185,6 +185,7 @@
   }
 
   /* Play / Stop buttons */
+  .play-btn { display: none; } /* hidden until server mode confirmed */
   .play-btn, .stop-btn {
     display: inline-flex;
     align-items: center;
@@ -384,9 +385,9 @@ async function init() {
     expData = lab.explanations;
   }
 
-  // Hide Run button in static mode
-  if (!serverMode) {
-    document.getElementById("play-btn").style.display = "none";
+  // Show Run button only in server mode
+  if (serverMode) {
+    document.getElementById("play-btn").style.display = "inline-flex";
   }
 
   // Set header
