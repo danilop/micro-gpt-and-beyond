@@ -4,11 +4,11 @@
     "hash": "de2abade"
   },
   "15": {
-    "text": "File path utilities.",
+    "text": "Standard library for file path construction. Used to locate the shared dataset relative to the script.",
     "hash": "7e18ed42"
   },
   "16": {
-    "text": "Python random for shuffling.",
+    "text": "Python's built-in random module, used here to shuffle the dataset into a random training order.",
     "hash": "e3b0c442"
   },
   "18": {
@@ -16,7 +16,7 @@
     "hash": "b802910c"
   },
   "19": {
-    "text": "Neural network modules.",
+    "text": "PyTorch's neural network building blocks: layers, modules, and everything needed to define model architecture.",
     "hash": "5af419e1"
   },
   "20": {
@@ -24,7 +24,7 @@
     "hash": "e3b0c442"
   },
   "22": {
-    "text": "Reproducible randomness.",
+    "text": "Fix both Python and PyTorch random seeds so weight initialization and data ordering are identical across runs.",
     "hash": "7e7dcf46"
   },
   "23": {
@@ -32,35 +32,35 @@
     "hash": "e3b0c442"
   },
   "28": {
-    "text": "Dataset path \u2014 shared across all labs.",
+    "text": "Dataset path, shared across all labs.",
     "hash": "9667c968"
   },
   "29": {
-    "text": "Auto-download if missing.",
+    "text": "If the names dataset is not already on disk, download it automatically so the tutorial is self-contained.",
     "hash": "84cdb92b"
   },
   "32": {
-    "text": "Fetch dataset URL.",
+    "text": "URL pointing to the raw names dataset hosted in Karpathy's GitHub repository.",
     "hash": "25ec775b"
   },
   "34": {
-    "text": "Load and split into individual names.",
+    "text": "Read the text file and split it into individual name strings. Each line becomes one training document.",
     "hash": "2f367d0b"
   },
   "35": {
-    "text": "Shuffle training data.",
+    "text": "Shuffle the names so the model encounters them in random order rather than memorizing alphabetical patterns.",
     "hash": "c8f1cb86"
   },
   "38": {
-    "text": "Character-level vocabulary.",
+    "text": "Build the character-level vocabulary: 26 lowercase letters, each mapped to a unique integer ID.",
     "hash": "5f7ca3bb"
   },
   "39": {
-    "text": "BOS token.",
+    "text": "The beginning-of-sequence token doubles as the end-of-sequence marker for name boundaries.",
     "hash": "476ca504"
   },
   "40": {
-    "text": "Real vocab size: 27.",
+    "text": "The real vocabulary has 27 tokens: 26 letters plus the BOS/EOS marker. PAD is separate and never predicted.",
     "hash": "0a38d2ba"
   },
   "41": {
@@ -68,7 +68,7 @@
     "hash": "2b5c11c4"
   },
   "42": {
-    "text": "Expanded vocab includes PAD \u2014 the embedding table needs a row for it, even though it's never a real prediction target.",
+    "text": "Expanded vocab includes PAD, the embedding table needs a row for it, even though it's never a real prediction target.",
     "hash": "f3abd8f4"
   },
   "48": {
@@ -80,19 +80,19 @@
     "hash": "5b7ba4c9"
   },
   "50": {
-    "text": "2 layers instead of 1 \u2014 deeper model for richer representations.",
+    "text": "2 layers instead of 1, deeper model for richer representations.",
     "hash": "0a695db7"
   },
   "51": {
-    "text": "Same 16-char context window.",
+    "text": "Same 16-character context window as previous labs. Names longer than this get truncated.",
     "hash": "4f3059d5"
   },
   "52": {
-    "text": "16 dimensions per head.",
+    "text": "Each head now has 16 dimensions (64 / 4), four times larger than in lab 03. More dimensions per head means richer attention patterns.",
     "hash": "1892cf11"
   },
   "53": {
-    "text": "32 sequences per training step \u2014 the model sees 32 names simultaneously and averages their gradients.",
+    "text": "32 sequences per training step, the model sees 32 names simultaneously and averages their gradients.",
     "hash": "d607968f"
   },
   "54": {
@@ -100,7 +100,7 @@
     "hash": "f105aa30"
   },
   "60": {
-    "text": "RMSNorm \u2014 identical to lab 03. The architecture doesn't change, just the scale.",
+    "text": "RMSNorm, identical to lab 03. The architecture doesn't change, just the scale.",
     "hash": "69fade3d"
   },
   "65": {
@@ -108,7 +108,7 @@
     "hash": "a87869a2"
   },
   "69": {
-    "text": "Attention module \u2014 now with a <code>pad_mask</code> parameter. This is the key addition for batching.",
+    "text": "Attention module, now with a <code>pad_mask</code> parameter. This is the key addition for batching.",
     "hash": "c20aaac2"
   },
   "72": {
@@ -116,15 +116,15 @@
     "hash": "433b771f"
   },
   "73": {
-    "text": "Key projection.",
+    "text": "Project the normalized input into key vectors that other positions will compare against.",
     "hash": "bf2475c8"
   },
   "74": {
-    "text": "Value projection.",
+    "text": "Project the input into value vectors that carry content to be aggregated by attention weights.",
     "hash": "d1a077cb"
   },
   "77": {
-    "text": "Attention now accepts a padding mask \u2014 the model needs to know which positions are real vs. padding.",
+    "text": "Attention now accepts a padding mask, the model needs to know which positions are real vs. padding.",
     "hash": "75cf002b"
   },
   "78": {
@@ -136,15 +136,15 @@
     "hash": "d0c33c49"
   },
   "80": {
-    "text": "K projection and reshape.",
+    "text": "Project into key vectors and reshape into separate attention heads. Keys let each position advertise its content for query matching.",
     "hash": "a48e9c7a"
   },
   "81": {
-    "text": "V projection and reshape.",
+    "text": "Project into value vectors and reshape into heads. Values carry the content that attention weights will blend together.",
     "hash": "7fcca8ac"
   },
   "83": {
-    "text": "Scaled dot-product attention scores.",
+    "text": "Compute attention scores by taking the dot product of queries and keys, scaled by the square root of head dimension to prevent saturation.",
     "hash": "308b188d"
   },
   "85": {
@@ -152,7 +152,7 @@
     "hash": "64b6389b"
   },
   "86": {
-    "text": "Apply causal mask.",
+    "text": "Set future positions to negative infinity so the model cannot cheat by looking ahead.",
     "hash": "5a67aa28"
   },
   "88": {
@@ -164,7 +164,7 @@
     "hash": "b971d9db"
   },
   "91": {
-    "text": "Softmax over keys.",
+    "text": "Turn raw attention scores into a probability distribution so weights sum to one across keys.",
     "hash": "62dc999a"
   },
   "92": {
@@ -176,47 +176,47 @@
     "hash": "a1aef68f"
   },
   "95": {
-    "text": "Output projection.",
+    "text": "Project the concatenated multi-head attention output back into the embedding space.",
     "hash": "36f2db67"
   },
   "98": {
-    "text": "MLP \u2014 identical to lab 03.",
+    "text": "MLP, identical to lab 03.",
     "hash": "3ad666a1"
   },
   "101": {
-    "text": "Expand to 4x.",
+    "text": "Widen the representation to 4x the embedding dimension for richer nonlinear transformations.",
     "hash": "8e9f0642"
   },
   "102": {
-    "text": "Contract back.",
+    "text": "Compress the expanded hidden state back to the original embedding dimension.",
     "hash": "62c4768b"
   },
   "104": {
-    "text": "ReLU + two linears.",
+    "text": "Apply ReLU activation between two linear layers, forming the feed-forward sub-network.",
     "hash": "a87869a2"
   },
   "105": {
-    "text": "Same one-line MLP.",
+    "text": "The entire MLP compresses into a single chained expression in PyTorch.",
     "hash": "8aa6bebb"
   },
   "108": {
-    "text": "Transformer block \u2014 now passes <code>pad_mask</code> through to attention.",
+    "text": "Transformer block, now passes <code>pad_mask</code> through to attention.",
     "hash": "4bcc8ea8"
   },
   "111": {
-    "text": "Pre-attention norm.",
+    "text": "Normalize the input before passing it to the attention sub-layer for stable training.",
     "hash": "e92b587d"
   },
   "112": {
-    "text": "Attention with padding awareness.",
+    "text": "The attention sub-layer now receives the padding mask so it knows which positions hold real tokens versus filler.",
     "hash": "95b016d9"
   },
   "113": {
-    "text": "Pre-MLP norm.",
+    "text": "Normalize the input before the MLP sub-layer, following the pre-norm transformer pattern.",
     "hash": "f58a7657"
   },
   "114": {
-    "text": "MLP sub-layer.",
+    "text": "The feed-forward network that processes each position independently after attention mixing.",
     "hash": "17fdd551"
   },
   "116": {
@@ -228,11 +228,11 @@
     "hash": "5c9f1363"
   },
   "118": {
-    "text": "MLP doesn't need the mask \u2014 it operates position-independently.",
+    "text": "MLP doesn't need the mask, it operates position-independently.",
     "hash": "50e2183f"
   },
   "122": {
-    "text": "Complete model \u2014 embedding table is now larger to accommodate the PAD token.",
+    "text": "Complete model, embedding table is now larger to accommodate the PAD token.",
     "hash": "e94c5dc2"
   },
   "125": {
@@ -240,15 +240,15 @@
     "hash": "cd8245f7"
   },
   "126": {
-    "text": "Position embeddings \u2014 same as lab 03.",
+    "text": "Position embeddings, same as lab 03.",
     "hash": "5338449e"
   },
   "127": {
-    "text": "Initial normalization.",
+    "text": "Normalize embeddings before entering the transformer stack. This initial normalization keeps activations stable from the start.",
     "hash": "5caa073e"
   },
   "128": {
-    "text": "Transformer layers.",
+    "text": "Register all transformer layers so PyTorch can discover and optimize their parameters.",
     "hash": "d10311df"
   },
   "129": {
@@ -256,7 +256,7 @@
     "hash": "f0a5c171"
   },
   "130": {
-    "text": "Apply initialization.",
+    "text": "Walk through every sub-module and apply N(0, 0.08) initialization, ensuring consistent starting conditions across all labs.",
     "hash": "e4941829"
   },
   "134": {
@@ -272,11 +272,11 @@
     "hash": "dda20803"
   },
   "138": {
-    "text": "Batch and time dimensions.",
+    "text": "Unpack batch size B and sequence length T from the input shape. These dimensions drive all the downstream tensor operations.",
     "hash": "47cad82b"
   },
   "139": {
-    "text": "Token embeddings \u2014 PAD tokens get zero vectors thanks to <code>padding_idx</code>.",
+    "text": "Token embeddings, PAD tokens get zero vectors thanks to <code>padding_idx</code>.",
     "hash": "8d137e9c"
   },
   "140": {
@@ -284,11 +284,11 @@
     "hash": "2b319b15"
   },
   "141": {
-    "text": "Fuse and normalize.",
+    "text": "Combine token and position embeddings and normalize before entering the transformer stack.",
     "hash": "b88a95ea"
   },
   "142": {
-    "text": "Process through transformer layers.",
+    "text": "Pass the representation through each transformer layer in sequence. With two layers now, the model builds progressively richer representations.",
     "hash": "359aba32"
   },
   "143": {
@@ -320,11 +320,11 @@
     "hash": "e83818cf"
   },
   "159": {
-    "text": "Find the longest sequence in this batch \u2014 everything gets padded to this length.",
+    "text": "Find the longest sequence in this batch, everything gets padded to this length.",
     "hash": "d5c54ef8"
   },
   "160": {
-    "text": "Build padded input, target, and mask arrays.",
+    "text": "Allocate lists that will hold the padded input tokens, shifted targets, and boolean masks for every sequence in the batch.",
     "hash": "9216c322"
   },
   "163": {
@@ -352,71 +352,71 @@
     "hash": "fc4c1868"
   },
   "173": {
-    "text": "Input tensor: (B, max_T).",
+    "text": "The input tensor of shape (B, max_T) containing token IDs, with PAD filling shorter sequences to the batch's maximum length.",
     "hash": "bf49bc9e"
   },
   "174": {
-    "text": "Target tensor: (B, max_T).",
+    "text": "The target tensor of shape (B, max_T) with shifted tokens as labels. Padded positions use -100 so cross-entropy ignores them.",
     "hash": "0d2d7111"
   },
   "175": {
-    "text": "Padding mask: (B, max_T).",
+    "text": "A boolean mask of shape (B, max_T) marking which positions are real tokens (False) and which are padding (True).",
     "hash": "cf765975"
   },
   "182": {
-    "text": "CPU training.",
+    "text": "Run training on CPU, which is sufficient for this small model and dataset size.",
     "hash": "b39e14b0"
   },
   "183": {
-    "text": "Instantiate the scaled-up model.",
+    "text": "Create the model with the scaled-up architecture: 64-dim embeddings, 4 heads, and 2 transformer layers.",
     "hash": "40b7fcd9"
   },
   "184": {
-    "text": "Parameter count \u2014 much larger than lab 03 due to bigger dimensions and 2 layers.",
+    "text": "Parameter count, much larger than lab 03 due to bigger dimensions and 2 layers.",
     "hash": "ea4a5d11"
   },
   "186": {
-    "text": "Adam with same hyperparameters.",
+    "text": "Same Adam optimizer configuration as all previous labs: lr=0.01, betas=(0.85, 0.99). Only the model size and batch size changed.",
     "hash": "92d21e78"
   },
   "188": {
-    "text": "Training loop.",
+    "text": "Iterate over training steps, processing a batch of 32 names at each step.",
     "hash": "53f56939"
   },
   "189": {
-    "text": "Create a padded batch of 32 sequences.",
+    "text": "Assemble a padded batch of 32 tokenized names, aligning them to the same length with PAD tokens and building the corresponding masks.",
     "hash": "515454ec"
   },
   "190": {
-    "text": "Move inputs to device.",
+    "text": "Transfer input token IDs to the compute device. On CPU this is a no-op, but the pattern generalizes to GPU training.",
     "hash": "0e8f4dc2"
   },
   "191": {
-    "text": "Move targets to device.",
+    "text": "Transfer target labels to the compute device, matching where the model's output tensors will live.",
     "hash": "ea9a8f17"
   },
   "192": {
-    "text": "Move mask to device.",
+    "text": "Transfer the padding mask to the same device so it can be applied directly to the attention score matrix.",
     "hash": "ce326d81"
   },
   "194": {
-    "text": "Forward pass with padding mask \u2014 the model knows which positions to ignore.",
+    "text": "Forward pass with padding mask, the model knows which positions to ignore.",
     "hash": "f95b7eef"
   },
   "195": {
-    "text": "<code>ignore_index=-100</code> means the loss is only computed on real tokens, not padding. This is crucial \u2014 otherwise shorter sequences would be penalized differently than longer ones.",
+    "text": "<code>ignore_index=-100</code> means the loss is only computed on real tokens, not padding. This is crucial, otherwise shorter sequences would be penalized differently than longer ones.",
     "hash": "96f390f4"
   },
   "197": {
-    "text": "Zero gradients.",
+    "text": "Clear accumulated gradients from the previous step before computing new ones.",
     "hash": "fbede2b3"
   },
   "198": {
-    "text": "Backward pass \u2014 autograd computes gradients for all parameters through the batched forward pass.",
+    "text": "Backward pass, autograd computes gradients for all parameters through the batched forward pass.",
     "hash": "227fe80d"
   },
   "199": {
-    "text": "Linear LR decay.",
+    "text": "Linearly reduce the learning rate toward zero over the course of training.",
     "hash": "60602e3a"
   },
   "200": {
@@ -424,23 +424,23 @@
     "hash": "9f6d3592"
   },
   "201": {
-    "text": "Set new LR.",
+    "text": "Write the decayed learning rate into the optimizer's parameter group.",
     "hash": "3030870a"
   },
   "202": {
-    "text": "Apply Adam update.",
+    "text": "Use the Adam optimizer to update all model weights based on the computed gradients.",
     "hash": "d9e59d7e"
   },
   "204": {
-    "text": "Log every 10 steps.",
+    "text": "Print the loss periodically so we can monitor whether the model is learning.",
     "hash": "cf37956f"
   },
   "210": {
-    "text": "Temperature for generation.",
+    "text": "Temperature 0.5 makes generation more conservative: the model favors high-confidence predictions, producing more typical-sounding names.",
     "hash": "d66aa849"
   },
   "212": {
-    "text": "Eval mode.",
+    "text": "Switch the model to evaluation mode, which disables training-specific behaviors like dropout.",
     "hash": "45bf010c"
   },
   "213": {
@@ -448,11 +448,11 @@
     "hash": "d4f61231"
   },
   "214": {
-    "text": "Generate 20 names.",
+    "text": "Generate 20 brand-new names by sampling from the model's learned distribution.",
     "hash": "64d836c5"
   },
   "215": {
-    "text": "Start with BOS.",
+    "text": "Begin each generated name with the beginning-of-sequence token as the initial prompt.",
     "hash": "5c52ddc4"
   },
   "216": {
@@ -464,35 +464,35 @@
     "hash": "ce311cc5"
   },
   "218": {
-    "text": "Forward pass \u2014 no pad_mask needed for single sequences.",
+    "text": "Forward pass, no pad_mask needed for single sequences.",
     "hash": "7d28f274"
   },
   "219": {
-    "text": "Last position's logits, temperature-scaled.",
+    "text": "Grab the logits from the last generated position and divide by temperature. Lower temperature sharpens the distribution toward the top predictions.",
     "hash": "e1a1328f"
   },
   "220": {
-    "text": "Softmax to probabilities.",
+    "text": "Convert the temperature-scaled logits into a proper probability distribution that sums to one, ready for sampling.",
     "hash": "93ed4206"
   },
   "221": {
-    "text": "Sample next token.",
+    "text": "Draw one token from the probability distribution to continue generating the name.",
     "hash": "5b83becd"
   },
   "222": {
-    "text": "BOS signals end of name.",
+    "text": "When the model outputs the BOS token during generation, it signals the name is complete and we stop adding characters.",
     "hash": "41a35c11"
   },
   "224": {
-    "text": "Extend generated sequence.",
+    "text": "Append the newly sampled token to the growing sequence so it becomes context for predicting the next character.",
     "hash": "a1ca669a"
   },
   "225": {
-    "text": "Convert to characters.",
+    "text": "Map each token ID back to its character. Skip the leading BOS to get just the generated name text.",
     "hash": "b4368128"
   },
   "226": {
-    "text": "Print the result.",
+    "text": "Display the completed generated name after all characters have been sampled.",
     "hash": "f9d6f741"
   }
 }

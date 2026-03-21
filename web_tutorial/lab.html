@@ -444,11 +444,14 @@ function buildAnnotatedLines() {
 function ownerOf(lineNum) {
   // If this line is annotated, it owns itself
   if (annotatedLines.includes(lineNum)) return lineNum;
-  // Walk down to find the next annotated line (this comment belongs to it)
+  // If this is a real code line (not blank/comment), select it directly
+  const trimmed = (codeLines[lineNum - 1] || "").trim();
+  if (trimmed && !trimmed.startsWith("#")) return lineNum;
+  // Comment or blank: snap to the next annotated line below
   for (const al of annotatedLines) {
     if (al > lineNum) return al;
   }
-  // Walk up to find the previous annotated line (trailing blank/comment)
+  // Trailing: snap to the last annotated line above
   for (let i = annotatedLines.length - 1; i >= 0; i--) {
     if (annotatedLines[i] < lineNum) return annotatedLines[i];
   }

@@ -1,10 +1,10 @@
 {
   "9": {
-    "text": "Standard library only \u2014 no NumPy, no PyTorch, no nothing. This is pure Python all the way down.",
+    "text": "Standard library only, no NumPy, no PyTorch, no nothing. This is pure Python all the way down.",
     "hash": "812ca304"
   },
   "10": {
-    "text": "Just <code>log</code> and <code>exp</code> \u2014 the two math functions that make neural networks work.",
+    "text": "Just <code>log</code> and <code>exp</code>, the two math functions that make neural networks work.",
     "hash": "eba0e341"
   },
   "11": {
@@ -12,7 +12,7 @@
     "hash": "9d5f36b9"
   },
   "12": {
-    "text": "Fixed seed so every run is identical \u2014 essential for debugging when something goes wrong.",
+    "text": "Fixed seed so every run is identical, essential for debugging when something goes wrong.",
     "hash": "ab5891ef"
   },
   "15": {
@@ -20,7 +20,7 @@
     "hash": "1f738a3b"
   },
   "16": {
-    "text": "Auto-downloads the dataset if missing \u2014 the tutorial is self-contained.",
+    "text": "Auto-downloads the dataset if missing, the tutorial is self-contained.",
     "hash": "9667c968"
   },
   "17": {
@@ -28,7 +28,7 @@
     "hash": "84cdb92b"
   },
   "18": {
-    "text": "Karpathy's \"makemore\" names dataset \u2014 ~32K human names, perfect for a tiny language model.",
+    "text": "Karpathy's \"makemore\" names dataset, ~32K human names, perfect for a tiny language model.",
     "hash": "33a571a5"
   },
   "19": {
@@ -44,7 +44,7 @@
     "hash": "c8f1cb86"
   },
   "25": {
-    "text": "The vocabulary is just the unique characters across all names \u2014 typically a-z. Each character gets an integer ID.",
+    "text": "The vocabulary is just the unique characters across all names, typically a-z. Each character gets an integer ID.",
     "hash": "9879a514"
   },
   "26": {
@@ -60,7 +60,7 @@
     "hash": "78c82417"
   },
   "32": {
-    "text": "<code>__slots__</code> saves memory by preventing Python from creating a <code>__dict__</code> per instance \u2014 matters when you have thousands of Values.",
+    "text": "<code>__slots__</code> saves memory by preventing Python from creating a <code>__dict__</code> per instance, matters when you have thousands of Values.",
     "hash": "3b66839e"
   },
   "34": {
@@ -72,7 +72,7 @@
     "hash": "aea3e87c"
   },
   "36": {
-    "text": "Starts at zero because gradients accumulate \u2014 multiple paths through the graph can contribute to the same parameter's gradient.",
+    "text": "Starts at zero because gradients accumulate, multiple paths through the graph can contribute to the same parameter's gradient.",
     "hash": "42083b97"
   },
   "37": {
@@ -80,7 +80,7 @@
     "hash": "32911fb8"
   },
   "38": {
-    "text": "Local gradients are the partial derivatives of this node with respect to each child \u2014 the chain rule's building blocks.",
+    "text": "Local gradients are the partial derivatives of this node with respect to each child, the chain rule's building blocks.",
     "hash": "eb6f8fc0"
   },
   "40": {
@@ -96,7 +96,7 @@
     "hash": "160f0cba"
   },
   "44": {
-    "text": "Multiplication builds the graph and stores local gradients. The derivative of <code>a*b</code> w.r.t. <code>a</code> is <code>b</code>, and vice versa \u2014 the \"swap and multiply\" rule of calculus.",
+    "text": "Multiplication builds the graph and stores local gradients. The derivative of <code>a*b</code> w.r.t. <code>a</code> is <code>b</code>, and vice versa, the \"swap and multiply\" rule of calculus.",
     "hash": "46d3836f"
   },
   "46": {
@@ -112,11 +112,11 @@
     "hash": "61baa151"
   },
   "50": {
-    "text": "d(exp x)/dx = exp(x) \u2014 the only function that is its own derivative. Beautiful and essential for softmax.",
+    "text": "d(exp x)/dx = exp(x), the only function that is its own derivative. Beautiful and essential for softmax.",
     "hash": "3d5a7ab6"
   },
   "51": {
-    "text": "ReLU: pass positive values through, kill negatives. The gradient is 1 or 0 \u2014 a simple gate.",
+    "text": "ReLU: pass positive values through, kill negatives. The gradient is 1 or 0, a simple gate.",
     "hash": "269e8e82"
   },
   "52": {
@@ -140,11 +140,11 @@
     "hash": "22080ddf"
   },
   "63": {
-    "text": "Recursive depth-first traversal to build the topological ordering \u2014 the classic algorithm.",
+    "text": "Recursive depth-first traversal to build the topological ordering, the classic algorithm.",
     "hash": "dd7be9be"
   },
   "69": {
-    "text": "Start the sort from the loss node \u2014 it's the root of the computation graph.",
+    "text": "Start the sort from the loss node, it's the root of the computation graph.",
     "hash": "b48c2d1e"
   },
   "70": {
@@ -160,7 +160,7 @@
     "hash": "6687f9eb"
   },
   "73": {
-    "text": "The <code>+=</code> is crucial \u2014 a parameter used in multiple operations receives gradients from all of them. This is why <code>grad</code> starts at 0.",
+    "text": "The <code>+=</code> is crucial, a parameter used in multiple operations receives gradients from all of them. This is why <code>grad</code> starts at 0.",
     "hash": "23c1e33a"
   },
   "76": {
@@ -184,7 +184,7 @@
     "hash": "1892cf11"
   },
   "81": {
-    "text": "A helper to create a 2D list of random Values \u2014 this is how we initialize weight matrices without NumPy.",
+    "text": "A helper to create a 2D list of random Values, this is how we initialize weight matrices without NumPy.",
     "hash": "46eb7ace"
   },
   "82": {
@@ -212,7 +212,7 @@
     "hash": "66988338"
   },
   "88": {
-    "text": "MLP first layer expands to 4x the embedding dimension \u2014 a wider hidden layer for more expressive transformations.",
+    "text": "MLP first layer expands to 4x the embedding dimension, a wider hidden layer for more expressive transformations.",
     "hash": "7c1fbcfc"
   },
   "89": {
@@ -224,7 +224,7 @@
     "hash": "5139bb74"
   },
   "95": {
-    "text": "A linear layer as a pure function: matrix-vector multiply using nested list comprehensions. No classes, no frameworks \u2014 just math.",
+    "text": "A linear layer as a pure function: matrix-vector multiply using nested list comprehensions. No classes, no frameworks, just math.",
     "hash": "7c2982c8"
   },
   "96": {
@@ -236,7 +236,7 @@
     "hash": "b154dc2c"
   },
   "99": {
-    "text": "Subtract the max for numerical stability \u2014 prevents exp() from overflowing. Doesn't change the output probabilities.",
+    "text": "Subtract the max for numerical stability, prevents exp() from overflowing. Doesn't change the output probabilities.",
     "hash": "2a265d6f"
   },
   "100": {
@@ -252,11 +252,11 @@
     "hash": "4ad03f53"
   },
   "104": {
-    "text": "RMSNorm: a simpler, faster alternative to LayerNorm. No mean subtraction, no learned parameters \u2014 just scale by the root mean square.",
+    "text": "RMSNorm: a simpler, faster alternative to LayerNorm. No mean subtraction, no learned parameters, just scale by the root mean square.",
     "hash": "a111052e"
   },
   "105": {
-    "text": "Mean of squared values \u2014 measures the \"energy\" of the vector.",
+    "text": "Mean of squared values, measures the \"energy\" of the vector.",
     "hash": "ba99afa6"
   },
   "106": {
@@ -272,11 +272,11 @@
     "hash": "cebf6a1e"
   },
   "110": {
-    "text": "Look up this token's learned embedding \u2014 a dense vector capturing what the character \"means\" to the model.",
+    "text": "Look up this token's learned embedding, a dense vector capturing what the character \"means\" to the model.",
     "hash": "4a8e9c8e"
   },
   "111": {
-    "text": "Look up the position embedding \u2014 the model needs to know WHERE in the sequence this token sits.",
+    "text": "Look up the position embedding, the model needs to know WHERE in the sequence this token sits.",
     "hash": "4edecf31"
   },
   "112": {
@@ -284,7 +284,7 @@
     "hash": "d264add6"
   },
   "113": {
-    "text": "Normalize before entering the transformer layers \u2014 keeps activations stable from the start.",
+    "text": "Normalize before entering the transformer layers, keeps activations stable from the start.",
     "hash": "83f53f47"
   },
   "115": {
@@ -292,7 +292,7 @@
     "hash": "12ede0d6"
   },
   "117": {
-    "text": "Save the input for the residual connection \u2014 it will be added back after attention, creating a \"skip road\" for gradients.",
+    "text": "Save the input for the residual connection, it will be added back after attention, creating a \"skip road\" for gradients.",
     "hash": "cbdfcbc3"
   },
   "118": {
@@ -300,11 +300,11 @@
     "hash": "83f53f47"
   },
   "119": {
-    "text": "Query projection: transforms the normalized input into a \"question\" vector \u2014 what is this token looking for?",
+    "text": "Query projection: transforms the normalized input into a \"question\" vector, what is this token looking for?",
     "hash": "9b6082ed"
   },
   "120": {
-    "text": "Key projection: transforms into a \"label\" vector \u2014 what does this token advertise about itself?",
+    "text": "Key projection: transforms into a \"label\" vector, what does this token advertise about itself?",
     "hash": "694ec14b"
   },
   "121": {
@@ -316,7 +316,7 @@
     "hash": "9715a7bb"
   },
   "123": {
-    "text": "Same for values \u2014 the KV cache is what makes autoregressive generation efficient.",
+    "text": "Same for values, the KV cache is what makes autoregressive generation efficient.",
     "hash": "e1ad486b"
   },
   "125": {
@@ -328,7 +328,7 @@
     "hash": "45ea4ffc"
   },
   "127": {
-    "text": "Extract this head's slice of the query vector \u2014 just 4 dimensions out of 16.",
+    "text": "Extract this head's slice of the query vector, just 4 dimensions out of 16.",
     "hash": "d31b6346"
   },
   "128": {
@@ -336,7 +336,7 @@
     "hash": "04788ada"
   },
   "129": {
-    "text": "Same for values \u2014 the information to retrieve.",
+    "text": "Same for values, the information to retrieve.",
     "hash": "3aadcde6"
   },
   "130": {
@@ -344,7 +344,7 @@
     "hash": "7724267b"
   },
   "131": {
-    "text": "Softmax converts attention scores into weights that sum to 1 \u2014 a probability distribution over which past tokens to attend to.",
+    "text": "Softmax converts attention scores into weights that sum to 1, a probability distribution over which past tokens to attend to.",
     "hash": "b2819d47"
   },
   "132": {
@@ -364,11 +364,11 @@
     "hash": "ddbe60c4"
   },
   "137": {
-    "text": "Save input for the MLP's residual connection.",
+    "text": "Snapshot the representation before the MLP transforms it. The residual connection will add this back, ensuring the layer can only refine, not destroy, what came before.",
     "hash": "cbdfcbc3"
   },
   "138": {
-    "text": "Pre-MLP normalization.",
+    "text": "Normalize before the feed-forward network. Like the pre-attention norm, this stabilizes training by keeping activations on a consistent scale before the MLP processes them.",
     "hash": "83f53f47"
   },
   "139": {
@@ -376,7 +376,7 @@
     "hash": "c39dd3ce"
   },
   "140": {
-    "text": "ReLU activation: zero out negatives, keep positives. Introduces non-linearity \u2014 without this, stacking linear layers would be equivalent to a single linear layer.",
+    "text": "ReLU activation: zero out negatives, keep positives. Introduces non-linearity, without this, stacking linear layers would be equivalent to a single linear layer.",
     "hash": "32aa89ff"
   },
   "141": {
@@ -392,19 +392,19 @@
     "hash": "1845b3e4"
   },
   "145": {
-    "text": "Return the logits \u2014 raw scores before softmax. The training loop will convert these to probabilities and compute the loss.",
+    "text": "Return the logits, raw scores before softmax. The training loop will convert these to probabilities and compute the loss.",
     "hash": "732a7204"
   },
   "148": {
-    "text": "Adam optimizer hyperparameters. <code>beta1=0.85</code> (momentum) is lower than the default 0.9 \u2014 less smoothing of gradients. <code>beta2=0.99</code> tracks the scale of recent gradients.",
+    "text": "Adam optimizer hyperparameters. <code>beta1=0.85</code> (momentum) is lower than the default 0.9, less smoothing of gradients. <code>beta2=0.99</code> tracks the scale of recent gradients.",
     "hash": "16ee9036"
   },
   "149": {
-    "text": "First moment (mean) estimates \u2014 initialized to zero. These smooth out noisy gradients, acting like momentum.",
+    "text": "First moment (mean) estimates, initialized to zero. These smooth out noisy gradients, acting like momentum.",
     "hash": "5a49f4df"
   },
   "150": {
-    "text": "Second moment (variance) estimates \u2014 these adapt the learning rate per-parameter, giving larger updates to rarely-changed parameters.",
+    "text": "Second moment (variance) estimates, these adapt the learning rate per-parameter, giving larger updates to rarely-changed parameters.",
     "hash": "2d9fe51e"
   },
   "153": {
@@ -412,7 +412,7 @@
     "hash": "f9da61c9"
   },
   "154": {
-    "text": "The main training loop \u2014 each iteration is one gradient descent step.",
+    "text": "The main training loop, each iteration is one gradient descent step.",
     "hash": "53f56939"
   },
   "157": {
@@ -436,7 +436,7 @@
     "hash": "38c0a0e0"
   },
   "164": {
-    "text": "Process each position one at a time \u2014 the model predicts each next character given all previous characters.",
+    "text": "Process each position one at a time, the model predicts each next character given all previous characters.",
     "hash": "99351782"
   },
   "165": {
@@ -456,7 +456,7 @@
     "hash": "303b9e5f"
   },
   "170": {
-    "text": "Average loss across all positions in this name. This is the number we minimize \u2014 our measure of how wrong the model is.",
+    "text": "Average loss across all positions in this name. This is the number we minimize, our measure of how wrong the model is.",
     "hash": "26414bbb"
   },
   "173": {
@@ -480,7 +480,7 @@
     "hash": "78d2fc0a"
   },
   "180": {
-    "text": "Bias correction for the first moment \u2014 compensates for the zero initialization, especially important in early steps.",
+    "text": "Bias correction for the first moment, compensates for the zero initialization, especially important in early steps.",
     "hash": "b032277a"
   },
   "181": {
@@ -500,15 +500,15 @@
     "hash": "d66aa849"
   },
   "190": {
-    "text": "Generate 20 new names the model has never seen \u2014 these come purely from learned patterns.",
+    "text": "Generate 20 new names the model has never seen, these come purely from learned patterns.",
     "hash": "64d836c5"
   },
   "191": {
-    "text": "Fresh KV caches for generation \u2014 no context from training.",
+    "text": "Fresh KV caches for generation, no context from training.",
     "hash": "a35d1040"
   },
   "192": {
-    "text": "Start with the BOS token \u2014 the universal \"begin a name\" signal.",
+    "text": "Start with the BOS token, the universal \"begin a name\" signal.",
     "hash": "7d35e3bf"
   },
   "194": {

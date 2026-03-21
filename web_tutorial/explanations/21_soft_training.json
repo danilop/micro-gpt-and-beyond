@@ -4,11 +4,11 @@
     "hash": "b67c9dde"
   },
   "15": {
-    "text": "File path handling.",
+    "text": "Utilities for constructing the dataset file path relative to this script's location.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "Random for shuffling data.",
+    "text": "Standard random module for shuffling training data and seeding reproducibility across runs.",
     "hash": "7e18ed42"
   },
   "18": {
@@ -16,7 +16,7 @@
     "hash": "cf1070d3"
   },
   "19": {
-    "text": "Neural network building blocks.",
+    "text": "Provides neural network building blocks like Linear and Embedding used to construct the transformer model.",
     "hash": "b802910c"
   },
   "20": {
@@ -24,7 +24,7 @@
     "hash": "5af419e1"
   },
   "22": {
-    "text": "Fix Python random seed.",
+    "text": "Lock Python's random seed so dataset shuffling and any random decisions during training are exactly reproducible.",
     "hash": "f0726c6e"
   },
   "23": {
@@ -32,27 +32,27 @@
     "hash": "7e7dcf46"
   },
   "28": {
-    "text": "Build dataset path relative to this script.",
+    "text": "Construct the path to the dataset file relative to this script's location so it works from any working directory.",
     "hash": "180b0553"
   },
   "29": {
-    "text": "Auto-download if missing.",
+    "text": "If the names dataset isn't cached locally yet, download it on the fly so the script is self-contained.",
     "hash": "9667c968"
   },
   "30": {
-    "text": "Lazy <code>urllib</code> import.",
+    "text": "Only import the URL library when we actually need to download, keeping startup fast.",
     "hash": "84cdb92b"
   },
   "32": {
-    "text": "Names dataset URL.",
+    "text": "The URL pointing to Karpathy's makemore names dataset hosted on GitHub.",
     "hash": "5e579f27"
   },
   "33": {
-    "text": "Download and save.",
+    "text": "Fetch the names dataset from the URL and save it to the local data directory.",
     "hash": "25ec775b"
   },
   "35": {
-    "text": "Load all names, one per line.",
+    "text": "Read the file line by line, stripping whitespace. Each line is one name that becomes a training document.",
     "hash": "2f367d0b"
   },
   "36": {
@@ -60,11 +60,11 @@
     "hash": "c8f1cb86"
   },
   "37": {
-    "text": "Print dataset size.",
+    "text": "Show how many names we loaded so we can verify the dataset is intact.",
     "hash": "08bb2551"
   },
   "39": {
-    "text": "Build character vocabulary.",
+    "text": "Collect all unique characters and sort them to create a deterministic character-to-ID mapping for tokenization.",
     "hash": "5f7ca3bb"
   },
   "40": {
@@ -76,19 +76,19 @@
     "hash": "0a38d2ba"
   },
   "42": {
-    "text": "Print vocab size.",
+    "text": "Display the character vocabulary size including the special BOS/EOS token.",
     "hash": "1cb38e2c"
   },
   "47": {
-    "text": "16-dimensional embeddings.",
+    "text": "Each token maps to a 16-dimensional vector. Small but sufficient for learning character-level name patterns.",
     "hash": "eb81fecf"
   },
   "48": {
-    "text": "4 attention heads.",
+    "text": "Split the embedding dimension across four heads for multi-head attention.",
     "hash": "5b7ba4c9"
   },
   "49": {
-    "text": "Single transformer layer.",
+    "text": "A single transformer layer keeps the model small and training fast. This lab focuses on the training method, not model depth.",
     "hash": "9068cb85"
   },
   "50": {
@@ -112,15 +112,15 @@
     "hash": "d1f0a37b"
   },
   "57": {
-    "text": "Module init.",
+    "text": "Standard PyTorch module initialization, calling the parent class constructor.",
     "hash": "7678213b"
   },
   "58": {
-    "text": "Epsilon for numerical stability.",
+    "text": "Tiny constant added inside the square root to prevent division by zero when the input vector is near-zero.",
     "hash": "7cedf2b6"
   },
   "60": {
-    "text": "Forward pass.",
+    "text": "Run the RMSNorm computation, scaling the input by its inverse root-mean-square.",
     "hash": "a87869a2"
   },
   "61": {
@@ -128,35 +128,35 @@
     "hash": "53678ba7"
   },
   "64": {
-    "text": "Causal self-attention.",
+    "text": "Standard left-to-right attention that prevents each position from seeing future tokens, identical to earlier labs.",
     "hash": "c20aaac2"
   },
   "65": {
-    "text": "No size parameters — uses module-level constants (simpler since both models are identical).",
+    "text": "No size parameters, uses module-level constants (simpler since both models are identical).",
     "hash": "220b14ab"
   },
   "66": {
-    "text": "Module init.",
+    "text": "Standard PyTorch module initialization, calling the parent class constructor.",
     "hash": "7678213b"
   },
   "67": {
-    "text": "Query projection.",
+    "text": "Linear projection that transforms input embeddings into query vectors for attention.",
     "hash": "433b771f"
   },
   "68": {
-    "text": "Key projection.",
+    "text": "Linear projection that transforms input embeddings into key vectors for attention.",
     "hash": "bf2475c8"
   },
   "69": {
-    "text": "Value projection.",
+    "text": "Linear projection that transforms input embeddings into value vectors for attention.",
     "hash": "d1a077cb"
   },
   "70": {
-    "text": "Output projection.",
+    "text": "Mix information across heads by projecting the concatenated output back to embedding dimension.",
     "hash": "887b9875"
   },
   "72": {
-    "text": "Forward pass.",
+    "text": "Run the full attention computation: project, score, mask, weight, and combine values.",
     "hash": "a87869a2"
   },
   "73": {
@@ -168,15 +168,15 @@
     "hash": "d0c33c49"
   },
   "75": {
-    "text": "Same for keys.",
+    "text": "Project to keys and reshape into multi-head format, same as queries above.",
     "hash": "a48e9c7a"
   },
   "76": {
-    "text": "Same for values.",
+    "text": "Project to values and reshape into multi-head format, same as queries above.",
     "hash": "7fcca8ac"
   },
   "77": {
-    "text": "Scaled dot-product attention scores.",
+    "text": "Compute Q dot K transposed, scaled by sqrt(head_dim), producing raw attention scores before masking and softmax.",
     "hash": "308b188d"
   },
   "78": {
@@ -188,7 +188,7 @@
     "hash": "a2e76efa"
   },
   "80": {
-    "text": "Softmax over key dimension.",
+    "text": "Normalize attention scores via softmax over the key dimension, converting raw scores into a probability distribution.",
     "hash": "62dc999a"
   },
   "81": {
@@ -196,31 +196,31 @@
     "hash": "a1aef68f"
   },
   "82": {
-    "text": "Output projection.",
+    "text": "Mix information across heads by projecting the concatenated output back to embedding dimension.",
     "hash": "36f2db67"
   },
   "85": {
-    "text": "Feed-forward network.",
+    "text": "The position-wise feed-forward network that processes each token independently through expand-ReLU-contract.",
     "hash": "3ad666a1"
   },
   "86": {
-    "text": "No parameters — uses module-level constants.",
+    "text": "No parameters, uses module-level constants.",
     "hash": "220b14ab"
   },
   "87": {
-    "text": "Module init.",
+    "text": "Standard PyTorch module initialization, calling the parent class constructor.",
     "hash": "7678213b"
   },
   "88": {
-    "text": "Expand to 4x width.",
+    "text": "Linear layer that expands the hidden state to four times the embedding dimension.",
     "hash": "8e9f0642"
   },
   "89": {
-    "text": "Contract back.",
+    "text": "Linear layer that contracts the expanded representation back to the embedding dimension.",
     "hash": "62c4768b"
   },
   "91": {
-    "text": "Forward pass.",
+    "text": "Run the input through the expand-ReLU-contract sequence and return the result.",
     "hash": "a87869a2"
   },
   "92": {
@@ -232,47 +232,47 @@
     "hash": "4bcc8ea8"
   },
   "96": {
-    "text": "No parameters.",
+    "text": "No constructor parameters needed since the model dimensions are module-level constants.",
     "hash": "220b14ab"
   },
   "97": {
-    "text": "Module init.",
+    "text": "Standard PyTorch module initialization, calling the parent class constructor.",
     "hash": "7678213b"
   },
   "98": {
-    "text": "Pre-attention norm.",
+    "text": "RMSNorm applied before the attention sublayer in the pre-norm transformer style.",
     "hash": "e92b587d"
   },
   "99": {
-    "text": "Causal self-attention.",
+    "text": "The causal self-attention sublayer that lets each token gather information from all previous positions in the sequence.",
     "hash": "95b016d9"
   },
   "100": {
-    "text": "Pre-MLP norm.",
+    "text": "RMSNorm applied before the MLP sublayer in the pre-norm transformer style.",
     "hash": "f58a7657"
   },
   "101": {
-    "text": "Feed-forward network.",
+    "text": "The feed-forward network sublayer that processes each token independently after attention has mixed information across positions.",
     "hash": "17fdd551"
   },
   "103": {
-    "text": "Forward pass.",
+    "text": "Run input through attention and MLP sublayers with residual connections.",
     "hash": "a87869a2"
   },
   "104": {
-    "text": "Attention with residual.",
+    "text": "Add attention output to the input via a skip connection, preserving gradient flow and the original representation.",
     "hash": "5133b743"
   },
   "105": {
-    "text": "MLP with residual.",
+    "text": "Add the MLP output to the input via a residual connection, preserving gradient flow.",
     "hash": "50e2183f"
   },
   "106": {
-    "text": "Return updated representations.",
+    "text": "Pass the updated hidden states back to the caller. These become input for the next transformer block or final projection.",
     "hash": "30239a61"
   },
   "109": {
-    "text": "The full model — same architecture as Lab 20. The key difference: <code>forward</code> accepts either token IDs or raw embeddings, which is what enables soft training.",
+    "text": "The full model, same architecture as Lab 20. The key difference: <code>forward</code> accepts either token IDs or raw embeddings, which is what enables soft training.",
     "hash": "e94c5dc2"
   },
   "110": {
@@ -280,23 +280,23 @@
     "hash": "220b14ab"
   },
   "111": {
-    "text": "Module init.",
+    "text": "Standard PyTorch module initialization, calling the parent class constructor.",
     "hash": "7678213b"
   },
   "112": {
-    "text": "Token embedding table.",
+    "text": "Learned dense vectors for each token, mapping discrete IDs into continuous embedding space for the transformer.",
     "hash": "2a2b79bb"
   },
   "113": {
-    "text": "Position embedding table.",
+    "text": "Learned position vectors that tell the model where each token sits. Added to token embeddings before the transformer.",
     "hash": "5338449e"
   },
   "114": {
-    "text": "Input normalization.",
+    "text": "RMSNorm applied after combining token and position embeddings, stabilizing the first transformer layer's input scale.",
     "hash": "5caa073e"
   },
   "115": {
-    "text": "Stack of transformer blocks.",
+    "text": "A sequence of transformer blocks stacked together, each refining the token representations through attention and MLP sublayers.",
     "hash": "d10311df"
   },
   "116": {
@@ -304,7 +304,7 @@
     "hash": "1774314d"
   },
   "117": {
-    "text": "Initialize all weights.",
+    "text": "Walk every submodule and apply the weight initialization function so all parameters start with well-scaled random values.",
     "hash": "e4941829"
   },
   "119": {
@@ -312,7 +312,7 @@
     "hash": "ab645c3c"
   },
   "120": {
-    "text": "Init function.",
+    "text": "The function that initializes weight matrices with small random values.",
     "hash": "2e476132"
   },
   "121": {
@@ -320,7 +320,7 @@
     "hash": "e2ce6cde"
   },
   "122": {
-    "text": "Small Gaussian init.",
+    "text": "Initialize weights from a narrow Gaussian (std=0.08). Small initial values prevent activations from exploding early in training.",
     "hash": "9677d3fd"
   },
   "124": {
@@ -332,15 +332,15 @@
     "hash": "2a3ddfa7"
   },
   "126": {
-    "text": "Safety check.",
+    "text": "Verify that the caller provided either token IDs or pre-computed embeddings as input.",
     "hash": "0d6f662b"
   },
   "127": {
-    "text": "Get sequence length from the embedding tensor.",
+    "text": "Determine the sequence length from the embedding tensor shape, since we need it for position embedding lookup.",
     "hash": "5051a42d"
   },
   "128": {
-    "text": "Look up position embeddings.",
+    "text": "Fetch learned position vectors for each slot in the sequence so the model knows token ordering.",
     "hash": "7c34b10b"
   },
   "129": {
@@ -348,31 +348,31 @@
     "hash": "b88a95ea"
   },
   "130": {
-    "text": "Pass through transformer layers.",
+    "text": "Feed the normalized embeddings through each transformer block, progressively building richer token representations.",
     "hash": "359aba32"
   },
   "131": {
-    "text": "Apply one block.",
+    "text": "Run one transformer block, updating the hidden representations for this layer.",
     "hash": "41f1e6d2"
   },
   "132": {
-    "text": "Project to vocabulary logits.",
+    "text": "Map the final hidden states to a score for every vocabulary token, producing the logits for next-token prediction.",
     "hash": "9ef9adcf"
   },
   "138": {
-    "text": "1000 training steps.",
+    "text": "Train for 1000 steps, enough for this small character-level model to converge on basic name patterns.",
     "hash": "f105aa30"
   },
   "139": {
-    "text": "Sampling temperature.",
+    "text": "Controls the sharpness of the sampling distribution during generation. Temperature 0.5 balances diversity and coherence.",
     "hash": "d66aa849"
   },
   "140": {
-    "text": "Soft temperature for concept token computation — 1.0 means full softmax probabilities (no sharpening).",
+    "text": "Soft temperature for concept token computation, 1.0 means full softmax probabilities (no sharpening).",
     "hash": "d65c60fc"
   },
   "143": {
-    "text": "Disable gradients for generation.",
+    "text": "Turn off gradient computation for the entire generation phase, since we don't need backpropagation during inference.",
     "hash": "eec96875"
   },
   "144": {
@@ -380,7 +380,7 @@
     "hash": "4b0d3973"
   },
   "146": {
-    "text": "Switch to eval mode.",
+    "text": "Switch the model to evaluation mode so batch norm and dropout behave deterministically during generation.",
     "hash": "45bf010c"
   },
   "147": {
@@ -396,7 +396,7 @@
     "hash": "ab05dc73"
   },
   "151": {
-    "text": "Forward pass using embeddings (not token IDs) — this allows soft concept tokens as input.",
+    "text": "Forward pass using embeddings (not token IDs), this allows soft concept tokens as input.",
     "hash": "3c166ac3"
   },
   "153": {
@@ -404,7 +404,7 @@
     "hash": "42c9b900"
   },
   "154": {
-    "text": "Sample one token.",
+    "text": "Draw one token from the probability distribution to decide the next character.",
     "hash": "5b83becd"
   },
   "155": {
@@ -412,19 +412,19 @@
     "hash": "41a35c11"
   },
   "156": {
-    "text": "Stop generating.",
+    "text": "End-of-sequence detected, so stop generating further tokens for this name.",
     "hash": "14ebe56a"
   },
   "157": {
-    "text": "Record the generated token.",
+    "text": "Append the chosen token to the output list, building up the generated name character by character.",
     "hash": "a1ca669a"
   },
   "159": {
-    "text": "Shannon entropy of the distribution — measures how uncertain the model is. Low entropy = confident predictions; high entropy = the model is unsure, and soft decoding helps most here.",
+    "text": "Shannon entropy of the distribution, measures how uncertain the model is. Low entropy = confident predictions; high entropy = the model is unsure, and soft decoding helps most here.",
     "hash": "4aa43c79"
   },
   "161": {
-    "text": "Hard decoding: look up the discrete token's embedding. Standard approach — picks one token and commits to it.",
+    "text": "Hard decoding: look up the discrete token's embedding. Standard approach, picks one token and commits to it.",
     "hash": "0e27bbb0"
   },
   "162": {
@@ -432,11 +432,11 @@
     "hash": "e0217c97"
   },
   "163": {
-    "text": "Else: soft decoding.",
+    "text": "The else branch: if soft decoding is enabled, create a concept token instead of looking up a single embedding.",
     "hash": "675c27cf"
   },
   "164": {
-    "text": "Compute soft probabilities at <code>soft_temp</code> temperature.",
+    "text": "Re-softmax the logits at the soft temperature to control how spread out the concept token's probability weights are.",
     "hash": "aa93a434"
   },
   "165": {
@@ -448,7 +448,7 @@
     "hash": "6e2e1538"
   },
   "169": {
-    "text": "Return tokens and entropies for analysis.",
+    "text": "Package the generated token IDs and per-step entropy values into a return tuple for analysis and comparison.",
     "hash": "0a157942"
   },
   "175": {
@@ -464,11 +464,11 @@
     "hash": "92d21e78"
   },
   "180": {
-    "text": "Training loop.",
+    "text": "Iterate over training steps, processing one name per step with teacher forcing.",
     "hash": "53f56939"
   },
   "181": {
-    "text": "Cycle through documents.",
+    "text": "Pick the next training name by cycling through the shuffled dataset with a modulo index.",
     "hash": "47ec0e2c"
   },
   "182": {
@@ -476,7 +476,7 @@
     "hash": "ae86abd0"
   },
   "183": {
-    "text": "Clip to max length.",
+    "text": "Limit the sequence to the maximum context window the model can handle.",
     "hash": "3d9da8cd"
   },
   "185": {
@@ -492,7 +492,7 @@
     "hash": "1cb3444a"
   },
   "189": {
-    "text": "The curriculum schedule: <code>mix</code> goes from 0 (pure ground truth) to 1 (pure concept tokens) linearly over training. This is the key insight — gradual transition avoids the shock of suddenly switching from perfect teacher inputs to noisy self-generated ones.",
+    "text": "The curriculum schedule: <code>mix</code> goes from 0 (pure ground truth) to 1 (pure concept tokens) linearly over training. This is the key insight, gradual transition avoids the shock of suddenly switching from perfect teacher inputs to noisy self-generated ones.",
     "hash": "abf4f92c"
   },
   "192": {
@@ -512,7 +512,7 @@
     "hash": "ed0b9634"
   },
   "199": {
-    "text": "The blending: position 0 (BOS) always stays ground truth. For all other positions, mix between ground truth and the concept token from the previous position's prediction. Early in training (mix≈0), this is mostly ground truth. Late (mix≈1), mostly concept tokens — matching what the model will see at inference time.",
+    "text": "The blending: position 0 (BOS) always stays ground truth. For all other positions, mix between ground truth and the concept token from the previous position's prediction. Early in training (mix\u22480), this is mostly ground truth. Late (mix\u22481), mostly concept tokens, matching what the model will see at inference time.",
     "hash": "a0a4fb84"
   },
   "201": {
@@ -536,27 +536,27 @@
     "hash": "227fe80d"
   },
   "209": {
-    "text": "Linear learning rate decay.",
+    "text": "Reduce the learning rate linearly toward zero as training progresses, allowing fine-grained convergence near the end.",
     "hash": "60602e3a"
   },
   "210": {
-    "text": "Apply new learning rate.",
+    "text": "Write the decayed learning rate into the optimizer's parameter group so the next update uses the reduced value.",
     "hash": "9f6d3592"
   },
   "211": {
-    "text": "Set the rate.",
+    "text": "Write the decayed learning rate into the optimizer's parameter group.",
     "hash": "3030870a"
   },
   "212": {
-    "text": "Update parameters.",
+    "text": "Apply the computed gradients to update all model weights one step toward lower loss.",
     "hash": "d9e59d7e"
   },
   "214": {
-    "text": "Log periodically.",
+    "text": "Print the training loss at regular intervals so we can monitor convergence.",
     "hash": "cf37956f"
   },
   "215": {
-    "text": "Include the mix ratio in the log when soft training — shows the curriculum progressing.",
+    "text": "Include the mix ratio in the log when soft training, shows the curriculum progressing.",
     "hash": "a019eac1"
   },
   "216": {
@@ -564,11 +564,11 @@
     "hash": "64891018"
   },
   "222": {
-    "text": "Create the standard (baseline) model.",
+    "text": "Instantiate the baseline model that will be trained with standard teacher forcing and no concept token mixing.",
     "hash": "8e2ccf18"
   },
   "223": {
-    "text": "Create the soft-trained model.",
+    "text": "Instantiate the soft-trained model that will learn with a curriculum of gradually increasing concept token mixing.",
     "hash": "9844ce0f"
   },
   "224": {
@@ -588,39 +588,39 @@
     "hash": "d20052fb"
   },
   "233": {
-    "text": "20 samples for comparison.",
+    "text": "Generate 20 names per configuration, enough samples to see meaningful entropy and quality differences.",
     "hash": "ba8d14e2"
   },
   "234": {
-    "text": "Maximum possible entropy (uniform distribution) — used to normalize entropy readings.",
+    "text": "Maximum possible entropy (uniform distribution), used to normalize entropy readings.",
     "hash": "430f12d4"
   },
   "236": {
-    "text": "Define the four comparison configurations.",
+    "text": "Set up the four test configurations: two models (standard vs. soft-trained) times two decoding modes (hard vs. soft).",
     "hash": "61d93dc2"
   },
   "237": {
-    "text": "Standard model with hard (discrete) decoding — the classic baseline.",
+    "text": "Standard model with hard (discrete) decoding, the classic baseline.",
     "hash": "c67aa79b"
   },
   "238": {
-    "text": "Standard model with soft decoding — Lab 20's approach, applied to a model that never saw concept tokens during training.",
+    "text": "Standard model with soft decoding, Lab 20's approach, applied to a model that never saw concept tokens during training.",
     "hash": "a809297d"
   },
   "239": {
-    "text": "Soft-trained model with hard decoding — tests whether soft training helps even with standard decoding.",
+    "text": "Soft-trained model with hard decoding, tests whether soft training helps even with standard decoding.",
     "hash": "1e7f3faa"
   },
   "240": {
-    "text": "Soft-trained model with soft decoding — the ideal combo: trained on concept tokens, generates with them.",
+    "text": "Soft-trained model with soft decoding, the ideal combo: trained on concept tokens, generates with them.",
     "hash": "8de341ce"
   },
   "241": {
-    "text": "Close the config list.",
+    "text": "End of the configuration list. Each entry specifies a model, decoding mode, and descriptive label for the comparison.",
     "hash": "cfae0d42"
   },
   "243": {
-    "text": "Disable gradients for generation.",
+    "text": "Turn off gradient computation for the entire generation phase to save memory and compute during inference.",
     "hash": "d4f61231"
   },
   "244": {
@@ -628,7 +628,7 @@
     "hash": "74cbecb2"
   },
   "245": {
-    "text": "Switch to eval mode.",
+    "text": "Switch this configuration's model to evaluation mode for deterministic behavior during generation.",
     "hash": "60d578c6"
   },
   "246": {
@@ -640,7 +640,7 @@
     "hash": "17aa2167"
   },
   "248": {
-    "text": "Generate <code>n_samples</code> names.",
+    "text": "Generate the specified number of name samples for this configuration, collecting output and entropy data.",
     "hash": "567e2f37"
   },
   "249": {
@@ -652,15 +652,15 @@
     "hash": "9e3829cc"
   },
   "251": {
-    "text": "Average entropy for this sample. Lower is better — means the model is more confident in its predictions.",
+    "text": "Average entropy for this sample. Lower is better, means the model is more confident in its predictions.",
     "hash": "8eb7b603"
   },
   "252": {
-    "text": "Collect for aggregation.",
+    "text": "Append this sample's average entropy to the list so we can compute the overall mean across all samples.",
     "hash": "bbbd844c"
   },
   "253": {
-    "text": "Print first 10 samples.",
+    "text": "Show the first 10 generated names with their entropy scores for a quick visual comparison of quality.",
     "hash": "5416cee6"
   },
   "254": {
@@ -668,7 +668,7 @@
     "hash": "a88cbba7"
   },
   "255": {
-    "text": "Print mean entropy across all samples — the definitive metric for comparing configurations.",
+    "text": "Print mean entropy across all samples, the definitive metric for comparing configurations.",
     "hash": "1abb3755"
   }
 }

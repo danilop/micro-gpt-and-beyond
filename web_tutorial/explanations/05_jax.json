@@ -1,22 +1,22 @@
 {
   "14": {
-    "text": "Math for attention scaling.",
+    "text": "Standard math library, used here for the square root in attention scaling. JAX handles everything else.",
     "hash": "b67c9dde"
   },
   "15": {
-    "text": "File path handling.",
+    "text": "Provides utilities for constructing file paths to locate the dataset on disk.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "Python random for shuffling.",
+    "text": "Python's built-in random module for shuffling the dataset. JAX has its own separate RNG for tensor operations.",
     "hash": "7e18ed42"
   },
   "18": {
-    "text": "JAX: Google's functional autodiff framework. A completely different philosophy from PyTorch \u2014 no classes, no hidden state, pure functions everywhere.",
+    "text": "JAX: Google's functional autodiff framework. A completely different philosophy from PyTorch, no classes, no hidden state, pure functions everywhere.",
     "hash": "7092dc71"
   },
   "19": {
-    "text": "<code>jnp</code> is JAX's NumPy replacement \u2014 same API, but arrays live on GPU/TPU and support automatic differentiation.",
+    "text": "<code>jnp</code> is JAX's NumPy replacement, same API, but arrays live on GPU/TPU and support automatic differentiation.",
     "hash": "bcaa0f38"
   },
   "20": {
@@ -28,35 +28,35 @@
     "hash": "f0726c6e"
   },
   "28": {
-    "text": "Dataset path \u2014 shared across labs.",
+    "text": "Dataset path, shared across labs.",
     "hash": "9667c968"
   },
   "29": {
-    "text": "Auto-download.",
+    "text": "Download the names dataset from the internet if it is not already present locally.",
     "hash": "84cdb92b"
   },
   "32": {
-    "text": "Fetch URL.",
+    "text": "URL pointing to the raw names dataset hosted in Karpathy's repository.",
     "hash": "25ec775b"
   },
   "34": {
-    "text": "Load documents.",
+    "text": "Read the text file and split it into individual name strings, one per line.",
     "hash": "2f367d0b"
   },
   "35": {
-    "text": "Shuffle.",
+    "text": "Randomize the training order so the model does not memorize sequences of names.",
     "hash": "c8f1cb86"
   },
   "38": {
-    "text": "Character vocabulary.",
+    "text": "The set of unique characters in the dataset forms our vocabulary. Each character gets a fixed integer ID for the model to work with.",
     "hash": "5f7ca3bb"
   },
   "39": {
-    "text": "BOS token.",
+    "text": "The beginning-of-sequence token doubles as the end-of-sequence marker for name boundaries.",
     "hash": "476ca504"
   },
   "40": {
-    "text": "27 tokens total.",
+    "text": "The vocabulary has 27 tokens: 26 lowercase letters plus the BOS/EOS marker.",
     "hash": "0a38d2ba"
   },
   "46": {
@@ -64,27 +64,27 @@
     "hash": "eb81fecf"
   },
   "47": {
-    "text": "4 attention heads.",
+    "text": "Split attention into 4 parallel heads so each can focus on different character relationships.",
     "hash": "5b7ba4c9"
   },
   "48": {
-    "text": "1 layer.",
+    "text": "A single transformer layer, keeping the model minimal for this small-scale experiment.",
     "hash": "9068cb85"
   },
   "49": {
-    "text": "Context window of 16.",
+    "text": "Names up to 16 characters long fit in the context window. Longer names get truncated, but most fit easily.",
     "hash": "4f3059d5"
   },
   "50": {
-    "text": "4 dimensions per head.",
+    "text": "Each of the 4 heads gets 4 dimensions of the 16-dimensional embedding, letting heads specialize on different character relationships.",
     "hash": "1892cf11"
   },
   "52": {
-    "text": "JAX's PRNG is explicit \u2014 you create a key and split it for each random operation. No hidden global state, unlike NumPy/PyTorch.",
+    "text": "JAX's PRNG is explicit, you create a key and split it for each random operation. No hidden global state, unlike NumPy/PyTorch.",
     "hash": "6dcc5096"
   },
   "55": {
-    "text": "Parameter initializer \u2014 same N(0, 0.08) distribution, but using JAX's RNG.",
+    "text": "Parameter initializer, same N(0, 0.08) distribution, but using JAX's RNG.",
     "hash": "0f91d837"
   },
   "56": {
@@ -96,59 +96,59 @@
     "hash": "04c8bd20"
   },
   "60": {
-    "text": "Iterator over keys \u2014 each parameter gets its own unique key.",
+    "text": "Iterator over keys, each parameter gets its own unique key.",
     "hash": "6ac416df"
   },
   "62": {
-    "text": "Parameters are a plain Python dict \u2014 no <code>nn.Module</code>, no parameter registration. In JAX, parameters are just data you pass to functions.",
+    "text": "Parameters are a plain Python dict, no <code>nn.Module</code>, no parameter registration. In JAX, parameters are just data you pass to functions.",
     "hash": "c9460f94"
   },
   "63": {
-    "text": "Token embeddings.",
+    "text": "Initialize the token embedding table that maps each character to a learned vector.",
     "hash": "1939682b"
   },
   "64": {
-    "text": "Position embeddings.",
+    "text": "Position embeddings give the model a sense of order. Each slot in the sequence has its own learned vector encoding 'where' a token sits.",
     "hash": "421775bd"
   },
   "65": {
-    "text": "Output head weights.",
+    "text": "The output head weight matrix that maps from embedding space back to vocabulary logits for next-token prediction.",
     "hash": "bfbdb21f"
   },
   "67": {
-    "text": "Per-layer weights \u2014 same structure as previous labs, just stored in a dict.",
+    "text": "Per-layer weights, same structure as previous labs, just stored in a dict.",
     "hash": "7eac16bb"
   },
   "68": {
-    "text": "Query weights.",
+    "text": "Weight matrix that projects the normalized input into query vectors for attention.",
     "hash": "744e082e"
   },
   "69": {
-    "text": "Key weights.",
+    "text": "Weight matrix that produces key vectors for positions to be matched against queries.",
     "hash": "8f66406c"
   },
   "70": {
-    "text": "Value weights.",
+    "text": "Weight matrix that produces value vectors carrying content to be mixed by attention.",
     "hash": "dd3c9960"
   },
   "71": {
-    "text": "Output projection.",
+    "text": "Project the concatenated multi-head output back into the embedding space.",
     "hash": "0e3a5701"
   },
   "72": {
-    "text": "MLP expansion.",
+    "text": "First MLP weight matrix that expands the representation to 4x the embedding dimension.",
     "hash": "7a881554"
   },
   "73": {
-    "text": "MLP contraction.",
+    "text": "Second MLP weight matrix that compresses back to the original embedding dimension.",
     "hash": "622fbba9"
   },
   "75": {
-    "text": "<code>jax.tree.leaves</code> extracts all arrays from the nested dict. JAX treats dicts as \"pytrees\" \u2014 a core abstraction for working with nested parameter structures.",
+    "text": "<code>jax.tree.leaves</code> extracts all arrays from the nested dict. JAX treats dicts as \"pytrees\", a core abstraction for working with nested parameter structures.",
     "hash": "2496c8a8"
   },
   "82": {
-    "text": "RMSNorm as a bare function \u2014 no class, no state. JAX style: functions in, functions out.",
+    "text": "RMSNorm as a bare function, no class, no state. JAX style: functions in, functions out.",
     "hash": "a111052e"
   },
   "83": {
@@ -156,11 +156,11 @@
     "hash": "22eb3d30"
   },
   "84": {
-    "text": "Normalize by inverse RMS.",
+    "text": "Divide by the root mean square to normalize. This keeps all vectors at roughly unit scale, preventing activations from growing or shrinking as they flow through layers.",
     "hash": "3e2b4921"
   },
   "87": {
-    "text": "The forward pass is a PURE FUNCTION: same inputs always produce the same outputs, no side effects. This is what makes <code>jax.grad</code> and <code>jax.jit</code> work \u2014 they need mathematical functions, not stateful objects.",
+    "text": "The forward pass is a PURE FUNCTION: same inputs always produce the same outputs, no side effects. This is what makes <code>jax.grad</code> and <code>jax.jit</code> work, they need mathematical functions, not stateful objects.",
     "hash": "e8c5a0ca"
   },
   "93": {
@@ -168,51 +168,51 @@
     "hash": "e7cfde06"
   },
   "94": {
-    "text": "Token embedding lookup via array indexing \u2014 same operation as PyTorch's <code>nn.Embedding</code>.",
+    "text": "Token embedding lookup via array indexing, same operation as PyTorch's <code>nn.Embedding</code>.",
     "hash": "a7e2a144"
   },
   "95": {
-    "text": "Position embeddings.",
+    "text": "Position embeddings tell the model where each token sits in the sequence. Without these, the model would treat 'ab' and 'ba' identically.",
     "hash": "39227453"
   },
   "96": {
-    "text": "Fuse and normalize.",
+    "text": "Combine token and position embeddings and normalize before entering the transformer.",
     "hash": "47ae49f7"
   },
   "98": {
-    "text": "Loop over transformer layers.",
+    "text": "Iterate through each transformer layer. With one layer this runs once, but the code generalizes to deeper stacks.",
     "hash": "12ede0d6"
   },
   "99": {
-    "text": "Save for residual.",
+    "text": "Save the current hidden state so we can add it back after attention as a residual connection.",
     "hash": "80347633"
   },
   "100": {
-    "text": "Pre-attention normalization.",
+    "text": "Normalize before the attention sub-layer. Pre-norm keeps activations stable so the attention mechanism receives well-scaled inputs.",
     "hash": "a74b6bd4"
   },
   "102": {
-    "text": "Matrix multiply for Q projection. Explicit <code>@</code> with the parameter array \u2014 no hidden weight storage.",
+    "text": "Matrix multiply for Q projection. Explicit <code>@</code> with the parameter array, no hidden weight storage.",
     "hash": "817e9a4a"
   },
   "103": {
-    "text": "K projection.",
+    "text": "Project the normalized input into key vectors that other positions will query against.",
     "hash": "f4f4493b"
   },
   "104": {
-    "text": "V projection.",
+    "text": "Project the normalized input into value vectors carrying content to aggregate.",
     "hash": "17880181"
   },
   "107": {
-    "text": "Multi-head reshape \u2014 same transpose pattern as PyTorch.",
+    "text": "Multi-head reshape, same transpose pattern as PyTorch.",
     "hash": "e350a0f5"
   },
   "108": {
-    "text": "Keys.",
+    "text": "Reshape keys into separate attention heads, matching the same multi-head pattern as queries.",
     "hash": "6cd64928"
   },
   "109": {
-    "text": "Values.",
+    "text": "Reshape values into separate attention heads for parallel processing.",
     "hash": "f1a6d28a"
   },
   "111": {
@@ -224,15 +224,15 @@
     "hash": "22739b81"
   },
   "113": {
-    "text": "Apply mask with <code>jnp.where</code> \u2014 JAX's equivalent of PyTorch's <code>masked_fill</code>.",
+    "text": "Apply mask with <code>jnp.where</code>, JAX's equivalent of PyTorch's <code>masked_fill</code>.",
     "hash": "0022bf20"
   },
   "114": {
-    "text": "<code>jax.nn.softmax</code> \u2014 built-in, numerically stable.",
+    "text": "<code>jax.nn.softmax</code>, built-in, numerically stable.",
     "hash": "422707f3"
   },
   "116": {
-    "text": "Attention-weighted value aggregation.",
+    "text": "Multiply attention weights by value vectors. Tokens deemed relevant by the query-key scores contribute their content proportionally to the output.",
     "hash": "de0fb131"
   },
   "117": {
@@ -244,23 +244,23 @@
     "hash": "0e1aab77"
   },
   "121": {
-    "text": "MLP residual save.",
+    "text": "Save the hidden state before the MLP for the second residual connection in this block.",
     "hash": "f761c238"
   },
   "122": {
-    "text": "Pre-MLP norm.",
+    "text": "Normalize before the feed-forward network, following the pre-norm transformer pattern.",
     "hash": "37eaf652"
   },
   "123": {
-    "text": "MLP expansion.",
+    "text": "Multiply by the expansion weights to widen the representation for richer transformations.",
     "hash": "be2c0fba"
   },
   "124": {
-    "text": "ReLU activation.",
+    "text": "Apply ReLU activation to introduce nonlinearity between the two MLP linear layers.",
     "hash": "60f71222"
   },
   "125": {
-    "text": "MLP contraction + residual.",
+    "text": "Contract the MLP back to embedding dimension and add the residual. This completes the second sub-layer of the transformer block.",
     "hash": "5af80337"
   },
   "127": {
@@ -268,7 +268,7 @@
     "hash": "f1ee3d1b"
   },
   "131": {
-    "text": "Loss function \u2014 also a pure function. Takes params, inputs, and targets; returns a scalar loss. This is exactly what <code>jax.grad</code> expects.",
+    "text": "Loss function, also a pure function. Takes params, inputs, and targets; returns a scalar loss. This is exactly what <code>jax.grad</code> expects.",
     "hash": "c1f6de09"
   },
   "133": {
@@ -280,7 +280,7 @@
     "hash": "557f67de"
   },
   "135": {
-    "text": "Sequence length.",
+    "text": "Get the number of tokens in the input sequence for indexing into log probabilities.",
     "hash": "e7cfde06"
   },
   "136": {
@@ -288,7 +288,7 @@
     "hash": "ccb5e73a"
   },
   "141": {
-    "text": "The JAX magic: <code>grad(loss_fn)</code> returns a NEW FUNCTION that computes gradients. <code>jit</code> compiles it. No backward pass code, no gradient tape \u2014 just function transformation.",
+    "text": "The JAX magic: <code>grad(loss_fn)</code> returns a NEW FUNCTION that computes gradients. <code>jit</code> compiles it. No backward pass code, no gradient tape, just function transformation.",
     "hash": "ff1702a2"
   },
   "142": {
@@ -304,35 +304,35 @@
     "hash": "80e52b37"
   },
   "149": {
-    "text": "Second moment state \u2014 same pytree structure.",
+    "text": "Second moment state, same pytree structure.",
     "hash": "37945346"
   },
   "152": {
-    "text": "Adam update as a pure function \u2014 takes old state, returns new state. No mutation. This is the functional paradigm: transform data, don't change it.",
+    "text": "Adam update as a pure function, takes old state, returns new state. No mutation. This is the functional paradigm: transform data, don't change it.",
     "hash": "3c7a404e"
   },
   "153": {
-    "text": "Build new dicts rather than modifying in place.",
+    "text": "Allocate fresh output dictionaries instead of mutating the old ones. In JAX's functional style, immutability makes transformations like jit and grad safe.",
     "hash": "b3d611a4"
   },
   "156": {
-    "text": "Loop over parameter keys.",
+    "text": "Iterate over each parameter name to apply the same Adam formula. The dict structure mirrors the model's parameter layout.",
     "hash": "6d414d95"
   },
   "157": {
-    "text": "First moment update \u2014 same formula as all previous labs.",
+    "text": "First moment update, same formula as all previous labs.",
     "hash": "8db0fa5a"
   },
   "158": {
-    "text": "Second moment update.",
+    "text": "Update the exponential moving average of squared gradients. This tracks gradient magnitude per parameter, enabling adaptive learning rates.",
     "hash": "bb8995a8"
   },
   "159": {
-    "text": "Bias correction.",
+    "text": "Correct the first moment estimate for its bias toward zero in early training steps.",
     "hash": "589d6551"
   },
   "160": {
-    "text": "Bias correction.",
+    "text": "Correct the second moment estimate for its initialization bias in early steps.",
     "hash": "f7ba761b"
   },
   "161": {
@@ -340,59 +340,59 @@
     "hash": "e1aef2e8"
   },
   "162": {
-    "text": "Return the complete new state \u2014 params, first moments, second moments.",
+    "text": "Return the complete new state, params, first moments, second moments.",
     "hash": "296b56a4"
   },
   "168": {
-    "text": "1000 training steps.",
+    "text": "Train for 1000 steps, one document per step. Each iteration: forward, loss, grad, Adam update.",
     "hash": "f105aa30"
   },
   "169": {
-    "text": "Training loop.",
+    "text": "Iterate over training steps, processing one name per step to update model parameters.",
     "hash": "53f56939"
   },
   "170": {
-    "text": "Cycle through documents.",
+    "text": "Cycle through the dataset with modular indexing. After seeing all names, we loop back for another pass.",
     "hash": "47ec0e2c"
   },
   "171": {
-    "text": "Tokenize.",
+    "text": "Convert the name into a sequence of integer token IDs with BOS markers at both ends.",
     "hash": "ae86abd0"
   },
   "172": {
-    "text": "Clip to context length.",
+    "text": "Clip to the maximum context window. Most names fit easily, but this guard prevents overflow on unusually long entries.",
     "hash": "3d9da8cd"
   },
   "174": {
-    "text": "Convert to JAX arrays.",
+    "text": "Convert the Python token list to a JAX array so it can flow through the JIT-compiled forward pass.",
     "hash": "c13833a8"
   },
   "175": {
-    "text": "Targets as JAX array.",
+    "text": "Wrap the target tokens as a JAX array. These are the correct next characters the model should learn to predict.",
     "hash": "52915c2e"
   },
   "177": {
-    "text": "Compute loss using JIT-compiled function.",
+    "text": "Evaluate the cross-entropy loss using the JIT-compiled function. JIT compilation means this runs as optimized machine code, not interpreted Python.",
     "hash": "8e3026f0"
   },
   "178": {
-    "text": "Compute gradients using the JIT-compiled gradient function. One call, and JAX's autodiff handles everything \u2014 same as PyTorch's <code>loss.backward()</code> but functional.",
+    "text": "Compute gradients using the JIT-compiled gradient function. One call, and JAX's autodiff handles everything, same as PyTorch's <code>loss.backward()</code> but functional.",
     "hash": "577a0a6d"
   },
   "180": {
-    "text": "Linear LR decay.",
+    "text": "Linearly reduce the learning rate toward zero over the course of training.",
     "hash": "a7ee9183"
   },
   "181": {
-    "text": "Functional Adam update. Returns entirely new params, new moments \u2014 nothing is mutated. The old state could be garbage collected.",
+    "text": "Functional Adam update. Returns entirely new params, new moments, nothing is mutated. The old state could be garbage collected.",
     "hash": "7b38e771"
   },
   "183": {
-    "text": "Log every 10 steps.",
+    "text": "Print the loss periodically so we can monitor whether the model is learning.",
     "hash": "cf37956f"
   },
   "189": {
-    "text": "Temperature for generation.",
+    "text": "Temperature 0.5 makes generation more conservative: the model favors high-confidence predictions, producing more typical-sounding names.",
     "hash": "d66aa849"
   },
   "191": {
@@ -400,15 +400,15 @@
     "hash": "c2245184"
   },
   "192": {
-    "text": "Generate 20 names.",
+    "text": "Generate 20 brand-new names by sampling from the model's learned distribution.",
     "hash": "64d836c5"
   },
   "193": {
-    "text": "Start with BOS.",
+    "text": "Begin each generated name with the beginning-of-sequence token as the initial prompt.",
     "hash": "5c52ddc4"
   },
   "194": {
-    "text": "Generate characters.",
+    "text": "Generate one character at a time, up to the maximum sequence length. Each step feeds all generated tokens back through the model.",
     "hash": "ab05dc73"
   },
   "195": {
@@ -416,15 +416,15 @@
     "hash": "0d550c2a"
   },
   "196": {
-    "text": "Forward pass \u2014 the same pure function, just called without gradient tracking.",
+    "text": "Forward pass, the same pure function, just called without gradient tracking.",
     "hash": "3c023ce1"
   },
   "197": {
-    "text": "Last position's logits, temperature-scaled.",
+    "text": "Grab the logits for the last generated position and divide by temperature. Lower values make the distribution sharper and more predictable.",
     "hash": "083e8501"
   },
   "198": {
-    "text": "<code>jax.random.split</code> produces two new keys from one \u2014 JAX's way of consuming randomness without hidden state. Every random call needs a unique key.",
+    "text": "<code>jax.random.split</code> produces two new keys from one, JAX's way of consuming randomness without hidden state. Every random call needs a unique key.",
     "hash": "cfab9592"
   },
   "199": {
@@ -432,19 +432,19 @@
     "hash": "113060e6"
   },
   "200": {
-    "text": "BOS signals end of name.",
+    "text": "When the model outputs the BOS token during generation, it signals the name is complete and we stop adding characters.",
     "hash": "41a35c11"
   },
   "202": {
-    "text": "Extend the token list.",
+    "text": "Append the newly sampled token to the growing list so it becomes part of the context for predicting the next character.",
     "hash": "a1ca669a"
   },
   "203": {
-    "text": "Convert to characters.",
+    "text": "Map each token ID back to its character, skipping the leading BOS, to assemble the generated name as a readable string.",
     "hash": "b4368128"
   },
   "204": {
-    "text": "Print the generated name.",
+    "text": "Print the finished name. These are novel names the model invented by learning the statistical patterns of 32K real names.",
     "hash": "f9d6f741"
   }
 }

@@ -4,63 +4,63 @@
     "hash": "e3b0c442"
   },
   "12": {
-    "text": "Math for attention scaling.",
+    "text": "We need <code>math.sqrt</code> for scaling attention scores. Dividing by the square root of head dimension keeps dot products from growing too large as dimensions increase.",
     "hash": "37effa9c"
   },
   "13": {
-    "text": "Path operations.",
+    "text": "Import os for building portable file paths to the dataset.",
     "hash": "b67c9dde"
   },
   "14": {
-    "text": "Shuffle seed.",
+    "text": "Import random for shuffling the dataset and seeding reproducibility.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "PyTorch core.",
+    "text": "Import the core PyTorch library for tensor operations and autograd.",
     "hash": "e3b0c442"
   },
   "17": {
-    "text": "Neural network layers.",
+    "text": "Neural network building blocks like <code>Linear</code>, <code>Embedding</code>, and <code>ModuleList</code> that automatically register their parameters for training.",
     "hash": "cf1070d3"
   },
   "18": {
-    "text": "Functional API.",
+    "text": "Import PyTorch's functional API for operations like softmax, cross-entropy, and relu.",
     "hash": "b802910c"
   },
   "20": {
-    "text": "Pin seeds.",
+    "text": "Fix both the Python and PyTorch random seeds so results are reproducible across runs.",
     "hash": "e3b0c442"
   },
   "21": {
-    "text": "PyTorch seed.",
+    "text": "Set the PyTorch random seed for reproducible weight initialization and sampling.",
     "hash": "f0726c6e"
   },
   "27": {
-    "text": "Dataset path.",
+    "text": "Build a portable file path to the dataset, relative to this script's location.",
     "hash": "180b0553"
   },
   "28": {
-    "text": "Auto-download.",
+    "text": "Download the dataset from the internet if it is not already on disk.",
     "hash": "9667c968"
   },
   "34": {
-    "text": "Load names.",
+    "text": "Read all names from the dataset file, one per line, stripping whitespace.",
     "hash": "2f367d0b"
   },
   "35": {
-    "text": "Shuffle.",
+    "text": "Randomize the training order so the model does not memorize sequences of names.",
     "hash": "c8f1cb86"
   },
   "36": {
-    "text": "Character vocabulary.",
+    "text": "Build a sorted list of unique characters in the dataset to form the token vocabulary.",
     "hash": "5f7ca3bb"
   },
   "37": {
-    "text": "BOS token.",
+    "text": "Use the length of the character set as the beginning-of-sequence token ID.",
     "hash": "476ca504"
   },
   "38": {
-    "text": "27 tokens.",
+    "text": "The full vocabulary has 27 tokens: 26 lowercase letters plus the BOS marker.",
     "hash": "0a38d2ba"
   },
   "47": {
@@ -76,7 +76,7 @@
     "hash": "fb91133f"
   },
   "57": {
-    "text": "Freeze the base weight \u2014 its <code>requires_grad</code> is now False. During fine-tuning, no gradients flow here.",
+    "text": "Freeze the base weight, its <code>requires_grad</code> is now False. During fine-tuning, no gradients flow here.",
     "hash": "4cbc2b29"
   },
   "58": {
@@ -84,11 +84,11 @@
     "hash": "b42859f3"
   },
   "59": {
-    "text": "<code>lora_A</code>: the \"down-projection\" (rank x d_in). Random init \u2014 this matrix learns to read important features from the input. Small random values to break symmetry.",
+    "text": "<code>lora_A</code>: the \"down-projection\" (rank x d_in). Random init, this matrix learns to read important features from the input. Small random values to break symmetry.",
     "hash": "8abdc7cd"
   },
   "60": {
-    "text": "<code>lora_B</code>: the \"up-projection\" (d_out x rank). Zero init is crucial \u2014 it makes the adapter a no-op at the start. The model behaves exactly like the base model until training begins to shift B away from zero.",
+    "text": "<code>lora_B</code>: the \"up-projection\" (d_out x rank). Zero init is crucial, it makes the adapter a no-op at the start. The model behaves exactly like the base model until training begins to shift B away from zero.",
     "hash": "fcda10d1"
   },
   "62": {
@@ -96,7 +96,7 @@
     "hash": "a87869a2"
   },
   "65": {
-    "text": "The math: <code>W*x + B*A*x</code>. Since B starts at zero, the adapter contributes nothing initially. As B learns non-zero values, the adapter gently steers the output. With rank=4, A is (4, d_in) and B is (d_out, 4) \u2014 tiny compared to W's (d_out, d_in).",
+    "text": "The math: <code>W*x + B*A*x</code>. Since B starts at zero, the adapter contributes nothing initially. As B learns non-zero values, the adapter gently steers the output. With rank=4, A is (4, d_in) and B is (d_out, 4), tiny compared to W's (d_out, d_in).",
     "hash": "80aaecdf"
   },
   "71": {
@@ -104,31 +104,31 @@
     "hash": "eb81fecf"
   },
   "72": {
-    "text": "4 attention heads.",
+    "text": "Four parallel attention heads, each processing a different 4-dimensional slice of the embedding.",
     "hash": "5b7ba4c9"
   },
   "73": {
-    "text": "Single layer.",
+    "text": "A single transformer layer is enough for this small character-level model.",
     "hash": "9068cb85"
   },
   "74": {
-    "text": "Max sequence length.",
+    "text": "Maximum context window of 16 tokens, which comfortably fits the longest names.",
     "hash": "4f3059d5"
   },
   "75": {
-    "text": "4 dimensions per head.",
+    "text": "Each attention head operates on a 4-dimensional slice of the 16-dimensional embedding.",
     "hash": "1892cf11"
   },
   "78": {
-    "text": "RMSNorm.",
+    "text": "Root-mean-square normalization that stabilizes activations without learned parameters.",
     "hash": "69fade3d"
   },
   "84": {
-    "text": "Normalize by root-mean-square.",
+    "text": "Normalize by root-mean-square to keep activations stable without learned scale parameters.",
     "hash": "53678ba7"
   },
   "87": {
-    "text": "Standard causal attention \u2014 identical to lab 03.",
+    "text": "Standard causal attention, identical to lab 03.",
     "hash": "c20aaac2"
   },
   "90": {
@@ -136,179 +136,179 @@
     "hash": "433b771f"
   },
   "91": {
-    "text": "Key projection.",
+    "text": "Linear projection that transforms embeddings into key vectors for attention.",
     "hash": "bf2475c8"
   },
   "92": {
-    "text": "Value projection.",
+    "text": "Linear projection that transforms embeddings into value vectors for attention.",
     "hash": "d1a077cb"
   },
   "93": {
-    "text": "Output projection.",
+    "text": "Project the concatenated multi-head output back to the model dimension.",
     "hash": "887b9875"
   },
   "95": {
-    "text": "Forward pass \u2014 standard attention.",
+    "text": "Forward pass, standard attention.",
     "hash": "a87869a2"
   },
   "96": {
-    "text": "Unpack dimensions.",
+    "text": "Extract batch size, sequence length, and embedding dimension from the input tensor shape.",
     "hash": "4584ac61"
   },
   "97": {
-    "text": "Project queries.",
+    "text": "Project and reshape the input into query vectors, one per attention head.",
     "hash": "d0c33c49"
   },
   "98": {
-    "text": "Project keys.",
+    "text": "Project and reshape the input into key vectors, one per attention head.",
     "hash": "a48e9c7a"
   },
   "99": {
-    "text": "Project values.",
+    "text": "Project and reshape the input into value vectors, one per attention head.",
     "hash": "7fcca8ac"
   },
   "101": {
-    "text": "Scaled dot-product.",
+    "text": "Compute scaled dot-product attention scores between every pair of query and key vectors.",
     "hash": "308b188d"
   },
   "102": {
-    "text": "Causal mask.",
+    "text": "Build an upper-triangular boolean mask so each token can only attend to itself and earlier positions.",
     "hash": "14eeec63"
   },
   "103": {
-    "text": "Mask future positions.",
+    "text": "Replace future-position scores with negative infinity so softmax assigns them zero weight.",
     "hash": "a2e76efa"
   },
   "104": {
-    "text": "Softmax.",
+    "text": "Convert attention scores into a probability distribution that sums to one over the key dimension.",
     "hash": "62dc999a"
   },
   "106": {
-    "text": "Weighted sum of values.",
+    "text": "Multiply attention weights by value vectors and reshape back to the original embedding layout.",
     "hash": "a1aef68f"
   },
   "107": {
-    "text": "Output projection.",
+    "text": "Project the concatenated multi-head output back to the model dimension through a linear layer.",
     "hash": "36f2db67"
   },
   "110": {
-    "text": "Standard MLP.",
+    "text": "A standard two-layer feed-forward network with ReLU activation in between.",
     "hash": "3ad666a1"
   },
   "113": {
-    "text": "Expand 4x.",
+    "text": "Project each token's embedding into a 4x wider hidden space for richer computation.",
     "hash": "8e9f0642"
   },
   "114": {
-    "text": "Project back.",
+    "text": "Compress the expanded hidden representation back down to the original embedding dimension.",
     "hash": "62c4768b"
   },
   "116": {
-    "text": "Forward.",
+    "text": "Run the input through the two-layer feed-forward network with ReLU activation.",
     "hash": "a87869a2"
   },
   "117": {
-    "text": "Two-layer MLP with ReLU.",
+    "text": "Run the two-layer MLP with ReLU, producing the feed-forward output for this position.",
     "hash": "8aa6bebb"
   },
   "120": {
-    "text": "Transformer block.",
+    "text": "One transformer block containing self-attention and a feed-forward network with residual connections.",
     "hash": "4bcc8ea8"
   },
   "123": {
-    "text": "Pre-norm.",
+    "text": "Normalize activations before the attention sublayer to stabilize training gradients.",
     "hash": "e92b587d"
   },
   "124": {
-    "text": "Attention.",
+    "text": "The causal self-attention sublayer that lets each token attend to previous positions.",
     "hash": "95b016d9"
   },
   "125": {
-    "text": "Pre-norm.",
+    "text": "Normalize activations before the MLP sublayer to stabilize training gradients.",
     "hash": "f58a7657"
   },
   "126": {
-    "text": "MLP.",
+    "text": "The feed-forward network that processes each token independently after attention has mixed information across positions.",
     "hash": "17fdd551"
   },
   "128": {
-    "text": "Forward with residual connections.",
+    "text": "Apply attention and MLP sublayers with residual connections that let gradients flow easily.",
     "hash": "a87869a2"
   },
   "129": {
-    "text": "Attention + residual.",
+    "text": "Add the attention output to the residual stream, preserving the original information.",
     "hash": "5133b743"
   },
   "130": {
-    "text": "MLP + residual.",
+    "text": "Add the MLP output to the residual stream so the model can refine representations incrementally.",
     "hash": "50e2183f"
   },
   "134": {
-    "text": "Full model \u2014 identical to lab 03 for pre-training.",
+    "text": "Full model, identical to lab 03 for pre-training.",
     "hash": "e94c5dc2"
   },
   "137": {
-    "text": "Token embeddings.",
+    "text": "Look up a learned embedding vector for each input token to represent its identity.",
     "hash": "2a2b79bb"
   },
   "138": {
-    "text": "Position embeddings.",
+    "text": "Learned positional embeddings that tell the model where each token sits in the sequence.",
     "hash": "5338449e"
   },
   "139": {
-    "text": "Input norm.",
+    "text": "Normalize the combined token-plus-position embedding before feeding it into the transformer.",
     "hash": "5caa073e"
   },
   "140": {
-    "text": "Transformer blocks.",
+    "text": "A stack of transformer blocks, each containing attention and MLP sublayers.",
     "hash": "d10311df"
   },
   "141": {
-    "text": "Output projection.",
+    "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
     "hash": "1774314d"
   },
   "142": {
-    "text": "Weight init.",
+    "text": "Apply the custom weight initialization function to every module in the model.",
     "hash": "e4941829"
   },
   "146": {
-    "text": "Small Gaussian init.",
+    "text": "Draw initial weights from a narrow Gaussian (std=0.08) so activations start at a reasonable scale, neither exploding nor vanishing through the layers.",
     "hash": "e2ce6cde"
   },
   "149": {
-    "text": "Forward pass.",
+    "text": "Run the full model on the input sequence to produce next-token logits for every position.",
     "hash": "1bc7099c"
   },
   "150": {
-    "text": "Unpack.",
+    "text": "Extract the batch size and sequence length from the input tensor shape.",
     "hash": "47cad82b"
   },
   "151": {
-    "text": "Token embeddings.",
+    "text": "Look up a learned embedding vector for each input token to represent its identity.",
     "hash": "8d137e9c"
   },
   "152": {
-    "text": "Position embeddings.",
+    "text": "Create a position embedding for each slot in the sequence so the model knows token ordering.",
     "hash": "2b319b15"
   },
   "153": {
-    "text": "Combine and normalize.",
+    "text": "Add token and position embeddings together, then normalize before entering the transformer.",
     "hash": "b88a95ea"
   },
   "154": {
-    "text": "Through blocks.",
+    "text": "Pass the normalized representation through each transformer block in sequence.",
     "hash": "359aba32"
   },
   "156": {
-    "text": "Project to logits.",
+    "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
     "hash": "9ef9adcf"
   },
   "162": {
-    "text": "Run on CPU.",
+    "text": "Use CPU for this tiny model since it trains in seconds without a GPU.",
     "hash": "b39e14b0"
   },
   "163": {
-    "text": "Temperature 0.5 for generation.",
+    "text": "Set the sampling temperature to 0.5 for moderately conservative name generation.",
     "hash": "d66aa849"
   },
   "166": {
@@ -316,15 +316,15 @@
     "hash": "4dbeac18"
   },
   "168": {
-    "text": "Eval mode.",
+    "text": "Switch to evaluation mode so the model produces consistent outputs during generation.",
     "hash": "45bf010c"
   },
   "170": {
-    "text": "No gradients.",
+    "text": "Disable gradient tracking since we only need forward passes for generation, not training.",
     "hash": "d4f61231"
   },
   "172": {
-    "text": "Start from BOS.",
+    "text": "Begin each generated name with the beginning-of-sequence token so the model starts fresh.",
     "hash": "5c52ddc4"
   },
   "173": {
@@ -332,87 +332,87 @@
     "hash": "ab05dc73"
   },
   "174": {
-    "text": "Feed current sequence.",
+    "text": "Feed the current token sequence through the model to get next-token logits. During generation we re-run the full sequence at each step since there is no KV cache.",
     "hash": "ce311cc5"
   },
   "175": {
-    "text": "Get logits.",
+    "text": "Extract the raw logit vector for the last position, which predicts what token comes next.",
     "hash": "7d28f274"
   },
   "176": {
-    "text": "Temperature scaling.",
+    "text": "Divide the logits by the temperature before softmax to control how peaked the distribution is.",
     "hash": "e1a1328f"
   },
   "177": {
-    "text": "Softmax.",
+    "text": "Convert the temperature-scaled logits into a proper probability distribution that sums to one.",
     "hash": "93ed4206"
   },
   "178": {
-    "text": "Sample.",
+    "text": "Randomly draw one token from the probability distribution to introduce controlled diversity.",
     "hash": "5b83becd"
   },
   "179": {
-    "text": "Stop at BOS.",
+    "text": "If the model predicts BOS, treat it as an end-of-name signal and stop generating.",
     "hash": "41a35c11"
   },
   "181": {
-    "text": "Append.",
+    "text": "Add the newly sampled token to the growing sequence and continue generating the next one.",
     "hash": "a1ca669a"
   },
   "182": {
-    "text": "Decode.",
+    "text": "Convert the list of generated token IDs back into characters and join them into a readable name string.",
     "hash": "b4368128"
   },
   "189": {
-    "text": "Shared training step \u2014 used for both pre-training and LoRA fine-tuning.",
+    "text": "Shared training step, used for both pre-training and LoRA fine-tuning.",
     "hash": "7a5b2a72"
   },
   "191": {
-    "text": "Tokenize the name.",
+    "text": "Encode each character in the name as a token ID, bookended by BOS markers.",
     "hash": "ae86abd0"
   },
   "192": {
-    "text": "Clip to block_size.",
+    "text": "Limit the sequence length to block_size so it fits the model's positional embedding table.",
     "hash": "3d9da8cd"
   },
   "193": {
-    "text": "Input tokens.",
+    "text": "Convert the token IDs into a tensor the model can consume as its input sequence.",
     "hash": "968a3346"
   },
   "194": {
-    "text": "Target tokens.",
+    "text": "Build the target sequence by shifting the input one position to the right for next-token prediction.",
     "hash": "1b63fd95"
   },
   "196": {
-    "text": "Forward pass.",
+    "text": "Run the full model on the current input batch to get next-token predictions.",
     "hash": "17df3885"
   },
   "197": {
-    "text": "Cross-entropy loss.",
+    "text": "Measure how far the model's predictions are from the true next tokens using cross-entropy loss.",
     "hash": "4f1dd754"
   },
   "199": {
-    "text": "Zero gradients.",
+    "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
     "hash": "fbede2b3"
   },
   "200": {
-    "text": "Backprop \u2014 during LoRA fine-tuning, gradients only flow into the unfrozen LoRA parameters.",
+    "text": "Backprop, during LoRA fine-tuning, gradients only flow into the unfrozen LoRA parameters.",
     "hash": "227fe80d"
   },
   "201": {
-    "text": "Linear LR decay.",
+    "text": "Linearly reduce the learning rate from its initial value down to zero over the course of training.",
     "hash": "68079a2b"
   },
   "203": {
-    "text": "Apply LR.",
+    "text": "Write the decayed learning rate into every parameter group so the optimizer uses it on the next step.",
     "hash": "3030870a"
   },
   "204": {
-    "text": "Update \u2014 only LoRA parameters move because base weights are frozen.",
+    "text": "Update, only LoRA parameters move because base weights are frozen.",
     "hash": "d9e59d7e"
   },
   "215": {
-    "text": "Create the base model for pre-training on all names.",
+    "text": "Instantiate the base model that will first be pre-trained on all names. Later, we will freeze these weights and inject LoRA adapters for fine-tuning.",
     "hash": "40b7fcd9"
   },
   "216": {
@@ -424,19 +424,19 @@
     "hash": "92d21e78"
   },
   "220": {
-    "text": "1000 steps of pre-training.",
+    "text": "Train for 1000 steps of standard next-token prediction on the full names corpus. This gives the model a solid foundation before we specialize it with LoRA.",
     "hash": "f105aa30"
   },
   "222": {
-    "text": "Pre-training loop \u2014 standard next-token prediction on the full names corpus.",
+    "text": "Pre-training loop, standard next-token prediction on the full names corpus.",
     "hash": "53f56939"
   },
   "223": {
-    "text": "Cycle through all names.",
+    "text": "Pick the next name from the shuffled list, wrapping around when we reach the end. This cycling ensures continuous training across all 1000 steps.",
     "hash": "47ec0e2c"
   },
   "224": {
-    "text": "Train step.",
+    "text": "Run one training step on the current document, returning the loss value.",
     "hash": "ddca3f41"
   },
   "229": {
@@ -468,7 +468,7 @@
     "hash": "e21a43a2"
   },
   "257": {
-    "text": "Found one \u2014 replace it with a LoRA wrapper.",
+    "text": "Found one, replace it with a LoRA wrapper.",
     "hash": "2993579f"
   },
   "258": {
@@ -480,7 +480,7 @@
     "hash": "6ebee192"
   },
   "264": {
-    "text": "Only inject LoRA into the transformer layers \u2014 not embeddings or lm_head. Embedding layers don't benefit from LoRA at this scale.",
+    "text": "Only inject LoRA into the transformer layers, not embeddings or lm_head. Embedding layers don't benefit from LoRA at this scale.",
     "hash": "b9774c64"
   },
   "265": {
@@ -488,11 +488,11 @@
     "hash": "613da4c2"
   },
   "267": {
-    "text": "Recount parameters \u2014 total grows slightly because of the LoRA matrices.",
+    "text": "Recount parameters, total grows slightly because of the LoRA matrices.",
     "hash": "fff12737"
   },
   "268": {
-    "text": "Count trainable parameters \u2014 only the LoRA A and B matrices have <code>requires_grad=True</code>.",
+    "text": "Count trainable parameters, only the LoRA A and B matrices have <code>requires_grad=True</code>.",
     "hash": "737983cd"
   },
   "269": {
@@ -504,19 +504,19 @@
     "hash": "9ae4ae1a"
   },
   "284": {
-    "text": "Only feed LoRA parameters to the optimizer \u2014 the frozen base weights are excluded.",
+    "text": "Only feed LoRA parameters to the optimizer, the frozen base weights are excluded.",
     "hash": "320761bc"
   },
   "285": {
-    "text": "Fresh optimizer for fine-tuning \u2014 only LoRA parameters.",
+    "text": "Fresh optimizer for fine-tuning, only LoRA parameters.",
     "hash": "e1b6c784"
   },
   "286": {
-    "text": "500 fine-tuning steps \u2014 less than pre-training because we're making a small adjustment.",
+    "text": "500 fine-tuning steps, less than pre-training because we're making a small adjustment.",
     "hash": "17a9764e"
   },
   "288": {
-    "text": "Fine-tuning loop \u2014 same training step, but on 'm'-filtered data.",
+    "text": "Fine-tuning loop, same training step, but on 'm'-filtered data.",
     "hash": "bb777943"
   },
   "289": {
@@ -524,15 +524,15 @@
     "hash": "7807be38"
   },
   "290": {
-    "text": "Train step \u2014 gradients flow through LoRA A and B only.",
+    "text": "Train step, gradients flow through LoRA A and B only.",
     "hash": "959582a5"
   },
   "303": {
-    "text": "Seed for reproducible generation.",
+    "text": "Pin the random seed before generation so the LoRA-adapted model and the base model produce samples from the same random sequence for a fair comparison.",
     "hash": "7e7dcf46"
   },
   "304": {
-    "text": "Generate 20 names from the LoRA-adapted model \u2014 expect a strong bias toward 'm' names.",
+    "text": "Generate 20 names from the LoRA-adapted model, expect a strong bias toward 'm' names.",
     "hash": "46057e63"
   },
   "307": {
@@ -548,15 +548,15 @@
     "hash": "7e7dcf46"
   },
   "311": {
-    "text": "Generate from the base model \u2014 these should show the original, unbiased distribution.",
+    "text": "Generate from the base model, these should show the original, unbiased distribution.",
     "hash": "83de5633"
   },
   "314": {
-    "text": "Count 'm' names from the LoRA model \u2014 should be substantially higher than base.",
+    "text": "Count 'm' names from the LoRA model, should be substantially higher than base.",
     "hash": "d6ed3e89"
   },
   "315": {
-    "text": "Count 'm' names from the base model \u2014 should reflect the natural ~4% rate.",
+    "text": "Count 'm' names from the base model, should reflect the natural ~4% rate.",
     "hash": "a4c8bda0"
   },
   "330": {
@@ -568,11 +568,11 @@
     "hash": "e21a43a2"
   },
   "333": {
-    "text": "Found a LoRA layer \u2014 merge it back.",
+    "text": "Found a LoRA layer, merge it back.",
     "hash": "688eb191"
   },
   "334": {
-    "text": "Create a fresh <code>nn.Linear</code> with the merged weights.",
+    "text": "Allocate a standard <code>nn.Linear</code> with the same dimensions as the original layer, ready to receive the merged weight matrix with no adapter overhead.",
     "hash": "0b035ba4"
   },
   "340": {
@@ -584,7 +584,7 @@
     "hash": "7914129c"
   },
   "343": {
-    "text": "Recurse into children.",
+    "text": "Descend into child modules to find and merge any LoRA wrappers nested deeper in the model tree, ensuring no adapter layers remain after merging.",
     "hash": "fd09d577"
   },
   "346": {
@@ -592,7 +592,7 @@
     "hash": "398ebef7"
   },
   "352": {
-    "text": "Same seed \u2014 merged model should produce IDENTICAL output to the LoRA model.",
+    "text": "Same seed, merged model should produce IDENTICAL output to the LoRA model.",
     "hash": "7e7dcf46"
   },
   "353": {
@@ -600,11 +600,11 @@
     "hash": "4cb44661"
   },
   "355": {
-    "text": "Verify every name matches \u2014 merging is exact, not an approximation.",
+    "text": "Verify every name matches, merging is exact, not an approximation.",
     "hash": "9bee822f"
   },
   "358": {
-    "text": "After merging, parameter count should equal the original base model \u2014 LoRA overhead is gone.",
+    "text": "After merging, parameter count should equal the original base model, LoRA overhead is gone.",
     "hash": "f0f2148c"
   },
   "359": {
