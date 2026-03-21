@@ -185,7 +185,6 @@
   }
 
   /* Play / Stop buttons */
-  .play-btn { display: none; } /* hidden until server mode confirmed */
   .play-btn, .stop-btn {
     display: inline-flex;
     align-items: center;
@@ -202,7 +201,6 @@
   }
   .play-btn:hover { border-color: #3fb950; color: #3fb950; }
   .play-btn .icon { color: #3fb950; }
-  .stop-btn { display: none; }
   .stop-btn:hover { border-color: #f85149; color: #f85149; }
   .stop-btn .icon { color: #f85149; }
 
@@ -301,10 +299,10 @@
   <a href="/" class="back-link">&larr; Labs</a>
   <h1 id="lab-title"></h1>
   <span class="tagline" id="lab-tagline"></span>
-  <button class="play-btn" id="play-btn" onclick="runLab()">
+  <button class="play-btn" id="play-btn" onclick="runLab()" hidden>
     <span class="icon">&#9654;</span> Run
   </button>
-  <button class="stop-btn" id="stop-btn" onclick="stopLab()">
+  <button class="stop-btn" id="stop-btn" onclick="stopLab()" hidden>
     <span class="icon">&#9632;</span> Stop
   </button>
 </div>
@@ -387,7 +385,7 @@ async function init() {
 
   // Show Run button only in server mode
   if (serverMode) {
-    document.getElementById("play-btn").style.display = "inline-flex";
+    document.getElementById("play-btn").hidden = false;
   }
 
   // Set header
@@ -601,8 +599,8 @@ function runLab() {
   output.textContent = "";
   status.textContent = "";
   status.className = "terminal-status";
-  playBtn.style.display = "none";
-  stopBtn.style.display = "inline-flex";
+  playBtn.hidden = true;
+  stopBtn.hidden = false;
 
   eventSource = new EventSource(`/api/run/${labId}`);
 
@@ -623,8 +621,8 @@ function runLab() {
         status.textContent = `exit ${data.exit_code}`;
         status.className = "terminal-status error";
       }
-      stopBtn.style.display = "none";
-      playBtn.style.display = "inline-flex";
+      stopBtn.hidden = true;
+      playBtn.hidden = false;
     }
   });
 
@@ -643,8 +641,8 @@ function runLab() {
       labRunning = false;
       status.textContent = "connection lost";
       status.className = "terminal-status error";
-      stopBtn.style.display = "none";
-      playBtn.style.display = "inline-flex";
+      stopBtn.hidden = true;
+      playBtn.hidden = false;
     }
   };
 }
@@ -671,8 +669,8 @@ function closeTerminal() {
   const panel = document.getElementById("terminal-panel");
   panel.classList.remove("open", "fullscreen");
   document.getElementById("terminal-maximize").innerHTML = "&#x26F6;";
-  document.getElementById("stop-btn").style.display = "none";
-  document.getElementById("play-btn").style.display = "inline-flex";
+  document.getElementById("stop-btn").hidden = true;
+  document.getElementById("play-btn").hidden = false;
 }
 
 function toggleTerminalSize() {
