@@ -18,7 +18,7 @@ PROJECT_ROOT = ROOT.parent
 LABS = [
     ("01_pure_python", "microgpt.py",
      "microGPT — Pure Python",
-     "This file is the complete algorithm. Everything else is just efficiency."),
+     "Karpathy's original microGPT — the complete algorithm in one file. Everything else is just efficiency."),
     ("02_numpy_manual_backprop", "main.py",
      "NumPy with Manual Backpropagation",
      "Same architecture, but NumPy handles the math. Every gradient is derived by hand — you are the autograd."),
