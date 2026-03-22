@@ -47,807 +47,807 @@
     "text": "PyTorch seed for reproducible training.",
     "hash": "7e7dcf46"
   },
-  "30": {
+  "32": {
     "text": "Construct the dataset file path relative to this script's location so it works from any working directory.",
     "hash": "180b0553"
   },
-  "31": {
+  "33": {
     "text": "If the names dataset file doesn't exist locally, download it on the fly so the script is self-contained.",
     "hash": "9667c968"
   },
-  "37": {
+  "39": {
     "text": "Read the dataset file where each line contains a single name for training.",
     "hash": "2f367d0b"
   },
-  "38": {
+  "40": {
     "text": "Randomize training order so the model doesn't memorize alphabetical patterns from the dataset.",
     "hash": "c8f1cb86"
   },
-  "41": {
+  "43": {
     "text": "Build a sorted list of unique characters across all names, mapping each to a deterministic token ID.",
     "hash": "5f7ca3bb"
   },
-  "42": {
+  "44": {
     "text": "The BOS token marks the beginning and end of each name sequence during training and generation.",
     "hash": "476ca504"
   },
-  "43": {
+  "45": {
     "text": "Total vocabulary size: all unique characters plus the special BOS/EOS token.",
     "hash": "0a38d2ba"
   },
-  "47": {
+  "51": {
     "text": "Small model config, enough to demonstrate the serving architecture.",
     "hash": "eb81fecf"
   },
-  "48": {
+  "52": {
     "text": "Split the embedding dimension across four heads for multi-head attention.",
     "hash": "5b7ba4c9"
   },
-  "49": {
+  "53": {
     "text": "A single transformer layer keeps the model small and training fast for this demo.",
     "hash": "9068cb85"
   },
-  "50": {
+  "54": {
     "text": "Maximum sequence length of 16 tokens, matching the longest names in the dataset.",
     "hash": "4f3059d5"
   },
-  "51": {
+  "55": {
     "text": "Each attention head operates on a 4-dimensional slice of the full embedding.",
     "hash": "1892cf11"
   },
-  "55": {
+  "58": {
     "text": "RMSNorm, same as all labs.",
     "hash": "69fade3d"
   },
-  "60": {
+  "63": {
     "text": "Scale the input by its inverse root-mean-square, bringing activations to roughly unit magnitude without learned parameters.",
     "hash": "a87869a2"
   },
-  "64": {
+  "67": {
     "text": "Self-attention WITH KV cache support, the distinction between prefill and decode lives here.",
     "hash": "c20aaac2"
   },
-  "72": {
+  "75": {
     "text": "Accepts an optional KV cache: <code>None</code> for prefill (process all tokens), populated for decode (only new token's K/V are computed).",
     "hash": "8644a184"
   },
-  "73": {
+  "76": {
     "text": "<code>T_new</code> is the full prompt length during prefill, but just 1 during decode.",
     "hash": "dbcc0799"
   },
-  "74": {
+  "77": {
     "text": "Project queries for the new tokens only.",
     "hash": "9e163990"
   },
-  "75": {
+  "78": {
     "text": "Project to keys for the new input tokens, same shape transformation as queries.",
     "hash": "c90e879b"
   },
-  "76": {
+  "79": {
     "text": "Project to values for the new input tokens, same shape transformation as queries.",
     "hash": "01144d94"
   },
-  "77": {
+  "80": {
     "text": "If we have cached K/V from previous steps, concatenate the new K/V onto them.",
     "hash": "aa6ad26f"
   },
-  "78": {
+  "81": {
     "text": "Concatenate new keys with cached keys, the cache grows by one token each decode step.",
     "hash": "459eb17a"
   },
-  "79": {
+  "82": {
     "text": "Concatenate new values with cached values, growing the history by one token per decode step.",
     "hash": "8adeb78d"
   },
-  "80": {
+  "83": {
     "text": "Total sequence length including cached history.",
     "hash": "49990b2c"
   },
-  "81": {
+  "84": {
     "text": "Attention scores: new queries attend to ALL keys (cached + new).",
     "hash": "308b188d"
   },
-  "82": {
+  "85": {
     "text": "Causal mask adapted for the asymmetric case: <code>T_new</code> query rows vs <code>T_total</code> key columns. During decode, this is just 1 row attending to the full history.",
     "hash": "f7463530"
   },
-  "83": {
+  "86": {
     "text": "Mask and softmax in one line.",
     "hash": "a3a4fb44"
   },
-  "84": {
+  "87": {
     "text": "Weighted values, reshape to (B, T_new, C).",
     "hash": "bc3bf4e4"
   },
-  "85": {
+  "88": {
     "text": "Return output AND the updated cache, the caller decides whether to keep it.",
     "hash": "047a8418"
   },
-  "88": {
+  "91": {
     "text": "The standard feed-forward network: expand, activate, and contract back to embedding dimension.",
     "hash": "3ad666a1"
   },
-  "91": {
+  "94": {
     "text": "Expand the hidden state to four times the embedding dimension through the first linear layer.",
     "hash": "8e9f0642"
   },
-  "92": {
+  "95": {
     "text": "Contract the activated representation back to the embedding dimension through the second linear layer.",
     "hash": "62c4768b"
   },
-  "94": {
+  "97": {
     "text": "Apply ReLU activation between the two linear layers, introducing the needed nonlinearity.",
     "hash": "a87869a2"
   },
-  "98": {
+  "101": {
     "text": "Transformer block that threads KV caches through.",
     "hash": "4bcc8ea8"
   },
-  "101": {
+  "104": {
     "text": "Normalize activations before the attention projections so Q/K/V computations see inputs with consistent scale.",
     "hash": "e92b587d"
   },
-  "102": {
+  "105": {
     "text": "The attention sublayer with optional KV cache: during prefill it processes all tokens, during decode just one new token.",
     "hash": "95b016d9"
   },
-  "103": {
+  "106": {
     "text": "RMSNorm before the MLP ensures the feed-forward weights see well-scaled inputs regardless of what attention produced.",
     "hash": "f58a7657"
   },
-  "104": {
+  "107": {
     "text": "The feed-forward network sublayer that processes each token independently after attention.",
     "hash": "17fdd551"
   },
-  "106": {
+  "109": {
     "text": "Block forward: attention with cache, MLP, return updated cache.",
     "hash": "8644a184"
   },
-  "107": {
+  "110": {
     "text": "Attention with optional KV cache.",
     "hash": "1e4dac19"
   },
-  "108": {
+  "111": {
     "text": "Add the attention output to the original input via a skip connection, preserving the representation and enabling gradient flow.",
     "hash": "d038b58c"
   },
-  "109": {
+  "112": {
     "text": "Add the MLP output via a second residual connection, letting the feed-forward network only refine rather than replace.",
     "hash": "50e2183f"
   },
-  "110": {
+  "113": {
     "text": "Return both the updated hidden states and the new KV cache, so the next layer or decode step can continue from here.",
     "hash": "20dd8643"
   },
-  "113": {
+  "116": {
     "text": "Full GPT with explicit prefill and decode methods, the foundation for disaggregated serving.",
     "hash": "e94c5dc2"
   },
-  "116": {
+  "119": {
     "text": "Table mapping each token ID to a dense vector in the embedding space.",
     "hash": "2a2b79bb"
   },
-  "117": {
+  "120": {
     "text": "Learned position vectors that tell the model where each token sits. Added to token embeddings before the transformer.",
     "hash": "5338449e"
   },
-  "118": {
+  "121": {
     "text": "RMSNorm on the combined embeddings before the transformer, stabilizing the first layer's input scale.",
     "hash": "5caa073e"
   },
-  "119": {
+  "122": {
     "text": "The stack of transformer blocks that form the core of the model's processing pipeline.",
     "hash": "d10311df"
   },
-  "120": {
+  "123": {
     "text": "Final linear layer that projects hidden states to vocabulary-sized logits for next-token prediction.",
     "hash": "1774314d"
   },
-  "121": {
+  "124": {
     "text": "Walk every submodule and apply the weight initialization function so all parameters start with well-scaled random values.",
     "hash": "e4941829"
   },
-  "125": {
+  "128": {
     "text": "Initialize all weights from a small Gaussian distribution to prevent exploding activations at start.",
     "hash": "e2ce6cde"
   },
-  "128": {
+  "131": {
     "text": "Forward pass with KV cache support. <code>start_pos</code> offsets the position embeddings, during decode, positions continue from where prefill left off.",
     "hash": "6203bc9f"
   },
-  "129": {
+  "132": {
     "text": "Sequence length of new tokens.",
     "hash": "9a3a722a"
   },
-  "130": {
+  "133": {
     "text": "Position embeddings offset by <code>start_pos</code>, during decode step 5, this produces position embedding for position 5, not 0.",
     "hash": "cfd02a01"
   },
-  "131": {
+  "134": {
     "text": "Collect updated caches from each layer.",
     "hash": "b2039659"
   },
-  "132": {
+  "135": {
     "text": "Thread caches through each layer.",
     "hash": "065d031b"
   },
-  "133": {
+  "136": {
     "text": "Retrieve the cached KV state for this layer from the previous step (or None for the first pass during prefill).",
     "hash": "f3f66768"
   },
-  "134": {
+  "137": {
     "text": "Save this layer's updated KV cache so the next decode step can reuse the computed keys and values.",
     "hash": "7c160f4c"
   },
-  "135": {
+  "138": {
     "text": "Return the predicted logits plus all updated layer caches, giving the caller everything needed to continue generation.",
     "hash": "7c352239"
   },
-  "137": {
+  "140": {
     "text": "Prefill: process the entire prompt in one parallel forward pass. This is COMPUTE-BOUND, lots of tokens, high parallelism, saturates GPU ALUs.",
     "hash": "d62ca2e1"
   },
-  "138": {
+  "141": {
     "text": "Just a forward pass with no prior cache, all tokens processed together.",
     "hash": "7f71e530"
   },
-  "140": {
+  "143": {
     "text": "Decode: process ONE new token using the cached KV history. This is MEMORY-BOUND, reading all cached K/V values but computing very little.",
     "hash": "3e987115"
   },
-  "141": {
+  "144": {
     "text": "Single token forward pass with position offset.",
     "hash": "c3c49c74"
   },
-  "145": {
+  "150": {
     "text": "Run on CPU since the model is small enough that GPU overhead would not help.",
     "hash": "b39e14b0"
   },
-  "146": {
+  "151": {
     "text": "Create the model, move it to the device, and display its parameter count for verification.",
     "hash": "40b7fcd9"
   },
-  "149": {
+  "154": {
     "text": "Adam optimizer, same settings as all labs.",
     "hash": "92d21e78"
   },
-  "150": {
+  "155": {
     "text": "Train for 1000 steps, enough for this small model to learn basic character-level name patterns from the dataset.",
     "hash": "f105aa30"
   },
-  "152": {
+  "157": {
     "text": "Standard next-token prediction training loop, processing one name per step with teacher forcing.",
     "hash": "53f56939"
   },
-  "153": {
+  "158": {
     "text": "Pick one training example per step, cycling through the shuffled dataset.",
     "hash": "47ec0e2c"
   },
-  "154": {
+  "159": {
     "text": "Encode: BOS + characters + BOS.",
     "hash": "ae86abd0"
   },
-  "155": {
+  "160": {
     "text": "Truncate the token sequence to fit within the model's positional embedding table and context window.",
     "hash": "3d9da8cd"
   },
-  "156": {
+  "161": {
     "text": "Prepare the input tensor containing all tokens except the last one in the sequence.",
     "hash": "968a3346"
   },
-  "157": {
+  "162": {
     "text": "Prepare the target tensor containing all tokens except the first, shifted by one position.",
     "hash": "1b63fd95"
   },
-  "158": {
+  "163": {
     "text": "Forward pass, ignoring caches during training.",
     "hash": "495ef1c7"
   },
-  "159": {
+  "164": {
     "text": "Measure how far the model's predictions are from the correct next tokens at each position.",
     "hash": "4f1dd754"
   },
-  "160": {
+  "165": {
     "text": "Reset all parameter gradients to zero before computing the new backward pass.",
     "hash": "fbede2b3"
   },
-  "161": {
+  "166": {
     "text": "Compute gradients of the loss with respect to every model parameter via backpropagation.",
     "hash": "227fe80d"
   },
-  "162": {
+  "167": {
     "text": "Linearly reduce the learning rate over the course of training for smoother convergence toward the end.",
     "hash": "9f6d3592"
   },
-  "163": {
+  "168": {
     "text": "Set the learning rate to a linearly decayed value based on how far along training we are.",
     "hash": "731b78e0"
   },
-  "164": {
+  "169": {
     "text": "Apply the computed gradients to update all model weights one step toward lower loss.",
     "hash": "d9e59d7e"
   },
-  "168": {
+  "173": {
     "text": "Switch to eval mode for inference.",
     "hash": "45bf010c"
   },
-  "169": {
+  "174": {
     "text": "Disable gradient tracking globally, everything from here is inference.",
     "hash": "08c4b35c"
   },
-  "177": {
+  "182": {
     "text": "Timing utility: warms up with 5 runs, then times 50 runs for stable measurement.",
     "hash": "61c18f9b"
   },
-  "178": {
+  "183": {
     "text": "Warmup runs, let caches and JIT settle.",
     "hash": "648eef3b"
   },
-  "179": {
+  "184": {
     "text": "Execute the function once during warmup to trigger any lazy initialization or JIT compilation.",
     "hash": "0d8a8193"
   },
-  "180": {
+  "185": {
     "text": "Record the wall-clock start time so we can measure total execution duration.",
     "hash": "d5030329"
   },
-  "181": {
+  "186": {
     "text": "Execute the target function 50 times to get a stable average, smoothing out per-run timing noise.",
     "hash": "f2d6b87d"
   },
-  "183": {
+  "188": {
     "text": "Compute the average wall-clock time per run by dividing total elapsed time by the number of runs.",
     "hash": "05395d45"
   },
-  "186": {
+  "191": {
     "text": "Measure the compute profile difference between prefill and decode at various prompt lengths.",
     "hash": "d0512ab2"
   },
-  "187": {
+  "192": {
     "text": "Generate a random sequence of token IDs to simulate a prompt of the specified length for benchmarking.",
     "hash": "3888f7ac"
   },
-  "188": {
+  "193": {
     "text": "Decode up to 5 tokens after the prompt.",
     "hash": "77bbfd06"
   },
-  "189": {
+  "194": {
     "text": "Time the prefill phase: ALL prompt tokens processed in one pass.",
     "hash": "e055f970"
   },
-  "190": {
+  "195": {
     "text": "Run a prefill forward pass on the prompt and capture the resulting KV caches that decode will build upon.",
     "hash": "33881965"
   },
-  "192": {
+  "197": {
     "text": "Time the decode phase: generate tokens one at a time.",
     "hash": "f0652005"
   },
-  "193": {
+  "198": {
     "text": "Start from the prefill caches.",
     "hash": "d098bc3e"
   },
-  "194": {
+  "199": {
     "text": "Each decode step processes one token.",
     "hash": "2a5c1401"
   },
-  "195": {
+  "200": {
     "text": "One token forward pass with KV cache.",
     "hash": "9f4fb3e7"
   },
-  "198": {
+  "203": {
     "text": "Measure how long the autoregressive decode phase takes, separate from the prefill measurement.",
     "hash": "70b61c06"
   },
-  "199": {
+  "204": {
     "text": "Rough FLOPs estimate for comparison.",
     "hash": "387edbb8"
   },
-  "200": {
+  "205": {
     "text": "Prefill FLOPs scale as O(T^2), quadratic in prompt length. Decode FLOPs scale linearly per step but add up.",
     "hash": "36ac3875"
   },
-  "203": {
+  "208": {
     "text": "Print a formatted comparison table.",
     "hash": "6d9733f3"
   },
-  "207": {
+  "212": {
     "text": "Test with increasing prompt lengths to show how prefill scales quadratically while decode stays relatively flat.",
     "hash": "e7021037"
   },
-  "208": {
+  "213": {
     "text": "Run the profiling function at each prompt length and collect the timing results for the comparison table.",
     "hash": "bbd460f1"
   },
-  "209": {
+  "214": {
     "text": "Print timing and FLOPs for this prompt length.",
     "hash": "0a561d03"
   },
-  "222": {
+  "227": {
     "text": "Controls how peaked the sampling distribution is. Lower temperature means more deterministic output; higher means more variety.",
     "hash": "d66aa849"
   },
-  "223": {
+  "228": {
     "text": "Simulated prefill cost: 0.5ms per prompt token. On real GPUs, this would be actual compute time.",
     "hash": "51a9d0e7"
   },
-  "224": {
+  "229": {
     "text": "Simulated decode cost: 0.3ms per step. Cheaper per-step than prefill because it's just one token.",
     "hash": "e8d05503"
   },
-  "228": {
+  "233": {
     "text": "A serving request: prompt, timing metadata, and generated tokens.",
     "hash": "1d4d2afb"
   },
-  "229": {
+  "234": {
     "text": "A numeric ID that uniquely identifies this request in the serving system.",
     "hash": "fa3ade80"
   },
-  "230": {
+  "235": {
     "text": "The prompt tokens to prefill.",
     "hash": "84b61c78"
   },
-  "231": {
+  "236": {
     "text": "When this request arrives in the system.",
     "hash": "aed6af2b"
   },
-  "232": {
+  "237": {
     "text": "Upper limit on how many tokens to generate per request, bounding the decode phase for this simulation.",
     "hash": "28eea12a"
   },
-  "233": {
+  "238": {
     "text": "Time-to-first-token: the key latency metric for user experience.",
     "hash": "b94923dd"
   },
-  "234": {
+  "239": {
     "text": "When the request completes entirely.",
     "hash": "bc4138df"
   },
-  "235": {
+  "240": {
     "text": "List that collects the tokens generated for this request during the decode phase.",
     "hash": "3c153559"
   },
-  "238": {
+  "243": {
     "text": "Create a realistic workload: mix of short prompts (fast prefill) and long prompts (slow prefill). The long prompts are the problem, they block everything in colocated serving.",
     "hash": "aa9601f2"
   },
-  "239": {
+  "244": {
     "text": "Separate RNG for reproducible workload.",
     "hash": "48c08608"
   },
-  "241": {
+  "246": {
     "text": "Loop through the specified number of requests, creating each with a random prompt and staggered arrival time.",
     "hash": "62292715"
   },
-  "242": {
+  "247": {
     "text": "30% chance of a long prompt (8-12 tokens), these are the \"heavy\" requests that cause head-of-line blocking.",
     "hash": "668cbc97"
   },
-  "243": {
+  "248": {
     "text": "Fill the prompt with random token IDs drawn from the vocabulary to simulate a realistic request payload.",
     "hash": "abc37cba"
   },
-  "244": {
+  "249": {
     "text": "Stagger arrival times by 0.3ms, simulating real request arrivals.",
     "hash": "2e489fda"
   },
-  "248": {
+  "253": {
     "text": "Simulate a prefill operation: run the actual model AND sleep to simulate GPU time.",
     "hash": "19b0a7a3"
   },
-  "249": {
+  "254": {
     "text": "Real forward pass to get logits and KV caches.",
     "hash": "e5fc762b"
   },
-  "250": {
+  "255": {
     "text": "Sleep proportional to prompt length, longer prompts take longer to prefill.",
     "hash": "2b8797f4"
   },
-  "254": {
+  "259": {
     "text": "Simulate a decode step: real model computation + simulated GPU time.",
     "hash": "a88089a6"
   },
-  "255": {
+  "260": {
     "text": "Real single-token forward pass with KV cache.",
     "hash": "ea55395a"
   },
-  "256": {
+  "261": {
     "text": "Fixed cost per decode step.",
     "hash": "39da17e4"
   },
-  "260": {
+  "265": {
     "text": "Sample one token from the model's output distribution.",
     "hash": "2b1aaf78"
   },
-  "261": {
+  "266": {
     "text": "Scale the logits by temperature, apply softmax, and sample one token. This is the actual character generation step.",
     "hash": "d810ca2a"
   },
-  "265": {
+  "270": {
     "text": "Colocated serving: ONE worker does both prefill AND decode. Processes requests FIFO, a long prefill blocks ALL subsequent requests.",
     "hash": "6fe0ce14"
   },
-  "266": {
+  "271": {
     "text": "Track results and wall-clock time.",
     "hash": "63088272"
   },
-  "267": {
+  "272": {
     "text": "Handle one request at a time in FIFO order: prefill its prompt, then decode all tokens before moving to the next.",
     "hash": "a33d8004"
   },
-  "268": {
+  "273": {
     "text": "Wait until the request's arrival time.",
     "hash": "16762fcc"
   },
-  "269": {
+  "274": {
     "text": "Sleep if the request hasn't arrived yet.",
     "hash": "a3b6daf1"
   },
-  "271": {
+  "276": {
     "text": "Prefill the prompt, if this is a LONG prompt, all subsequent requests wait.",
     "hash": "3db8c780"
   },
-  "272": {
+  "277": {
     "text": "Record time-to-first-token, this is terrible for requests stuck behind long prefills.",
     "hash": "1655a896"
   },
-  "273": {
+  "278": {
     "text": "Sample the first token and start decoding.",
     "hash": "e84959e6"
   },
-  "274": {
+  "279": {
     "text": "Decode loop: generate tokens one at a time.",
     "hash": "06a2d3c7"
   },
-  "275": {
+  "280": {
     "text": "Stop on BOS (end token) or context limit.",
     "hash": "4f38ee45"
   },
-  "277": {
+  "282": {
     "text": "Append each newly generated token to this request's output list, building the name character by character.",
     "hash": "60d078c5"
   },
-  "278": {
+  "283": {
     "text": "One decode step with KV cache.",
     "hash": "2158d0d7"
   },
-  "279": {
+  "284": {
     "text": "Sample next token and advance position.",
     "hash": "13c99538"
   },
-  "280": {
+  "285": {
     "text": "Record completion time and results.",
     "hash": "5bd1498c"
   },
-  "286": {
+  "291": {
     "text": "Disaggregated serving: SEPARATE prefill and decode workers connected by a queue. Prefill doesn't block decode. The key insight: while one worker prefills a long prompt, the other worker continues decoding in-flight requests.",
     "hash": "326bca13"
   },
-  "287": {
+  "292": {
     "text": "Thread-safe queue connects prefill worker to decode worker.",
     "hash": "bd730e0c"
   },
-  "288": {
+  "293": {
     "text": "Results collection with lock for thread safety.",
     "hash": "7b740ab2"
   },
-  "289": {
+  "294": {
     "text": "Signal when prefill is done; wall-clock baseline.",
     "hash": "4fbb3996"
   },
-  "291": {
+  "296": {
     "text": "Prefill worker: processes prompts and hands off to decode worker.",
     "hash": "d7cc4ce6"
   },
-  "293": {
+  "298": {
     "text": "Wait for each request's arrival time.",
     "hash": "16762fcc"
   },
-  "296": {
+  "301": {
     "text": "Prefill the prompt, runs independently of any ongoing decoding.",
     "hash": "3db8c780"
   },
-  "297": {
+  "302": {
     "text": "Record time-to-first-token, now only depends on THIS request's prefill, not previous requests.",
     "hash": "1655a896"
   },
-  "298": {
+  "303": {
     "text": "Push the prefilled request state onto the thread-safe queue so the decode worker can pick it up without data races.",
     "hash": "e7d43909"
   },
-  "299": {
+  "304": {
     "text": "Hand off the prefilled state (KV caches, first token, position) to the decode worker.",
     "hash": "89cbf048"
   },
-  "300": {
+  "305": {
     "text": "Signal that all prefills are done.",
     "hash": "4c26a215"
   },
-  "302": {
+  "307": {
     "text": "Decode worker: picks up prefilled requests and generates tokens. Can interleave decoding of multiple requests.",
     "hash": "ce75c89b"
   },
-  "303": {
+  "308": {
     "text": "Dictionary of requests currently in the decode phase, keyed by ID. The decode worker processes all of these each iteration.",
     "hash": "c0c86e34"
   },
-  "304": {
+  "309": {
     "text": "Keep running until prefill is done and all decodes finish.",
     "hash": "6b450cdd"
   },
-  "305": {
+  "310": {
     "text": "Poll the queue for any newly prefilled requests that the prefill worker has handed off for decoding.",
     "hash": "e7d43909"
   },
-  "306": {
+  "311": {
     "text": "Drain the queue, grab all available prefilled requests.",
     "hash": "0aca94e8"
   },
-  "307": {
+  "312": {
     "text": "Unpack the handoff: request, KV caches, first sampled token, position.",
     "hash": "83946ba0"
   },
-  "308": {
+  "313": {
     "text": "Add to active set with an empty generated tokens list.",
     "hash": "4098caba"
   },
-  "309": {
+  "314": {
     "text": "If nothing active and prefill not done, briefly wait.",
     "hash": "c984df68"
   },
-  "310": {
+  "315": {
     "text": "Test whether the prefill worker has signaled completion, so the decode worker knows when no more requests are coming.",
     "hash": "53fcc9f7"
   },
-  "312": {
+  "317": {
     "text": "Brief sleep to avoid busy-waiting.",
     "hash": "85f75237"
   },
-  "314": {
+  "319": {
     "text": "Process one decode step for each active request.",
     "hash": "181a25b3"
   },
-  "315": {
+  "320": {
     "text": "Iterate over all active requests.",
     "hash": "9e17c0b3"
   },
-  "316": {
+  "321": {
     "text": "Evaluate stopping conditions for each active request: did it generate BOS (end token) or hit the maximum length?",
     "hash": "30cc0e3b"
   },
-  "317": {
+  "322": {
     "text": "Request finished: record timing and results.",
     "hash": "5bd1498c"
   },
-  "318": {
+  "323": {
     "text": "Acquire the results lock before writing, since the main thread reads results after both workers finish.",
     "hash": "dc14b412"
   },
-  "321": {
+  "326": {
     "text": "Continue generating: append token, decode one step, sample next.",
     "hash": "60d078c5"
   },
-  "322": {
+  "327": {
     "text": "One decode step with KV cache.",
     "hash": "2158d0d7"
   },
-  "323": {
+  "328": {
     "text": "Keep going with updated state.",
     "hash": "21c61a70"
   },
-  "324": {
+  "329": {
     "text": "Filter out finished requests so we only continue decoding the ones that still have tokens left to generate.",
     "hash": "ed58f1ab"
   },
-  "326": {
+  "331": {
     "text": "Spin up one thread for the prefill worker and one for the decode worker, which will run concurrently.",
     "hash": "695b3126"
   },
-  "327": {
+  "332": {
     "text": "Start both workers, they run in parallel.",
     "hash": "bd70c3e0"
   },
-  "328": {
+  "333": {
     "text": "Launch both threads to begin parallel execution of the prefill and decode workers.",
     "hash": "9add5811"
   },
-  "329": {
+  "334": {
     "text": "Block until both worker threads complete, ensuring all requests have finished processing before returning results.",
     "hash": "bd70c3e0"
   },
-  "330": {
+  "335": {
     "text": "Join the second worker thread. After this returns, all generation work is done and results are ready.",
     "hash": "b7cd0490"
   },
-  "331": {
+  "336": {
     "text": "Sort results by request ID for clean comparison.",
     "hash": "7b7f750f"
   },
-  "335": {
+  "340": {
     "text": "Show the workload configuration: how many requests, their prompt lengths, and arrival pattern for context.",
     "hash": "ea972444"
   },
-  "336": {
+  "341": {
     "text": "Generate the test workload of requests with mixed prompt lengths and staggered arrival times.",
     "hash": "0be36607"
   },
-  "337": {
+  "342": {
     "text": "Show each request's prompt type.",
     "hash": "5d62fad3"
   },
-  "338": {
+  "343": {
     "text": "Label long vs short prompts, long ones are the troublemakers.",
     "hash": "50afb86d"
   },
-  "341": {
+  "346": {
     "text": "Run the colocated strategy where a single worker handles both prefill and decode in series.",
     "hash": "fd39f091"
   },
-  "342": {
+  "347": {
     "text": "Same seed for fair comparison.",
     "hash": "35768b1d"
   },
-  "345": {
+  "350": {
     "text": "Run the disaggregated strategy where separate prefill and decode workers operate in parallel.",
     "hash": "fd39f091"
   },
-  "346": {
+  "351": {
     "text": "Same seed ensures same model outputs.",
     "hash": "0065f722"
   },
-  "353": {
+  "358": {
     "text": "Print the comparison table header.",
     "hash": "6d9733f3"
   },
-  "357": {
+  "362": {
     "text": "Compare each request between the two strategies.",
     "hash": "7809f43f"
   },
-  "358": {
+  "363": {
     "text": "Extract how many tokens were in this request's prompt for the comparison table.",
     "hash": "5037fcca"
   },
-  "359": {
+  "364": {
     "text": "TTFT speedup: how much faster was disaggregated for this request?",
     "hash": "8149aef3"
   },
-  "360": {
+  "365": {
     "text": "Decode generated tokens back to characters.",
     "hash": "e1e1b15e"
   },
-  "361": {
+  "366": {
     "text": "Decode the disaggregated-generated tokens back to characters for the side-by-side name comparison.",
     "hash": "bed2ae07"
   },
-  "362": {
+  "367": {
     "text": "Tag long prompts for visibility.",
     "hash": "52fc4c8d"
   },
-  "363": {
+  "368": {
     "text": "Print timing and names side-by-side.",
     "hash": "6d9733f3"
   },
-  "371": {
+  "376": {
     "text": "Average TTFT across all requests, the headline metric.",
     "hash": "56b3e15d"
   },
-  "372": {
+  "377": {
     "text": "Compute the average time-to-first-token across all requests in the disaggregated strategy.",
     "hash": "7651d280"
   },
-  "373": {
+  "378": {
     "text": "Print the TTFT comparison. Disaggregated should show significantly lower average TTFT, especially for requests that arrived after long prompts.",
     "hash": "faf807ec"
   },
-  "374": {
+  "379": {
     "text": "Total wall-clock time for all requests to complete.",
     "hash": "0f3777c6"
   },
-  "375": {
+  "380": {
     "text": "Compute the total wall-clock time for the disaggregated strategy to complete all requests.",
     "hash": "789dcf89"
   },
-  "376": {
+  "381": {
     "text": "Show the total completion time for both strategies side by side to quantify the end-to-end throughput difference.",
     "hash": "a3eb2ff5"
   }

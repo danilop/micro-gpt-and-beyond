@@ -92,9 +92,7 @@ class CausalSelfAttention(nn.Module):
 
         att = (q @ k.transpose(-2, -1)) / math.sqrt(head_dim)
         # Causal mask: row i (absolute pos T_total-T_new+i) attends to cols 0..abs_pos
-        mask = torch.zeros(T_new, T_total, device=x.device, dtype=torch.bool)
-        for i in range(T_new):
-            mask[i, T_total - T_new + i + 1 :] = True
+        mask = torch.triu(torch.ones(T_new, T_total, device=x.device, dtype=torch.bool), diagonal=T_total - T_new + 1)
         att = att.masked_fill(mask, float("-inf"))
         att = F.softmax(att, dim=-1)
 

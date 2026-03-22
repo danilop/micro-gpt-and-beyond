@@ -18,7 +18,9 @@ import torch.nn.functional as F
 random.seed(42)
 torch.manual_seed(42)
 
-# Dataset
+# ---------------------------------------------------------------------------
+# Dataset & Tokenizer
+# ---------------------------------------------------------------------------
 input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "input.txt")
 if not os.path.exists(input_path):
     import urllib.request
@@ -30,13 +32,14 @@ docs = [l.strip() for l in open(input_path).read().strip().split("\n") if l.stri
 random.shuffle(docs)
 print(f"num docs: {len(docs)}")
 
-# Tokenizer (character-level, identical to the original)
 uchars = sorted(set("".join(docs)))
 BOS = len(uchars)
 vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
+# ---------------------------------------------------------------------------
 # Model (larger than 03 to show quantization benefits)
+# ---------------------------------------------------------------------------
 n_embd = 64     # embedding dimension
 n_head = 4      # number of attention heads
 n_layer = 2     # number of layers
@@ -125,7 +128,9 @@ class MicroGPT(nn.Module):
         return self.lm_head(x)
 
 
+# ---------------------------------------------------------------------------
 # Training
+# ---------------------------------------------------------------------------
 device = "cpu"
 model = MicroGPT().to(device)
 print(f"num params: {sum(p.numel() for p in model.parameters())}")

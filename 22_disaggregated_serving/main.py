@@ -26,7 +26,9 @@ import torch.nn.functional as F
 random.seed(42)
 torch.manual_seed(42)
 
+# ---------------------------------------------------------------------------
 # Dataset & Tokenizer
+# ---------------------------------------------------------------------------
 input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "input.txt")
 if not os.path.exists(input_path):
     import urllib.request
@@ -43,7 +45,9 @@ BOS = len(uchars)
 vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
-# Model config
+# ---------------------------------------------------------------------------
+# Model
+# ---------------------------------------------------------------------------
 n_embd = 16     # embedding dimension
 n_head = 4      # number of attention heads
 n_layer = 1     # number of layers
@@ -51,7 +55,6 @@ block_size = 16 # maximum sequence length
 head_dim = n_embd // n_head # dimension of each head
 
 
-# Model with KV cache (reuses the pattern from lab 12)
 class RMSNorm(nn.Module):
     def __init__(self, _dim, eps=1e-5):
         super().__init__()
@@ -141,7 +144,9 @@ class MicroGPT(nn.Module):
         return self.forward(torch.tensor([[token_id]]), past_caches, pos)
 
 
-# Training (same as lab 03/12)
+# ---------------------------------------------------------------------------
+# Training
+# ---------------------------------------------------------------------------
 device = "cpu"
 model = MicroGPT().to(device)
 print(f"num params: {sum(p.numel() for p in model.parameters())}")

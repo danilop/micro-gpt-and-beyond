@@ -19,8 +19,8 @@ input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "dat
 if not os.path.exists(input_path):
     import urllib.request
 
-    names_url = "https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt"
-    urllib.request.urlretrieve(names_url, input_path)
+    url = "https://raw.githubusercontent.com/karpathy/makemore/refs/heads/master/names.txt"
+    urllib.request.urlretrieve(url, input_path)
 docs = [l.strip() for l in open(input_path).read().strip().split("\n") if l.strip()]  # list[str] of documents
 random.shuffle(docs)
 print(f"num docs: {len(docs)}")

@@ -139,7 +139,7 @@ for step in range(num_steps):
     for pg in optimizer.param_groups:
         pg["lr"] = lr_t
     optimizer.step()
-    if (step + 1) % 10 == 0 or step == 0:
+    if (step + 1) % 200 == 0 or step == 0:
         print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
 
 # ---------------------------------------------------------------------------
