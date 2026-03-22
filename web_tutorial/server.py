@@ -5,12 +5,13 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from pathlib import Path
 
-PORT = 8000
+PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
 ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = ROOT.parent
 
@@ -251,7 +252,15 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 
 if __name__ == "__main__":
-    server = ThreadedHTTPServer(("localhost", PORT), TutorialHandler)
+    try:
+        server = ThreadedHTTPServer(("localhost", PORT), TutorialHandler)
+    except OSError as e:
+        if e.errno == 48 or "Address already in use" in str(e):
+            script = os.environ.get("TUTORIAL_SCRIPT", sys.argv[0])
+            print(f"Error: port {PORT} is already in use.")
+            print(f"Try a different port:  {script} 8080")
+            sys.exit(1)
+        raise
     print(f"MicroGPT Tutorial running at http://localhost:{PORT}")
     try:
         server.serve_forever()

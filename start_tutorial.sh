@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Start the microGPT interactive web tutorial
+# Usage: ./start_tutorial.sh [port]  (default: 8000)
 set -e
 
-PORT=8000
+PORT="${1:-8000}"
 DIR="$(cd "$(dirname "$0")/web_tutorial" && pwd)"
 
 echo "Starting microGPT tutorial at http://localhost:$PORT"
@@ -12,4 +13,4 @@ echo "Starting microGPT tutorial at http://localhost:$PORT"
 
 # Start server (foreground — Ctrl+C to stop)
 cd "$DIR"
-exec python3 server.py
+TUTORIAL_SCRIPT="$0" exec python3 server.py "$PORT"
