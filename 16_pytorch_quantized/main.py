@@ -171,7 +171,7 @@ class QuantizedLinear(nn.Module):
         w = fp32_linear.weight.data
         scale = w.abs().max() / 127.0
         self.register_buffer("weight_int8", torch.round(w / scale).to(torch.int8))
-        self.register_buffer("scale", torch.tensor(scale))
+        self.register_buffer("scale", scale.detach().clone())
         self.bias = fp32_linear.bias
 
     def forward(self, x):

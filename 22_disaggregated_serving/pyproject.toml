@@ -5,5 +5,6 @@ description = "microGPT with disaggregated prefill/decode serving — separate w
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "numpy>=2.4.3",
     "torch>=2.10.0",
 ]

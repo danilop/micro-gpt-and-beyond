@@ -1,7 +1,7 @@
 [project]
-name = "12-kv-cache"
+name = "15-text-diffusion"
 version = "0.1.0"
-description = "microGPT with KV cache — the fundamental inference optimization"
+description = "Masked diffusion language model (MDLM/LLaDA) in PyTorch"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

@@ -357,7 +357,7 @@
   },
   "174": {
     "text": "Keep the scale factor as a buffer so we can undo the quantization during inference by multiplying INT8 values back to float.",
-    "hash": "b13e9ab7"
+    "hash": "cef3861c"
   },
   "175": {
     "text": "Carry over bias if the original layer had one (ours don't).",

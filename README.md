@@ -52,7 +52,7 @@ Every version trains the same architecture (a character-level transformer with R
 | 12 KV cache | automatic | yes | no | CPU |
 | 13 sampling | automatic | yes | no | CPU |
 | 14 LoRA | automatic | yes | no | CPU |
-| 15 text diffusion | hand-built scalar engine | no | no | CPU (slow) |
+| 15 text diffusion | automatic | yes | no | CPU |
 | 16 PyTorch quantized | automatic | yes | no | CPU (INT8) |
 | 17 speculative decoding | automatic | yes | no | CPU |
 | 18 tiled attention | automatic | yes | no | CPU |
@@ -134,12 +134,11 @@ python run_lab.py --list      # List all available labs
 
 **Direct execution:**
 
-`01_pure_python`, `09_bpe_tokenizer`, `15_text_diffusion`, and `19_paged_attention` have no dependencies and can be run with plain Python:
+`01_pure_python`, `09_bpe_tokenizer`, and `19_paged_attention` have no dependencies and can be run with plain Python:
 
 ```bash
 python 01_pure_python/microgpt.py
 python 09_bpe_tokenizer/main.py
-python 15_text_diffusion/microdiffusion.py
 python 19_paged_attention/main.py
 ```
 

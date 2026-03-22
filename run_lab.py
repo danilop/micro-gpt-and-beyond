@@ -31,7 +31,7 @@ LABS = {
     "12": ("12_kv_cache", ["uv", "run", "python", "main.py"]),
     "13": ("13_sampling", ["uv", "run", "python", "main.py"]),
     "14": ("14_lora", ["uv", "run", "python", "main.py"]),
-    "15": ("15_text_diffusion", [PYTHON, "microdiffusion.py"]),
+    "15": ("15_text_diffusion", ["uv", "run", "python", "main.py"]),
     "16": ("16_pytorch_quantized", ["uv", "run", "python", "main.py"]),
     "17": ("17_speculative_decoding", ["uv", "run", "python", "main.py"]),
     "18": ("18_tiled_attention", ["uv", "run", "python", "main.py"]),

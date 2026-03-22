@@ -68,7 +68,7 @@ print(f"\n{'=' * 60}")
 print("BPE TOKENIZER (training from scratch)")
 print(f"{'=' * 60}")
 
-NUM_MERGES = 50  # number of merge operations (new tokens to learn)
+NUM_MERGES = 200  # number of merge operations (new tokens to learn)
 
 # Step 1: Start with character-level tokens for each name.
 # We work with lists of integers. Initially each integer = one character.
@@ -131,6 +131,18 @@ def bpe_decode_token(tid):
     return "?"
 
 
+def bpe_display_token(tid):
+    """Decode a BPE token for display, keeping BOS visible as '|'."""
+    if tid == BPE_BOS:
+        return "|"
+    if tid < len(uchars):
+        return id_to_char[tid]
+    for (a, b), merged_id in merges.items():
+        if merged_id == tid:
+            return bpe_display_token(a) + bpe_display_token(b)
+    return "?"
+
+
 def token_str(tid):
     """Human-readable token string for display."""
     if tid == BPE_BOS:
@@ -158,7 +170,7 @@ for i in range(NUM_MERGES):
 
     if i < 20 or i % 10 == 0 or i == NUM_MERGES - 1:
         visual = f"'{token_str(best_pair[0])}'+'{token_str(best_pair[1])}'"
-        print(f"{i + 1:>5}  {best_pair!s:>20}  {visual:>12}  {best_count:>6}  {new_id:>5}")
+        print(f"{i + 1:>5}  {best_pair!s:>20}  {visual:>12}  {best_count:>6}  {vocab_size + 1:>5}")
 
     corpus = merge_pair(corpus, best_pair, new_id)
     vocab_size += 1
@@ -196,13 +208,14 @@ example_names += random.sample(docs, 4)
 # Deduplicate while preserving order
 example_names = list(dict.fromkeys(example_names))[:10]
 
-print(f"\n{'Name':<14} {'Char tokens':>11} {'BPE tokens':>10}  {'Compression':>11}  BPE encoding")
+print(f"\nToken counts include BOS start/end markers (shown as '|' in BPE encoding).\n")
+print(f"{'Name':<14} {'Char tokens':>11} {'BPE tokens':>10}  {'Compression':>11}  BPE encoding")
 print("-" * 75)
 for name in example_names:
     char_toks = char_encode(name)
     bpe_toks = bpe_encode(name)
     ratio = len(char_toks) / len(bpe_toks) if bpe_toks else 0
-    bpe_visual = [f"'{bpe_decode_token(t)}'" if t != BPE_BOS else "<BOS>" for t in bpe_toks]
+    bpe_visual = [f"'{bpe_display_token(t)}'" for t in bpe_toks]
     print(f"{name:<14} {len(char_toks):>11} {len(bpe_toks):>10}  {ratio:>10.2f}x  {' '.join(bpe_visual)}")
 
 

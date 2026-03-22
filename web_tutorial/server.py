@@ -58,7 +58,7 @@ LABS = [
     ("14_lora", "main.py",
      "LoRA (Low-Rank Adaptation)",
      "Freeze the model, inject tiny low-rank matrices, and train only those. The base model never changes."),
-    ("15_text_diffusion", "microdiffusion.py",
+    ("15_text_diffusion", "main.py",
      "Text Diffusion",
      "Names emerge from pure noise through iterative unmasking. Generation without left-to-right decoding."),
     ("16_pytorch_quantized", "main.py",
@@ -85,7 +85,7 @@ LABS = [
 ]
 
 # Labs that run with plain python3 (no dependencies / no pyproject.toml)
-PLAIN_PYTHON_LABS = {"01_pure_python", "09_bpe_tokenizer", "15_text_diffusion", "19_paged_attention"}
+PLAIN_PYTHON_LABS = {"01_pure_python", "09_bpe_tokenizer", "19_paged_attention"}
 
 # Track running processes so we can stop them
 _running: dict[str, subprocess.Popen] = {}

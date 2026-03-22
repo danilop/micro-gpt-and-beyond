@@ -247,7 +247,7 @@ print("=" * 60)
 model.eval()
 with torch.no_grad():
     strategies = [
-        ("Greedy", lambda lg: sample_greedy(lg)),
+        ("Greedy (T→0)", lambda lg: sample_greedy(lg)),
         ("Temperature 0.3 (conservative)", lambda lg: sample_temperature(lg, T=0.3)),
         ("Temperature 1.0 (model dist)", lambda lg: sample_temperature(lg, T=1.0)),
         ("Temperature 2.0 (chaotic)", lambda lg: sample_temperature(lg, T=2.0)),
@@ -274,7 +274,8 @@ print("\n" + "=" * 60)
 print("PROBABILITY DISTRIBUTION VISUALIZATION")
 print("=" * 60)
 
-# Find a good example prefix by encoding "mar"
+# Show how each strategy reshapes the probability distribution for
+# the same input. We encode "mar" and look at next-token probabilities.
 prefix_str = "mar"
 prefix_tokens = [BOS] + [uchars.index(ch) for ch in prefix_str]
 
@@ -283,36 +284,39 @@ with torch.no_grad():
     logits = model(idx)
     raw_logits = logits[0, -1]  # logits for next token after "mar"
 
-    def fmt_dist(probs, top_n=10):
-        """Format the top-n probabilities as a readable string."""
-        vals, idxs = torch.topk(probs, min(top_n, (probs > 0).sum().item()))
-        parts = []
-        for v, i in zip(vals, idxs):
-            tok = uchars[i.item()] if i.item() < len(uchars) else "<BOS>"
-            parts.append(f"{tok}={v.item():.2f}")
+    def bar_chart(label, probs, top_n=10):
+        """Print a horizontal bar chart of the top-n token probabilities."""
         n_active = (probs > 0).sum().item()
-        return "  ".join(parts) + f"  ({n_active} tokens)"
+        print(f"\n  {label}  ({n_active} active tokens)")
+        n = min(top_n, n_active)
+        vals, idxs = torch.topk(probs, n)
+        bar_width = 30  # max bar length in characters
+        for v, i in zip(vals, idxs):
+            tok = uchars[i.item()] if i.item() < len(uchars) else "."
+            p = v.item()
+            bar = "#" * int(p * bar_width + 0.5)
+            print(f"    {tok} {bar:<{bar_width}} {p:.0%}")
 
-    print(f'\nToken probabilities after "{prefix_str}" (top 10):')
+    print(f'\nNext token after "{prefix_str}":')
 
     # Raw distribution (T=1.0)
     raw_probs = F.softmax(raw_logits, dim=-1)
-    print(f"  Raw (T=1.0):  {fmt_dist(raw_probs)}")
+    bar_chart("Raw (T=1.0)", raw_probs)
 
     # Temperature 0.3
     t03_probs = F.softmax(raw_logits / 0.3, dim=-1)
-    print(f"  T=0.3:        {fmt_dist(t03_probs)}")
+    bar_chart("T=0.3 (conservative)", t03_probs)
 
     # Temperature 2.0
     t20_probs = F.softmax(raw_logits / 2.0, dim=-1)
-    print(f"  T=2.0:        {fmt_dist(t20_probs)}")
+    bar_chart("T=2.0 (chaotic)", t20_probs)
 
     # Top-k=3
     topk_logits = raw_logits.clone() / 0.8
     topk_vals, _ = torch.topk(topk_logits, 3)
     topk_logits[topk_logits < topk_vals[-1]] = float("-inf")
     topk_probs = F.softmax(topk_logits, dim=-1)
-    print(f"  Top-k=3:      {fmt_dist(topk_probs)}")
+    bar_chart("Top-k=3, T=0.8", topk_probs)
 
     # Top-p=0.9
     topp_probs = F.softmax(raw_logits / 0.8, dim=-1)
@@ -323,13 +327,13 @@ with torch.no_grad():
     sorted_probs /= sorted_probs.sum()
     topp_out = torch.zeros_like(topp_probs)
     topp_out.scatter_(0, sorted_idx, sorted_probs)
-    print(f"  Top-p=0.9:    {fmt_dist(topp_out)}")
+    bar_chart("Top-p=0.9, T=0.8", topp_out)
 
     # Min-p=0.1
     minp_probs = F.softmax(raw_logits / 0.8, dim=-1)
     threshold = 0.1 * minp_probs.max()
     minp_probs[minp_probs < threshold] = 0.0
     minp_probs /= minp_probs.sum()
-    print(f"  Min-p=0.1:    {fmt_dist(minp_probs)}")
+    bar_chart("Min-p=0.1, T=0.8", minp_probs)
 
 print()
