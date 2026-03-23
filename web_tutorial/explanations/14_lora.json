@@ -1,39 +1,39 @@
 {
   "14": {
     "text": "<code>copy</code> for deep-copying the base model state before LoRA injection.",
-    "hash": "e3b0c442"
+    "hash": "37effa9c"
   },
   "15": {
     "text": "We need <code>math.sqrt</code> for scaling attention scores. Dividing by the square root of head dimension keeps dot products from growing too large as dimensions increase.",
-    "hash": "37effa9c"
+    "hash": "b67c9dde"
   },
   "16": {
     "text": "Import os for building portable file paths to the dataset.",
-    "hash": "b67c9dde"
+    "hash": "de2abade"
   },
   "17": {
     "text": "Import random for shuffling the dataset and seeding reproducibility.",
-    "hash": "de2abade"
+    "hash": "7e18ed42"
   },
   "19": {
     "text": "Import the core PyTorch library for tensor operations and autograd.",
-    "hash": "e3b0c442"
+    "hash": "cf1070d3"
   },
   "20": {
     "text": "Neural network building blocks like <code>Linear</code>, <code>Embedding</code>, and <code>ModuleList</code> that automatically register their parameters for training.",
-    "hash": "cf1070d3"
+    "hash": "b802910c"
   },
   "21": {
     "text": "Import PyTorch's functional API for operations like softmax, cross-entropy, and relu.",
-    "hash": "b802910c"
+    "hash": "5af419e1"
   },
   "23": {
     "text": "Fix both the Python and PyTorch random seeds so results are reproducible across runs.",
-    "hash": "e3b0c442"
+    "hash": "f0726c6e"
   },
   "24": {
     "text": "Set the PyTorch random seed for reproducible weight initialization and sampling.",
-    "hash": "f0726c6e"
+    "hash": "7e7dcf46"
   },
   "29": {
     "text": "Build a portable file path to the dataset, relative to this script's location.",
@@ -313,7 +313,7 @@
   },
   "168": {
     "text": "Generate names from the model. The optional <code>check_fn</code> marks names that match the target style, and <code>quiet</code> suppresses output (used for merge verification).",
-    "hash": "4dbeac18"
+    "hash": "b0fd237f"
   },
   "170": {
     "text": "Switch to evaluation mode so the model produces consistent outputs during generation.",
@@ -361,11 +361,11 @@
   },
   "186": {
     "text": "Only print when not in quiet mode (merge verification runs silently).",
-    "hash": "a1ca66ab"
+    "hash": "aaf4e41e"
   },
   "187": {
     "text": "If a check function is provided, mark matching names with <code>&lt;-- soft</code> so the output is easy to scan visually.",
-    "hash": "a1ca66ac"
+    "hash": "5726a56e"
   },
   "193": {
     "text": "Shared training step, used for both pre-training and LoRA fine-tuning.",
@@ -453,23 +453,23 @@
   },
   "241": {
     "text": "Define vowels for the consonant filter.",
-    "hash": "bb5f62b6"
+    "hash": "b1756993"
   },
   "242": {
     "text": "The target phonetic style: names using only the soft consonants m, n, r. This is a distributional property of the whole name &mdash; unlike filtering by first letter, it cannot be achieved by input conditioning.",
-    "hash": "bb5f62b5"
+    "hash": "af67112a"
   },
   "243": {
     "text": "Filter the dataset to names whose consonants are all in {m, n, r}. Requires at least one consonant so we exclude vowel-only strings.",
-    "hash": "b8e39399"
+    "hash": "e0b1a87b"
   },
   "257": {
     "text": "Check if a generated name qualifies as 'soft' &mdash; all its consonants are drawn from {m, n, r}. Used to score the output and annotate printed names.",
-    "hash": "bc715ec7"
+    "hash": "aaef811b"
   },
   "262": {
     "text": "Replace only the targeted <code>nn.Linear</code> layers (by name) with <code>LoRALinear</code> wrappers. Defaults to <code>wq</code> and <code>wv</code>, following the original LoRA paper's finding that query and value projections carry the most adaptation signal.",
-    "hash": "bc715ec6"
+    "hash": "a42d7213"
   },
   "264": {
     "text": "Walk the module tree looking for layers whose name matches the target list.",
@@ -477,7 +477,7 @@
   },
   "265": {
     "text": "Found a targeted linear layer &mdash; wrap it with a LoRA adapter.",
-    "hash": "2993579f"
+    "hash": "dd908d50"
   },
   "266": {
     "text": "Swap the original linear layer for the LoRA-wrapped version in-place.",
@@ -485,7 +485,7 @@
   },
   "268": {
     "text": "Recurse into child modules to find nested linear layers.",
-    "hash": "6ebee192"
+    "hash": "26aeccbb"
   },
   "271": {
     "text": "Merge LoRA: fold the learned adapter weights back into the base weight matrix. After merging, the model is a standard <code>nn.Linear</code> again with zero runtime overhead.",
@@ -525,27 +525,27 @@
   },
   "291": {
     "text": "Generate 20 names from the base model with soft-name markers to establish the baseline hit rate.",
-    "hash": "83de5633"
+    "hash": "9418f4e5"
   },
   "299": {
     "text": "Count base model parameters once for the freeze assertion inside the loop.",
-    "hash": "fff12738"
+    "hash": "9bf1fa51"
   },
   "304": {
     "text": "Run the full LoRA experiment at rank 1, 2, and 4 to see how adapter size affects the phonetic shift. This is a rank ablation &mdash; a standard technique in LoRA research.",
-    "hash": "5398c241"
+    "hash": "54589b0a"
   },
   "310": {
     "text": "Restore a fresh copy of the pre-trained base model for each rank so experiments are independent.",
-    "hash": "5d75fbef"
+    "hash": "40b7fcd9"
   },
   "312": {
     "text": "Freeze every parameter in the base model. Only the LoRA matrices (injected next) will be trainable.",
-    "hash": "320761bd"
+    "hash": "c56d812a"
   },
   "316": {
     "text": "Inject LoRA adapters into query and value projections of each transformer layer.",
-    "hash": "613da4c2"
+    "hash": "b9774c64"
   },
   "319": {
     "text": "Recount parameters &mdash; total grows slightly because of the LoRA matrices added on top of the frozen base.",
@@ -553,11 +553,11 @@
   },
   "320": {
     "text": "Count only the trainable parameters (the LoRA A and B matrices).",
-    "hash": "737983cd"
+    "hash": "a6121c6f"
   },
   "322": {
     "text": "Safety check: assert that every base parameter is frozen. If this fails, something went wrong with the freeze.",
-    "hash": "b74154d3"
+    "hash": "f5d57942"
   },
   "328": {
     "text": "Collect only the LoRA parameters for the optimizer &mdash; base weights are excluded.",
@@ -577,11 +577,11 @@
   },
   "337": {
     "text": "Generate 20 names from the LoRA-adapted model with the same seed used for the baseline, so results are directly comparable.",
-    "hash": "46057e63"
+    "hash": "7e7dcf46"
   },
   "340": {
     "text": "Count how many generated names satisfy the soft-consonant constraint.",
-    "hash": "d6ed3e89"
+    "hash": "d4dae27f"
   },
   "345": {
     "text": "Merge LoRA adapters back into the base weights so the model is a standard <code>nn.Linear</code> again.",
@@ -589,22 +589,22 @@
   },
   "347": {
     "text": "Generate from the merged model silently and verify every name matches the LoRA output exactly &mdash; merging is exact, not an approximation.",
-    "hash": "9bee822f"
+    "hash": "975b0162"
   },
   "350": {
     "text": "After merging, the parameter count should equal the original base model &mdash; all LoRA overhead is gone.",
-    "hash": "f0f2148c"
+    "hash": "af663ce9"
   },
   "361": {
     "text": "Print the baseline for context: what fraction of names are 'soft' without any LoRA adaptation.",
-    "hash": "71877c1b"
+    "hash": "c4470ad7"
   },
   "364": {
     "text": "Summary table header showing the key metrics: adapter size, percentage of total params, soft-name hit rate, and merge verification.",
-    "hash": "71877c1c"
+    "hash": "de8fa9c3"
   },
   "366": {
     "text": "Print one row per rank. The table shows diminishing returns: even rank 1 (64 params, ~1.5%) achieves a dramatic shift from baseline, while rank 2+ saturates at ~90%.",
-    "hash": "71877c1a"
+    "hash": "bc4aca0a"
   }
 }
