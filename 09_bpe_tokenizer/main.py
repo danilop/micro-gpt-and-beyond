@@ -252,9 +252,9 @@ print("\nMerged tokens:")
 print(f"{'ID':>5}  {'Represents':>12}  {'Components'}")
 print("-" * 40)
 for (a, b), new_id in merges.items():
-    merged_str = bpe_decode_token(new_id)
-    comp_a = bpe_decode_token(a) if a != BPE_BOS else "<BOS>"
-    comp_b = bpe_decode_token(b) if b != BPE_BOS else "<BOS>"
+    merged_str = bpe_display_token(new_id)
+    comp_a = bpe_display_token(a).replace("|", "<BOS>")
+    comp_b = bpe_display_token(b).replace("|", "<BOS>")
     print(f"{new_id:>5}  {merged_str!r:>12}  '{comp_a}' + '{comp_b}'")
 
 # ---------------------------------------------------------------------------
