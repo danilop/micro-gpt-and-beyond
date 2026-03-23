@@ -2,10 +2,12 @@
 microGPT with LoRA — parameter-efficient fine-tuning.
 
 Pre-trains a standard microGPT on all names, then fine-tunes with LoRA
-(Low-Rank Adaptation) on a filtered subset. Only the small LoRA matrices
-are trained — the base model stays frozen. Demonstrates:
+(Low-Rank Adaptation) on a filtered subset — names whose consonants are
+all drawn from {m, n, r} (e.g., emma, aria, naomi, aurora). This phonetic
+style shift cannot be achieved by input conditioning alone. Only the small
+LoRA matrices are trained — the base model stays frozen. Demonstrates:
   - Freezing base weights and injecting low-rank adapters
-  - Training <5% of parameters to shift the output distribution
+  - Training a small fraction of parameters to shift the output distribution
   - Merging LoRA weights back into the base model (zero runtime overhead)
 """
 
@@ -163,8 +165,8 @@ device = "cpu"
 temperature = 0.5 # in (0, 1], control the "creativity" of generated text, low to high
 
 
-def generate(model, n_samples=20, label="sample"):
-    """Generate names from the model."""
+def generate(model, n_samples=20, label="sample", check_fn=None, quiet=False):
+    """Generate names from the model, optionally marking matches."""
     model.eval()
     names = []
     with torch.no_grad():
@@ -181,7 +183,9 @@ def generate(model, n_samples=20, label="sample"):
                 tokens.append(token_id)
             name = "".join(uchars[t] for t in tokens[1:])
             names.append(name)
-            print(f"  {label} {i + 1:2d}: {name}")
+            if not quiet:
+                mark = f"  {'<-- soft' if check_fn(name) else ''}" if check_fn else ""
+                print(f"  {label} {i + 1:2d}: {name}{mark}")
     model.train()
     return names
 
@@ -232,99 +236,36 @@ base_names = generate(model, n_samples=10, label="base")
 base_state = copy.deepcopy(model.state_dict())
 
 # ===========================================================================
-# Phase 2: Create fine-tuning target — names starting with "m"
+# Phase 2: Create fine-tuning target — "soft" names (consonants ⊆ {m, n, r})
 # ===========================================================================
-target_letter = "m"
-ft_docs = [d for d in docs if d.lower().startswith(target_letter)]
+vowels = set("aeiou")
+soft_consonants = set("mnr")
+ft_docs = [d for d in docs
+           if (set(d.lower()) - vowels).issubset(soft_consonants)
+           and len(set(d.lower()) - vowels) >= 1]
 print(f"\n{'=' * 60}")
-print(f"PHASE 2: Fine-tuning target — names starting with '{target_letter}'")
+print(f"PHASE 2: Fine-tuning target — 'soft' names (consonants ⊆ {{m, n, r}})")
 print(f"{'=' * 60}")
 print(f"filtered dataset: {len(ft_docs)} names (out of {len(docs)} total)")
+print(f"examples: {', '.join(ft_docs[:8])}")
 
-# ===========================================================================
-# Phase 3: Apply LoRA — replace Linear layers with LoRALinear wrappers
-# ===========================================================================
-print(f"\n{'=' * 60}")
-print("PHASE 3: Injecting LoRA adapters")
-print("=" * 60)
-
-lora_rank = 4
+# ---------------------------------------------------------------------------
+# LoRA helpers
+# ---------------------------------------------------------------------------
 
 
-def inject_lora(module, rank=4):
-    """Replace all nn.Linear layers with LoRALinear wrappers (recursively)."""
+def is_soft(name):
+    """Check if a name uses only 'soft' consonants (m, n, r)."""
+    return (set(name.lower()) - vowels).issubset(soft_consonants) and len(name) > 0
+
+
+def inject_lora(module, rank, targets=("wq", "wv")):
+    """Replace targeted nn.Linear layers with LoRALinear wrappers."""
     for name, child in module.named_children():
-        if isinstance(child, nn.Linear):
+        if isinstance(child, nn.Linear) and name in targets:
             setattr(module, name, LoRALinear(child, rank=rank))
         else:
-            inject_lora(child, rank=rank)
-
-
-# Apply LoRA to attention and MLP layers (not embeddings or lm_head)
-for layer in model.layers:
-    inject_lora(layer, rank=lora_rank)
-
-total_params = sum(p.numel() for p in model.parameters())
-trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-frozen_params = total_params - trainable_params
-pct = 100.0 * trainable_params / total_params
-
-print(f"total params:     {total_params}")
-print(f"frozen params:    {frozen_params}")
-print(f"trainable params: {trainable_params} ({pct:.1f}% of total)")
-
-# ===========================================================================
-# Phase 4: Fine-tune with LoRA on filtered subset
-# ===========================================================================
-print(f"\n{'=' * 60}")
-print(f"PHASE 4: Fine-tuning with LoRA on '{target_letter}' names")
-print("=" * 60)
-
-# Only optimize LoRA parameters (the ones that require grad)
-lora_params = [p for p in model.parameters() if p.requires_grad]
-optimizer = torch.optim.Adam(lora_params, lr=1e-2, betas=(0.85, 0.99), eps=1e-8)
-ft_steps = 500
-
-for step in range(ft_steps):
-    doc = ft_docs[step % len(ft_docs)]
-    loss = train_step(model, optimizer, doc, step, ft_steps)
-    if (step + 1) % 100 == 0 or step == 0:
-        print(f"  step {step + 1:4d} / {ft_steps} | loss {loss:.4f}")
-
-# ===========================================================================
-# Phase 5: Compare results — base vs LoRA-adapted
-# ===========================================================================
-print(f"\n{'=' * 60}")
-print("PHASE 5: Comparing base vs LoRA-adapted generation")
-print("=" * 60)
-
-# Generate from LoRA-adapted model
-print(f"\nLoRA-adapted model (fine-tuned on '{target_letter}' names):")
-torch.manual_seed(42)
-lora_names = generate(model, n_samples=20, label="lora")
-
-# Reload base model (without LoRA) for comparison
-base_model = MicroGPT().to(device)
-base_model.load_state_dict(base_state)
-print("\nBase model (no fine-tuning):")
-torch.manual_seed(42)
-base_only_names = generate(base_model, n_samples=20, label="base")
-
-# Measure distribution shift
-lora_m_count = sum(1 for n in lora_names if n.lower().startswith(target_letter))
-base_m_count = sum(1 for n in base_only_names if n.lower().startswith(target_letter))
-
-print("\n--- Distribution shift ---")
-print(f"  Base model:  {base_m_count}/20 names start with '{target_letter}'")
-print(f"  LoRA model:  {lora_m_count}/20 names start with '{target_letter}'")
-print(f"\n  Fine-tuned {trainable_params} params ({pct:.1f}% of {total_params}) to shift the distribution")
-
-# ===========================================================================
-# Phase 6: LoRA merge — fold adapters back into base weights
-# ===========================================================================
-print(f"\n{'=' * 60}")
-print("PHASE 6: Merging LoRA weights into base model")
-print("=" * 60)
+            inject_lora(child, rank=rank, targets=targets)
 
 
 def merge_lora(module):
@@ -336,24 +277,90 @@ def merge_lora(module):
                 child.base.weight.shape[0],
                 bias=False,
             )
-            # W_new = W_base + B @ A
             merged.weight = nn.Parameter(child.base.weight + child.lora_B @ child.lora_A)
             setattr(module, name, merged)
         else:
             merge_lora(child)
 
 
-merge_lora(model)
-
-print("LoRA adapters merged into base weights (no runtime overhead)")
-
-# Verify merged model produces identical output
-print("\nMerged model generation (should match LoRA model exactly):")
+# Generate baseline scores (same seed for fair comparison)
+base_model = MicroGPT().to(device)
+base_model.load_state_dict(base_state)
+print("\nBase model (no fine-tuning):")
 torch.manual_seed(42)
-merged_names = generate(model, n_samples=20, label="merged")
+base_only_names = generate(base_model, n_samples=20, label="base", check_fn=is_soft)
+base_soft = sum(1 for n in base_only_names if is_soft(n))
+print(f"  -> {base_soft}/20 soft names")
 
-match = all(a == b for a, b in zip(lora_names, merged_names))
-print(f"\nMerged output matches LoRA output: {match}")
+# ===========================================================================
+# Phase 3: Rank ablation — LoRA with rank 1, 2, 4
+# ===========================================================================
 
-merged_params = sum(p.numel() for p in model.parameters())
-print(f"Merged model params: {merged_params} (same as original base model)")
+base_total = sum(p.numel() for p in base_model.parameters())
+n_samples = 20
+ft_steps = 500
+results = []  # (rank, adapter_params, pct, soft_count, soft_pct, merge_ok)
+
+for lora_rank in [1, 2, 4]:
+    print(f"\n{'=' * 60}")
+    print(f"RANK {lora_rank}: Inject → Fine-tune → Evaluate → Merge")
+    print("=" * 60)
+
+    # Restore base model and freeze all weights
+    model = MicroGPT().to(device)
+    model.load_state_dict(base_state)
+    for p in model.parameters():
+        p.requires_grad_(False)
+
+    # Inject LoRA on query and value projections (standard recipe)
+    for layer in model.layers:
+        inject_lora(layer, rank=lora_rank)
+
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    frozen = total_params - trainable
+    assert frozen == base_total, f"freeze error: {frozen} != {base_total}"
+    pct = 100.0 * trainable / total_params
+    print(f"  adapter params: {trainable} ({pct:.1f}% of {total_params})")
+    print(f"  frozen params:  {frozen} (verified == base model)")
+
+    # Fine-tune on soft names
+    lora_params = [p for p in model.parameters() if p.requires_grad]
+    optimizer = torch.optim.Adam(lora_params, lr=1e-2, betas=(0.85, 0.99), eps=1e-8)
+    for step in range(ft_steps):
+        doc = ft_docs[step % len(ft_docs)]
+        loss = train_step(model, optimizer, doc, step, ft_steps)
+        if (step + 1) % 100 == 0 or step == 0:
+            print(f"  step {step + 1:4d} / {ft_steps} | loss {loss:.4f}")
+
+    # Generate and evaluate
+    torch.manual_seed(42)
+    lora_names = generate(model, n_samples=n_samples, label=f"r{lora_rank}",
+                          check_fn=is_soft)
+    soft_count = sum(1 for n in lora_names if is_soft(n))
+    soft_pct = 100.0 * soft_count / n_samples
+    print(f"  -> {soft_count}/{n_samples} soft names ({soft_pct:.0f}%)")
+
+    # Merge LoRA weights into base and verify identical output
+    merge_lora(model)
+    torch.manual_seed(42)
+    merged_names = generate(model, n_samples=n_samples, quiet=True)
+    merge_ok = all(a == b for a, b in zip(lora_names, merged_names))
+    merged_total = sum(p.numel() for p in model.parameters())
+    print(f"  merge: {'ok' if merge_ok else 'MISMATCH'}, params back to {merged_total}")
+
+    results.append((lora_rank, trainable, pct, soft_count, soft_pct, merge_ok))
+
+# ===========================================================================
+# Summary table
+# ===========================================================================
+print(f"\n{'=' * 60}")
+print("RANK ABLATION SUMMARY")
+print("=" * 60)
+print(f"  Base model: {base_soft}/{n_samples} soft ({100.0 * base_soft / n_samples:.0f}%)")
+print(f"  Base params: {base_total}")
+print()
+print(f"  {'rank':>4}  {'adapter':>7}  {'% total':>7}  {'soft':>4}  {'soft%':>5}  {'merge':>5}")
+print(f"  {'----':>4}  {'-------':>7}  {'-------':>7}  {'----':>4}  {'-----':>5}  {'-----':>5}")
+for rank, ap, pct, sc, sp, mo in results:
+    print(f"  {rank:>4}  {ap:>7}  {pct:>6.1f}%  {sc:>2}/{n_samples}  {sp:>4.0f}%  {'ok' if mo else 'FAIL':>5}")
