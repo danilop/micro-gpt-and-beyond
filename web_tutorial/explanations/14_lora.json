@@ -559,51 +559,63 @@
     "text": "Safety check: assert that every base parameter is frozen. If this fails, something went wrong with the freeze.",
     "hash": "f5d57942"
   },
-  "328": {
+  "326": {
+    "text": "Walk the model tree to find all LoRA-wrapped layers and display their dimensions.",
+    "hash": "f32525cb"
+  },
+  "333": {
+    "text": "Print each adapter's factorization: the full weight W(d_out x d_in) is adapted by tiny matrices A(rank x d_in) and B(d_out x rank). Their product B@A has the same shape as W but uses far fewer parameters.",
+    "hash": "5f83aafd"
+  },
+  "336": {
+    "text": "Print the total adapter parameter count, its percentage of total model params, and confirm the base model is fully frozen.",
+    "hash": "212bf111"
+  },
+  "340": {
     "text": "Collect only the LoRA parameters for the optimizer &mdash; base weights are excluded.",
     "hash": "320761bc"
   },
-  "329": {
+  "341": {
     "text": "Fresh Adam optimizer for fine-tuning, operating only on the tiny LoRA parameter set.",
     "hash": "e1b6c784"
   },
-  "330": {
+  "342": {
     "text": "Fine-tuning loop: 500 steps on the soft-name subset. Same <code>train_step</code> as pre-training, but gradients only flow into the LoRA matrices.",
     "hash": "bb777943"
   },
-  "331": {
+  "343": {
     "text": "Cycle through only the soft-consonant names for fine-tuning.",
     "hash": "7807be38"
   },
-  "337": {
+  "349": {
     "text": "Generate 20 names from the LoRA-adapted model with the same seed used for the baseline, so results are directly comparable.",
     "hash": "7e7dcf46"
   },
-  "340": {
+  "352": {
     "text": "Count how many generated names satisfy the soft-consonant constraint.",
     "hash": "d4dae27f"
   },
-  "345": {
+  "357": {
     "text": "Merge LoRA adapters back into the base weights so the model is a standard <code>nn.Linear</code> again.",
     "hash": "398ebef7"
   },
-  "347": {
+  "359": {
     "text": "Generate from the merged model silently and verify every name matches the LoRA output exactly &mdash; merging is exact, not an approximation.",
     "hash": "975b0162"
   },
-  "350": {
+  "362": {
     "text": "After merging, the parameter count should equal the original base model &mdash; all LoRA overhead is gone.",
     "hash": "af663ce9"
   },
-  "361": {
+  "373": {
     "text": "Print the baseline for context: what fraction of names are 'soft' without any LoRA adaptation.",
     "hash": "c4470ad7"
   },
-  "364": {
+  "376": {
     "text": "Summary table header showing the key metrics: adapter size, percentage of total params, soft-name hit rate, and merge verification.",
     "hash": "de8fa9c3"
   },
-  "366": {
+  "378": {
     "text": "Print one row per rank. The table shows diminishing returns: even rank 1 (64 params, ~1.5%) achieves a dramatic shift from baseline, while rank 2+ saturates at ~90%.",
     "hash": "bc4aca0a"
   }

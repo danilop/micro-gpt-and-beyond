@@ -321,8 +321,20 @@ for lora_rank in [1, 2, 4]:
     frozen = total_params - trainable
     assert frozen == base_total, f"freeze error: {frozen} != {base_total}"
     pct = 100.0 * trainable / total_params
-    print(f"  adapter params: {trainable} ({pct:.1f}% of {total_params})")
-    print(f"  frozen params:  {frozen} (verified == base model)")
+
+    # Show adapter dimensions: A(rank×d_in) @ B(d_out×rank) adapts W(d_out×d_in)
+    for name, child in model.named_modules():
+        if isinstance(child, LoRALinear):
+            d_out, d_in = child.base.weight.shape
+            r = child.lora_A.shape[0]
+            a_size = r * d_in
+            b_size = d_out * r
+            short = name.split(".")[-1]
+            print(f"  {short}: W({d_out}x{d_in})={d_out*d_in} params"
+                  f" → A({r}x{d_in})={a_size} + B({d_out}x{r})={b_size}"
+                  f" = {a_size + b_size} adapter params")
+    print(f"  total: {trainable} adapter params ({pct:.1f}% of {total_params},"
+          f" base frozen: {frozen})")
 
     # Fine-tune on soft names
     lora_params = [p for p in model.parameters() if p.requires_grad]
