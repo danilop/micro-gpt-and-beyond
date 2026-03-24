@@ -382,6 +382,8 @@ async function lineHash(text) {
 }
 
 // Detect mode and load data
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
 async function init() {
   let labMeta, codeText, expData;
 
