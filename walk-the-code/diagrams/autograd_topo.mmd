@@ -1,0 +1,4 @@
+graph TD
+    loss[loss] --> topo[Topological sort]
+    topo --> reverse[Reverse order]
+    reverse --> propagate[Propagate grads]

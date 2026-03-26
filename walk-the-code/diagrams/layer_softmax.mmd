@@ -1,0 +1,4 @@
+graph TD
+    logits[Logits] --> sub_max[Subtract max + exp]
+    sub_max --> div[Divide by sum]
+    div --> probs[Probabilities 0..1]

@@ -1,0 +1,7 @@
+graph TD
+    token[Current token] --> gpt[GPT forward]
+    gpt --> logits[Logits]
+    logits --> temp[Scale by temperature]
+    temp --> probs[Softmax]
+    probs --> sample[Sample next token]
+    sample -->|feed back| token

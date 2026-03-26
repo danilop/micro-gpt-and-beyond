@@ -1,0 +1,4 @@
+graph TD
+    forward[Forward: GPT] --> loss[Cross-entropy loss]
+    loss --> backward[Backward: compute grads]
+    backward --> update[Adam: update params]

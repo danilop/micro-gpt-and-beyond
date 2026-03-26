@@ -65,27 +65,55 @@
   },
   "22": {
     "text": "The heart of the autograd engine. Every <code>Value</code> wraps a single scalar and knows how to compute its own gradient.",
-    "hash": "78c82417"
+    "hash": "78c82417",
+    "diagram": "value_node",
+    "highlight": [
+      "data",
+      "grad"
+    ]
   },
   "23": {
     "text": "<code>__slots__</code> saves memory by preventing Python from creating a <code>__dict__</code> per instance. Matters when you have thousands of Values in the computation graph.",
-    "hash": "a934ad8c"
+    "hash": "a934ad8c",
+    "diagram": "value_node",
+    "highlight": [
+      "data",
+      "grad",
+      "children",
+      "local_grads"
+    ]
   },
   "25": {
     "text": "Each Value stores four things: the number itself, its gradient, what produced it, and the local derivatives connecting it to its parents.",
-    "hash": "c2667ecf"
+    "hash": "c2667ecf",
+    "diagram": "value_node",
+    "highlight": [
+      "data"
+    ]
   },
   "26": {
     "text": "The forward pass fills <code>data</code>; the backward pass fills <code>grad</code>.",
-    "hash": "c9176721"
+    "hash": "c9176721",
+    "diagram": "value_node",
+    "highlight": [
+      "grad"
+    ]
   },
   "27": {
     "text": "Starts at zero because gradients accumulate. Multiple paths through the graph can contribute to the same parameter's gradient.",
-    "hash": "84cc424b"
+    "hash": "84cc424b",
+    "diagram": "value_node",
+    "highlight": [
+      "children"
+    ]
   },
   "28": {
     "text": "The computation graph is built implicitly: every operation creates a new Value that remembers its inputs.",
-    "hash": "af45ef18"
+    "hash": "af45ef18",
+    "diagram": "value_node",
+    "highlight": [
+      "local_grads"
+    ]
   },
   "29": {
     "text": "Local gradients are the partial derivatives of this node with respect to each child. The chain rule's building blocks.",
@@ -93,11 +121,25 @@
   },
   "31": {
     "text": "Operator overloading is the trick that makes autograd invisible. Writing <code>a + b</code> secretly builds the computation graph.",
-    "hash": "28fd4a4e"
+    "hash": "28fd4a4e",
+    "diagram": "autograd_forward",
+    "highlight": [
+      "a",
+      "b",
+      "op",
+      "c"
+    ]
   },
   "32": {
     "text": "If you add a plain number to a Value, wrap it first. This lets you write <code>x + 1</code> naturally.",
-    "hash": "1afe9bbf"
+    "hash": "1afe9bbf",
+    "diagram": "autograd_forward",
+    "highlight": [
+      "a",
+      "b",
+      "op",
+      "c"
+    ]
   },
   "33": {
     "text": "Addition: result is <code>a + b</code>, and both local gradients are 1 because d(a+b)/da = d(a+b)/db = 1.",
@@ -105,11 +147,25 @@
   },
   "35": {
     "text": "Multiplication builds the graph and stores local gradients. The derivative of <code>a*b</code> w.r.t. <code>a</code> is <code>b</code>, and vice versa.",
-    "hash": "46d3836f"
+    "hash": "46d3836f",
+    "diagram": "autograd_forward",
+    "highlight": [
+      "a",
+      "b",
+      "op",
+      "c"
+    ]
   },
   "36": {
     "text": "Same wrapping trick as addition. Consistency means you can mix Values and raw numbers freely.",
-    "hash": "1afe9bbf"
+    "hash": "1afe9bbf",
+    "diagram": "autograd_forward",
+    "highlight": [
+      "a",
+      "b",
+      "op",
+      "c"
+    ]
   },
   "37": {
     "text": "Product rule in action: d(a*b)/da = b and d(a*b)/db = a. The child values become each other's local gradients.",
@@ -117,19 +173,35 @@
   },
   "39": {
     "text": "Power rule as a one-liner: d(x^n)/dx = n*x^(n-1). The exponent must be a plain number, not a Value, which is fine for division and square roots.",
-    "hash": "49017103"
+    "hash": "49017103",
+    "diagram": "autograd_forward",
+    "highlight": [
+      "c"
+    ]
   },
   "40": {
     "text": "Natural log with its gradient 1/x, all in one line. This appears in cross-entropy loss where <code>-log(p)</code> measures prediction quality.",
-    "hash": "61baa151"
+    "hash": "61baa151",
+    "diagram": "autograd_forward",
+    "highlight": [
+      "c"
+    ]
   },
   "41": {
     "text": "Exponential function: the only function that is its own derivative. Essential for softmax, which converts logits into probabilities.",
-    "hash": "3d5a7ab6"
+    "hash": "3d5a7ab6",
+    "diagram": "autograd_forward",
+    "highlight": [
+      "c"
+    ]
   },
   "42": {
     "text": "ReLU in one shot: pass positives through, kill negatives. The gradient is a simple gate, 1 if positive and 0 otherwise.",
-    "hash": "269e8e82"
+    "hash": "269e8e82",
+    "diagram": "autograd_forward",
+    "highlight": [
+      "c"
+    ]
   },
   "43": {
     "text": "Negation reuses multiplication: <code>-x</code> is just <code>x * -1</code>. No new backward logic needed.",
@@ -161,11 +233,20 @@
   },
   "51": {
     "text": "Backpropagation: walk the computation graph in reverse topological order, applying the chain rule at each node.",
-    "hash": "9fb958b2"
+    "hash": "9fb958b2",
+    "diagram": "autograd_topo",
+    "highlight": [
+      "loss",
+      "topo"
+    ]
   },
   "52": {
     "text": "Topological sort ensures we process each node only after all nodes that depend on it.",
-    "hash": "22080ddf"
+    "hash": "22080ddf",
+    "diagram": "autograd_topo",
+    "highlight": [
+      "topo"
+    ]
   },
   "53": {
     "text": "Track which nodes we've already visited to avoid processing the same node twice.",
@@ -173,7 +254,11 @@
   },
   "54": {
     "text": "Recursive depth-first traversal to build the topological ordering. The classic algorithm.",
-    "hash": "dd7be9be"
+    "hash": "dd7be9be",
+    "diagram": "autograd_topo",
+    "highlight": [
+      "topo"
+    ]
   },
   "55": {
     "text": "Only process each node once, even if it's used in multiple operations.",
@@ -189,27 +274,53 @@
   },
   "58": {
     "text": "Depth-first: process all ancestors before this node.",
-    "hash": "caacc60a"
+    "hash": "caacc60a",
+    "diagram": "autograd_topo",
+    "highlight": [
+      "topo"
+    ]
   },
   "59": {
     "text": "Post-order append: this node goes after all its children in the list.",
-    "hash": "24448c9e"
+    "hash": "24448c9e",
+    "diagram": "autograd_topo",
+    "highlight": [
+      "loss"
+    ]
   },
   "60": {
     "text": "Start the sort from the loss node. It's the root of the entire computation graph.",
-    "hash": "b48c2d1e"
+    "hash": "b48c2d1e",
+    "diagram": "autograd_backward",
+    "highlight": [
+      "loss"
+    ]
   },
   "61": {
     "text": "The loss's gradient w.r.t. itself is 1. This seed starts the chain reaction of gradient computation.",
-    "hash": "03614c8c"
+    "hash": "03614c8c",
+    "diagram": "autograd_backward",
+    "highlight": [
+      "c"
+    ]
   },
   "62": {
     "text": "Reversed topological order means we visit the loss first, then work backward toward the parameters.",
-    "hash": "2ed48bf2"
+    "hash": "2ed48bf2",
+    "diagram": "autograd_backward",
+    "highlight": [
+      "a",
+      "b"
+    ]
   },
   "63": {
     "text": "For each node, pair up children with their local gradients.",
-    "hash": "6687f9eb"
+    "hash": "6687f9eb",
+    "diagram": "autograd_backward",
+    "highlight": [
+      "a",
+      "b"
+    ]
   },
   "64": {
     "text": "The <code>+=</code> is crucial. A parameter used in multiple operations receives gradients from all of them. This IS the chain rule.",
@@ -289,7 +400,14 @@
   },
   "90": {
     "text": "Softmax converts raw scores (logits) into a probability distribution that sums to 1.",
-    "hash": "b154dc2c"
+    "hash": "b154dc2c",
+    "diagram": "layer_linear",
+    "highlight": [
+      "x",
+      "w",
+      "dot",
+      "out"
+    ]
   },
   "91": {
     "text": "Subtract the max for numerical stability. Prevents <code>exp()</code> from overflowing. Doesn't change the output probabilities.",
@@ -297,19 +415,35 @@
   },
   "92": {
     "text": "Exponentiate to make everything positive. The subtraction ensures the largest value becomes exp(0) = 1.",
-    "hash": "53f315ae"
+    "hash": "53f315ae",
+    "diagram": "layer_softmax",
+    "highlight": [
+      "logits"
+    ]
   },
   "93": {
     "text": "Sum of exponentials becomes the normalizing constant.",
-    "hash": "6649b43b"
+    "hash": "6649b43b",
+    "diagram": "layer_softmax",
+    "highlight": [
+      "sub_max"
+    ]
   },
   "94": {
     "text": "Each probability is its exponential divided by the total. Now they sum to 1 and represent a valid distribution.",
-    "hash": "4ad03f53"
+    "hash": "4ad03f53",
+    "diagram": "layer_softmax",
+    "highlight": [
+      "div"
+    ]
   },
   "96": {
     "text": "RMSNorm: a simpler, faster alternative to LayerNorm. No mean subtraction, no learned parameters, just scale by the root mean square.",
-    "hash": "a111052e"
+    "hash": "a111052e",
+    "diagram": "layer_softmax",
+    "highlight": [
+      "probs"
+    ]
   },
   "97": {
     "text": "Mean of squared values. Measures the \"energy\" of the vector.",
@@ -317,15 +451,28 @@
   },
   "98": {
     "text": "Inverse square root scaling factor. The <code>1e-5</code> epsilon prevents division by zero when all values are near zero.",
-    "hash": "9a2aea40"
+    "hash": "9a2aea40",
+    "diagram": "layer_rmsnorm",
+    "highlight": [
+      "x",
+      "ms"
+    ]
   },
   "99": {
     "text": "Scale each element so the vector has roughly unit RMS. Stabilizes training by keeping activations bounded.",
-    "hash": "28fb84b9"
+    "hash": "28fb84b9",
+    "diagram": "layer_rmsnorm",
+    "highlight": [
+      "scale"
+    ]
   },
   "101": {
     "text": "The GPT forward pass. Takes one token and its position, plus KV caches for previous tokens. Returns logits for the next token prediction.",
-    "hash": "cebf6a1e"
+    "hash": "cebf6a1e",
+    "diagram": "layer_rmsnorm",
+    "highlight": [
+      "out"
+    ]
   },
   "102": {
     "text": "Look up this token's learned embedding, a dense vector capturing what the character \"means\" to the model.",
@@ -554,15 +701,27 @@
   },
   "151": {
     "text": "Fresh KV caches for each training example. During training, we process the whole sequence with teacher forcing.",
-    "hash": "a35d1040"
+    "hash": "a35d1040",
+    "diagram": "train_step",
+    "highlight": [
+      "forward"
+    ]
   },
   "152": {
     "text": "We'll accumulate the loss at each position and average them at the end.",
-    "hash": "38c0a0e0"
+    "hash": "38c0a0e0",
+    "diagram": "train_step",
+    "highlight": [
+      "loss"
+    ]
   },
   "154": {
     "text": "Process each position one at a time. The model predicts each next character given all previous ones.",
-    "hash": "99351782"
+    "hash": "99351782",
+    "diagram": "train_step",
+    "highlight": [
+      "loss"
+    ]
   },
   "155": {
     "text": "Input token and the target it should predict. The model sees <code>token_id</code> and should output high probability for <code>target_id</code>.",
@@ -570,11 +729,19 @@
   },
   "156": {
     "text": "Run the forward pass, building the entire computation graph. Every Value operation is recorded for backpropagation.",
-    "hash": "cf335203"
+    "hash": "cf335203",
+    "diagram": "train_step",
+    "highlight": [
+      "loss"
+    ]
   },
   "157": {
     "text": "Convert logits to probabilities. The model's confidence distribution over all 27 possible next characters.",
-    "hash": "141e9312"
+    "hash": "141e9312",
+    "diagram": "train_step",
+    "highlight": [
+      "backward"
+    ]
   },
   "158": {
     "text": "Negative log probability of the correct answer. If the model assigns probability 1.0 to the right token, loss is 0. Lower probability means higher loss.",
@@ -582,23 +749,43 @@
   },
   "159": {
     "text": "Collect this position's loss. We'll average them all to get the final training signal.",
-    "hash": "ff81af9b"
+    "hash": "ff81af9b",
+    "diagram": "train_step",
+    "highlight": [
+      "update"
+    ]
   },
   "161": {
     "text": "Average loss across all positions in this name. This single number measures how wrong the model is.",
-    "hash": "8be7f386"
+    "hash": "8be7f386",
+    "diagram": "train_step",
+    "highlight": [
+      "update"
+    ]
   },
   "162": {
     "text": "One call triggers the entire backward pass. Every parameter's gradient gets computed via the chain rule we built in the <code>Value</code> class.",
-    "hash": "227fe80d"
+    "hash": "227fe80d",
+    "diagram": "train_step",
+    "highlight": [
+      "update"
+    ]
   },
   "164": {
     "text": "Linear warmdown: learning rate starts at 0.01 and decays to 0. Smaller steps near the end help the model settle into a good minimum.",
-    "hash": "a7ee9183"
+    "hash": "a7ee9183",
+    "diagram": "train_step",
+    "highlight": [
+      "update"
+    ]
   },
   "166": {
     "text": "Iterate over every single parameter in the model for the Adam update.",
-    "hash": "7e90878d"
+    "hash": "7e90878d",
+    "diagram": "train_step",
+    "highlight": [
+      "update"
+    ]
   },
   "167": {
     "text": "Update the running mean of gradients (first moment). <code>beta1</code> controls how much history to keep vs. how much to trust the current gradient.",
@@ -618,7 +805,11 @@
   },
   "171": {
     "text": "The Adam update: step in the direction of the smoothed gradient, scaled by the inverse of the gradient's historical magnitude. Large gradients get smaller steps.",
-    "hash": "2ddff7c2"
+    "hash": "2ddff7c2",
+    "diagram": "inference_loop",
+    "highlight": [
+      "temp"
+    ]
   },
   "172": {
     "text": "Reset gradient to zero for the next step. Without this, gradients would accumulate across training steps.",
@@ -626,23 +817,45 @@
   },
   "174": {
     "text": "Print progress with carriage return so the line updates in place. Watch the loss decrease over training.",
-    "hash": "f3241997"
+    "hash": "f3241997",
+    "diagram": "inference_loop",
+    "highlight": [
+      "token"
+    ]
   },
   "176": {
     "text": "Temperature controls randomness: 0.5 makes the distribution sharper (more conservative). Closer to 1.0 gives more variety and creativity.",
-    "hash": "24fb7806"
+    "hash": "24fb7806",
+    "diagram": "inference_loop",
+    "highlight": [
+      "gpt"
+    ]
   },
   "177": {
     "text": "Time to see what the model learned. Everything below is pure inference, no gradients, no updates.",
-    "hash": "1902bf84"
+    "hash": "1902bf84",
+    "diagram": "inference_loop",
+    "highlight": [
+      "gpt",
+      "logits"
+    ]
   },
   "179": {
     "text": "Generate 20 new names the model has never seen. These come purely from learned patterns.",
-    "hash": "64d836c5"
+    "hash": "64d836c5",
+    "diagram": "inference_loop",
+    "highlight": [
+      "temp",
+      "probs"
+    ]
   },
   "180": {
     "text": "Fresh KV caches for generation. No context from training leaks in.",
-    "hash": "a35d1040"
+    "hash": "a35d1040",
+    "diagram": "inference_loop",
+    "highlight": [
+      "sample"
+    ]
   },
   "181": {
     "text": "Start with the BOS token, the universal \"begin a name\" signal.",
@@ -650,11 +863,19 @@
   },
   "182": {
     "text": "Collect generated characters here. We'll join them into a string at the end.",
-    "hash": "de258ea8"
+    "hash": "de258ea8",
+    "diagram": "inference_loop",
+    "highlight": [
+      "sample"
+    ]
   },
   "184": {
     "text": "Generate one character at a time, up to the max sequence length.",
-    "hash": "4a5a0fd5"
+    "hash": "4a5a0fd5",
+    "diagram": "inference_loop",
+    "highlight": [
+      "sample"
+    ]
   },
   "185": {
     "text": "Feed the current token through the model to get predictions for the next one.",
