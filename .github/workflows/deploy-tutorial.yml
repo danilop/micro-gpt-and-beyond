@@ -43,7 +43,8 @@ jobs:
 
       - name: Prepare site
         run: |
-          WTC_ASSETS=$(python -c "from walk_the_code import ASSETS_DIR; print(ASSETS_DIR)")
+          WTC_PYTHON="$(uv tool dir)/walk-the-code/bin/python"
+          WTC_ASSETS=$("$WTC_PYTHON" -c "from walk_the_code import ASSETS_DIR; print(ASSETS_DIR)")
           mkdir -p _site/data
           cp "$WTC_ASSETS/index.html" "$WTC_ASSETS/lab.html" _site/
           cp walk-the-code/data/labs.json _site/data/
