@@ -96,7 +96,7 @@
     "hash": "c9176721",
     "diagram": "value_node",
     "highlight": [
-      "grad"
+      "data"
     ]
   },
   "27": {
@@ -104,7 +104,7 @@
     "hash": "84cc424b",
     "diagram": "value_node",
     "highlight": [
-      "children"
+      "grad"
     ]
   },
   "28": {
@@ -112,7 +112,7 @@
     "hash": "af45ef18",
     "diagram": "value_node",
     "highlight": [
-      "local_grads"
+      "children"
     ]
   },
   "29": {
@@ -285,13 +285,13 @@
     "hash": "24448c9e",
     "diagram": "autograd_topo",
     "highlight": [
-      "loss"
+      "topo"
     ]
   },
   "60": {
     "text": "Start the sort from the loss node. It's the root of the entire computation graph.",
     "hash": "b48c2d1e",
-    "diagram": "autograd_backward",
+    "diagram": "autograd_topo",
     "highlight": [
       "loss"
     ]
@@ -301,7 +301,7 @@
     "hash": "03614c8c",
     "diagram": "autograd_backward",
     "highlight": [
-      "c"
+      "loss"
     ]
   },
   "62": {
@@ -309,8 +309,7 @@
     "hash": "2ed48bf2",
     "diagram": "autograd_backward",
     "highlight": [
-      "a",
-      "b"
+      "c"
     ]
   },
   "63": {
@@ -396,11 +395,7 @@
   },
   "88": {
     "text": "Each output element is a dot product between one row of the weight matrix and the input vector. This is one row of Wx.",
-    "hash": "6ef13820"
-  },
-  "90": {
-    "text": "Softmax converts raw scores (logits) into a probability distribution that sums to 1.",
-    "hash": "b154dc2c",
+    "hash": "6ef13820",
     "diagram": "layer_linear",
     "highlight": [
       "x",
@@ -409,16 +404,28 @@
       "out"
     ]
   },
+  "90": {
+    "text": "Softmax converts raw scores (logits) into a probability distribution that sums to 1.",
+    "hash": "b154dc2c",
+    "diagram": "layer_softmax",
+    "highlight": [
+      "logits"
+    ]
+  },
   "91": {
     "text": "Subtract the max for numerical stability. Prevents <code>exp()</code> from overflowing. Doesn't change the output probabilities.",
-    "hash": "2a265d6f"
+    "hash": "2a265d6f",
+    "diagram": "layer_softmax",
+    "highlight": [
+      "sub_max"
+    ]
   },
   "92": {
     "text": "Exponentiate to make everything positive. The subtraction ensures the largest value becomes exp(0) = 1.",
     "hash": "53f315ae",
     "diagram": "layer_softmax",
     "highlight": [
-      "logits"
+      "sub_max"
     ]
   },
   "93": {
@@ -426,7 +433,7 @@
     "hash": "6649b43b",
     "diagram": "layer_softmax",
     "highlight": [
-      "sub_max"
+      "div"
     ]
   },
   "94": {
@@ -434,28 +441,31 @@
     "hash": "4ad03f53",
     "diagram": "layer_softmax",
     "highlight": [
-      "div"
+      "probs"
     ]
   },
   "96": {
     "text": "RMSNorm: a simpler, faster alternative to LayerNorm. No mean subtraction, no learned parameters, just scale by the root mean square.",
     "hash": "a111052e",
-    "diagram": "layer_softmax",
+    "diagram": "layer_rmsnorm",
     "highlight": [
-      "probs"
+      "x"
     ]
   },
   "97": {
     "text": "Mean of squared values. Measures the \"energy\" of the vector.",
-    "hash": "ba99afa6"
+    "hash": "ba99afa6",
+    "diagram": "layer_rmsnorm",
+    "highlight": [
+      "ms"
+    ]
   },
   "98": {
     "text": "Inverse square root scaling factor. The <code>1e-5</code> epsilon prevents division by zero when all values are near zero.",
     "hash": "9a2aea40",
     "diagram": "layer_rmsnorm",
     "highlight": [
-      "x",
-      "ms"
+      "scale"
     ]
   },
   "99": {
@@ -463,16 +473,12 @@
     "hash": "28fb84b9",
     "diagram": "layer_rmsnorm",
     "highlight": [
-      "scale"
+      "out"
     ]
   },
   "101": {
     "text": "The GPT forward pass. Takes one token and its position, plus KV caches for previous tokens. Returns logits for the next token prediction.",
-    "hash": "cebf6a1e",
-    "diagram": "layer_rmsnorm",
-    "highlight": [
-      "out"
-    ]
+    "hash": "cebf6a1e"
   },
   "102": {
     "text": "Look up this token's learned embedding, a dense vector capturing what the character \"means\" to the model.",
@@ -650,18 +656,14 @@
   "135": {
     "text": "Second residual connection. The pattern is always: normalize, transform, add back. Two residual streams per layer.",
     "hash": "ddbe60c4",
-    "diagram": "transformer_mlp",
+    "diagram": "transformer_out",
     "highlight": [
-      "fc2"
+      "res1"
     ]
   },
   "137": {
     "text": "Final projection: map from the 16-dim embedding space to the 27-dim vocabulary. Each output is a score (logit) for how likely each character is next.",
-    "hash": "1845b3e4",
-    "diagram": "transformer_mlp",
-    "highlight": [
-      "fc2"
-    ]
+    "hash": "1845b3e4"
   },
   "138": {
     "text": "Return the raw logits. The training loop converts these to probabilities and computes the loss.",
@@ -712,7 +714,7 @@
     "hash": "38c0a0e0",
     "diagram": "train_step",
     "highlight": [
-      "loss"
+      "forward"
     ]
   },
   "154": {
@@ -720,19 +722,23 @@
     "hash": "99351782",
     "diagram": "train_step",
     "highlight": [
-      "loss"
+      "forward"
     ]
   },
   "155": {
     "text": "Input token and the target it should predict. The model sees <code>token_id</code> and should output high probability for <code>target_id</code>.",
-    "hash": "be0a656b"
+    "hash": "be0a656b",
+    "diagram": "train_step",
+    "highlight": [
+      "forward"
+    ]
   },
   "156": {
     "text": "Run the forward pass, building the entire computation graph. Every Value operation is recorded for backpropagation.",
     "hash": "cf335203",
     "diagram": "train_step",
     "highlight": [
-      "loss"
+      "forward"
     ]
   },
   "157": {
@@ -740,19 +746,23 @@
     "hash": "141e9312",
     "diagram": "train_step",
     "highlight": [
-      "backward"
+      "loss"
     ]
   },
   "158": {
     "text": "Negative log probability of the correct answer. If the model assigns probability 1.0 to the right token, loss is 0. Lower probability means higher loss.",
-    "hash": "303b9e5f"
+    "hash": "303b9e5f",
+    "diagram": "train_step",
+    "highlight": [
+      "loss"
+    ]
   },
   "159": {
     "text": "Collect this position's loss. We'll average them all to get the final training signal.",
     "hash": "ff81af9b",
     "diagram": "train_step",
     "highlight": [
-      "update"
+      "loss"
     ]
   },
   "161": {
@@ -760,7 +770,7 @@
     "hash": "8be7f386",
     "diagram": "train_step",
     "highlight": [
-      "update"
+      "loss"
     ]
   },
   "162": {
@@ -768,7 +778,7 @@
     "hash": "227fe80d",
     "diagram": "train_step",
     "highlight": [
-      "update"
+      "backward"
     ]
   },
   "164": {
@@ -789,15 +799,27 @@
   },
   "167": {
     "text": "Update the running mean of gradients (first moment). <code>beta1</code> controls how much history to keep vs. how much to trust the current gradient.",
-    "hash": "ba400611"
+    "hash": "ba400611",
+    "diagram": "train_step",
+    "highlight": [
+      "update"
+    ]
   },
   "168": {
     "text": "Update the running mean of squared gradients (second moment). This tracks the scale/variance of each parameter's gradients.",
-    "hash": "78d2fc0a"
+    "hash": "78d2fc0a",
+    "diagram": "train_step",
+    "highlight": [
+      "update"
+    ]
   },
   "169": {
     "text": "Bias correction for the first moment. Compensates for zero initialization, especially important in early steps.",
-    "hash": "b032277a"
+    "hash": "b032277a",
+    "diagram": "train_step",
+    "highlight": [
+      "update"
+    ]
   },
   "170": {
     "text": "Bias correction for the second moment.",
@@ -806,47 +828,41 @@
   "171": {
     "text": "The Adam update: step in the direction of the smoothed gradient, scaled by the inverse of the gradient's historical magnitude. Large gradients get smaller steps.",
     "hash": "2ddff7c2",
-    "diagram": "inference_loop",
+    "diagram": "train_step",
     "highlight": [
-      "temp"
+      "update"
     ]
   },
   "172": {
     "text": "Reset gradient to zero for the next step. Without this, gradients would accumulate across training steps.",
-    "hash": "868bc78c"
+    "hash": "868bc78c",
+    "diagram": "train_step",
+    "highlight": [
+      "update"
+    ]
   },
   "174": {
     "text": "Print progress with carriage return so the line updates in place. Watch the loss decrease over training.",
-    "hash": "f3241997",
-    "diagram": "inference_loop",
-    "highlight": [
-      "token"
-    ]
+    "hash": "f3241997"
   },
   "176": {
     "text": "Temperature controls randomness: 0.5 makes the distribution sharper (more conservative). Closer to 1.0 gives more variety and creativity.",
     "hash": "24fb7806",
     "diagram": "inference_loop",
     "highlight": [
-      "gpt"
+      "temp"
     ]
   },
   "177": {
     "text": "Time to see what the model learned. Everything below is pure inference, no gradients, no updates.",
-    "hash": "1902bf84",
-    "diagram": "inference_loop",
-    "highlight": [
-      "gpt",
-      "logits"
-    ]
+    "hash": "1902bf84"
   },
   "179": {
     "text": "Generate 20 new names the model has never seen. These come purely from learned patterns.",
     "hash": "64d836c5",
     "diagram": "inference_loop",
     "highlight": [
-      "temp",
-      "probs"
+      "token"
     ]
   },
   "180": {
@@ -854,19 +870,23 @@
     "hash": "a35d1040",
     "diagram": "inference_loop",
     "highlight": [
-      "sample"
+      "token"
     ]
   },
   "181": {
     "text": "Start with the BOS token, the universal \"begin a name\" signal.",
-    "hash": "7d35e3bf"
+    "hash": "7d35e3bf",
+    "diagram": "inference_loop",
+    "highlight": [
+      "token"
+    ]
   },
   "182": {
     "text": "Collect generated characters here. We'll join them into a string at the end.",
     "hash": "de258ea8",
     "diagram": "inference_loop",
     "highlight": [
-      "sample"
+      "token"
     ]
   },
   "184": {
@@ -874,24 +894,42 @@
     "hash": "4a5a0fd5",
     "diagram": "inference_loop",
     "highlight": [
-      "sample"
+      "gpt"
     ]
   },
   "185": {
     "text": "Feed the current token through the model to get predictions for the next one.",
-    "hash": "cf335203"
+    "hash": "cf335203",
+    "diagram": "inference_loop",
+    "highlight": [
+      "gpt",
+      "logits"
+    ]
   },
   "186": {
     "text": "Apply temperature scaling before softmax. Dividing logits by temperature < 1 makes the distribution peakier and more confident.",
-    "hash": "44670c04"
+    "hash": "44670c04",
+    "diagram": "inference_loop",
+    "highlight": [
+      "temp",
+      "probs"
+    ]
   },
   "187": {
     "text": "Sample from the probability distribution. Unlike greedy decoding (always picking the most likely), sampling introduces variety.",
-    "hash": "4afd5c4c"
+    "hash": "4afd5c4c",
+    "diagram": "inference_loop",
+    "highlight": [
+      "sample"
+    ]
   },
   "189": {
     "text": "If the model generates BOS, it's signaling \"this name is complete.\" Time to stop.",
-    "hash": "41a35c11"
+    "hash": "41a35c11",
+    "diagram": "inference_loop",
+    "highlight": [
+      "sample"
+    ]
   },
   "190": {
     "text": "Exit the generation loop. The name is done.",
