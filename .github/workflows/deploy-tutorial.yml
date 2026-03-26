@@ -47,7 +47,8 @@ jobs:
           WTC_PYTHON="$(uv tool dir)/walk-the-code/bin/python"
           WTC_ASSETS=$("$WTC_PYTHON" -c "from walk_the_code import ASSETS_DIR; print(ASSETS_DIR)")
           mkdir -p _site/data
-          cp "$WTC_ASSETS/index.html" "$WTC_ASSETS/lab.html" _site/
+          cp "$WTC_ASSETS"/index.html "$WTC_ASSETS"/lab.html "$WTC_ASSETS"/chapter.html _site/
+          cp "$WTC_ASSETS"/style.css "$WTC_ASSETS"/lab.js "$WTC_ASSETS"/terminal.js "$WTC_ASSETS"/chapter.js _site/
           cp walk-the-code/data/labs.json _site/data/
 
       - uses: actions/upload-pages-artifact@v3
