@@ -1,10 +1,10 @@
 # microGPT and Beyond, Soft Training
 
-Builds on Lab 20 (soft thinking): instead of only using concept tokens at inference, this version also uses them during training. A curriculum gradually replaces ground-truth token embeddings with the model's own soft predictions, closing the train-test gap that limits inference-only soft thinking.
+Builds on Lab 17 (soft thinking): instead of only using concept tokens at inference, this version also uses them during training. A curriculum gradually replaces ground-truth token embeddings with the model's own soft predictions, closing the train-test gap that limits inference-only soft thinking.
 
 ## Why this version exists
 
-Lab 20 showed that soft decoding preserves information by passing concept tokens instead of discrete embeddings. But there's a mismatch: the model was trained on discrete token embeddings (teacher forcing), yet at inference it receives blended concept tokens, inputs from a region of embedding space it has never seen. This version trains the model to handle soft inputs, closing that gap.
+Lab 17 showed that soft decoding preserves information by passing concept tokens instead of discrete embeddings. But there's a mismatch: the model was trained on discrete token embeddings (teacher forcing), yet at inference it receives blended concept tokens, inputs from a region of embedding space it has never seen. This version trains the model to handle soft inputs, closing that gap.
 
 ## What makes it interesting
 
@@ -54,7 +54,7 @@ Both are then evaluated with hard decoding and soft decoding, creating a 2×2 co
 
 | | Hard decoding | Soft decoding |
 |---|---|---|
-| **Standard-trained** | Baseline (Lab 03) | Lab 20's approach (mismatch) |
+| **Standard-trained** | Baseline (Lab 03) | Lab 17's approach (mismatch) |
 | **Soft-trained** | Does soft training help hard decoding? | Full approach (no mismatch) |
 
 ## What you learn here
@@ -79,8 +79,8 @@ Both are then evaluated with hard decoding and soft decoding, creating a 2×2 co
 uv run python main.py
 ```
 
-Trains two models (standard and soft-trained) from identical initial weights, 1000 steps each. Then generates 20 names from each model with both hard and soft decoding, reporting entropy statistics. The code reuses the model and generation logic from Lab 20, and only the training loop is new.
+Trains two models (standard and soft-trained) from identical initial weights, 1000 steps each. Then generates 20 names from each model with both hard and soft decoding, reporting entropy statistics. The code reuses the model and generation logic from Lab 17, and only the training loop is new.
 
 ## Why soft training matters
 
-Soft thinking (Lab 20) is training-free but limited by the gap between what the model trained on (discrete tokens) and what it sees at inference (concept tokens). Soft training closes this gap by gradually teaching the model to work with continuous inputs. This is the same insight behind scheduled sampling, but applied to the continuous embedding space rather than discrete token sampling. The result: a model that's designed for soft inference from the ground up, not just adapted to it after the fact.
+Soft thinking (Lab 17) is training-free but limited by the gap between what the model trained on (discrete tokens) and what it sees at inference (concept tokens). Soft training closes this gap by gradually teaching the model to work with continuous inputs. This is the same insight behind scheduled sampling, but applied to the continuous embedding space rather than discrete token sampling. The result: a model that's designed for soft inference from the ground up, not just adapted to it after the fact.

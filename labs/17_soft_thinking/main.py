@@ -133,7 +133,7 @@ class MicroGPT(nn.Module):
 
 
 # ---------------------------------------------------------------------------
-# Shared utilities (also used by Lab 21)
+# Shared utilities (also used by Lab 18)
 # ---------------------------------------------------------------------------
 num_steps = 1000
 

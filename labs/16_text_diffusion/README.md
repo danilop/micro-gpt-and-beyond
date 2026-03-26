@@ -145,7 +145,7 @@ The input embeddings (`wte`) and output projection (`lm_head`) share the same ma
 
 ## What's Different From the GPT (Lab 03)
 
-| | Lab 03, microGPT | Lab 15, microDiffusion |
+| | Lab 03, microGPT | Lab 16, microDiffusion |
 |---|---|---|
 | Generation | Left-to-right, one token at a time | All-at-once, iteratively refined from noise |
 | Attention | Causal (each token sees only past) | Bidirectional (each token sees all others) |
@@ -166,7 +166,7 @@ The input embeddings (`wte`) and output projection (`lm_head`) share the same ma
 python run_lab.py 15
 
 # Or directly:
-cd 15_text_diffusion && uv run python main.py
+cd 16_text_diffusion && uv run python main.py
 ```
 
 Trains for 3000 steps with batch size 32 and generates 20 names. Takes a few seconds on a laptop thanks to PyTorch.

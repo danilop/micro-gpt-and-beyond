@@ -77,12 +77,12 @@ KV cache per token = 2 * 32 layers * 32 heads * 128 dim * 2 bytes = 524 KB
 For 2048 context:   2048 * 524 KB ≈ 1 GB per request
 ```
 
-This is why GPU memory, not compute, is the bottleneck for LLM serving. Systems like PagedAttention (lab 19) exist specifically to manage this memory efficiently.
+This is why GPU memory, not compute, is the bottleneck for LLM serving. Systems like PagedAttention (lab 21) exist specifically to manage this memory efficiently.
 
 ## What builds on KV cache
 
-- **Speculative decoding** (lab 17): a small draft model fills its own KV cache cheaply, then the large model verifies multiple tokens in one forward pass using its cache
-- **PagedAttention** (lab 19): virtual memory management for KV cache blocks, enabling efficient batching of requests with different sequence lengths
+- **Speculative decoding** (lab 19): a small draft model fills its own KV cache cheaply, then the large model verifies multiple tokens in one forward pass using its cache
+- **PagedAttention** (lab 21): virtual memory management for KV cache blocks, enabling efficient batching of requests with different sequence lengths
 - **Disaggregated serving** (lab 22): separate prefill and decode onto different workers, since they have different hardware profiles
 - **Continuous batching**: new requests join a running batch by allocating fresh cache space
 - **Quantized KV cache**: store cache in int8/int4 to fit more requests in memory

@@ -256,7 +256,7 @@
     "hash": "9ef9adcf"
   },
   "138": {
-    "text": "1000 training steps, shared with Lab 21.",
+    "text": "1000 training steps, shared with Lab 18.",
     "hash": "f105aa30"
   },
   "141": {
@@ -361,7 +361,7 @@
     "hash": "6e2e1538"
   },
   "177": {
-    "text": "Only run training and inference when executed directly, Lab 21 imports from this file.",
+    "text": "Only run training and inference when executed directly, Lab 18 imports from this file.",
     "hash": "3412809c"
   },
   "178": {

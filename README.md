@@ -22,13 +22,13 @@ labs/
   12_kv_cache/               KV cache for inference. THE fundamental decoding optimization.
   13_sampling/               Sampling strategies: greedy, temperature, top-k, top-p, min-p.
   14_lora/                   LoRA. Parameter-efficient fine-tuning with low-rank adapters.
-  15_text_diffusion/         Masked diffusion model (MDLM/LLaDA). Names emerge from noise.
-  16_pytorch_quantized/      INT8 quantization for inference. FP32 to INT8, 4x smaller, faster.
-  17_speculative_decoding/   Draft model guesses, target model verifies. Lossless speedup.
-  18_tiled_attention/        FlashAttention algorithm from scratch. Tiling beats the memory wall.
-  19_paged_attention/        PagedAttention (vLLM). OS-style virtual memory for KV caches.
-  20_soft_thinking/          Concept tokens preserve the full output distribution at inference.
-  21_soft_training/          Soft input curriculum closes the train-test gap for concept tokens.
+  15_pytorch_quantized/      INT8 quantization for inference. FP32 to INT8, 4x smaller, faster.
+  16_text_diffusion/         Masked diffusion model (MDLM/LLaDA). Names emerge from noise.
+  17_soft_thinking/          Concept tokens preserve the full output distribution at inference.
+  18_soft_training/          Soft input curriculum closes the train-test gap for concept tokens.
+  19_speculative_decoding/   Draft model guesses, target model verifies. Lossless speedup.
+  20_tiled_attention/        FlashAttention algorithm from scratch. Tiling beats the memory wall.
+  21_paged_attention/        PagedAttention (vLLM). OS-style virtual memory for KV caches.
   22_disaggregated_serving/  Split prefill and decode onto separate workers. No more head-of-line blocking.
 data/                        Shared dataset (auto-downloaded on first run if not present).
 ```
@@ -43,9 +43,9 @@ The [interactive web tutorial](https://danilop.github.io/micro-gpt-and-beyond/) 
 | **Frameworks** | 03–08 | PyTorch, JAX, MLX — same model, three paradigms, single and batched |
 | **Tokenization & Architecture** | 09, 10, 11 | BPE, RoPE, GQA — the upgrades behind LLaMA and Mistral |
 | **Inference Optimization** | 12, 13 | KV cache and sampling strategies — the basics of fast decoding |
-| **Fine-tuning & Deployment** | 14, 16 | LoRA and INT8 quantization — adapt and compress |
-| **Alternative Paradigms** | 15, 20, 21 | Text diffusion and soft thinking — beyond left-to-right |
-| **Production Serving** | 17, 18, 19, 22 | Speculative decoding, FlashAttention, PagedAttention, disaggregated serving |
+| **Fine-tuning & Deployment** | 14, 15 | LoRA and INT8 quantization — adapt and compress |
+| **Alternative Paradigms** | 16, 17, 18 | Text diffusion and soft thinking — beyond left-to-right |
+| **Production Serving** | 19, 20, 21, 22 | Speculative decoding, FlashAttention, PagedAttention, disaggregated serving |
 
 ## The idea
 
@@ -72,15 +72,15 @@ Every version trains the same architecture (a character-level transformer with R
 | 13 sampling | automatic | yes | no | CPU |
 | **Fine-tuning & Deployment** | | | | |
 | 14 LoRA | automatic | yes | no | CPU |
-| 16 PyTorch quantized | automatic | yes | no | CPU (INT8) |
+| 15 PyTorch quantized | automatic | yes | no | CPU (INT8) |
 | **Alternative Paradigms** | | | | |
-| 15 text diffusion | automatic | yes | no | CPU |
-| 20 soft thinking | automatic | yes | no | CPU |
-| 21 soft training | automatic | yes | no | CPU |
+| 16 text diffusion | automatic | yes | no | CPU |
+| 17 soft thinking | automatic | yes | no | CPU |
+| 18 soft training | automatic | yes | no | CPU |
 | **Production Serving** | | | | |
-| 17 speculative decoding | automatic | yes | no | CPU |
-| 18 tiled attention | automatic | yes | no | CPU |
-| 19 paged attention | hand-built scalar engine | no | no | CPU (slow) |
+| 19 speculative decoding | automatic | yes | no | CPU |
+| 20 tiled attention | automatic | yes | no | CPU |
+| 21 paged attention | hand-built scalar engine | no | no | CPU (slow) |
 | 22 disaggregated serving | automatic | yes | no | CPU |
 
 Beyond the framework comparisons, the labs extend the base model with **modern architecture and techniques**: BPE tokenization, rotary position embeddings, grouped-query attention, KV caching, sampling strategies, and LoRA fine-tuning.
@@ -120,21 +120,21 @@ The soft thinking and soft training labs explore **preserving the full output di
 **Understanding inference?** Learn why decoding is slow and how to make it fast:
 - `12_kv_cache` for the fundamental inference optimization
 - `13_sampling` for how sampling strategies shape output
-- `17_speculative_decoding` for lossless speedup via draft-and-verify
-- `18_tiled_attention` for the memory wall and how FlashAttention beats it
-- `19_paged_attention` for OS-style memory management for serving at scale
+- `19_speculative_decoding` for lossless speedup via draft-and-verify
+- `20_tiled_attention` for the memory wall and how FlashAttention beats it
+- `21_paged_attention` for OS-style memory management for serving at scale
 - `22_disaggregated_serving` for splitting prefill and decode in production
 
 **Fine-tuning and deployment?** Check out:
 - `14_lora` for parameter-efficient fine-tuning with low-rank adapters
-- `16_pytorch_quantized` to compress models 4x for production
+- `15_pytorch_quantized` to compress models 4x for production
 
 **Interested in diffusion?** Go straight to:
-- `15_text_diffusion` for a fundamentally different generative paradigm
+- `16_text_diffusion` for a fundamentally different generative paradigm
 
 **Exploring soft thinking?** See what happens when you stop discarding information:
-- `20_soft_thinking` for concept tokens that preserve the full distribution at inference
-- `21_soft_training` to train the model to expect soft inputs (scheduled curriculum)
+- `17_soft_thinking` for concept tokens that preserve the full distribution at inference
+- `18_soft_training` to train the model to expect soft inputs (scheduled curriculum)
 
 ## Running
 
@@ -164,12 +164,12 @@ python run_lab.py --list      # List all available labs
 
 **Direct execution:**
 
-`01_pure_python`, `09_bpe_tokenizer`, and `19_paged_attention` have no dependencies and can be run with plain Python:
+`01_pure_python`, `09_bpe_tokenizer`, and `21_paged_attention` have no dependencies and can be run with plain Python:
 
 ```bash
 python labs/01_pure_python/microgpt.py
 python labs/09_bpe_tokenizer/main.py
-python labs/19_paged_attention/main.py
+python labs/21_paged_attention/main.py
 ```
 
 All other labs are managed with [uv](https://docs.astral.sh/uv/) and have their own `pyproject.toml`:

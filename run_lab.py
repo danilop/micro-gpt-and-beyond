@@ -31,13 +31,13 @@ LABS = {
     "12": ("labs/12_kv_cache", ["uv", "run", "python", "main.py"]),
     "13": ("labs/13_sampling", ["uv", "run", "python", "main.py"]),
     "14": ("labs/14_lora", ["uv", "run", "python", "main.py"]),
-    "15": ("labs/15_text_diffusion", ["uv", "run", "python", "main.py"]),
-    "16": ("labs/16_pytorch_quantized", ["uv", "run", "python", "main.py"]),
-    "17": ("labs/17_speculative_decoding", ["uv", "run", "python", "main.py"]),
-    "18": ("labs/18_tiled_attention", ["uv", "run", "python", "main.py"]),
-    "19": ("labs/19_paged_attention", [PYTHON, "main.py"]),
-    "20": ("labs/20_soft_thinking", ["uv", "run", "python", "main.py"]),
-    "21": ("labs/21_soft_training", ["uv", "run", "python", "main.py"]),
+    "15": ("labs/15_pytorch_quantized", ["uv", "run", "python", "main.py"]),
+    "16": ("labs/16_text_diffusion", ["uv", "run", "python", "main.py"]),
+    "17": ("labs/17_soft_thinking", ["uv", "run", "python", "main.py"]),
+    "18": ("labs/18_soft_training", ["uv", "run", "python", "main.py"]),
+    "19": ("labs/19_speculative_decoding", ["uv", "run", "python", "main.py"]),
+    "20": ("labs/20_tiled_attention", ["uv", "run", "python", "main.py"]),
+    "21": ("labs/21_paged_attention", [PYTHON, "main.py"]),
     "22": ("labs/22_disaggregated_serving", ["uv", "run", "python", "main.py"]),
 }
 
@@ -58,13 +58,13 @@ def list_labs():
     print("  12  kv_cache               KV cache for fast inference")
     print("  13  sampling               Sampling strategies (greedy/top-k/top-p/min-p)")
     print("  14  lora                   LoRA parameter-efficient fine-tuning")
-    print("  15  text_diffusion         Masked diffusion model (MDLM/LLaDA)")
-    print("  16  pytorch_quantized      INT8 quantization for inference")
-    print("  17  speculative_decoding   Draft-and-verify lossless speedup")
-    print("  18  tiled_attention        FlashAttention algorithm (memory wall)")
-    print("  19  paged_attention        PagedAttention (vLLM-style KV cache)")
-    print("  20  soft_thinking          Concept tokens preserve full distribution")
-    print("  21  soft_training          Train with soft inputs (scheduled curriculum)")
+    print("  15  pytorch_quantized      INT8 quantization for inference")
+    print("  16  text_diffusion         Masked diffusion model (MDLM/LLaDA)")
+    print("  17  soft_thinking          Concept tokens preserve full distribution")
+    print("  18  soft_training          Train with soft inputs (scheduled curriculum)")
+    print("  19  speculative_decoding   Draft-and-verify lossless speedup")
+    print("  20  tiled_attention        FlashAttention algorithm (memory wall)")
+    print("  21  paged_attention        PagedAttention (vLLM-style KV cache)")
     print("  22  disaggregated_serving  Split prefill/decode onto separate workers")
     print("\nUsage: python run.py <lab_number>")
 

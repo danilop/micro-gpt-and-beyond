@@ -272,7 +272,7 @@
     "hash": "30239a61"
   },
   "109": {
-    "text": "The full model, same architecture as Lab 20. The key difference: <code>forward</code> accepts either token IDs or raw embeddings, which is what enables soft training.",
+    "text": "The full model, same architecture as Lab 17. The key difference: <code>forward</code> accepts either token IDs or raw embeddings, which is what enables soft training.",
     "hash": "e94c5dc2"
   },
   "110": {
@@ -509,7 +509,7 @@
     "hash": "f8803263"
   },
   "194": {
-    "text": "Convert logits to soft concept tokens: softmax gives probabilities, matrix multiply with embedding weights gives the weighted average embedding. This is the same concept token computation used in Lab 20's soft decoding, but now applied during training.",
+    "text": "Convert logits to soft concept tokens: softmax gives probabilities, matrix multiply with embedding weights gives the weighted average embedding. This is the same concept token computation used in Lab 17's soft decoding, but now applied during training.",
     "hash": "4b807adf",
     "diagram": "soft_training",
     "highlight": [
@@ -629,7 +629,7 @@
     "hash": "c67aa79b"
   },
   "238": {
-    "text": "Standard model with soft decoding, Lab 20's approach, applied to a model that never saw concept tokens during training.",
+    "text": "Standard model with soft decoding, Lab 17's approach, applied to a model that never saw concept tokens during training.",
     "hash": "a809297d"
   },
   "239": {

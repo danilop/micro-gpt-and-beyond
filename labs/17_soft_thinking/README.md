@@ -49,7 +49,7 @@ The lab generates names at each temperature, reporting the Shannon entropy of th
 
 ### The out-of-distribution challenge
 
-There's a fundamental tension: the model was **trained** on discrete token embeddings (points on the embedding manifold), but concept tokens are weighted averages that may lie **between** those points, in regions the model has never seen. This is the train-test mismatch that Lab 21 addresses.
+There's a fundamental tension: the model was **trained** on discrete token embeddings (points on the embedding manifold), but concept tokens are weighted averages that may lie **between** those points, in regions the model has never seen. This is the train-test mismatch that Lab 18 addresses.
 
 ## What you learn here
 

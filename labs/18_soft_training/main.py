@@ -1,7 +1,7 @@
 """
 microGPT — Soft training edition.
 
-Builds on Lab 20 (soft thinking): instead of only using concept tokens at
+Builds on Lab 17 (soft thinking): instead of only using concept tokens at
 inference time, this version also uses them during training. A curriculum
 gradually replaces ground-truth token embeddings with the model's own soft
 predictions, closing the train-test gap that limits inference-only soft thinking.
@@ -42,7 +42,7 @@ vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # ---------------------------------------------------------------------------
-# Model (same as Lab 20 — supports both token IDs and raw embeddings)
+# Model (same as Lab 17 — supports both token IDs and raw embeddings)
 # ---------------------------------------------------------------------------
 n_embd = 16  # embedding dimension
 n_head = 4  # number of attention heads
@@ -257,7 +257,7 @@ with torch.no_grad():
 print("""--- what's happening ---
 
 Standard training uses teacher forcing: the model always sees perfect
-ground-truth embeddings as input. At inference with soft decoding (Lab 20),
+ground-truth embeddings as input. At inference with soft decoding (Lab 17),
 it encounters concept tokens — weighted blends it never trained on.
 This train-test mismatch limits soft decoding's effectiveness.
 
