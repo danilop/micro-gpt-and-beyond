@@ -1,0 +1,6 @@
+graph TD
+    x[Input x] --> base[Frozen W]
+    x --> down[A: down-project]
+    down --> up[B: up-project]
+    base --> add[Wx + BAx]
+    up --> add

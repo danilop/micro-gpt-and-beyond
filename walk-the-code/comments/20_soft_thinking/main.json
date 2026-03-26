@@ -1,0 +1,479 @@
+{
+  "14": {
+    "text": "Standard math for entropy calculations.",
+    "hash": "b67c9dde"
+  },
+  "15": {
+    "text": "Utilities for constructing the dataset file path relative to this script's location.",
+    "hash": "de2abade"
+  },
+  "16": {
+    "text": "Seed-based randomness for shuffling training data and sampling during generation, ensuring reproducible runs.",
+    "hash": "7e18ed42"
+  },
+  "18": {
+    "text": "PyTorch for model and inference.",
+    "hash": "cf1070d3"
+  },
+  "19": {
+    "text": "Provides neural network building blocks like Linear and Embedding used to construct the transformer layers.",
+    "hash": "b802910c"
+  },
+  "20": {
+    "text": "Softmax, cross-entropy, and crucially, the softmax that creates concept tokens.",
+    "hash": "5af419e1"
+  },
+  "22": {
+    "text": "Fix seeds for reproducible comparisons between hard and soft decoding.",
+    "hash": "f0726c6e"
+  },
+  "23": {
+    "text": "Fix PyTorch's random seed so weight initialization and sampling are reproducible.",
+    "hash": "7e7dcf46"
+  },
+  "28": {
+    "text": "Construct the dataset file path relative to this script's location so it works regardless of the working directory.",
+    "hash": "5ac9686d"
+  },
+  "29": {
+    "text": "If the names dataset doesn't exist locally yet, download it on the fly so the script is self-contained.",
+    "hash": "9667c968"
+  },
+  "35": {
+    "text": "Read the dataset file where each line contains a single name for training.",
+    "hash": "2f367d0b"
+  },
+  "36": {
+    "text": "Randomize the order of training names so the model doesn't memorize alphabetical patterns from the dataset.",
+    "hash": "c8f1cb86"
+  },
+  "39": {
+    "text": "Build a sorted list of unique characters in the dataset, mapping each to a deterministic token ID from 0 to n-1.",
+    "hash": "5f7ca3bb"
+  },
+  "40": {
+    "text": "The BOS token marks the beginning and end of each name sequence during training and generation.",
+    "hash": "476ca504"
+  },
+  "41": {
+    "text": "Vocab size: characters + BOS.",
+    "hash": "0a38d2ba"
+  },
+  "47": {
+    "text": "Small model, same architecture as Lab 03, but with one crucial addition: the forward pass accepts pre-computed embeddings, not just token IDs.",
+    "hash": "eb81fecf"
+  },
+  "48": {
+    "text": "Split the embedding dimension across four heads for multi-head attention.",
+    "hash": "5b7ba4c9"
+  },
+  "49": {
+    "text": "A single transformer layer keeps the model small and training fast for this demo.",
+    "hash": "9068cb85"
+  },
+  "50": {
+    "text": "Maximum sequence length of 16 tokens, matching the longest names in the dataset.",
+    "hash": "4f3059d5"
+  },
+  "51": {
+    "text": "Each attention head operates on a 4-dimensional slice of the full embedding.",
+    "hash": "1892cf11"
+  },
+  "52": {
+    "text": "Run everything on CPU since this small model does not need GPU acceleration.",
+    "hash": "b39e14b0"
+  },
+  "55": {
+    "text": "RMSNorm, same as all previous labs.",
+    "hash": "69fade3d"
+  },
+  "60": {
+    "text": "Scale the input by its inverse root-mean-square, bringing activations to roughly unit magnitude without learned parameters.",
+    "hash": "a87869a2"
+  },
+  "64": {
+    "text": "Causal self-attention, unchanged from Lab 03.",
+    "hash": "c20aaac2"
+  },
+  "67": {
+    "text": "Q, K, V, and output projections.",
+    "hash": "433b771f"
+  },
+  "72": {
+    "text": "Run the complete attention computation: project inputs to Q/K/V, score, mask future positions, blend values, and project output.",
+    "hash": "a87869a2"
+  },
+  "73": {
+    "text": "Extract batch size, sequence length, and embedding dimension from the input shape.",
+    "hash": "4584ac61"
+  },
+  "74": {
+    "text": "Reshape the query projection into separate heads so each head independently attends to its own slice of the embedding.",
+    "hash": "d0c33c49"
+  },
+  "75": {
+    "text": "Project to keys and reshape into multi-head format, same as queries above.",
+    "hash": "a48e9c7a"
+  },
+  "76": {
+    "text": "Project to values and reshape into multi-head format, same as queries above.",
+    "hash": "7fcca8ac"
+  },
+  "77": {
+    "text": "Compute Q dot K transposed, scaled by sqrt(head_dim). The scaling prevents softmax from saturating as dimensionality grows.",
+    "hash": "308b188d"
+  },
+  "78": {
+    "text": "Causal mask, no peeking at future tokens.",
+    "hash": "14eeec63"
+  },
+  "79": {
+    "text": "Set future positions to negative infinity so softmax gives them zero attention weight.",
+    "hash": "a2e76efa"
+  },
+  "80": {
+    "text": "Softmax to get attention weights.",
+    "hash": "62dc999a"
+  },
+  "81": {
+    "text": "Weighted value aggregation + reshape.",
+    "hash": "a1aef68f"
+  },
+  "82": {
+    "text": "Mix information across heads by projecting the concatenated output back to embedding dimension.",
+    "hash": "36f2db67"
+  },
+  "85": {
+    "text": "The feed-forward network that processes each token independently after attention has mixed information.",
+    "hash": "3ad666a1"
+  },
+  "88": {
+    "text": "Up-projection to 4x embedding dim.",
+    "hash": "8e9f0642"
+  },
+  "89": {
+    "text": "Project the expanded representation back to the model's embedding dimension, compressing the MLP's \"thinking space\" output.",
+    "hash": "62c4768b"
+  },
+  "92": {
+    "text": "Apply ReLU activation between the two linear layers, introducing the needed nonlinearity.",
+    "hash": "8aa6bebb"
+  },
+  "95": {
+    "text": "One transformer block combining attention and MLP sublayers with residual connections.",
+    "hash": "4bcc8ea8"
+  },
+  "98": {
+    "text": "RMSNorm before attention ensures the Q/K/V projections see inputs with consistent scale, stabilizing training.",
+    "hash": "e92b587d"
+  },
+  "99": {
+    "text": "The multi-head causal self-attention sublayer that lets tokens attend to prior positions.",
+    "hash": "95b016d9"
+  },
+  "100": {
+    "text": "RMSNorm before the MLP ensures the feed-forward weights see well-scaled inputs regardless of what attention produced.",
+    "hash": "f58a7657"
+  },
+  "101": {
+    "text": "The feed-forward network sublayer that processes each token independently after attention.",
+    "hash": "17fdd551"
+  },
+  "103": {
+    "text": "Block forward with residual connections.",
+    "hash": "a87869a2"
+  },
+  "104": {
+    "text": "Add the attention output to the original input via a skip connection, so this layer can only refine, not overwrite.",
+    "hash": "5133b743"
+  },
+  "105": {
+    "text": "Add the MLP output via a second skip connection, preserving gradient flow and ensuring the layer is an incremental refinement.",
+    "hash": "50e2183f"
+  },
+  "109": {
+    "text": "The model, now with a key difference from earlier labs.",
+    "hash": "e94c5dc2"
+  },
+  "112": {
+    "text": "Token embedding table, this does double duty in soft thinking: it maps token IDs to embeddings AND is the table we blend against to create concept tokens.",
+    "hash": "2a2b79bb"
+  },
+  "113": {
+    "text": "Learned position vectors that tell the model where each token sits in the sequence. Added to token embeddings before the transformer.",
+    "hash": "5338449e"
+  },
+  "114": {
+    "text": "RMSNorm applied to the combined embeddings before the transformer stack, stabilizing the first layer's input scale.",
+    "hash": "5caa073e"
+  },
+  "115": {
+    "text": "The stack of transformer blocks that form the core of the model's processing pipeline.",
+    "hash": "d10311df"
+  },
+  "116": {
+    "text": "LM head: embeddings -> vocabulary logits.",
+    "hash": "1774314d"
+  },
+  "117": {
+    "text": "Walk every submodule and apply the weight initialization function so all learned parameters start with well-scaled random values.",
+    "hash": "e4941829"
+  },
+  "121": {
+    "text": "Small normal init for all weights.",
+    "hash": "e2ce6cde"
+  },
+  "124": {
+    "text": "The critical change: <code>forward</code> accepts either token IDs OR pre-computed embeddings. This is what enables soft thinking, we can feed in concept tokens (weighted blends) instead of discrete token embeddings.",
+    "hash": "5a8ff8fb"
+  },
+  "125": {
+    "text": "If <code>idx</code> is provided, look up embeddings normally. Otherwise, use the pre-computed <code>inputs_embeds</code> directly.",
+    "hash": "2a3ddfa7"
+  },
+  "126": {
+    "text": "Safety check: must provide one or the other.",
+    "hash": "0d6f662b"
+  },
+  "127": {
+    "text": "Figure out how long the input sequence is from whichever input format was provided (token IDs or raw embeddings).",
+    "hash": "5051a42d"
+  },
+  "128": {
+    "text": "Position embeddings work the same either way.",
+    "hash": "7c34b10b"
+  },
+  "129": {
+    "text": "Normalize the combined token-plus-position embeddings before feeding them into the transformer stack.",
+    "hash": "b88a95ea"
+  },
+  "130": {
+    "text": "Feed the embeddings through each transformer block in sequence, progressively refining the representations.",
+    "hash": "359aba32"
+  },
+  "132": {
+    "text": "Map the final hidden states to a score for every vocabulary token, producing the logits for next-token prediction.",
+    "hash": "9ef9adcf"
+  },
+  "138": {
+    "text": "1000 training steps, shared with Lab 21.",
+    "hash": "f105aa30"
+  },
+  "141": {
+    "text": "No gradients during generation, pure inference.",
+    "hash": "eec96875"
+  },
+  "142": {
+    "text": "The generation function: supports both hard (standard) and soft (concept token) decoding. This is where the magic happens.",
+    "hash": "ae96d1e2"
+  },
+  "144": {
+    "text": "Disable dropout and other training-specific behaviors. Not strictly needed here (no dropout), but good practice for generation.",
+    "hash": "45bf010c"
+  },
+  "145": {
+    "text": "Track generated tokens and per-step entropy (measures how uncertain the model is).",
+    "hash": "72b2c0dd"
+  },
+  "146": {
+    "text": "Start with the BOS token embedding, same for both modes.",
+    "hash": "16371ae3"
+  },
+  "148": {
+    "text": "Generate up to <code>block_size</code> tokens.",
+    "hash": "ab05dc73"
+  },
+  "149": {
+    "text": "Forward pass using embeddings (not token IDs), this is how concept tokens flow through the model.",
+    "hash": "3c166ac3"
+  },
+  "152": {
+    "text": "Divide logits by the sampling temperature and apply softmax to control how peaked or spread out the token probabilities are.",
+    "hash": "42c9b900",
+    "diagram": "soft_hard_path",
+    "highlight": [
+      "logits"
+    ]
+  },
+  "153": {
+    "text": "Sample a discrete token, needed for output text and stopping condition, regardless of mode.",
+    "hash": "5b83becd",
+    "diagram": "soft_hard_path",
+    "highlight": [
+      "logits",
+      "sample"
+    ]
+  },
+  "154": {
+    "text": "BOS doubles as end-of-sequence. When sampled, it means the name is complete and generation should stop.",
+    "hash": "41a35c11"
+  },
+  "156": {
+    "text": "Append the chosen token to the output list, building up the generated name one character at a time.",
+    "hash": "a1ca669a"
+  },
+  "159": {
+    "text": "Shannon entropy of the distribution: measures how spread out the model's beliefs are. Low entropy = confident, high entropy = uncertain. We'll compare this across decoding modes.",
+    "hash": "4aa43c79"
+  },
+  "162": {
+    "text": "Hard decoding: collapse to a single token, throw away the distribution. Standard approach.",
+    "hash": "0e27bbb0",
+    "diagram": "soft_hard_path",
+    "highlight": [
+      "sample",
+      "embed_one"
+    ]
+  },
+  "163": {
+    "text": "Look up the single selected token's embedding, all information about alternatives is lost.",
+    "hash": "e0217c97",
+    "diagram": "soft_hard_path",
+    "highlight": [
+      "embed_one",
+      "discards"
+    ]
+  },
+  "165": {
+    "text": "Soft decoding: preserve the full distribution as a \"concept token.\"",
+    "hash": "b3811453",
+    "diagram": "soft_soft_path",
+    "highlight": [
+      "softmax_blend"
+    ]
+  },
+  "166": {
+    "text": "Soft temperature controls how blended the concept token is. Lower T = more peaked (closer to hard). Higher T = more spread (more tokens contribute).",
+    "hash": "aa93a434"
+  },
+  "167": {
+    "text": "THE key line: <code>softmax(logits/T) @ embedding_table</code>. This creates a weighted average of ALL token embeddings, where the weights are the model's probabilities. The concept token lives in the same embedding space as regular tokens, but encodes the full uncertainty of what the model \"wanted to say.\"",
+    "hash": "e1a0c30a",
+    "diagram": "soft_soft_path",
+    "highlight": [
+      "softmax_blend",
+      "weighted",
+      "preserves"
+    ]
+  },
+  "169": {
+    "text": "Append the new embedding (hard or soft) and truncate to context window. The model now sees concept tokens as part of its history.",
+    "hash": "6e2e1538"
+  },
+  "177": {
+    "text": "Only run training and inference when executed directly, Lab 21 imports from this file.",
+    "hash": "3412809c"
+  },
+  "178": {
+    "text": "Create the model, move it to the device, and print its parameter count for verification.",
+    "hash": "40b7fcd9"
+  },
+  "182": {
+    "text": "Adam optimizer, same settings as Lab 03.",
+    "hash": "92d21e78"
+  },
+  "184": {
+    "text": "Standard next-token prediction training: the model sees ground-truth tokens as input and learns to predict each next one.",
+    "hash": "53f56939"
+  },
+  "185": {
+    "text": "Pick one training example per step, cycling through the shuffled dataset.",
+    "hash": "47ec0e2c"
+  },
+  "186": {
+    "text": "Encode: BOS + characters + BOS.",
+    "hash": "ae86abd0"
+  },
+  "187": {
+    "text": "Truncate the token sequence to fit within the model's positional embedding table and context window.",
+    "hash": "3d9da8cd"
+  },
+  "189": {
+    "text": "Prepare the input tensor containing all tokens except the last one in the sequence.",
+    "hash": "968a3346"
+  },
+  "190": {
+    "text": "Target sequence (shifted right by one).",
+    "hash": "1b63fd95"
+  },
+  "192": {
+    "text": "Forward pass with token IDs (standard training, no soft tokens yet).",
+    "hash": "17df3885"
+  },
+  "193": {
+    "text": "Measure how far the model's predictions are from the correct next tokens at each position.",
+    "hash": "4f1dd754"
+  },
+  "195": {
+    "text": "Reset all parameter gradients to zero before computing the new backward pass.",
+    "hash": "fbede2b3"
+  },
+  "196": {
+    "text": "Compute gradients of the loss with respect to every model parameter via backpropagation.",
+    "hash": "227fe80d"
+  },
+  "197": {
+    "text": "Scale the learning rate down linearly toward zero as training progresses, for smoother convergence near the end.",
+    "hash": "60602e3a"
+  },
+  "198": {
+    "text": "Write the decayed learning rate into the optimizer so the next parameter update uses the reduced step size.",
+    "hash": "9f6d3592"
+  },
+  "200": {
+    "text": "Apply the computed gradients to update all model weights one step toward lower loss.",
+    "hash": "d9e59d7e"
+  },
+  "205": {
+    "text": "Compare hard vs. soft decoding at different soft temperatures.",
+    "hash": "f6903af1"
+  },
+  "206": {
+    "text": "Generate 20 names for each configuration, enough samples to see meaningful differences in behavior between decoding modes.",
+    "hash": "ba8d14e2"
+  },
+  "207": {
+    "text": "Maximum possible entropy: ln(vocab_size). This is the \"uniform distribution\" ceiling.",
+    "hash": "430f12d4"
+  },
+  "209": {
+    "text": "Test four configurations: hard baseline plus three soft temperatures.",
+    "hash": "869e4f57"
+  },
+  "210": {
+    "text": "Hard decoding (standard), mild soft, moderate soft, and very diffuse soft.",
+    "hash": "ce9bdb11"
+  },
+  "215": {
+    "text": "Print which configuration is being tested (hard vs. soft, and at what temperature) so the output is easy to interpret.",
+    "hash": "a3b8d2cf"
+  },
+  "217": {
+    "text": "Generate samples for this configuration.",
+    "hash": "567e2f37"
+  },
+  "218": {
+    "text": "Generate one name, collecting entropy at each step.",
+    "hash": "c6a33d5a"
+  },
+  "219": {
+    "text": "Decode token IDs to characters.",
+    "hash": "9e3829cc"
+  },
+  "220": {
+    "text": "Average entropy across generation steps, how uncertain was the model on average?",
+    "hash": "8eb7b603"
+  },
+  "222": {
+    "text": "Show first 10 names with their entropy.",
+    "hash": "5416cee6"
+  },
+  "223": {
+    "text": "Display name and entropy relative to maximum. Higher entropy in soft mode shows the distribution is spreading, the concept tokens carry more information forward.",
+    "hash": "a88cbba7"
+  },
+  "224": {
+    "text": "Average entropy across all samples, the summary statistic.",
+    "hash": "1abb3755"
+  }
+}

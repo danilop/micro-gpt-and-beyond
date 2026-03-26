@@ -1,0 +1,5 @@
+graph TD
+    fp32[FP32 Weights]
+    fp32 --> find_scale[scale = max / 127]
+    find_scale --> quantize[Round to INT8]
+    quantize --> store[Store INT8 + scale]

@@ -1,0 +1,5 @@
+graph TD
+    count[Count Pairs]
+    count --> find_best[Find Top Pair]
+    find_best --> merge[Merge + Vocab+=1]
+    merge -->|repeat| count

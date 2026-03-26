@@ -1,0 +1,4 @@
+graph TD
+    store[INT8 + scale]
+    store --> dequant[INT8 x scale]
+    dequant --> matmul[MatMul -> Output]

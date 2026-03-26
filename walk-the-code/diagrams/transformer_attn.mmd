@@ -1,0 +1,6 @@
+graph TD
+    Q[Q] --> scores[QK / sqrt d]
+    K[K] --> scores
+    scores --> softmax[Softmax + Mask]
+    softmax --> attn_out[Weighted Sum]
+    V[V] --> attn_out

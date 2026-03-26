@@ -1,0 +1,5 @@
+graph TD
+    check{Accept?}
+    check -->|Yes| accept[Keep token]
+    check -->|No| reject[Resample + restart]
+    accept --> bonus[All accepted = bonus token]

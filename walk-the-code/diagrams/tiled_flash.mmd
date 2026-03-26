@@ -1,0 +1,7 @@
+graph TD
+    t_load[Load Q block to SRAM]
+    t_load --> t_loop[For each K,V block]
+    t_loop --> t_kv[Load K,V to SRAM]
+    t_kv --> t_compute[Online softmax]
+    t_compute --> t_accum[Accumulate + write HBM]
+    t_compute --> t_loop

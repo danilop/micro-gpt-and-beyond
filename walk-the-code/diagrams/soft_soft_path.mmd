@@ -1,0 +1,4 @@
+graph TD
+    logits[Logits] --> softmax_blend[Softmax blend]
+    softmax_blend --> weighted[Blend ALL embeds]
+    weighted --> preserves[Preserves distribution]

@@ -1,0 +1,5 @@
+graph TD
+    model[Forward Pass]
+    model --> logits[Logits]
+    logits --> loss[Cross-Entropy]
+    loss --> update[Gradient + Adam]

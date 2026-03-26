@@ -1,0 +1,687 @@
+{
+  "1": {
+    "text": "Standard library only. No NumPy, no PyTorch, no nothing. This is pure Python all the way down.",
+    "hash": "de2abade"
+  },
+  "2": {
+    "text": "Just <code>log</code> and <code>exp</code>, the two math functions that make neural networks work. That's all the math we need.",
+    "hash": "b67c9dde"
+  },
+  "3": {
+    "text": "Random numbers for weight initialization, data shuffling, and sampling during generation. The three sources of randomness in any language model.",
+    "hash": "7e18ed42"
+  },
+  "5": {
+    "text": "Fixed seed so every run is identical. Essential for debugging when something goes wrong.",
+    "hash": "f0726c6e"
+  },
+  "7": {
+    "text": "Builds the path to the dataset file relative to this script, one directory up in <code>data/</code>.",
+    "hash": "5804e7ba"
+  },
+  "8": {
+    "text": "Auto-downloads the dataset if missing. The tutorial is entirely self-contained.",
+    "hash": "9667c968"
+  },
+  "9": {
+    "text": "Lazy import: only load <code>urllib</code> if we actually need to download.",
+    "hash": "84cdb92b"
+  },
+  "10": {
+    "text": "Karpathy's \"makemore\" names dataset, ~32K human names. Perfect for a tiny language model.",
+    "hash": "d5458b6a"
+  },
+  "11": {
+    "text": "One HTTP call and we have our training data. No pip install, no API key.",
+    "hash": "a51ad59e"
+  },
+  "13": {
+    "text": "Each document is one name. Strip whitespace, skip blanks. The model will learn the statistical patterns of how names are spelled.",
+    "hash": "cd97a0e5"
+  },
+  "14": {
+    "text": "Shuffling prevents the model from memorizing the alphabetical order of the dataset.",
+    "hash": "c8f1cb86"
+  },
+  "15": {
+    "text": "Quick sanity check. Expect around 32K names.",
+    "hash": "08bb2551"
+  },
+  "17": {
+    "text": "The vocabulary is just the unique characters across all names, typically a-z. Sorting gives us a stable char-to-ID mapping.",
+    "hash": "c82c42e4"
+  },
+  "18": {
+    "text": "A special token marking where names begin and end. Its ID is one past the last character, so it never collides with a real letter.",
+    "hash": "476ca504"
+  },
+  "19": {
+    "text": "Total vocabulary: 26 letters + 1 BOS/EOS token = 27 symbols. That's the entire language.",
+    "hash": "0a38d2ba"
+  },
+  "20": {
+    "text": "Print it to confirm. 27 is a beautifully small number to debug with.",
+    "hash": "1cb38e2c"
+  },
+  "22": {
+    "text": "The heart of the autograd engine. Every <code>Value</code> wraps a single scalar and knows how to compute its own gradient.",
+    "hash": "78c82417"
+  },
+  "23": {
+    "text": "<code>__slots__</code> saves memory by preventing Python from creating a <code>__dict__</code> per instance. Matters when you have thousands of Values in the computation graph.",
+    "hash": "a934ad8c"
+  },
+  "25": {
+    "text": "Each Value stores four things: the number itself, its gradient, what produced it, and the local derivatives connecting it to its parents.",
+    "hash": "c2667ecf"
+  },
+  "26": {
+    "text": "The forward pass fills <code>data</code>; the backward pass fills <code>grad</code>.",
+    "hash": "c9176721"
+  },
+  "27": {
+    "text": "Starts at zero because gradients accumulate. Multiple paths through the graph can contribute to the same parameter's gradient.",
+    "hash": "84cc424b"
+  },
+  "28": {
+    "text": "The computation graph is built implicitly: every operation creates a new Value that remembers its inputs.",
+    "hash": "af45ef18"
+  },
+  "29": {
+    "text": "Local gradients are the partial derivatives of this node with respect to each child. The chain rule's building blocks.",
+    "hash": "4b713b2e"
+  },
+  "31": {
+    "text": "Operator overloading is the trick that makes autograd invisible. Writing <code>a + b</code> secretly builds the computation graph.",
+    "hash": "28fd4a4e"
+  },
+  "32": {
+    "text": "If you add a plain number to a Value, wrap it first. This lets you write <code>x + 1</code> naturally.",
+    "hash": "1afe9bbf"
+  },
+  "33": {
+    "text": "Addition: result is <code>a + b</code>, and both local gradients are 1 because d(a+b)/da = d(a+b)/db = 1.",
+    "hash": "160f0cba"
+  },
+  "35": {
+    "text": "Multiplication builds the graph and stores local gradients. The derivative of <code>a*b</code> w.r.t. <code>a</code> is <code>b</code>, and vice versa.",
+    "hash": "46d3836f"
+  },
+  "36": {
+    "text": "Same wrapping trick as addition. Consistency means you can mix Values and raw numbers freely.",
+    "hash": "1afe9bbf"
+  },
+  "37": {
+    "text": "Product rule in action: d(a*b)/da = b and d(a*b)/db = a. The child values become each other's local gradients.",
+    "hash": "f8f8fcf2"
+  },
+  "39": {
+    "text": "Power rule as a one-liner: d(x^n)/dx = n*x^(n-1). The exponent must be a plain number, not a Value, which is fine for division and square roots.",
+    "hash": "49017103"
+  },
+  "40": {
+    "text": "Natural log with its gradient 1/x, all in one line. This appears in cross-entropy loss where <code>-log(p)</code> measures prediction quality.",
+    "hash": "61baa151"
+  },
+  "41": {
+    "text": "Exponential function: the only function that is its own derivative. Essential for softmax, which converts logits into probabilities.",
+    "hash": "3d5a7ab6"
+  },
+  "42": {
+    "text": "ReLU in one shot: pass positives through, kill negatives. The gradient is a simple gate, 1 if positive and 0 otherwise.",
+    "hash": "269e8e82"
+  },
+  "43": {
+    "text": "Negation reuses multiplication: <code>-x</code> is just <code>x * -1</code>. No new backward logic needed.",
+    "hash": "329e050f"
+  },
+  "44": {
+    "text": "Right-add handles <code>3 + value</code> by flipping to <code>value + 3</code>. Python calls this when the left operand doesn't know how to add a Value.",
+    "hash": "06d5388d"
+  },
+  "45": {
+    "text": "Subtraction: <code>a - b</code> becomes <code>a + (-b)</code>. Composing existing ops means the chain rule handles it automatically.",
+    "hash": "7edc10b3"
+  },
+  "46": {
+    "text": "Right-subtraction for when a plain number is on the left: <code>3 - value</code>. Flip and negate.",
+    "hash": "4c9be768"
+  },
+  "47": {
+    "text": "Right-multiply: <code>3 * value</code> becomes <code>value * 3</code>. Multiplication is commutative, so the graph-building in <code>__mul__</code> handles it.",
+    "hash": "88c2cb40"
+  },
+  "48": {
+    "text": "Division is multiplication by the reciprocal: <code>a / b</code> becomes <code>a * b**-1</code>. The power rule gives us division's gradient for free.",
+    "hash": "ac1ae777"
+  },
+  "49": {
+    "text": "Right-division: <code>3 / value</code> becomes <code>3 * value**-1</code>. Every arithmetic operation on Values is now covered.",
+    "hash": "99c1b67d"
+  },
+  "51": {
+    "text": "Backpropagation: walk the computation graph in reverse topological order, applying the chain rule at each node.",
+    "hash": "9fb958b2"
+  },
+  "52": {
+    "text": "Topological sort ensures we process each node only after all nodes that depend on it.",
+    "hash": "22080ddf"
+  },
+  "53": {
+    "text": "Track which nodes we've already visited to avoid processing the same node twice.",
+    "hash": "b69feb88"
+  },
+  "54": {
+    "text": "Recursive depth-first traversal to build the topological ordering. The classic algorithm.",
+    "hash": "dd7be9be"
+  },
+  "55": {
+    "text": "Only process each node once, even if it's used in multiple operations.",
+    "hash": "678b5fc2"
+  },
+  "56": {
+    "text": "Mark as visited before recursing into children.",
+    "hash": "8425f40d"
+  },
+  "57": {
+    "text": "Recurse into every input that produced this node.",
+    "hash": "3d43dc10"
+  },
+  "58": {
+    "text": "Depth-first: process all ancestors before this node.",
+    "hash": "caacc60a"
+  },
+  "59": {
+    "text": "Post-order append: this node goes after all its children in the list.",
+    "hash": "24448c9e"
+  },
+  "60": {
+    "text": "Start the sort from the loss node. It's the root of the entire computation graph.",
+    "hash": "b48c2d1e"
+  },
+  "61": {
+    "text": "The loss's gradient w.r.t. itself is 1. This seed starts the chain reaction of gradient computation.",
+    "hash": "03614c8c"
+  },
+  "62": {
+    "text": "Reversed topological order means we visit the loss first, then work backward toward the parameters.",
+    "hash": "2ed48bf2"
+  },
+  "63": {
+    "text": "For each node, pair up children with their local gradients.",
+    "hash": "6687f9eb"
+  },
+  "64": {
+    "text": "The <code>+=</code> is crucial. A parameter used in multiple operations receives gradients from all of them. This IS the chain rule.",
+    "hash": "23c1e33a"
+  },
+  "66": {
+    "text": "Just 1 transformer layer. Real GPTs stack 12-96+ layers, but one layer already captures interesting patterns.",
+    "hash": "f07cd00b"
+  },
+  "67": {
+    "text": "16 dimensions per token embedding. Tiny by modern standards (GPT-3 uses 12,288), but enough to learn name patterns.",
+    "hash": "7a9e8ab9"
+  },
+  "68": {
+    "text": "Names longer than 16 characters get truncated. Most names fit easily.",
+    "hash": "ea3e077e"
+  },
+  "69": {
+    "text": "4 attention heads, each seeing a 4-dimensional slice. Multiple heads let the model attend to different types of relationships simultaneously.",
+    "hash": "b617f05a"
+  },
+  "70": {
+    "text": "Each head gets <code>n_embd / n_head = 4</code> dimensions. The heads work in parallel on different subspaces.",
+    "hash": "5288dfb6"
+  },
+  "72": {
+    "text": "A helper to create a 2D list of random Values. This is how we initialize weight matrices without NumPy, just nested list comprehensions.",
+    "hash": "46eb7ace"
+  },
+  "74": {
+    "text": "The three core weight matrices: token embeddings (what each character means), position embeddings (where it sits), and the output head (predicting the next character).",
+    "hash": "1a86af79"
+  },
+  "76": {
+    "text": "For each transformer layer, allocate the attention and MLP weight matrices.",
+    "hash": "7eac16bb"
+  },
+  "77": {
+    "text": "Query weights: \"what am I looking for?\"",
+    "hash": "68ca22c8"
+  },
+  "78": {
+    "text": "Key weights: \"what do I contain?\"",
+    "hash": "6886df92"
+  },
+  "79": {
+    "text": "Value weights: \"what information do I carry?\"",
+    "hash": "9dc3310e"
+  },
+  "80": {
+    "text": "Output projection: recombines the multi-head attention outputs back into a single vector.",
+    "hash": "66988338"
+  },
+  "81": {
+    "text": "MLP first layer expands to 4x the embedding dimension. A wider hidden layer gives the network more capacity.",
+    "hash": "7c1fbcfc"
+  },
+  "82": {
+    "text": "MLP second layer projects back down to the embedding dimension.",
+    "hash": "c9131627"
+  },
+  "84": {
+    "text": "Flatten all weight matrices into one list so the optimizer can iterate over every parameter uniformly.",
+    "hash": "2f08283d"
+  },
+  "85": {
+    "text": "Print parameter count for sanity. With these settings, expect a few thousand parameters, a truly micro GPT.",
+    "hash": "cdd58e8f"
+  },
+  "87": {
+    "text": "A linear layer as a pure function: matrix-vector multiply. No classes, no frameworks, just math.",
+    "hash": "7c2982c8"
+  },
+  "88": {
+    "text": "Each output element is a dot product between one row of the weight matrix and the input vector. This is one row of Wx.",
+    "hash": "6ef13820"
+  },
+  "90": {
+    "text": "Softmax converts raw scores (logits) into a probability distribution that sums to 1.",
+    "hash": "b154dc2c"
+  },
+  "91": {
+    "text": "Subtract the max for numerical stability. Prevents <code>exp()</code> from overflowing. Doesn't change the output probabilities.",
+    "hash": "2a265d6f"
+  },
+  "92": {
+    "text": "Exponentiate to make everything positive. The subtraction ensures the largest value becomes exp(0) = 1.",
+    "hash": "53f315ae"
+  },
+  "93": {
+    "text": "Sum of exponentials becomes the normalizing constant.",
+    "hash": "6649b43b"
+  },
+  "94": {
+    "text": "Each probability is its exponential divided by the total. Now they sum to 1 and represent a valid distribution.",
+    "hash": "4ad03f53"
+  },
+  "96": {
+    "text": "RMSNorm: a simpler, faster alternative to LayerNorm. No mean subtraction, no learned parameters, just scale by the root mean square.",
+    "hash": "a111052e"
+  },
+  "97": {
+    "text": "Mean of squared values. Measures the \"energy\" of the vector.",
+    "hash": "ba99afa6"
+  },
+  "98": {
+    "text": "Inverse square root scaling factor. The <code>1e-5</code> epsilon prevents division by zero when all values are near zero.",
+    "hash": "9a2aea40"
+  },
+  "99": {
+    "text": "Scale each element so the vector has roughly unit RMS. Stabilizes training by keeping activations bounded.",
+    "hash": "28fb84b9"
+  },
+  "101": {
+    "text": "The GPT forward pass. Takes one token and its position, plus KV caches for previous tokens. Returns logits for the next token prediction.",
+    "hash": "cebf6a1e"
+  },
+  "102": {
+    "text": "Look up this token's learned embedding, a dense vector capturing what the character \"means\" to the model.",
+    "hash": "c38f00f7",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "wte"
+    ]
+  },
+  "103": {
+    "text": "Look up the position embedding. The model needs to know WHERE in the sequence this token sits.",
+    "hash": "449e41a7",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "wpe"
+    ]
+  },
+  "104": {
+    "text": "Add token identity and position information. After this, the vector knows both what and where.",
+    "hash": "492300c0",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "add_emb"
+    ]
+  },
+  "105": {
+    "text": "Normalize before entering the transformer layers. Keeps activations stable from the start.",
+    "hash": "83f53f47",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "norm_in"
+    ]
+  },
+  "107": {
+    "text": "Process through each transformer layer. With <code>n_layer=1</code> this loop runs once, but the code generalizes to deeper models.",
+    "hash": "12ede0d6"
+  },
+  "108": {
+    "text": "Save the input for the residual connection. It will be added back after attention, creating a \"skip road\" for gradients.",
+    "hash": "cbdfcbc3"
+  },
+  "109": {
+    "text": "Pre-norm architecture: normalize before attention, not after. This is the modern convention (GPT-2 onward) and helps training stability.",
+    "hash": "83f53f47"
+  },
+  "110": {
+    "text": "Query projection: transforms the normalized input into a \"question\" vector. What is this token looking for?",
+    "hash": "9b6082ed",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "Q"
+    ]
+  },
+  "111": {
+    "text": "Key projection: transforms into a \"label\" vector. What does this token advertise about itself?",
+    "hash": "694ec14b",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "K"
+    ]
+  },
+  "112": {
+    "text": "Value projection: transforms into the actual content that will be retrieved if attention deems this token relevant.",
+    "hash": "7dc1e5b7",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "V"
+    ]
+  },
+  "113": {
+    "text": "Append this token's keys to the cache. During generation, we accumulate keys from all previous positions so we don't recompute them.",
+    "hash": "9715a7bb"
+  },
+  "114": {
+    "text": "Same for values. The KV cache is what makes autoregressive generation efficient.",
+    "hash": "e1ad486b"
+  },
+  "116": {
+    "text": "We'll collect each head's output here, then concatenate them all.",
+    "hash": "750a1b5f"
+  },
+  "117": {
+    "text": "Process each attention head independently. Each head can specialize in different types of token relationships.",
+    "hash": "0eac1d8b"
+  },
+  "118": {
+    "text": "Slice start index for this head's portion of the embedding.",
+    "hash": "45ea4ffc"
+  },
+  "119": {
+    "text": "Extract this head's slice of the query vector. Just 4 dimensions out of 16.",
+    "hash": "d31b6346"
+  },
+  "120": {
+    "text": "Gather this head's key slices from ALL previous tokens (via the cache). This is the \"memory\" the current token attends to.",
+    "hash": "04788ada"
+  },
+  "121": {
+    "text": "Same for values, the information to retrieve.",
+    "hash": "3aadcde6"
+  },
+  "122": {
+    "text": "Scaled dot-product attention. Each score measures how much the query \"matches\" each key. Division by sqrt(head_dim) prevents softmax from becoming too peaked.",
+    "hash": "7724267b",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "scores",
+      "softmax"
+    ]
+  },
+  "123": {
+    "text": "Softmax converts scores into weights that sum to 1. A probability distribution over which past tokens to attend to.",
+    "hash": "b2819d47"
+  },
+  "124": {
+    "text": "Weighted sum of value vectors. Tokens that \"match\" the query contribute more. This is the core of the attention mechanism.",
+    "hash": "83bb7bf9",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "attn_out"
+    ]
+  },
+  "125": {
+    "text": "Concatenate all heads' outputs. Multi-head attention is just independent attentions run in parallel, then merged.",
+    "hash": "df9bee18"
+  },
+  "127": {
+    "text": "Output projection: mixes the concatenated head outputs. Lets the model learn how to combine information from different heads.",
+    "hash": "8a8fe9db",
+    "diagram": "transformer_out",
+    "highlight": [
+      "wo"
+    ]
+  },
+  "128": {
+    "text": "Residual connection: add the attention output to the original input. Creates a direct gradient highway through the network.",
+    "hash": "ddbe60c4",
+    "diagram": "transformer_out",
+    "highlight": [
+      "res1"
+    ]
+  },
+  "130": {
+    "text": "Save for the MLP's residual connection. Same pattern: snapshot, transform, add back.",
+    "hash": "cbdfcbc3"
+  },
+  "131": {
+    "text": "Normalize before the feed-forward network. Keeps activations on a consistent scale before the MLP processes them.",
+    "hash": "83f53f47"
+  },
+  "132": {
+    "text": "MLP first layer: expand to 4x dimension. This wider hidden layer gives the network more capacity for complex transformations.",
+    "hash": "c39dd3ce",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc1"
+    ]
+  },
+  "133": {
+    "text": "ReLU activation: zero out negatives, keep positives. Without this non-linearity, stacking linear layers would collapse into one.",
+    "hash": "32aa89ff",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "relu"
+    ]
+  },
+  "134": {
+    "text": "MLP second layer: project back down to embedding dimension.",
+    "hash": "7749abb2",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc2"
+    ]
+  },
+  "135": {
+    "text": "Second residual connection. The pattern is always: normalize, transform, add back. Two residual streams per layer.",
+    "hash": "ddbe60c4",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc2"
+    ]
+  },
+  "137": {
+    "text": "Final projection: map from the 16-dim embedding space to the 27-dim vocabulary. Each output is a score (logit) for how likely each character is next.",
+    "hash": "1845b3e4",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc2"
+    ]
+  },
+  "138": {
+    "text": "Return the raw logits. The training loop converts these to probabilities and computes the loss.",
+    "hash": "732a7204"
+  },
+  "140": {
+    "text": "Adam optimizer hyperparameters. <code>beta1=0.85</code> (momentum) is lower than the default 0.9, meaning less smoothing. <code>beta2=0.99</code> tracks the scale of recent gradients.",
+    "hash": "16ee9036"
+  },
+  "141": {
+    "text": "First moment (mean) estimates, initialized to zero. These smooth out noisy gradients, acting like momentum.",
+    "hash": "c60192cb"
+  },
+  "142": {
+    "text": "Second moment (variance) estimates. These adapt the learning rate per-parameter, giving larger updates to rarely-changed weights.",
+    "hash": "0db42250"
+  },
+  "144": {
+    "text": "1000 training steps. Each step processes one name and updates all parameters.",
+    "hash": "f105aa30"
+  },
+  "146": {
+    "text": "The main training loop. Each iteration is one gradient descent step on one name.",
+    "hash": "53f56939"
+  },
+  "147": {
+    "text": "Cycle through the dataset. After seeing all names, start over from the beginning.",
+    "hash": "47ec0e2c"
+  },
+  "148": {
+    "text": "Tokenize: BOS + character IDs + BOS. The model learns to start generating after BOS and stop by predicting BOS.",
+    "hash": "ae86abd0"
+  },
+  "149": {
+    "text": "Clip to the maximum context length. Most names are short, so this rarely activates.",
+    "hash": "3d9da8cd"
+  },
+  "151": {
+    "text": "Fresh KV caches for each training example. During training, we process the whole sequence with teacher forcing.",
+    "hash": "a35d1040"
+  },
+  "152": {
+    "text": "We'll accumulate the loss at each position and average them at the end.",
+    "hash": "38c0a0e0"
+  },
+  "154": {
+    "text": "Process each position one at a time. The model predicts each next character given all previous ones.",
+    "hash": "99351782"
+  },
+  "155": {
+    "text": "Input token and the target it should predict. The model sees <code>token_id</code> and should output high probability for <code>target_id</code>.",
+    "hash": "be0a656b"
+  },
+  "156": {
+    "text": "Run the forward pass, building the entire computation graph. Every Value operation is recorded for backpropagation.",
+    "hash": "cf335203"
+  },
+  "157": {
+    "text": "Convert logits to probabilities. The model's confidence distribution over all 27 possible next characters.",
+    "hash": "141e9312"
+  },
+  "158": {
+    "text": "Negative log probability of the correct answer. If the model assigns probability 1.0 to the right token, loss is 0. Lower probability means higher loss.",
+    "hash": "303b9e5f"
+  },
+  "159": {
+    "text": "Collect this position's loss. We'll average them all to get the final training signal.",
+    "hash": "ff81af9b"
+  },
+  "161": {
+    "text": "Average loss across all positions in this name. This single number measures how wrong the model is.",
+    "hash": "8be7f386"
+  },
+  "162": {
+    "text": "One call triggers the entire backward pass. Every parameter's gradient gets computed via the chain rule we built in the <code>Value</code> class.",
+    "hash": "227fe80d"
+  },
+  "164": {
+    "text": "Linear warmdown: learning rate starts at 0.01 and decays to 0. Smaller steps near the end help the model settle into a good minimum.",
+    "hash": "a7ee9183"
+  },
+  "166": {
+    "text": "Iterate over every single parameter in the model for the Adam update.",
+    "hash": "7e90878d"
+  },
+  "167": {
+    "text": "Update the running mean of gradients (first moment). <code>beta1</code> controls how much history to keep vs. how much to trust the current gradient.",
+    "hash": "ba400611"
+  },
+  "168": {
+    "text": "Update the running mean of squared gradients (second moment). This tracks the scale/variance of each parameter's gradients.",
+    "hash": "78d2fc0a"
+  },
+  "169": {
+    "text": "Bias correction for the first moment. Compensates for zero initialization, especially important in early steps.",
+    "hash": "b032277a"
+  },
+  "170": {
+    "text": "Bias correction for the second moment.",
+    "hash": "08934aec"
+  },
+  "171": {
+    "text": "The Adam update: step in the direction of the smoothed gradient, scaled by the inverse of the gradient's historical magnitude. Large gradients get smaller steps.",
+    "hash": "2ddff7c2"
+  },
+  "172": {
+    "text": "Reset gradient to zero for the next step. Without this, gradients would accumulate across training steps.",
+    "hash": "868bc78c"
+  },
+  "174": {
+    "text": "Print progress with carriage return so the line updates in place. Watch the loss decrease over training.",
+    "hash": "f3241997"
+  },
+  "176": {
+    "text": "Temperature controls randomness: 0.5 makes the distribution sharper (more conservative). Closer to 1.0 gives more variety and creativity.",
+    "hash": "24fb7806"
+  },
+  "177": {
+    "text": "Time to see what the model learned. Everything below is pure inference, no gradients, no updates.",
+    "hash": "1902bf84"
+  },
+  "179": {
+    "text": "Generate 20 new names the model has never seen. These come purely from learned patterns.",
+    "hash": "64d836c5"
+  },
+  "180": {
+    "text": "Fresh KV caches for generation. No context from training leaks in.",
+    "hash": "a35d1040"
+  },
+  "181": {
+    "text": "Start with the BOS token, the universal \"begin a name\" signal.",
+    "hash": "7d35e3bf"
+  },
+  "182": {
+    "text": "Collect generated characters here. We'll join them into a string at the end.",
+    "hash": "de258ea8"
+  },
+  "184": {
+    "text": "Generate one character at a time, up to the max sequence length.",
+    "hash": "4a5a0fd5"
+  },
+  "185": {
+    "text": "Feed the current token through the model to get predictions for the next one.",
+    "hash": "cf335203"
+  },
+  "186": {
+    "text": "Apply temperature scaling before softmax. Dividing logits by temperature < 1 makes the distribution peakier and more confident.",
+    "hash": "44670c04"
+  },
+  "187": {
+    "text": "Sample from the probability distribution. Unlike greedy decoding (always picking the most likely), sampling introduces variety.",
+    "hash": "4afd5c4c"
+  },
+  "189": {
+    "text": "If the model generates BOS, it's signaling \"this name is complete.\" Time to stop.",
+    "hash": "41a35c11"
+  },
+  "190": {
+    "text": "Exit the generation loop. The name is done.",
+    "hash": "14ebe56a"
+  },
+  "192": {
+    "text": "Convert the token ID back to its character. The mapping works both ways: chars to IDs for input, IDs to chars for output.",
+    "hash": "f0303c4c"
+  },
+  "194": {
+    "text": "Print the generated name. These are entirely new names invented by the model, reflecting statistical patterns learned from 32K real names.",
+    "hash": "288b1b13"
+  }
+}

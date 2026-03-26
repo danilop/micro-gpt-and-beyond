@@ -1,0 +1,4 @@
+graph TD
+    logits[Logits] --> sample[Sample 1 token]
+    sample --> embed_one[Look up embedding]
+    embed_one --> discards[Discards alternatives]

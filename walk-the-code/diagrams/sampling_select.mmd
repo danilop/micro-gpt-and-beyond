@@ -1,0 +1,6 @@
+graph TD
+    logits[Logits] --> argmax[Greedy: top-1]
+    logits --> temperature[Temperature]
+    temperature --> sample[Sample]
+    argmax --> token[Output Token]
+    sample --> token

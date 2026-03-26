@@ -1,0 +1,5 @@
+graph TD
+    norm2[RMSNorm]
+    norm2 --> fc1[Expand 4x]
+    fc1 --> relu[ReLU]
+    relu --> fc2[Contract]

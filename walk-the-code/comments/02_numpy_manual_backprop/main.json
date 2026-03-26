@@ -1,0 +1,762 @@
+{
+  "9": {
+    "text": "Standard math library, just for <code>sqrt</code> in the attention scaling.",
+    "hash": "b67c9dde"
+  },
+  "10": {
+    "text": "File path handling for the dataset.",
+    "hash": "de2abade"
+  },
+  "11": {
+    "text": "Python's random for shuffling, keeps dataset handling identical to lab 01.",
+    "hash": "7e18ed42"
+  },
+  "13": {
+    "text": "NumPy replaces the scalar-by-scalar math from lab 01. One matrix multiply here replaces thousands of individual <code>Value</code> multiplications.",
+    "hash": "6f11581d"
+  },
+  "15": {
+    "text": "Same seed as lab 01 for reproducible Python randomness.",
+    "hash": "f0726c6e"
+  },
+  "16": {
+    "text": "NumPy's modern RNG, separate from Python's <code>random</code> module, used for weight initialization.",
+    "hash": "80f20623"
+  },
+  "21": {
+    "text": "Same dataset path as lab 01, all labs share the same data.",
+    "hash": "5ac9686d"
+  },
+  "22": {
+    "text": "Auto-download if missing, identical to lab 01.",
+    "hash": "9667c968"
+  },
+  "25": {
+    "text": "Download URL for the names dataset.",
+    "hash": "5e579f27"
+  },
+  "28": {
+    "text": "Same tokenization as lab 01, each line becomes one training document.",
+    "hash": "2f367d0b"
+  },
+  "29": {
+    "text": "Shuffle for random training order.",
+    "hash": "c8f1cb86"
+  },
+  "32": {
+    "text": "Same character-level vocabulary as lab 01.",
+    "hash": "5f7ca3bb"
+  },
+  "33": {
+    "text": "BOS token ID, same convention across all labs.",
+    "hash": "476ca504"
+  },
+  "34": {
+    "text": "27 tokens total: 26 letters + BOS.",
+    "hash": "0a38d2ba"
+  },
+  "40": {
+    "text": "Same tiny architecture as lab 01, this lab is about the computation method, not the model size.",
+    "hash": "eb81fecf"
+  },
+  "41": {
+    "text": "4 attention heads, each with 4 dimensions.",
+    "hash": "5b7ba4c9"
+  },
+  "42": {
+    "text": "A single transformer layer keeps the model minimal. Real GPTs stack dozens, but one is enough to learn interesting name patterns and demonstrate the full algorithm.",
+    "hash": "9068cb85"
+  },
+  "43": {
+    "text": "Maximum sequence length of 16.",
+    "hash": "4f3059d5"
+  },
+  "44": {
+    "text": "4 dimensions per head: 16 / 4 = 4.",
+    "hash": "1892cf11"
+  },
+  "47": {
+    "text": "Helper to create a random NumPy array, replaces lab 01's nested list of <code>Value</code> objects. One line, same effect.",
+    "hash": "b8a4d5c2"
+  },
+  "48": {
+    "text": "Standard normal scaled by 0.08, same initialization distribution as lab 01.",
+    "hash": "423109bb"
+  },
+  "52": {
+    "text": "Parameters stored as a flat dict of NumPy arrays. Compare to lab 01's nested lists of <code>Value</code> objects, same data, vastly more efficient storage.",
+    "hash": "c82cc3f0"
+  },
+  "53": {
+    "text": "Token embeddings: each row is one token's learned representation.",
+    "hash": "1d2b3b0e"
+  },
+  "54": {
+    "text": "Position embeddings: each row encodes a position in the sequence.",
+    "hash": "9e0343da"
+  },
+  "55": {
+    "text": "Output projection: maps embeddings back to vocabulary scores.",
+    "hash": "e360918b"
+  },
+  "57": {
+    "text": "Allocate per-layer attention and MLP weights.",
+    "hash": "7eac16bb"
+  },
+  "58": {
+    "text": "The query weight matrix. Multiplying the input by this produces the 'what am I looking for?' vectors for attention.",
+    "hash": "13ecaa6e"
+  },
+  "59": {
+    "text": "The key weight matrix. It produces 'what do I contain?' vectors that queries will be matched against to determine relevance.",
+    "hash": "b8f309b4"
+  },
+  "60": {
+    "text": "The value weight matrix. It produces vectors carrying the actual content that attention will retrieve and blend together.",
+    "hash": "e536182e"
+  },
+  "61": {
+    "text": "Output projection recombines multi-head attention outputs. After each head focuses on different relationships, this matrix merges their perspectives into a unified representation.",
+    "hash": "9e304365"
+  },
+  "62": {
+    "text": "MLP expansion: 16 to 64 dimensions.",
+    "hash": "5da1e1f1"
+  },
+  "63": {
+    "text": "MLP contraction: 64 back to 16 dimensions.",
+    "hash": "f449a37e"
+  },
+  "66": {
+    "text": "Every parameter gets a matching zero-filled gradient array. In lab 01, gradients lived inside each <code>Value</code>. Here, we manage them ourselves.",
+    "hash": "224c70d9"
+  },
+  "68": {
+    "text": "Count total parameters to verify we match lab 01.",
+    "hash": "dc9e475c"
+  },
+  "75": {
+    "text": "RMSNorm forward, returns both the output AND a cache of intermediate values. The backward pass needs these cached values to compute gradients.",
+    "hash": "87079c9d"
+  },
+  "77": {
+    "text": "Mean of squares across the embedding dimension. NumPy handles this across entire matrices, not one scalar at a time.",
+    "hash": "a55ba2b8"
+  },
+  "78": {
+    "text": "Reciprocal square root, the scaling factor. Same formula as lab 01's <code>(ms + 1e-5) ** -0.5</code>.",
+    "hash": "13378487"
+  },
+  "79": {
+    "text": "Scale the input. Broadcasting handles the (T, 1) * (T, D) multiplication automatically.",
+    "hash": "d19b7485"
+  },
+  "80": {
+    "text": "Return the output AND the cache. This is the key pattern: forward stores everything backward will need.",
+    "hash": "b286ffe5"
+  },
+  "83": {
+    "text": "RMSNorm backward, given the gradient of the output, compute the gradient of the input. This is the manual derivative you'd get from the chain rule on paper.",
+    "hash": "b7be0921"
+  },
+  "84": {
+    "text": "Unpack the cached values from the forward pass.",
+    "hash": "92696491"
+  },
+  "86": {
+    "text": "The hand-derived RMSNorm gradient. Two terms: direct path through the scale, and indirect path through the normalization. This is what autograd computes automatically.",
+    "hash": "93d5bc52"
+  },
+  "90": {
+    "text": "Softmax forward, same subtract-max-then-exponentiate trick as lab 01, but vectorized over entire matrices.",
+    "hash": "8027229c"
+  },
+  "92": {
+    "text": "Subtract max for numerical stability, prevents overflow in exp().",
+    "hash": "8755b3a0"
+  },
+  "93": {
+    "text": "Exponentiate all values at once.",
+    "hash": "d19587bf"
+  },
+  "94": {
+    "text": "Normalize to get probabilities. Each row sums to 1.",
+    "hash": "7eafe78b"
+  },
+  "97": {
+    "text": "Softmax backward. The Jacobian of softmax is dense (every output depends on every input), but this compact formula handles it.",
+    "hash": "2cead80e"
+  },
+  "99": {
+    "text": "Sum of element-wise product: this captures the coupling between all softmax outputs.",
+    "hash": "dfcd239c"
+  },
+  "100": {
+    "text": "Elegant formula: <code>p * (dp - sum(dp * p))</code>. Derived from differentiating the softmax function, doing this by hand is a rite of passage.",
+    "hash": "5d09f179"
+  },
+  "103": {
+    "text": "ReLU forward: save a binary mask of which neurons fired. The backward pass just uses this mask as a gate.",
+    "hash": "47db8817"
+  },
+  "104": {
+    "text": "The mask is 1 where input was positive, 0 elsewhere. This IS the ReLU derivative.",
+    "hash": "885306a8"
+  },
+  "105": {
+    "text": "Element-wise multiply: zero out negative inputs.",
+    "hash": "49d5e84f"
+  },
+  "109": {
+    "text": "ReLU backward: gradients pass through where the neuron was active, get blocked where it was dead. Multiply by the mask, that's it.",
+    "hash": "021deefe"
+  },
+  "111": {
+    "text": "Dead simple: <code>dout * mask</code>. If the neuron fired in the forward pass, its gradient flows; if not, it's zero.",
+    "hash": "a3fc4d3b"
+  },
+  "114": {
+    "text": "The forward pass processes an entire sequence at once as a matrix, no more position-by-position loop like lab 01.",
+    "hash": "c4107404"
+  },
+  "119": {
+    "text": "How many tokens we're processing. The model will see all of these at once, unlike lab 01 which processed one position at a time.",
+    "hash": "5c7c1d9c"
+  },
+  "120": {
+    "text": "The cache dictionary stores every intermediate result the backward pass will need.",
+    "hash": "9c34a142"
+  },
+  "123": {
+    "text": "Gather all token embeddings at once with fancy indexing. In lab 01, this was a lookup in a loop.",
+    "hash": "3560bc0d",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "wte"
+    ]
+  },
+  "124": {
+    "text": "Slice the first <code>n</code> position embeddings.",
+    "hash": "edeee5b7",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "wpe"
+    ]
+  },
+  "125": {
+    "text": "Broadcast addition fuses token and position information, same as lab 01 but for all positions simultaneously.",
+    "hash": "b722179c",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "add_emb"
+    ]
+  },
+  "128": {
+    "text": "Normalize and cache. Every intermediate result stored here will be consumed during backpropagation.",
+    "hash": "fe2dbb2c",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "norm_in"
+    ]
+  },
+  "130": {
+    "text": "Loop over transformer layers (just 1 here).",
+    "hash": "12ede0d6"
+  },
+  "131": {
+    "text": "Snapshot the representation before attention transforms it. The residual connection will add this back, ensuring the layer can only refine, not destroy, what came before.",
+    "hash": "e180f0b6"
+  },
+  "134": {
+    "text": "Normalize and cache before attention. The cache stores the normalization statistics so the backward pass can compute exact gradients without re-doing the forward math.",
+    "hash": "551fe30f"
+  },
+  "137": {
+    "text": "Query projection: (n, D) @ (D, D). One matrix multiply replaces lab 01's nested list-comprehension linear layer.",
+    "hash": "4cf1d95b",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "Q"
+    ]
+  },
+  "138": {
+    "text": "Key projection, same shape transformation.",
+    "hash": "752e5136",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "K"
+    ]
+  },
+  "139": {
+    "text": "Project into value vectors, which carry the actual information that attention will retrieve and blend. Same operation as Q and K, different learned weights.",
+    "hash": "5d886e1b",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "V"
+    ]
+  },
+  "142": {
+    "text": "Reshape and transpose to split into attention heads. The (n, D) matrix becomes (n_head, n, head_dim), each head gets its own slice.",
+    "hash": "c4cc5637"
+  },
+  "143": {
+    "text": "Keys get the same multi-head split. Each head's keys will be matched against only that head's queries, so different heads learn different notions of relevance.",
+    "hash": "6cd64928"
+  },
+  "144": {
+    "text": "Values get the same multi-head split. Each head independently retrieves content from its own subspace, then the results are concatenated.",
+    "hash": "f1a6d28a"
+  },
+  "147": {
+    "text": "Batch matrix multiply: all heads compute attention scores simultaneously. One operation replaces lab 01's per-head loop.",
+    "hash": "6f49cfa3",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "scores"
+    ]
+  },
+  "149": {
+    "text": "Causal mask: upper triangle of ones. Prevents tokens from attending to future positions, the core constraint of autoregressive generation.",
+    "hash": "e66ad5d6"
+  },
+  "150": {
+    "text": "Fill future positions with -1e9 so softmax gives them ~zero probability.",
+    "hash": "c169a18e"
+  },
+  "151": {
+    "text": "Softmax over the last dimension, each row becomes a probability distribution over which past tokens to attend to.",
+    "hash": "07c12279",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "softmax"
+    ]
+  },
+  "154": {
+    "text": "Weighted sum of values using attention probabilities, the actual information retrieval step.",
+    "hash": "af9a48b2",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "attn_out"
+    ]
+  },
+  "156": {
+    "text": "Reverse the reshape: merge heads back into a single (n, D) matrix.",
+    "hash": "a2e633ed"
+  },
+  "159": {
+    "text": "Output projection: mix the multi-head outputs.",
+    "hash": "9d00da95",
+    "diagram": "transformer_out",
+    "highlight": [
+      "wo"
+    ]
+  },
+  "162": {
+    "text": "Residual connection: add attention output to original input.",
+    "hash": "3633ac94",
+    "diagram": "transformer_out",
+    "highlight": [
+      "res1"
+    ]
+  },
+  "164": {
+    "text": "Cache EVERYTHING the attention backward pass needs. Eleven values, this is the price of manual backprop.",
+    "hash": "648b77a3"
+  },
+  "167": {
+    "text": "Snapshot the representation before the MLP transforms it. The residual connection will add this back, letting gradients flow through an unobstructed shortcut path.",
+    "hash": "85aa86bc"
+  },
+  "168": {
+    "text": "Normalize before the feed-forward network. Like the pre-attention norm, this keeps activations on a consistent scale so the MLP can learn stable transformations.",
+    "hash": "b9c81780"
+  },
+  "171": {
+    "text": "MLP expansion: project to 4x wider hidden layer.",
+    "hash": "1084aeec",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc1"
+    ]
+  },
+  "172": {
+    "text": "ReLU activation with its binary mask cached for the backward pass. The mask records which neurons fired, which is all the backward pass needs to route gradients.",
+    "hash": "399c0866",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "relu"
+    ]
+  },
+  "173": {
+    "text": "MLP contraction: project back to embedding dimension.",
+    "hash": "c16f1514",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc2"
+    ]
+  },
+  "175": {
+    "text": "Add the MLP output back to its input via the residual connection. This is the second skip connection in the block, completing the norm-transform-add pattern.",
+    "hash": "deb4c88c",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc2"
+    ]
+  },
+  "176": {
+    "text": "Cache all MLP intermediates for backward.",
+    "hash": "562930d4"
+  },
+  "179": {
+    "text": "Final linear projection to vocabulary logits. Note the transpose on <code>lm_head</code>, weight tying convention.",
+    "hash": "9773cdf2",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc2"
+    ]
+  },
+  "180": {
+    "text": "Cache the final hidden states for the backward pass.",
+    "hash": "2be59f5e"
+  },
+  "184": {
+    "text": "Combines forward pass with loss computation, the complete training forward step.",
+    "hash": "8dad6b77"
+  },
+  "186": {
+    "text": "Total sequence length before clipping. We need this to determine how many input-target pairs we can form from this document.",
+    "hash": "f856e200"
+  },
+  "187": {
+    "text": "Clip to the maximum context window. Most names are short enough to fit, but this guard prevents index-out-of-bounds on unusually long entries.",
+    "hash": "8c69dd5d"
+  },
+  "188": {
+    "text": "Input tokens (all but last).",
+    "hash": "36dabef1"
+  },
+  "189": {
+    "text": "Target tokens (all but first), shifted by one position.",
+    "hash": "deb3d5e5"
+  },
+  "191": {
+    "text": "Feed the tokens through the model to get logits and the cache of intermediates. The cache is what makes manual backprop possible without recomputing the forward pass.",
+    "hash": "be0adb6a"
+  },
+  "194": {
+    "text": "Convert logits to probabilities for cross-entropy loss.",
+    "hash": "fdd8f950"
+  },
+  "195": {
+    "text": "Gather the log-probabilities of the correct targets. The <code>1e-10</code> prevents log(0).",
+    "hash": "6c8e3d0d"
+  },
+  "196": {
+    "text": "Mean negative log-probability, cross-entropy loss. Lower means the model assigns higher probability to the right answers.",
+    "hash": "0caa3e5c"
+  },
+  "198": {
+    "text": "Pack everything into the cache for the backward pass.",
+    "hash": "38e0de3c"
+  },
+  "202": {
+    "text": "The backward pass: 80+ lines of hand-derived gradients. This is what <code>loss.backward()</code> does automatically in PyTorch.",
+    "hash": "d294f4a1"
+  },
+  "204": {
+    "text": "Unpack the cached forward-pass values.",
+    "hash": "6aed21a3"
+  },
+  "207": {
+    "text": "Softmax + cross-entropy gradient shortcut: start with the probabilities, subtract 1 from the correct class. This elegant shorthand replaces two separate backward passes.",
+    "hash": "eebbe3dd"
+  },
+  "208": {
+    "text": "Subtract 1 at target positions, the combined softmax-CE gradient.",
+    "hash": "aab899f4"
+  },
+  "209": {
+    "text": "Average over the sequence, matches the mean in the loss computation.",
+    "hash": "40cde6ca"
+  },
+  "212": {
+    "text": "Gradient for <code>lm_head</code>: <code>dlogits.T @ x</code>. Accumulate with += because gradients add up.",
+    "hash": "5e9772e5"
+  },
+  "213": {
+    "text": "Gradient flowing back into the hidden states.",
+    "hash": "ccee34f6"
+  },
+  "215": {
+    "text": "Walk backward through layers, reverse order of the forward pass.",
+    "hash": "895e48fa"
+  },
+  "217": {
+    "text": "Unpack the four intermediate values the MLP forward pass cached. Each one is needed to compute the exact gradient for the corresponding weight matrix.",
+    "hash": "a50a105a"
+  },
+  "219": {
+    "text": "Save residual gradient, it bypasses the MLP and adds directly later.",
+    "hash": "7849a059"
+  },
+  "221": {
+    "text": "Gradient through fc2: the backward of <code>act @ fc2</code> w.r.t. <code>act</code>.",
+    "hash": "a2d5e95a"
+  },
+  "222": {
+    "text": "Weight gradient for fc2: <code>act.T @ dx</code>. This is the outer product pattern: input.T @ output_grad.",
+    "hash": "c0180b4f"
+  },
+  "224": {
+    "text": "ReLU backward: zero out gradients for dead neurons.",
+    "hash": "daa02962"
+  },
+  "227": {
+    "text": "Gradient through fc1: same pattern as fc2.",
+    "hash": "7462b835"
+  },
+  "228": {
+    "text": "Weight gradient for fc1: the outer product of the normalized input and the hidden gradient. This tells us how to adjust fc1 to reduce the loss.",
+    "hash": "1b12ef53"
+  },
+  "231": {
+    "text": "RMSNorm backward, uses the cached normalization statistics.",
+    "hash": "8ff78d3f"
+  },
+  "232": {
+    "text": "Add the residual gradient. The residual connection means gradients take two paths, through the MLP and around it, and they add together.",
+    "hash": "577fa12c"
+  },
+  "235": {
+    "text": "Unpack the attention cache, all eleven intermediate values.",
+    "hash": "d0fe764a"
+  },
+  "237": {
+    "text": "Save the residual gradient for the attention skip connection.",
+    "hash": "22d85e8c"
+  },
+  "240": {
+    "text": "Gradient through the output projection.",
+    "hash": "488aae14"
+  },
+  "241": {
+    "text": "Weight gradient for the output projection.",
+    "hash": "2ad2b25c"
+  },
+  "244": {
+    "text": "Reshape gradient back into multi-head format.",
+    "hash": "34c48a1d"
+  },
+  "247": {
+    "text": "Gradient through <code>att_probs @ V_h</code> w.r.t. attention probabilities.",
+    "hash": "bc970219"
+  },
+  "248": {
+    "text": "Gradient flowing back into value vectors. The attention probabilities determine how much each value contributed to the output, so transposing them gives the correct routing.",
+    "hash": "4b21242c"
+  },
+  "251": {
+    "text": "Softmax backward on attention weights, uses the formula from <code>softmax_bwd</code>.",
+    "hash": "f4b0b796"
+  },
+  "253": {
+    "text": "Zero out gradients for masked (future) positions, they were -inf in the forward pass.",
+    "hash": "e66ad5d6"
+  },
+  "255": {
+    "text": "Undo the sqrt(head_dim) scaling from the forward pass.",
+    "hash": "660e8d74"
+  },
+  "258": {
+    "text": "Gradient w.r.t. queries: <code>datt @ K_h</code>.",
+    "hash": "f3b9153c"
+  },
+  "259": {
+    "text": "Gradient w.r.t. keys: <code>datt.T @ Q_h</code>.",
+    "hash": "22a19ba0"
+  },
+  "262": {
+    "text": "Reshape head gradients back to (n, D).",
+    "hash": "11361d75"
+  },
+  "263": {
+    "text": "Key gradients get the same reshape back to full embedding dimension. The per-head gradients are simply concatenated since the heads operate on non-overlapping slices.",
+    "hash": "8e5da768"
+  },
+  "264": {
+    "text": "Value gradients reshaped identically. All three QKV gradients flow back through the same reshape-transpose pipeline that split them into heads during the forward pass.",
+    "hash": "c79b5922"
+  },
+  "267": {
+    "text": "Sum gradients from all three QKV projections. The same <code>x_normed</code> feeds into Q, K, and V, so its gradient is the sum of all three paths.",
+    "hash": "f4d0431d"
+  },
+  "268": {
+    "text": "Weight gradient for query projection.",
+    "hash": "65479b11"
+  },
+  "269": {
+    "text": "Weight gradient for key projection.",
+    "hash": "c1d7697a"
+  },
+  "270": {
+    "text": "Weight gradient for value projection.",
+    "hash": "07f72f3a"
+  },
+  "273": {
+    "text": "RMSNorm backward for the pre-attention norm.",
+    "hash": "c9c9e35d"
+  },
+  "274": {
+    "text": "Add residual gradient, completing the attention skip connection.",
+    "hash": "66fefda8"
+  },
+  "277": {
+    "text": "Initial RMSNorm backward, the very first normalization in the forward pass.",
+    "hash": "06222386"
+  },
+  "280": {
+    "text": "Embedding gradients: scatter the position-level gradients back to the embedding tables. Unlike weight matrices, embeddings use row indexing, so we accumulate manually.",
+    "hash": "e7b860fa"
+  },
+  "281": {
+    "text": "Each token ID's embedding row gets the gradient from that position.",
+    "hash": "d9a9d7ed"
+  },
+  "282": {
+    "text": "Each position's embedding row gets the same gradient.",
+    "hash": "a419f178"
+  },
+  "288": {
+    "text": "Same Adam hyperparameters as lab 01.",
+    "hash": "dca02c26"
+  },
+  "289": {
+    "text": "First moment buffers, matching dict structure to parameters.",
+    "hash": "6e06ade5"
+  },
+  "290": {
+    "text": "Second moment buffers. Named <code>Vb</code> to avoid shadowing Python's <code>v</code> loop variable.",
+    "hash": "e0cfcdc9"
+  },
+  "295": {
+    "text": "Same 1000 training steps as lab 01.",
+    "hash": "f105aa30"
+  },
+  "296": {
+    "text": "The main training loop. Each iteration: pick a name, forward pass, manual backward pass, Adam update. One thousand steps through this cycle.",
+    "hash": "53f56939"
+  },
+  "297": {
+    "text": "Cycle through the dataset with modular indexing. After seeing all names, we loop back to the beginning for another pass.",
+    "hash": "47ec0e2c"
+  },
+  "298": {
+    "text": "Tokenize: BOS + character IDs + BOS.",
+    "hash": "ae86abd0"
+  },
+  "299": {
+    "text": "Convert to NumPy array for the forward pass.",
+    "hash": "c595c308"
+  },
+  "302": {
+    "text": "Zero all gradients before each step. In lab 01, this was <code>p.grad = 0</code> per parameter; here it's per array.",
+    "hash": "f0001696"
+  },
+  "303": {
+    "text": "Fill with zeros, faster than creating new arrays.",
+    "hash": "77af4d0b"
+  },
+  "305": {
+    "text": "Forward pass + loss computation.",
+    "hash": "001225d7"
+  },
+  "306": {
+    "text": "Backward pass, our 80+ lines of hand-coded gradients. In lab 03, this will be one line.",
+    "hash": "b6c52278"
+  },
+  "309": {
+    "text": "Linear learning rate decay, same schedule as lab 01.",
+    "hash": "a7ee9183"
+  },
+  "310": {
+    "text": "Iterate over every parameter array in the model to apply the Adam update. NumPy broadcasting handles entire weight matrices at once.",
+    "hash": "d70acc6f"
+  },
+  "311": {
+    "text": "First moment update, exponential moving average of gradients.",
+    "hash": "7f873470"
+  },
+  "312": {
+    "text": "Second moment update, exponential moving average of squared gradients.",
+    "hash": "493b368e"
+  },
+  "313": {
+    "text": "Bias correction for first moment.",
+    "hash": "6c1c44fd"
+  },
+  "314": {
+    "text": "Bias correction for second moment.",
+    "hash": "f881a8b4"
+  },
+  "315": {
+    "text": "Adam parameter update. Same formula as lab 01, but operating on entire arrays at once thanks to NumPy broadcasting.",
+    "hash": "514a9ff5"
+  },
+  "317": {
+    "text": "Log every 10 steps (lab 01 logged every step, the NumPy version is fast enough that would be too verbose).",
+    "hash": "cf37956f"
+  },
+  "323": {
+    "text": "Temperature 0.5: slightly conservative generation.",
+    "hash": "d66aa849"
+  },
+  "327": {
+    "text": "Generate 20 entirely new names by sampling from the model's learned distribution. These names never appeared in the training data.",
+    "hash": "64d836c5"
+  },
+  "328": {
+    "text": "Start with BOS token in the generated sequence.",
+    "hash": "028c39d2"
+  },
+  "329": {
+    "text": "Collect characters as we generate.",
+    "hash": "de258ea8"
+  },
+  "330": {
+    "text": "Generate up to <code>block_size</code> characters.",
+    "hash": "ab05dc73"
+  },
+  "331": {
+    "text": "Run the forward pass on the entire generated sequence so far. Unlike lab 01's KV-cache approach, we recompute from scratch each step.",
+    "hash": "b2694215"
+  },
+  "332": {
+    "text": "Take only the last position's logits and apply temperature scaling.",
+    "hash": "083e8501"
+  },
+  "333": {
+    "text": "Reshape for softmax (expects 2D input) and get probabilities.",
+    "hash": "69ad1aa6"
+  },
+  "334": {
+    "text": "Sample from the distribution using NumPy's RNG.",
+    "hash": "40884532"
+  },
+  "335": {
+    "text": "When the model outputs the BOS token during generation, it is signaling that this name is complete and we should stop adding characters.",
+    "hash": "41a35c11"
+  },
+  "337": {
+    "text": "Extend the sequence with the new token.",
+    "hash": "7da31c20"
+  },
+  "338": {
+    "text": "Convert token ID to character.",
+    "hash": "f0303c4c"
+  },
+  "339": {
+    "text": "Print the finished name. These are entirely new names invented by the model, reflecting the statistical patterns it absorbed from 32K real names.",
+    "hash": "24147138"
+  }
+}

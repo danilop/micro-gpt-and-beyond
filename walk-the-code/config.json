@@ -1,0 +1,30 @@
+{
+  "title": "microGPT and Beyond",
+  "tagline": "Build a GPT from scratch, one concept at a time, from pure Python to production serving.",
+  "code_dir": "../labs",
+  "language": "python",
+  "labs": [
+    {"id": "01_pure_python", "file": "microgpt.py", "title": "microGPT, Pure Python", "tagline": "Karpathy's original microGPT, unmodified except for the dataset path. The complete algorithm in one file.", "run_command": ["python3", "microgpt.py"]},
+    {"id": "02_numpy_manual_backprop", "file": "main.py", "title": "NumPy with Manual Backpropagation", "tagline": "Same architecture, but NumPy handles the math. Every gradient is derived by hand.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "03_pytorch", "file": "main.py", "title": "PyTorch", "tagline": "PyTorch handles tensors and gradients. See how much boilerplate disappears.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "04_pytorch_batched", "file": "main.py", "title": "PyTorch Batched", "tagline": "Mini-batch training bridges the gap between educational toy and real training.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "05_jax", "file": "main.py", "title": "JAX", "tagline": "Purely functional style. No classes, no hidden state, no mutation.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "06_jax_batched", "file": "main.py", "title": "JAX Batched", "tagline": "Use jax.vmap to automatically vectorize single-example code across a batch.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "07_mlx", "file": "main.py", "title": "MLX (Apple Silicon)", "tagline": "Running on Apple Silicon GPU via MLX. Unified memory, lazy evaluation.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "08_mlx_batched", "file": "main.py", "title": "MLX Batched", "tagline": "Mini-batch training on Apple Silicon, same padding and masking as PyTorch batched.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "09_bpe_tokenizer", "file": "main.py", "title": "BPE Tokenizer", "tagline": "Byte-Pair Encoding from scratch in pure Python, with zero dependencies.", "run_command": ["python3", "main.py"]},
+    {"id": "10_rope", "file": "main.py", "title": "Rotary Position Embeddings (RoPE)", "tagline": "Position encoded by rotating Q and K vectors in complex space.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "11_gqa", "file": "main.py", "title": "Grouped-Query Attention (GQA/MQA)", "tagline": "From MHA to MQA to GQA: sharing KV heads reduces memory.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "12_kv_cache", "file": "main.py", "title": "KV Cache", "tagline": "The single most important inference optimization.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "13_sampling", "file": "main.py", "title": "Sampling Strategies", "tagline": "Five strategies producing completely different output from the same model.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "14_lora", "file": "main.py", "title": "LoRA (Low-Rank Adaptation)", "tagline": "Freeze the model, inject tiny low-rank matrices, and train only those.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "15_text_diffusion", "file": "main.py", "title": "Text Diffusion", "tagline": "Names emerge from pure noise through iterative unmasking.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "16_pytorch_quantized", "file": "main.py", "title": "PyTorch Quantized", "tagline": "Compress a trained model from FP32 to INT8.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "17_speculative_decoding", "file": "main.py", "title": "Speculative Decoding", "tagline": "A small draft model guesses ahead, a larger target model verifies.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "18_tiled_attention", "file": "main.py", "title": "Tiled Attention (FlashAttention)", "tagline": "Three attention implementations producing identical outputs. The difference is memory trips.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "19_paged_attention", "file": "main.py", "title": "Paged KV Cache (PagedAttention)", "tagline": "Virtual memory paging applied to KV caches.", "run_command": ["python3", "main.py"]},
+    {"id": "20_soft_thinking", "file": "main.py", "title": "Soft Thinking", "tagline": "Pass a probability-weighted blend forward, preserving information.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "21_soft_training", "file": "main.py", "title": "Soft Training", "tagline": "Use concept tokens during training too.", "run_command": ["uv", "run", "python", "main.py"]},
+    {"id": "22_disaggregated_serving", "file": "main.py", "title": "Disaggregated Serving", "tagline": "Prefill and decode on separate workers.", "run_command": ["uv", "run", "python", "main.py"]}
+  ]
+}

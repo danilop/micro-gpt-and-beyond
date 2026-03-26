@@ -4,10 +4,9 @@ on:
   push:
     branches: [main]
     paths:
-      - '*/main.py'
-      - '*/microgpt.py'
-      - '*/microdiffusion.py'
-      - 'web_tutorial/**'
+      - 'labs/*/main.py'
+      - 'labs/*/microgpt.py'
+      - 'walk-the-code/**'
 
   workflow_dispatch: # allow manual trigger
 
@@ -33,14 +32,21 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install walk-the-code
+        run: uv tool install "walk-the-code @ git+https://github.com/danilop/walk-the-code"
+
       - name: Build static bundle
-        run: python web_tutorial/build_static.py
+        run: wtc-build walk-the-code/config.json
 
       - name: Prepare site
         run: |
+          WTC_ASSETS=$(python -c "from walk_the_code import ASSETS_DIR; print(ASSETS_DIR)")
           mkdir -p _site/data
-          cp web_tutorial/index.html web_tutorial/lab.html _site/
-          cp web_tutorial/data/labs.json _site/data/
+          cp "$WTC_ASSETS/index.html" "$WTC_ASSETS/lab.html" _site/
+          cp walk-the-code/data/labs.json _site/data/
 
       - uses: actions/upload-pages-artifact@v3
         with:

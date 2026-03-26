@@ -1,0 +1,6 @@
+graph TD
+    s_qk[Load Q,K from HBM]
+    s_qk --> s_att[N x N scores]
+    s_att --> s_write[Write to HBM]
+    s_write --> s_softmax[Softmax + write HBM]
+    s_softmax --> s_out[Multiply V]

@@ -1,0 +1,5 @@
+graph TD
+    noise[All MASK tokens]
+    noise --> step1[Predict + unmask confident]
+    step1 --> remask1[Remask rest + repeat]
+    remask1 --> clean[Clean output]

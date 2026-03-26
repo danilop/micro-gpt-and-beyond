@@ -1,0 +1,1171 @@
+{
+  "13": {
+    "text": "Standard <code>math</code> for attention scaling and log/exp.",
+    "hash": "b67c9dde"
+  },
+  "14": {
+    "text": "Utilities for constructing the dataset file path relative to this script's location.",
+    "hash": "de2abade"
+  },
+  "15": {
+    "text": "Random for weight init, sampling, and shuffling.",
+    "hash": "7e18ed42"
+  },
+  "17": {
+    "text": "Lock the random seed so every run produces identical training, generation, and cache allocation behavior.",
+    "hash": "f0726c6e"
+  },
+  "22": {
+    "text": "Construct the dataset file path relative to this script's location so it works from any working directory.",
+    "hash": "5ac9686d"
+  },
+  "23": {
+    "text": "If the names dataset file doesn't exist locally, download it on the fly so the script works out of the box.",
+    "hash": "9667c968"
+  },
+  "24": {
+    "text": "Only import the URL library when we actually need to download, keeping startup fast.",
+    "hash": "84cdb92b"
+  },
+  "26": {
+    "text": "The URL pointing to Karpathy's makemore names dataset hosted on GitHub.",
+    "hash": "5e579f27"
+  },
+  "27": {
+    "text": "Fetch the names dataset from the URL and save it to the local data directory.",
+    "hash": "25ec775b"
+  },
+  "29": {
+    "text": "Read the file line by line, stripping whitespace. Each line is one name that becomes a training document.",
+    "hash": "2f367d0b"
+  },
+  "30": {
+    "text": "Shuffle to prevent memorizing order.",
+    "hash": "c8f1cb86"
+  },
+  "31": {
+    "text": "Show how many names we loaded so we can verify the dataset is intact.",
+    "hash": "08bb2551"
+  },
+  "33": {
+    "text": "Collect all unique characters from the dataset and sort them to build a deterministic character-to-ID vocabulary.",
+    "hash": "5f7ca3bb"
+  },
+  "34": {
+    "text": "BOS token doubles as end-of-sequence.",
+    "hash": "476ca504"
+  },
+  "35": {
+    "text": "Vocab = characters + 1 special token.",
+    "hash": "0a38d2ba"
+  },
+  "36": {
+    "text": "Display the character vocabulary size including the special BOS/EOS token.",
+    "hash": "1cb38e2c"
+  },
+  "41": {
+    "text": "Each token maps to a 16-dimensional vector. Small but sufficient for learning character-level name patterns in this demo.",
+    "hash": "eb81fecf"
+  },
+  "42": {
+    "text": "Split the embedding dimension across four attention heads for multi-head attention.",
+    "hash": "5b7ba4c9"
+  },
+  "43": {
+    "text": "Single layer, keeps training fast for the paging demo.",
+    "hash": "9068cb85"
+  },
+  "44": {
+    "text": "Max sequence length of 16 tokens.",
+    "hash": "4f3059d5"
+  },
+  "45": {
+    "text": "Each head sees 4 dimensions: 16 / 4.",
+    "hash": "1892cf11"
+  },
+  "49": {
+    "text": "Same <code>Value</code> autograd engine from Lab 01, exact copy. Each node is a scalar that tracks its computation graph for automatic differentiation.",
+    "hash": "78c82417"
+  },
+  "50": {
+    "text": "<code>__slots__</code> for memory efficiency, especially matters here because we'll have thousands of Value nodes during training.",
+    "hash": "3b66839e"
+  },
+  "52": {
+    "text": "Constructor: scalar data, parent nodes, and local derivatives.",
+    "hash": "c2667ecf"
+  },
+  "53": {
+    "text": "The scalar computed during the forward pass. Gradients flow backward from the loss to update this value during training.",
+    "hash": "aea3e87c"
+  },
+  "54": {
+    "text": "Gradient accumulator, filled during backprop.",
+    "hash": "42083b97"
+  },
+  "55": {
+    "text": "Child nodes in the computation graph.",
+    "hash": "32911fb8"
+  },
+  "56": {
+    "text": "Local gradients for chain rule.",
+    "hash": "eb6f8fc0"
+  },
+  "58": {
+    "text": "Define addition between two Value nodes, tracking both operands for backpropagation.",
+    "hash": "28fd4a4e"
+  },
+  "59": {
+    "text": "Auto-wrap raw numbers into <code>Value</code>.",
+    "hash": "1afe9bbf"
+  },
+  "60": {
+    "text": "New node: sum of data, both local grads are 1.",
+    "hash": "160f0cba"
+  },
+  "62": {
+    "text": "Define multiplication between two Values using the product rule: d(a*b)/da = b and d(a*b)/db = a, tracked for backprop.",
+    "hash": "46d3836f"
+  },
+  "63": {
+    "text": "Wrap raw Python numbers into Value nodes so arithmetic works uniformly in the graph.",
+    "hash": "1afe9bbf"
+  },
+  "64": {
+    "text": "Product rule: d(a*b)/da = b, d(a*b)/db = a.",
+    "hash": "f8f8fcf2"
+  },
+  "66": {
+    "text": "Raise a Value to a constant power, with the derivative following the power rule.",
+    "hash": "49017103"
+  },
+  "67": {
+    "text": "Natural logarithm with derivative 1/x. Essential for computing cross-entropy loss, which is -log(predicted probability).",
+    "hash": "61baa151"
+  },
+  "68": {
+    "text": "Exponential function, unique in that it's its own derivative. Used inside softmax to convert logits to positive values.",
+    "hash": "3d5a7ab6"
+  },
+  "69": {
+    "text": "ReLU: gradient is 1 if positive, 0 if negative.",
+    "hash": "269e8e82"
+  },
+  "70": {
+    "text": "Negate a Value by multiplying it by -1, reusing the multiplication operator.",
+    "hash": "329e050f"
+  },
+  "71": {
+    "text": "Support expressions like <code>3 + value</code> by forwarding to the normal add method.",
+    "hash": "06d5388d"
+  },
+  "72": {
+    "text": "Subtract two Values by adding the negation, reusing existing operators.",
+    "hash": "7edc10b3"
+  },
+  "73": {
+    "text": "Handle <code>number - value</code> by negating the Value and adding, reusing existing operators to keep the autograd graph simple.",
+    "hash": "4c9be768"
+  },
+  "74": {
+    "text": "Handle <code>number * value</code> by delegating to the Value's own multiplication, ensuring the computation graph tracks both operands.",
+    "hash": "88c2cb40"
+  },
+  "75": {
+    "text": "Rewrite division as multiplication by the inverse power, keeping the autograd graph simple by reusing <code>__pow__</code> and <code>__mul__</code>.",
+    "hash": "ac1ae777"
+  },
+  "76": {
+    "text": "Support expressions like <code>3 / value</code> by forwarding to the inverse-power path.",
+    "hash": "99c1b67d"
+  },
+  "78": {
+    "text": "Backpropagation through the computation graph.",
+    "hash": "9fb958b2"
+  },
+  "79": {
+    "text": "Sort all nodes so each is processed after everything that depends on it. This ordering makes backpropagation a simple reverse walk.",
+    "hash": "22080ddf"
+  },
+  "80": {
+    "text": "Keep a set of already-visited nodes to avoid processing any node twice when the graph has diamond-shaped shared subexpressions.",
+    "hash": "b69feb88"
+  },
+  "81": {
+    "text": "Depth-first search that builds the topological ordering by visiting children before parents, matching the reverse flow of gradients.",
+    "hash": "dd7be9be"
+  },
+  "82": {
+    "text": "If we have already processed this node, skip it to avoid duplicate traversal.",
+    "hash": "678b5fc2"
+  },
+  "83": {
+    "text": "Add this node to the visited set so we do not process it again.",
+    "hash": "8425f40d"
+  },
+  "84": {
+    "text": "Recurse into this node's children first, ensuring they appear earlier in the ordering and receive gradients before this node.",
+    "hash": "3d43dc10"
+  },
+  "85": {
+    "text": "Recurse into each child node to ensure they appear before this node in the ordering.",
+    "hash": "caacc60a"
+  },
+  "86": {
+    "text": "After all children are processed, append this node so it comes last in topological order.",
+    "hash": "24448c9e"
+  },
+  "87": {
+    "text": "Start from the loss node.",
+    "hash": "b48c2d1e"
+  },
+  "88": {
+    "text": "The gradient of the loss with respect to itself is 1 by definition. This seed value propagates backward through the entire graph.",
+    "hash": "03614c8c"
+  },
+  "89": {
+    "text": "Walk the sorted nodes in reverse: from the loss back toward parameters, applying the chain rule at each step.",
+    "hash": "2ed48bf2"
+  },
+  "90": {
+    "text": "Chain rule: multiply local grad by parent grad.",
+    "hash": "6687f9eb"
+  },
+  "91": {
+    "text": "Accumulate gradients (+=) for shared nodes.",
+    "hash": "23c1e33a"
+  },
+  "94": {
+    "text": "Weight matrix factory: creates a 2D list of small random <code>Value</code> nodes.",
+    "hash": "0bf97dd0"
+  },
+  "95": {
+    "text": "Gaussian initialization with std 0.08.",
+    "hash": "ef0c70ab"
+  },
+  "98": {
+    "text": "Set up the nested dictionary that holds all weight matrices: embeddings, per-layer attention projections, and MLP weights.",
+    "hash": "4913c249"
+  },
+  "99": {
+    "text": "Token embeddings: map token IDs to vectors.",
+    "hash": "b0f04547"
+  },
+  "100": {
+    "text": "Position embeddings: map positions to vectors.",
+    "hash": "38d2afb1"
+  },
+  "101": {
+    "text": "Separate output head (no weight tying in this lab).",
+    "hash": "e5f69f72"
+  },
+  "102": {
+    "text": "Close the initial state dict after adding embedding and output head weights. Per-layer weights are added in the loop below.",
+    "hash": "d10b36aa"
+  },
+  "103": {
+    "text": "For each transformer layer, allocate the four attention projections (Q, K, V, output) and the two MLP weight matrices.",
+    "hash": "7eac16bb"
+  },
+  "104": {
+    "text": "Compact loop over the four attention projections.",
+    "hash": "79c4c2b2"
+  },
+  "105": {
+    "text": "Allocate each attention weight matrix.",
+    "hash": "5e18e1c2"
+  },
+  "106": {
+    "text": "MLP first layer: expand 16 \u2192 64.",
+    "hash": "a11a62f3"
+  },
+  "107": {
+    "text": "MLP second layer: contract 64 \u2192 16.",
+    "hash": "c0a7ce20"
+  },
+  "108": {
+    "text": "Flatten all parameters into a single list for the optimizer.",
+    "hash": "2f08283d"
+  },
+  "109": {
+    "text": "Display the total number of trainable scalar parameters so we can verify the model size matches our expectations.",
+    "hash": "cdd58e8f"
+  },
+  "112": {
+    "text": "Matrix-vector multiply: dot product of each weight row with input.",
+    "hash": "7c2982c8"
+  },
+  "113": {
+    "text": "Returns a vector of dot products.",
+    "hash": "6ef13820"
+  },
+  "116": {
+    "text": "Dual-mode softmax: works with both <code>Value</code> nodes (training) and plain floats (inference).",
+    "hash": "b154dc2c"
+  },
+  "117": {
+    "text": "Type dispatch: check if we're in autograd mode.",
+    "hash": "8bfae829"
+  },
+  "118": {
+    "text": "Max subtraction for numerical stability (Value mode).",
+    "hash": "2a265d6f"
+  },
+  "119": {
+    "text": "Raise e to each shifted logit. The prior max-subtraction keeps the largest exponent at 0, preventing numerical overflow.",
+    "hash": "53f315ae"
+  },
+  "120": {
+    "text": "Else branch: plain float mode.",
+    "hash": "675c27cf"
+  },
+  "121": {
+    "text": "Max subtraction for plain floats.",
+    "hash": "f7bdcfae"
+  },
+  "122": {
+    "text": "Use Python's built-in <code>math.exp</code> for fast exponentiation in plain float mode.",
+    "hash": "b73fd25e"
+  },
+  "123": {
+    "text": "Sum all exponentiated values to get the normalizing constant. Dividing each exp by this total yields probabilities summing to 1.",
+    "hash": "6649b43b"
+  },
+  "124": {
+    "text": "Divide each exponentiated value by the total, producing a proper probability distribution where all values sum to 1.",
+    "hash": "4ad03f53"
+  },
+  "127": {
+    "text": "RMSNorm: rescale by inverse root-mean-square.",
+    "hash": "a111052e"
+  },
+  "128": {
+    "text": "Calculate the inverse root-mean-square in one shot: square all elements, average, add epsilon, raise to the -0.5 power.",
+    "hash": "7210d775"
+  },
+  "129": {
+    "text": "Multiply each element by the computed scale factor, bringing the vector to roughly unit magnitude while preserving its direction.",
+    "hash": "28fb84b9"
+  },
+  "132": {
+    "text": "Dual-mode ReLU: dispatches to <code>Value.relu()</code> or plain <code>max</code>.",
+    "hash": "3aa2842d"
+  },
+  "133": {
+    "text": "Detect whether the input is a Value node (training with autograd) or a plain float (inference), to call the right implementation.",
+    "hash": "5737f94f"
+  },
+  "134": {
+    "text": "Value mode: use the tracked relu for gradient computation.",
+    "hash": "9f2243fc"
+  },
+  "135": {
+    "text": "Plain float mode: simple max(0, x).",
+    "hash": "3236a366"
+  },
+  "143": {
+    "text": "Contiguous KV cache: the traditional approach. Pre-allocates max_seq_len slots per layer upfront, regardless of actual sequence length. Simple but wasteful, like malloc'ing the maximum possible size for every request.",
+    "hash": "de73b5c9",
+    "diagram": "paged_contiguous",
+    "highlight": [
+      "alloc_c",
+      "waste"
+    ]
+  },
+  "146": {
+    "text": "Constructor: specify max length, layers, and dimension.",
+    "hash": "5103ce94"
+  },
+  "147": {
+    "text": "Remember the maximum sequence length so we know how many slots to pre-allocate in the contiguous KV buffer.",
+    "hash": "11e5c9b2"
+  },
+  "148": {
+    "text": "Track how many transformer layers need separate K and V caches, since each layer maintains its own attention history.",
+    "hash": "7040e496"
+  },
+  "149": {
+    "text": "The dimensionality of each key and value vector, determining how many floats each cache slot holds.",
+    "hash": "de11c286"
+  },
+  "150": {
+    "text": "Pre-allocate full K cache: n_layers \u00d7 max_seq_len \u00d7 dims. All slots allocated even if most stay empty.",
+    "hash": "9e63401f"
+  },
+  "151": {
+    "text": "Pre-allocate full V cache: same shape, same waste.",
+    "hash": "31d0a636"
+  },
+  "152": {
+    "text": "Track how many positions are actually filled.",
+    "hash": "59e32988"
+  },
+  "153": {
+    "text": "Total allocated slots, this number stays fixed regardless of actual usage, which is the waste PagedAttention solves.",
+    "hash": "ab5a8e9a"
+  },
+  "154": {
+    "text": "A string tag to identify this cache type in printed output and comparisons.",
+    "hash": "09c28910"
+  },
+  "156": {
+    "text": "Reset for a new sequence, just moves the length counter back to zero.",
+    "hash": "7d900d41"
+  },
+  "157": {
+    "text": "\"Free\" memory by resetting the pointer. The pre-allocated arrays stay in memory.",
+    "hash": "59e32988"
+  },
+  "159": {
+    "text": "Append a new K,V pair to the cache at the current position.",
+    "hash": "cffedb37"
+  },
+  "160": {
+    "text": "Write K vector to the next open slot.",
+    "hash": "5a31c2f6"
+  },
+  "161": {
+    "text": "Write V vector to the same slot.",
+    "hash": "be8bea64"
+  },
+  "162": {
+    "text": "Only increment length after the last layer writes, since all layers share the same position counter.",
+    "hash": "5919daa6"
+  },
+  "163": {
+    "text": "Move the write pointer forward by one position so the next token's KV pair goes into the next slot.",
+    "hash": "b29c5246"
+  },
+  "165": {
+    "text": "Retrieve all cached K,V pairs up to the current position.",
+    "hash": "56fde3ab"
+  },
+  "166": {
+    "text": "Return slices, only the filled portion, not the empty pre-allocated tail.",
+    "hash": "c6ecdecc"
+  },
+  "168": {
+    "text": "Report what fraction of pre-allocated memory actually holds real data, exposing the waste inherent in fixed-size allocation.",
+    "hash": "aa192eae"
+  },
+  "169": {
+    "text": "Count how many KV slots are actually filled with real data from the sequence.",
+    "hash": "434eb04d"
+  },
+  "170": {
+    "text": "Ratio of used to allocated. For short sequences in a large buffer, this is often just 10-20%.",
+    "hash": "dd75e4cc"
+  },
+  "173": {
+    "text": "Block size for paged allocation: 4 tokens per block. Like a page size in virtual memory, the fundamental unit of allocation.",
+    "hash": "c6a19e40"
+  },
+  "176": {
+    "text": "PagedKVCache: the core innovation behind vLLM. Instead of pre-allocating max_seq_len per sequence, allocate small fixed-size blocks on demand. A block table maps logical positions to physical block IDs, exactly like OS page tables map virtual addresses to physical frames.",
+    "hash": "426bd1d2",
+    "diagram": "paged_virtual",
+    "highlight": [
+      "lookup"
+    ]
+  },
+  "183": {
+    "text": "Constructor: takes total physical blocks available, layers, dimensions, and block size.",
+    "hash": "d13106f5"
+  },
+  "184": {
+    "text": "Record how many tokens fit in each physical block, which determines the granularity of memory allocation and waste.",
+    "hash": "8f25e0b4"
+  },
+  "185": {
+    "text": "Store the number of transformer layers this cache must track KV pairs for.",
+    "hash": "7040e496"
+  },
+  "186": {
+    "text": "The number of floats per key or value vector, used to size each slot within a physical block.",
+    "hash": "de11c286"
+  },
+  "187": {
+    "text": "Total physical blocks in the pool.",
+    "hash": "67580431"
+  },
+  "188": {
+    "text": "Physical K storage: one block = block_size_tokens \u00d7 dims. Blocks are the atomic allocation unit.",
+    "hash": "590c74f0"
+  },
+  "189": {
+    "text": "Physical V storage: same shape as K blocks.",
+    "hash": "640abbd8"
+  },
+  "190": {
+    "text": "Free block list, like the OS free frame list. Blocks are allocated from here on demand and returned when sequences finish.",
+    "hash": "ded6a2b4"
+  },
+  "191": {
+    "text": "Block tables: maps (seq_id, layer) \u2192 list of physical block IDs. This IS the page table.",
+    "hash": "08e19c8a"
+  },
+  "192": {
+    "text": "Dictionary mapping each active sequence ID to how many tokens it has cached so far, used for slot addressing.",
+    "hash": "119c844e"
+  },
+  "193": {
+    "text": "Log allocation events for debugging.",
+    "hash": "7d8d126d"
+  },
+  "194": {
+    "text": "A string tag to identify this cache type in printed output and comparisons.",
+    "hash": "1692297e"
+  },
+  "196": {
+    "text": "Allocate one physical block from the free list.",
+    "hash": "b90ee981"
+  },
+  "197": {
+    "text": "Out of blocks = out of memory. In production vLLM, this triggers request preemption.",
+    "hash": "2775e19c"
+  },
+  "198": {
+    "text": "Raise an error if the pool is exhausted.",
+    "hash": "adc4ca12"
+  },
+  "199": {
+    "text": "Pop from the free list and return the physical block ID.",
+    "hash": "e5acbcbb"
+  },
+  "201": {
+    "text": "Initialize a new sequence's page table, one empty block list per layer.",
+    "hash": "580b8d16"
+  },
+  "202": {
+    "text": "Create the page table: each layer gets its own list of physical block mappings.",
+    "hash": "99708958"
+  },
+  "203": {
+    "text": "Every new sequence starts empty with zero cached tokens. Blocks will be allocated on demand as tokens arrive.",
+    "hash": "3acd9965"
+  },
+  "205": {
+    "text": "Append K,V to the paged cache, the hot path that makes paging work.",
+    "hash": "cffedb37"
+  },
+  "206": {
+    "text": "Current sequence length determines which logical block and slot.",
+    "hash": "c271d7bd"
+  },
+  "207": {
+    "text": "Which logical block this position falls in (integer division).",
+    "hash": "93ef6eb5"
+  },
+  "208": {
+    "text": "Which slot within that block (modulo).",
+    "hash": "e3e3fb70"
+  },
+  "209": {
+    "text": "If this logical block doesn't have a physical block yet, allocate one. This is the demand paging, blocks are allocated only when first touched, not upfront.",
+    "hash": "b2d9d463",
+    "diagram": "paged_virtual",
+    "highlight": [
+      "alloc_p"
+    ]
+  },
+  "210": {
+    "text": "Allocate a physical block from the free pool.",
+    "hash": "783c1e53"
+  },
+  "211": {
+    "text": "Map: logical block \u2192 physical block in the page table.",
+    "hash": "cc0f5459"
+  },
+  "212": {
+    "text": "Record the allocation event in the log so we can trace exactly when and why each physical block was claimed.",
+    "hash": "56ece6b4"
+  },
+  "215": {
+    "text": "Look up the physical block ID for this logical block.",
+    "hash": "3672a53c"
+  },
+  "216": {
+    "text": "Write K vector into the physical block at the right slot.",
+    "hash": "109411f7",
+    "diagram": "paged_virtual",
+    "highlight": [
+      "write"
+    ]
+  },
+  "217": {
+    "text": "Write V vector into the same slot.",
+    "hash": "762fe824"
+  },
+  "218": {
+    "text": "Increment length only after the last layer.",
+    "hash": "5919daa6"
+  },
+  "219": {
+    "text": "Increment the sequence position counter so the next token's KV pair lands in the correct slot.",
+    "hash": "e4cbc8e2"
+  },
+  "221": {
+    "text": "Reconstruct the full K,V history by walking the page table, translating logical positions to physical locations.",
+    "hash": "56fde3ab"
+  },
+  "222": {
+    "text": "Look up how many tokens this sequence has cached so far, which tells us how many KV pairs to gather.",
+    "hash": "c271d7bd"
+  },
+  "223": {
+    "text": "Accumulators for the gathered vectors.",
+    "hash": "9f253697"
+  },
+  "224": {
+    "text": "Walk through every cached position.",
+    "hash": "fb36f51a"
+  },
+  "225": {
+    "text": "Logical block index for this position.",
+    "hash": "b4203b46"
+  },
+  "226": {
+    "text": "Position modulo block_size gives the slot offset within the block, since each block holds block_size consecutive tokens.",
+    "hash": "97ae094c"
+  },
+  "227": {
+    "text": "Translate logical \u2192 physical via the page table. This indirection is the price of paging, but it's O(1).",
+    "hash": "3672a53c"
+  },
+  "228": {
+    "text": "Read K vector from the physical block.",
+    "hash": "3082c964"
+  },
+  "229": {
+    "text": "Read V vector from the physical block.",
+    "hash": "a8275473"
+  },
+  "230": {
+    "text": "Reassemble the full K and V history by walking the page table to translate each logical position into a physical block and slot.",
+    "hash": "7caeb14e"
+  },
+  "232": {
+    "text": "Free a sequence's blocks back to the pool, like deallocating pages in an OS.",
+    "hash": "bfa9ad09"
+  },
+  "233": {
+    "text": "Collect all physical block IDs from every layer's page table and return them to the free pool for reuse by other sequences.",
+    "hash": "201788ad"
+  },
+  "234": {
+    "text": "Extend the free list, blocks are immediately available for other sequences.",
+    "hash": "df640e84"
+  },
+  "235": {
+    "text": "Remove the page table entry.",
+    "hash": "025bb8ba"
+  },
+  "236": {
+    "text": "Delete the length entry for this sequence since it no longer exists in the cache after deallocation.",
+    "hash": "cad3f22b"
+  },
+  "238": {
+    "text": "Report what fraction of the physical block pool is currently in use, which tracks actual memory consumption much more tightly than contiguous.",
+    "hash": "aa192eae"
+  },
+  "239": {
+    "text": "Count allocated blocks (total minus free).",
+    "hash": "987c6456"
+  },
+  "240": {
+    "text": "Ratio: with paging, this tracks actual usage closely. No wasted pre-allocation.",
+    "hash": "e9f3e7db"
+  },
+  "242": {
+    "text": "Prefix sharing: the killer feature of paged caches. Multiple sequences share the same physical blocks for a common prefix, zero-copy, just duplicate the page table entries.",
+    "hash": "bac20222",
+    "diagram": "paged_virtual",
+    "highlight": [
+      "write"
+    ]
+  },
+  "244": {
+    "text": "Set up a fresh page table for the destination sequence so it can start receiving shared block references.",
+    "hash": "2932e7b7"
+  },
+  "245": {
+    "text": "Ceiling division: how many blocks the shared prefix spans.",
+    "hash": "6bad971b"
+  },
+  "246": {
+    "text": "Track how many physical blocks are being shared, so we can report the memory savings from prefix sharing.",
+    "hash": "e206c18c"
+  },
+  "247": {
+    "text": "Iterate over each transformer layer to copy its block table entries.",
+    "hash": "27797634"
+  },
+  "248": {
+    "text": "For each block in the prefix...",
+    "hash": "7d07a7da"
+  },
+  "249": {
+    "text": "Look up which physical block holds this part of the source sequence's prefix in the page table.",
+    "hash": "4689ba9a"
+  },
+  "250": {
+    "text": "Point the destination's page table at the SAME physical block. No data copy, both sequences read from identical memory.",
+    "hash": "4d4d8ce6",
+    "diagram": "paged_virtual",
+    "highlight": [
+      "write"
+    ]
+  },
+  "251": {
+    "text": "Increment the shared block counter each time we point the destination at an existing physical block.",
+    "hash": "5f8c2075"
+  },
+  "252": {
+    "text": "Set the destination sequence's cached length to match the prefix, since it inherits all those positions from the source.",
+    "hash": "fe498e36"
+  },
+  "253": {
+    "text": "Report the total number of physical blocks that were shared, letting the caller calculate the memory savings.",
+    "hash": "52133dd4"
+  },
+  "261": {
+    "text": "Unified GPT forward pass: processes one token at a time using any cache implementation. The cache abstraction means the model code doesn't know or care whether it's paged or contiguous.",
+    "hash": "b03e9ed9"
+  },
+  "262": {
+    "text": "Default to the training state dict if no weights provided.",
+    "hash": "e3ed8cca"
+  },
+  "263": {
+    "text": "If no separate inference weights are passed in, use the training state dict. This lets the same function work for both phases.",
+    "hash": "34e14cd2"
+  },
+  "264": {
+    "text": "Embed: look up token and position vectors, add them.",
+    "hash": "04cc5b1f"
+  },
+  "265": {
+    "text": "Normalize the combined token-plus-position embedding before feeding it into the transformer layers.",
+    "hash": "83f53f47"
+  },
+  "266": {
+    "text": "Process through each transformer layer.",
+    "hash": "12ede0d6"
+  },
+  "267": {
+    "text": "Snapshot the current representation before attention modifies it. The residual connection adds this back to preserve the original signal.",
+    "hash": "80347633"
+  },
+  "268": {
+    "text": "Normalize activations before the attention projections, keeping input scale consistent for stable Q/K/V computation.",
+    "hash": "83f53f47"
+  },
+  "269": {
+    "text": "Compute Q, K, V projections in one compact expression using a generator.",
+    "hash": "e277c638"
+  },
+  "270": {
+    "text": "Store K,V in the cache, the cache handles the allocation strategy transparently.",
+    "hash": "7249b962"
+  },
+  "271": {
+    "text": "Retrieve all historical K,V pairs, the cache translates logical to physical positions if paged.",
+    "hash": "c9a71d07"
+  },
+  "272": {
+    "text": "Empty list that will collect each head's output before concatenation into the full multi-head attention result.",
+    "hash": "750a1b5f"
+  },
+  "273": {
+    "text": "Process each attention head independently, since heads operate on separate slices of the embedding and don't interact.",
+    "hash": "0eac1d8b"
+  },
+  "274": {
+    "text": "Compute the starting index for this head's slice within the full embedding vector.",
+    "hash": "45ea4ffc"
+  },
+  "275": {
+    "text": "Slice out this head's query from the full projection vector, isolating the dimensions this head is responsible for.",
+    "hash": "2eefb976"
+  },
+  "276": {
+    "text": "Slice keys for this head.",
+    "hash": "ed58aab0"
+  },
+  "277": {
+    "text": "Slice values for this head.",
+    "hash": "b73ece22"
+  },
+  "278": {
+    "text": "Scaled dot-product attention against all cached keys.",
+    "hash": "e63f0b48"
+  },
+  "279": {
+    "text": "Convert the raw dot-product scores into a probability distribution over all cached positions via softmax.",
+    "hash": "a632dea0"
+  },
+  "280": {
+    "text": "Blend value vectors weighted by the attention probabilities, producing a context-aware summary for this head.",
+    "hash": "6c7bbf86"
+  },
+  "281": {
+    "text": "Append this head's output to the growing list. Once all heads finish, these slices get concatenated into a full vector.",
+    "hash": "df9bee18"
+  },
+  "282": {
+    "text": "Project the concatenated multi-head output back to the model's embedding dimension.",
+    "hash": "a02521dc"
+  },
+  "283": {
+    "text": "Add the attention output back to the pre-attention snapshot, allowing gradients to flow through both the attention path and the skip connection.",
+    "hash": "c528202f"
+  },
+  "284": {
+    "text": "Snapshot before the MLP transforms it. The residual connection will add this back so the MLP can only refine the representation.",
+    "hash": "80347633"
+  },
+  "285": {
+    "text": "Normalize activations before the feed-forward network so the MLP weights see well-scaled inputs regardless of what attention produced.",
+    "hash": "83f53f47"
+  },
+  "286": {
+    "text": "Expand the hidden state to four times the embedding dimension via the first MLP weight matrix.",
+    "hash": "05218a35"
+  },
+  "287": {
+    "text": "ReLU activation (dispatches to correct mode via <code>relu()</code>).",
+    "hash": "24acce07"
+  },
+  "288": {
+    "text": "Contract the activated hidden state back to the embedding dimension via the second MLP weight matrix.",
+    "hash": "9ceb4ed8"
+  },
+  "289": {
+    "text": "Add the MLP output to the pre-MLP snapshot, completing the second residual connection in this transformer layer.",
+    "hash": "c528202f"
+  },
+  "290": {
+    "text": "Map the final hidden state to a score for every token in the vocabulary, producing the logits used for next-token prediction.",
+    "hash": "ea618938"
+  },
+  "296": {
+    "text": "Adam optimizer settings: learning rate, momentum decay rates (beta1 for mean, beta2 for variance), and epsilon to prevent division by zero.",
+    "hash": "16ee9036"
+  },
+  "297": {
+    "text": "Buffer for the exponential moving average of each parameter's gradient (first moment), initialized to zero for all parameters.",
+    "hash": "c60192cb"
+  },
+  "298": {
+    "text": "Buffer for the exponential moving average of each parameter's squared gradient (second moment), initialized to zero for all parameters.",
+    "hash": "0db42250"
+  },
+  "299": {
+    "text": "Train for 1000 gradient steps, which is enough for this small model to learn basic character-level name patterns.",
+    "hash": "f105aa30"
+  },
+  "301": {
+    "text": "Iterate over training steps, processing one name per step with teacher forcing.",
+    "hash": "53f56939"
+  },
+  "302": {
+    "text": "Pick the next training name by cycling through the shuffled dataset with a modulo index.",
+    "hash": "47ec0e2c"
+  },
+  "303": {
+    "text": "Tokenize: BOS + characters + BOS.",
+    "hash": "ae86abd0"
+  },
+  "304": {
+    "text": "Limit the sequence to the maximum context window the model can handle.",
+    "hash": "3d9da8cd"
+  },
+  "305": {
+    "text": "Create a contiguous cache for this training step. Training always uses contiguous, paging is an inference optimization.",
+    "hash": "82acb891"
+  },
+  "306": {
+    "text": "Reset the contiguous cache to empty for this training step's sequence, clearing the position counter to zero.",
+    "hash": "a3284b21"
+  },
+  "307": {
+    "text": "Collect the cross-entropy loss at each token position. We'll average them to get the training signal for this step.",
+    "hash": "38c0a0e0"
+  },
+  "308": {
+    "text": "Feed each token one at a time in sequence order, caching KV pairs, matching how inference will run with the cache.",
+    "hash": "99351782"
+  },
+  "309": {
+    "text": "Input and target for this position.",
+    "hash": "be0a656b"
+  },
+  "310": {
+    "text": "Forward pass through the model with the cache.",
+    "hash": "229beb90"
+  },
+  "311": {
+    "text": "Turn raw logit scores into probabilities via softmax so we can compute the cross-entropy against the correct next token.",
+    "hash": "141e9312"
+  },
+  "312": {
+    "text": "Cross-entropy loss: negative log probability of the correct next token.",
+    "hash": "99c5bca2"
+  },
+  "313": {
+    "text": "Average loss across all positions.",
+    "hash": "8be7f386"
+  },
+  "314": {
+    "text": "Compute gradients of the loss with respect to every parameter via backpropagation.",
+    "hash": "227fe80d"
+  },
+  "315": {
+    "text": "Reduce the learning rate linearly toward zero as training progresses, allowing fine-grained convergence at the end.",
+    "hash": "a7ee9183"
+  },
+  "316": {
+    "text": "Update each parameter with Adam.",
+    "hash": "7e90878d"
+  },
+  "317": {
+    "text": "Update the running average of gradients (first moment). This smooths out noisy per-step gradients for more stable updates.",
+    "hash": "ba400611"
+  },
+  "318": {
+    "text": "Update the running average of squared gradients (second moment). This adapts the learning rate per-parameter based on gradient history.",
+    "hash": "c0425552"
+  },
+  "319": {
+    "text": "Correct the first moment estimate for initialization bias, since starting at zero makes early estimates too small.",
+    "hash": "b032277a"
+  },
+  "320": {
+    "text": "Correct the second moment estimate for the same zero-initialization bias, ensuring accurate variance estimates early in training.",
+    "hash": "08934aec"
+  },
+  "321": {
+    "text": "Apply the Adam update rule to move this parameter one step toward lower loss.",
+    "hash": "35340c63"
+  },
+  "322": {
+    "text": "Zero out this parameter's gradient so it does not accumulate across training steps.",
+    "hash": "868bc78c"
+  },
+  "323": {
+    "text": "Print the training loss at regular intervals so we can monitor convergence.",
+    "hash": "cf37956f"
+  },
+  "324": {
+    "text": "Display the current training step and loss value so we can monitor convergence during the training loop.",
+    "hash": "686ffdf5"
+  },
+  "329": {
+    "text": "Strip autograd wrappers: extract plain floats for fast inference.",
+    "hash": "e1569253"
+  },
+  "332": {
+    "text": "Generate a name using any cache implementation. The <code>cache</code> parameter abstracts the allocation strategy completely.",
+    "hash": "e56d2adb"
+  },
+  "333": {
+    "text": "Reset the cache for a fresh sequence, clearing any previously stored KV pairs and resetting internal pointers.",
+    "hash": "0c1e8497"
+  },
+  "334": {
+    "text": "Start with BOS, empty sample buffer.",
+    "hash": "99cd9eb1"
+  },
+  "335": {
+    "text": "Generate up to <code>max_len</code> tokens.",
+    "hash": "75ec8e45"
+  },
+  "336": {
+    "text": "Forward pass using plain-float weights and the provided cache.",
+    "hash": "99bf857f"
+  },
+  "337": {
+    "text": "Temperature-scaled softmax for sampling diversity.",
+    "hash": "44670c04"
+  },
+  "338": {
+    "text": "Draw one token from the probability distribution to decide the next character.",
+    "hash": "ccfa733e"
+  },
+  "339": {
+    "text": "The BOS token doubles as an end-of-sequence signal. When the model predicts it, the name is complete and generation stops.",
+    "hash": "41a35c11"
+  },
+  "340": {
+    "text": "End-of-sequence detected, so stop generating further tokens for this name.",
+    "hash": "14ebe56a"
+  },
+  "341": {
+    "text": "Add the newly generated token to the output list, building the name character by character.",
+    "hash": "ce50f443"
+  },
+  "342": {
+    "text": "Return both the generated token list and the cache object so the caller can inspect memory utilization and allocation patterns.",
+    "hash": "81ebed50"
+  },
+  "348": {
+    "text": "Section header for the comparison experiment.",
+    "hash": "74448062"
+  },
+  "350": {
+    "text": "Allocate a contiguous cache sized for the full context window, pre-reserving all slots even though most will stay empty.",
+    "hash": "9a3dc645"
+  },
+  "351": {
+    "text": "Lock the random seed before generation so both cache strategies see identical sampling decisions for a fair comparison.",
+    "hash": "3d4829fc"
+  },
+  "352": {
+    "text": "Generate a name using the contiguous cache to establish the baseline for memory usage and output comparison.",
+    "hash": "66c3cc8b"
+  },
+  "353": {
+    "text": "Decode token IDs to characters.",
+    "hash": "d3136a78"
+  },
+  "354": {
+    "text": "Query the cache's utilization stats to see how many of the pre-allocated slots actually hold real data.",
+    "hash": "72866f45"
+  },
+  "355": {
+    "text": "Print the generated name and token count.",
+    "hash": "93250544"
+  },
+  "356": {
+    "text": "Show allocated vs. used slots, the waste is visible here.",
+    "hash": "10a1bc16"
+  },
+  "358": {
+    "text": "32 physical blocks for the paged cache pool.",
+    "hash": "d91b6297"
+  },
+  "359": {
+    "text": "Allocate a paged cache backed by the same total memory capacity, but using on-demand block allocation instead of upfront reservation.",
+    "hash": "dbf96f01"
+  },
+  "360": {
+    "text": "Same seed ensures identical random choices.",
+    "hash": "3d4829fc"
+  },
+  "361": {
+    "text": "Generate a name using the paged cache. The output should be identical since only the allocation strategy differs, not the computation.",
+    "hash": "efb7b8c9"
+  },
+  "362": {
+    "text": "Convert the generated token IDs back to characters so we can display the name and visually compare it against the contiguous version.",
+    "hash": "9b5154dd"
+  },
+  "363": {
+    "text": "Display the name generated with the paged cache and its token count for comparison.",
+    "hash": "34fe3629"
+  },
+  "364": {
+    "text": "Show blocks allocated on demand, much less waste than contiguous.",
+    "hash": "5b42483b"
+  },
+  "365": {
+    "text": "Assert outputs match, the cache strategy must not affect model output, only memory efficiency.",
+    "hash": "39a4c2fa"
+  },
+  "366": {
+    "text": "Verify that paged and contiguous caches produce the exact same output. The allocation strategy must be invisible to the model's computation.",
+    "hash": "dd0c7e75"
+  },
+  "371": {
+    "text": "Section header for prefix sharing demo.",
+    "hash": "f4276e9f"
+  },
+  "373": {
+    "text": "Create a paged cache with plenty of blocks for the prefix sharing demo.",
+    "hash": "be6b931d"
+  },
+  "374": {
+    "text": "Tokenize a short prefix \"an\", simulates a shared system prompt.",
+    "hash": "8567ea96"
+  },
+  "375": {
+    "text": "Register the prefix sequence in the paged cache's page table, setting up the block mappings that will be shared with other sequences.",
+    "hash": "1c560de7"
+  },
+  "376": {
+    "text": "Run each prefix token through the model to populate the KV cache.",
+    "hash": "ab44833d"
+  },
+  "377": {
+    "text": "Forward pass stores K,V in the cache at each position.",
+    "hash": "4cc86119"
+  },
+  "379": {
+    "text": "Look up the prefix sequence's length in the cache to verify all tokens were stored correctly before sharing.",
+    "hash": "a694702e"
+  },
+  "380": {
+    "text": "Count how many blocks the prefix occupies.",
+    "hash": "0329ff25"
+  },
+  "381": {
+    "text": "Print how many tokens and physical blocks the prefix occupies, showing the baseline cost that sharing will amortize.",
+    "hash": "59ee2d75"
+  },
+  "383": {
+    "text": "Spawn three new sequences that will share the prefix's physical blocks, demonstrating zero-copy KV reuse.",
+    "hash": "f57956b8"
+  },
+  "384": {
+    "text": "For each of the three new sequences, share the prefix blocks and then generate a unique continuation.",
+    "hash": "27f6c56a"
+  },
+  "385": {
+    "text": "Share the prefix's physical blocks with the new sequence, zero data copying, just page table duplication.",
+    "hash": "74ed5870"
+  },
+  "386": {
+    "text": "Report how many blocks were shared (should match the prefix's block count).",
+    "hash": "c486335f"
+  },
+  "387": {
+    "text": "Show that sharing adds zero new block allocations.",
+    "hash": "f9d48ee9"
+  },
+  "388": {
+    "text": "Compare: without sharing, we'd need N copies of the prefix blocks.",
+    "hash": "eeff9752"
+  },
+  "399": {
+    "text": "Print a section header before the final batch of generated names to visually separate it from the comparison experiments.",
+    "hash": "73d0f5a2"
+  },
+  "400": {
+    "text": "Large paged cache pool for generating many names.",
+    "hash": "dacbe77a"
+  },
+  "401": {
+    "text": "Generate 20 names to showcase the model's learned character patterns, each using its own paged cache sequence.",
+    "hash": "64d836c5"
+  },
+  "402": {
+    "text": "Unique seed per sample for variety.",
+    "hash": "5cbe30ba"
+  },
+  "403": {
+    "text": "Generate using the paged cache, each sample gets its own sequence ID.",
+    "hash": "f0d82937"
+  },
+  "404": {
+    "text": "Decode token IDs to characters.",
+    "hash": "61c24734"
+  },
+  "405": {
+    "text": "Display each generated name on its own line so we can visually inspect the character-level patterns the model learned.",
+    "hash": "f9d6f741"
+  },
+  "406": {
+    "text": "Free the sequence's blocks back to the pool, memory is recycled for the next sample.",
+    "hash": "cd77d0d5"
+  }
+}

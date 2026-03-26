@@ -1,0 +1,5 @@
+graph TD
+    req[New token] --> lookup[Page table lookup]
+    lookup --> alloc_p{Block full?}
+    alloc_p -->|Yes| write[Allocate + write K,V]
+    alloc_p -->|No| write

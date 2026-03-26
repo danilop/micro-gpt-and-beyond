@@ -1,0 +1,649 @@
+{
+  "10": {
+    "text": "Import math, os, and random from the standard library for attention scaling and data loading.",
+    "hash": "b67c9dde"
+  },
+  "11": {
+    "text": "Import os for building portable file paths to the dataset.",
+    "hash": "de2abade"
+  },
+  "12": {
+    "text": "Import random for shuffling the dataset and seeding reproducibility.",
+    "hash": "7e18ed42"
+  },
+  "14": {
+    "text": "Import the core PyTorch library for tensor operations and autograd.",
+    "hash": "cf1070d3"
+  },
+  "15": {
+    "text": "Neural network building blocks like <code>Linear</code>, <code>Embedding</code>, and <code>ModuleList</code> that automatically register their parameters for training.",
+    "hash": "b802910c"
+  },
+  "16": {
+    "text": "Import PyTorch's functional API for operations like softmax, cross-entropy, and relu.",
+    "hash": "5af419e1"
+  },
+  "18": {
+    "text": "Fix both the Python and PyTorch random seeds so results are reproducible across runs.",
+    "hash": "f0726c6e"
+  },
+  "19": {
+    "text": "Set the PyTorch random seed for reproducible weight initialization and sampling.",
+    "hash": "7e7dcf46"
+  },
+  "24": {
+    "text": "Construct a portable file path to the shared dataset, relative to this script's location, so the code works regardless of where you clone the repo.",
+    "hash": "5ac9686d"
+  },
+  "25": {
+    "text": "Download the dataset from the internet if it is not already on disk.",
+    "hash": "9667c968"
+  },
+  "31": {
+    "text": "Read all names from the dataset file, one per line, stripping whitespace.",
+    "hash": "2f367d0b"
+  },
+  "32": {
+    "text": "Randomize the training order so the model does not memorize sequences of names.",
+    "hash": "c8f1cb86"
+  },
+  "34": {
+    "text": "Build a sorted list of unique characters in the dataset to form the token vocabulary.",
+    "hash": "5f7ca3bb"
+  },
+  "35": {
+    "text": "Use the length of the character set as the beginning-of-sequence token ID.",
+    "hash": "476ca504"
+  },
+  "36": {
+    "text": "The full vocabulary has 27 tokens: 26 lowercase letters plus the BOS marker.",
+    "hash": "0a38d2ba"
+  },
+  "42": {
+    "text": "Same model config as lab 03, the model is identical, only the sampling changes.",
+    "hash": "eb81fecf"
+  },
+  "43": {
+    "text": "Four parallel attention heads, each processing a different 4-dimensional slice of the embedding.",
+    "hash": "5b7ba4c9"
+  },
+  "44": {
+    "text": "A single transformer layer is enough for this small character-level model.",
+    "hash": "9068cb85"
+  },
+  "45": {
+    "text": "Maximum context window of 16 tokens, which comfortably fits the longest names in the dataset.",
+    "hash": "4f3059d5"
+  },
+  "46": {
+    "text": "Each attention head operates on a 4-dimensional slice of the 16-dimensional embedding.",
+    "hash": "1892cf11"
+  },
+  "49": {
+    "text": "Root-mean-square normalization that stabilizes activations without learned parameters.",
+    "hash": "69fade3d"
+  },
+  "55": {
+    "text": "Divide by the root-mean-square of the activation vector. Simpler than LayerNorm since it skips mean subtraction, but equally effective for stabilizing training.",
+    "hash": "53678ba7"
+  },
+  "58": {
+    "text": "Standard causal self-attention, identical to lab 03.",
+    "hash": "c20aaac2"
+  },
+  "61": {
+    "text": "Q, K, V, output projections.",
+    "hash": "433b771f"
+  },
+  "62": {
+    "text": "Linear projection that transforms embeddings into key vectors for attention.",
+    "hash": "bf2475c8"
+  },
+  "63": {
+    "text": "Linear projection that transforms embeddings into value vectors for attention.",
+    "hash": "d1a077cb"
+  },
+  "64": {
+    "text": "Project the concatenated multi-head output back to the model dimension.",
+    "hash": "887b9875"
+  },
+  "66": {
+    "text": "Run the attention computation: project to Q, K, V, apply the causal mask, and combine.",
+    "hash": "a87869a2"
+  },
+  "67": {
+    "text": "Extract batch size, sequence length, and embedding dimension from the input tensor shape.",
+    "hash": "4584ac61"
+  },
+  "68": {
+    "text": "Project and reshape queries into heads.",
+    "hash": "d0c33c49"
+  },
+  "69": {
+    "text": "Project and reshape the input into key vectors, one per attention head.",
+    "hash": "a48e9c7a"
+  },
+  "70": {
+    "text": "Project and reshape the input into value vectors, one per attention head.",
+    "hash": "7fcca8ac"
+  },
+  "72": {
+    "text": "Compute scaled dot-product attention scores between every pair of query and key vectors.",
+    "hash": "308b188d"
+  },
+  "73": {
+    "text": "Build an upper-triangular boolean mask so each token can only attend to itself and earlier positions.",
+    "hash": "14eeec63"
+  },
+  "74": {
+    "text": "Replace future-position scores with negative infinity so softmax assigns them zero weight.",
+    "hash": "a2e76efa"
+  },
+  "75": {
+    "text": "Convert attention scores into a probability distribution that sums to one over the key dimension.",
+    "hash": "62dc999a"
+  },
+  "77": {
+    "text": "Multiply attention weights by value vectors and reshape back to the original embedding layout.",
+    "hash": "a1aef68f"
+  },
+  "78": {
+    "text": "Project the concatenated multi-head output back to the model dimension through a linear layer.",
+    "hash": "36f2db67"
+  },
+  "81": {
+    "text": "A standard two-layer feed-forward network with ReLU activation in between.",
+    "hash": "3ad666a1"
+  },
+  "84": {
+    "text": "Project each token's embedding into a 4x wider hidden space for richer computation.",
+    "hash": "8e9f0642"
+  },
+  "85": {
+    "text": "Compress the expanded hidden representation back down to the original embedding dimension.",
+    "hash": "62c4768b"
+  },
+  "87": {
+    "text": "Run the input through the two-layer MLP with ReLU activation in between.",
+    "hash": "a87869a2"
+  },
+  "88": {
+    "text": "Two linear layers with ReLU in between. The expansion to 4x width gives the network more room to learn nonlinear transformations before compressing back down.",
+    "hash": "8aa6bebb"
+  },
+  "91": {
+    "text": "One transformer block containing self-attention and a feed-forward network with residual connections.",
+    "hash": "4bcc8ea8"
+  },
+  "94": {
+    "text": "Normalize activations before the attention sublayer to stabilize training gradients.",
+    "hash": "e92b587d"
+  },
+  "95": {
+    "text": "The causal self-attention sublayer that lets each token attend to previous positions.",
+    "hash": "95b016d9"
+  },
+  "96": {
+    "text": "Normalize activations before the MLP sublayer to stabilize training gradients.",
+    "hash": "f58a7657"
+  },
+  "97": {
+    "text": "The feed-forward network that processes each token independently after attention has mixed information across positions.",
+    "hash": "17fdd551"
+  },
+  "99": {
+    "text": "Apply attention and MLP sublayers with residual connections that let gradients flow easily.",
+    "hash": "a87869a2"
+  },
+  "100": {
+    "text": "Add the attention output to the residual stream, preserving the original information.",
+    "hash": "5133b743"
+  },
+  "101": {
+    "text": "Add the MLP output to the residual stream so the model can refine representations incrementally.",
+    "hash": "50e2183f"
+  },
+  "105": {
+    "text": "The full transformer model, identical to lab 03, serving as the shared backbone for all sampling strategies.",
+    "hash": "e94c5dc2"
+  },
+  "108": {
+    "text": "Look up a learned embedding vector for each input token to represent its identity.",
+    "hash": "2a2b79bb"
+  },
+  "109": {
+    "text": "Learned positional embeddings that tell the model where each token sits in the sequence.",
+    "hash": "5338449e"
+  },
+  "110": {
+    "text": "Normalize the combined token-plus-position embedding before feeding it into the transformer.",
+    "hash": "5caa073e"
+  },
+  "111": {
+    "text": "A stack of transformer blocks, each containing attention and MLP sublayers.",
+    "hash": "d10311df"
+  },
+  "112": {
+    "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
+    "hash": "1774314d"
+  },
+  "113": {
+    "text": "Apply the custom weight initialization function to every module in the model.",
+    "hash": "e4941829"
+  },
+  "117": {
+    "text": "Draw initial weights from a narrow Gaussian so activations stay reasonably scaled at the start.",
+    "hash": "e2ce6cde"
+  },
+  "120": {
+    "text": "Run the full model on the input sequence to produce next-token logits for every position.",
+    "hash": "1bc7099c"
+  },
+  "121": {
+    "text": "Extract the batch size and sequence length from the input tensor shape.",
+    "hash": "47cad82b"
+  },
+  "122": {
+    "text": "Look up a learned embedding vector for each input token to represent its identity.",
+    "hash": "8d137e9c"
+  },
+  "123": {
+    "text": "A learned vector for each position in the sequence. Added to token embeddings so the model knows where each token sits, since attention alone is position-agnostic.",
+    "hash": "2b319b15"
+  },
+  "124": {
+    "text": "Add token and position embeddings together, then normalize before entering the transformer.",
+    "hash": "b88a95ea"
+  },
+  "125": {
+    "text": "Pass the normalized representation through each transformer block in sequence.",
+    "hash": "359aba32"
+  },
+  "127": {
+    "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
+    "hash": "9ef9adcf"
+  },
+  "133": {
+    "text": "Use CPU for this tiny model since it trains in seconds without a GPU.",
+    "hash": "b39e14b0"
+  },
+  "134": {
+    "text": "Instantiate the model with the same architecture as lab 03. The same trained weights will be used by every sampling strategy, isolating the effect of the sampler.",
+    "hash": "40b7fcd9"
+  },
+  "135": {
+    "text": "Display the total parameter count to verify the model size before training.",
+    "hash": "ea4a5d11"
+  },
+  "137": {
+    "text": "Set up the Adam optimizer with momentum and epsilon tuned for this small model.",
+    "hash": "92d21e78"
+  },
+  "138": {
+    "text": "Train for 1000 steps, enough for this tiny model to learn basic character-level name patterns.",
+    "hash": "f105aa30"
+  },
+  "140": {
+    "text": "Standard training loop, identical to lab 03.",
+    "hash": "53f56939"
+  },
+  "141": {
+    "text": "Pick the next training document by cycling through the shuffled name list.",
+    "hash": "47ec0e2c"
+  },
+  "142": {
+    "text": "Encode each character in the name as a token ID, bookended by BOS markers.",
+    "hash": "ae86abd0"
+  },
+  "143": {
+    "text": "Limit the sequence length to block_size so it fits inside the model's positional embedding table.",
+    "hash": "3d9da8cd"
+  },
+  "145": {
+    "text": "Convert the first n token IDs into a tensor the model can consume as input.",
+    "hash": "968a3346"
+  },
+  "146": {
+    "text": "Build the target sequence by shifting the input one position to the right for next-token prediction.",
+    "hash": "1b63fd95"
+  },
+  "148": {
+    "text": "Run the full model on the current input batch to get next-token predictions.",
+    "hash": "17df3885"
+  },
+  "149": {
+    "text": "Measure how far the model's predictions are from the true next tokens using cross-entropy loss.",
+    "hash": "4f1dd754"
+  },
+  "151": {
+    "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
+    "hash": "fbede2b3"
+  },
+  "152": {
+    "text": "Compute gradients for every parameter by propagating the loss backward through the graph.",
+    "hash": "227fe80d"
+  },
+  "153": {
+    "text": "Linearly reduce the learning rate from its initial value down to zero over the course of training.",
+    "hash": "60602e3a"
+  },
+  "154": {
+    "text": "Write the decayed learning rate into every parameter group so the optimizer uses it on the next step.",
+    "hash": "9f6d3592"
+  },
+  "156": {
+    "text": "Apply the optimizer step, adjusting every parameter in the direction that reduces the loss.",
+    "hash": "d9e59d7e"
+  },
+  "166": {
+    "text": "The simplest possible strategy: always pick the most likely token. Deterministic, produces the same output every time. Safe but boring.",
+    "hash": "bf7cf751",
+    "diagram": "sampling_select",
+    "highlight": [
+      "logits",
+      "argmax"
+    ]
+  },
+  "168": {
+    "text": "<code>argmax</code> = highest probability token. No randomness at all.",
+    "hash": "12920e23",
+    "diagram": "sampling_select",
+    "highlight": [
+      "argmax",
+      "token"
+    ]
+  },
+  "171": {
+    "text": "Temperature reshapes the probability distribution. Low temperature sharpens it (confident), high temperature flattens it (random). The model weights don't change, you're just adjusting the \"confidence knob.\"",
+    "hash": "0fb2e649",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "temperature"
+    ]
+  },
+  "175": {
+    "text": "Divide logits by T before softmax. T=0.5 doubles the logits, making the peak sharper. T=2.0 halves them, spreading probability more evenly.",
+    "hash": "69bc1894",
+    "diagram": "sampling_select",
+    "highlight": [
+      "temperature",
+      "sample",
+      "token"
+    ]
+  },
+  "176": {
+    "text": "Sample from the reshaped distribution.",
+    "hash": "56925d03"
+  },
+  "179": {
+    "text": "Top-k: hard cutoff at exactly k candidates. Simple and effective, but the cutoff is arbitrary, sometimes 5 tokens are plausible, sometimes 50 are.",
+    "hash": "d202ef80",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "topk"
+    ]
+  },
+  "182": {
+    "text": "Scale the logits by temperature first to reshape the distribution, then mask everything outside the top k. This order matters because temperature changes which tokens are \"top.\"",
+    "hash": "fc85cf8b"
+  },
+  "183": {
+    "text": "Find the k-th highest logit value.",
+    "hash": "23e48ce2",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "topk",
+      "renorm"
+    ]
+  },
+  "184": {
+    "text": "Everything below the threshold becomes -infinity. Exactly k tokens survive.",
+    "hash": "0f6026fd"
+  },
+  "185": {
+    "text": "Softmax over only the surviving tokens, they now get all the probability mass.",
+    "hash": "16c082bc"
+  },
+  "186": {
+    "text": "Sample from the filtered distribution.",
+    "hash": "56925d03"
+  },
+  "189": {
+    "text": "Top-p (nucleus sampling): keep the smallest set of tokens whose cumulative probability exceeds p. Adapts to the distribution, peaked distributions get few candidates, flat ones get many.",
+    "hash": "dd70a5d4",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "topp"
+    ]
+  },
+  "193": {
+    "text": "Divide logits by temperature and convert to probabilities before sorting. The temperature reshapes the distribution first, which affects which tokens fall inside the nucleus.",
+    "hash": "69bc1894"
+  },
+  "194": {
+    "text": "Sort tokens by probability, highest first.",
+    "hash": "6f533832",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "topp",
+      "renorm"
+    ]
+  },
+  "195": {
+    "text": "Cumulative sum: after each token, how much total probability have we accumulated?",
+    "hash": "7a19c994"
+  },
+  "197": {
+    "text": "Remove tokens once cumulative probability exceeds p, but always keep the top token. The subtraction ensures the first token that pushes past p is kept.",
+    "hash": "7eda8ba0"
+  },
+  "198": {
+    "text": "Zero out tokens beyond the nucleus.",
+    "hash": "be86d21e"
+  },
+  "199": {
+    "text": "Renormalize so probabilities sum to 1.",
+    "hash": "020ad647"
+  },
+  "201": {
+    "text": "Scatter back to original token ordering for sampling.",
+    "hash": "4987c8ba"
+  },
+  "202": {
+    "text": "Put filtered probabilities back at their original indices.",
+    "hash": "593c6ef0"
+  },
+  "203": {
+    "text": "Draw one token randomly from the nucleus. Only the tokens inside the cumulative probability threshold compete, so unlikely tokens are excluded naturally.",
+    "hash": "47a835bb"
+  },
+  "206": {
+    "text": "Min-p: keep tokens with probability >= <code>min_p * max_prob</code>. Simpler than top-p, naturally adapts: when the model is confident (high max_prob), threshold is high and few tokens pass; when uncertain, threshold drops and more tokens are considered.",
+    "hash": "eee389c1",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "minp"
+    ]
+  },
+  "210": {
+    "text": "Divide logits by temperature and convert to probabilities. The temperature is applied before min-p filtering to reshape which tokens clear the relative threshold.",
+    "hash": "69bc1894"
+  },
+  "211": {
+    "text": "Threshold = <code>min_p</code> fraction of the highest probability. A relative cutoff, not absolute.",
+    "hash": "42679729",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "minp",
+      "renorm"
+    ]
+  },
+  "212": {
+    "text": "Zero out anything below the threshold.",
+    "hash": "cf4e62e1"
+  },
+  "213": {
+    "text": "Divide by the new total so the surviving probabilities sum back to one after filtering.",
+    "hash": "1fa45870"
+  },
+  "214": {
+    "text": "Draw one token from the tokens that survived the min-p filter. Fewer survivors when the model is confident, more when it is uncertain, all handled automatically.",
+    "hash": "56925d03"
+  },
+  "222": {
+    "text": "Shared generation function: same model, different sampler, that's the whole point of this lab.",
+    "hash": "ac415ba1"
+  },
+  "224": {
+    "text": "Allocate an empty list to collect the generated names. Each strategy fills this list, and we display them side-by-side afterward for easy comparison.",
+    "hash": "90f82cfa"
+  },
+  "226": {
+    "text": "Begin each generated name with the beginning-of-sequence token so the model starts fresh.",
+    "hash": "5c52ddc4"
+  },
+  "227": {
+    "text": "Generate up to <code>block_size</code> tokens.",
+    "hash": "ab05dc73"
+  },
+  "228": {
+    "text": "Feed current sequence through the model.",
+    "hash": "ce311cc5"
+  },
+  "229": {
+    "text": "Extract the raw logit vector for the last position, which predicts what token comes next.",
+    "hash": "7d28f274"
+  },
+  "230": {
+    "text": "Extract the raw logits for the last position, the model's prediction for what comes next.",
+    "hash": "fa3f1f09"
+  },
+  "231": {
+    "text": "Clone so each sampler gets a fresh copy (some modify logits in-place).",
+    "hash": "7951eb00"
+  },
+  "232": {
+    "text": "If the model predicts BOS, treat it as an end-of-name signal and stop generating.",
+    "hash": "41a35c11"
+  },
+  "234": {
+    "text": "Add the newly sampled token to the growing sequence and move on to the next position.",
+    "hash": "a1ca669a"
+  },
+  "235": {
+    "text": "Convert the list of generated token IDs back into characters and join them into a readable name string.",
+    "hash": "b4368128"
+  },
+  "247": {
+    "text": "Switch to evaluation mode so the model produces consistent outputs without training noise.",
+    "hash": "45bf010c"
+  },
+  "248": {
+    "text": "Disable gradient tracking since we only need forward passes for generation, not training.",
+    "hash": "d4f61231"
+  },
+  "249": {
+    "text": "Ten sampling strategies, all using the exact same trained model.",
+    "hash": "c00aed4c"
+  },
+  "250": {
+    "text": "Greedy: deterministic, always the most likely name. Same output every time.",
+    "hash": "918007ce"
+  },
+  "251": {
+    "text": "T=0.3: nearly greedy but with a tiny bit of randomness. Very conservative names.",
+    "hash": "372902a2"
+  },
+  "252": {
+    "text": "T=1.0: the model's own learned distribution, unmodified. The \"honest\" output.",
+    "hash": "d3fa198e"
+  },
+  "253": {
+    "text": "T=2.0: chaotic, flattens probabilities so rare tokens get sampled often. Produces gibberish.",
+    "hash": "dbfb5b05"
+  },
+  "254": {
+    "text": "Top-k=3 with T=0.8: only the 3 most likely tokens compete. Simple but rigid.",
+    "hash": "b0eb5680"
+  },
+  "255": {
+    "text": "Top-k=10 with T=0.8: 10 candidates. More variety than k=3.",
+    "hash": "751387a4"
+  },
+  "256": {
+    "text": "Top-p=0.5 with T=0.8: tight nucleus, keeps just enough tokens to cover 50% of probability mass.",
+    "hash": "5e51495d"
+  },
+  "257": {
+    "text": "Top-p=0.95 with T=0.8: loose nucleus, almost everything gets a chance.",
+    "hash": "aac17273"
+  },
+  "258": {
+    "text": "Min-p=0.1 with T=0.8: keep tokens with >= 10% of the top token's probability. Adapts automatically.",
+    "hash": "86ff11a3"
+  },
+  "259": {
+    "text": "Min-p=0.01 with T=0.8: very permissive, most tokens pass the threshold.",
+    "hash": "55e408c8"
+  },
+  "262": {
+    "text": "Loop through all ten sampling configurations, generate 20 names with each, and print the results. Same model throughout, so any differences come purely from the sampler.",
+    "hash": "7c899dee"
+  },
+  "264": {
+    "text": "Reset RNG for each strategy so they all start from the same random state.",
+    "hash": "7e7dcf46"
+  },
+  "265": {
+    "text": "Generate 20 names with this strategy.",
+    "hash": "b6fe11c0"
+  },
+  "278": {
+    "text": "Visualize how each strategy reshapes the probability distribution for a specific context.",
+    "hash": "2ecf983f"
+  },
+  "279": {
+    "text": "Encode \"mar\" to see what the model predicts next, likely 'i', 'y', 'a', etc.",
+    "hash": "dde77096"
+  },
+  "283": {
+    "text": "Run the model on \"mar\" to get raw logits for the next token.",
+    "hash": "1b80e0f7"
+  },
+  "284": {
+    "text": "Logits for the next token after \"mar\".",
+    "hash": "7d28f274"
+  },
+  "286": {
+    "text": "Helper to format the top probabilities as a readable string.",
+    "hash": "e3b0c442"
+  },
+  "288": {
+    "text": "Show the top tokens and their probabilities, plus how many tokens have non-zero probability.",
+    "hash": "47a6d438"
+  },
+  "299": {
+    "text": "Raw model distribution at T=1.0, the model's unfiltered opinion.",
+    "hash": "e3b0c442"
+  },
+  "303": {
+    "text": "T=0.3: the distribution becomes very peaked, the top token dominates.",
+    "hash": "094bb807"
+  },
+  "307": {
+    "text": "T=2.0: the distribution flattens out, even unlikely tokens get noticeable probability.",
+    "hash": "ee8a1eea"
+  },
+  "311": {
+    "text": "Top-k=3: exactly 3 tokens survive, rest are zero. Hard cutoff.",
+    "hash": "e6131156"
+  },
+  "318": {
+    "text": "Top-p=0.9: keep tokens until cumulative probability hits 90%. Variable number of candidates.",
+    "hash": "80fb0b11"
+  },
+  "329": {
+    "text": "Min-p=0.1: keep tokens with >= 10% of the max probability. Naturally adaptive.",
+    "hash": "60ff2a02"
+  }
+}

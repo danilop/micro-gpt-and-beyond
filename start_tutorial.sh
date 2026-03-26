@@ -4,7 +4,13 @@
 set -e
 
 PORT="${1:-8000}"
-DIR="$(cd "$(dirname "$0")/web_tutorial" && pwd)"
+DIR="$(cd "$(dirname "$0")/walk-the-code" && pwd)"
+
+# Install walk-the-code from GitHub if not available
+if ! command -v wtc-serve &> /dev/null; then
+    echo "Installing walk-the-code..."
+    uv tool install "walk-the-code @ git+https://github.com/danilop/walk-the-code"
+fi
 
 echo "Starting microGPT tutorial at http://localhost:$PORT"
 
@@ -12,5 +18,4 @@ echo "Starting microGPT tutorial at http://localhost:$PORT"
 (sleep 1 && python3 -m webbrowser "http://localhost:$PORT") &
 
 # Start server (foreground — Ctrl+C to stop)
-cd "$DIR"
-TUTORIAL_SCRIPT="$0" exec python3 server.py "$PORT"
+exec wtc-serve --config "$DIR/config.json" "$PORT"

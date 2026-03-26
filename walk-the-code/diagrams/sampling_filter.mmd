@@ -1,0 +1,8 @@
+graph TD
+    temperature[After Temperature]
+    temperature --> topk[Top-k]
+    temperature --> topp[Top-p]
+    temperature --> minp[Min-p]
+    topk --> renorm[Renormalize]
+    topp --> renorm
+    minp --> renorm

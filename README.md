@@ -7,29 +7,30 @@ A progressive series of labs exploring tiny language models, inspired by Andrej 
 The progression goes from raw first principles to framework-powered GPU code, modern architecture upgrades, inference optimization, and alternative paradigms:
 
 ```
-01_pure_python/            Karpathy's original code. Zero dependencies. Scalar autograd.
-02_numpy_manual_backprop/  NumPy arrays, but every gradient still written by hand.
-03_pytorch/                PyTorch autograd takes over. Same model, ~30 lines shorter.
-04_pytorch_batched/        Mini-batches, padding, masking. Training at scale.
-05_jax/                    Functional style. Pure functions, explicit state, JIT compilation.
-06_jax_batched/            jax.vmap: write for one example, run for a batch automatically.
-07_mlx/                    Apple Silicon GPU via MLX. Unified memory, lazy evaluation.
-08_mlx_batched/            Batched MLX. Same PyTorch-style padding, but on Apple GPU.
-09_bpe_tokenizer/          Byte-Pair Encoding from scratch. The algorithm behind GPT's tokenizer.
-10_rope/                   Rotary Position Embeddings. How modern LLMs encode position.
-11_gqa/                    Grouped-Query Attention (MHA to GQA to MQA). KV head sharing.
-12_kv_cache/               KV cache for inference. THE fundamental decoding optimization.
-13_sampling/               Sampling strategies: greedy, temperature, top-k, top-p, min-p.
-14_lora/                   LoRA. Parameter-efficient fine-tuning with low-rank adapters.
-15_text_diffusion/         Masked diffusion model (MDLM/LLaDA). Names emerge from noise.
-16_pytorch_quantized/      INT8 quantization for inference. FP32 to INT8, 4x smaller, faster.
-17_speculative_decoding/   Draft model guesses, target model verifies. Lossless speedup.
-18_tiled_attention/        FlashAttention algorithm from scratch. Tiling beats the memory wall.
-19_paged_attention/        PagedAttention (vLLM). OS-style virtual memory for KV caches.
-20_soft_thinking/          Concept tokens preserve the full output distribution at inference.
-21_soft_training/          Soft input curriculum closes the train-test gap for concept tokens.
-22_disaggregated_serving/  Split prefill and decode onto separate workers. No more head-of-line blocking.
-data/                      Shared dataset (auto-downloaded on first run if not present).
+labs/
+  01_pure_python/            Karpathy's original code. Zero dependencies. Scalar autograd.
+  02_numpy_manual_backprop/  NumPy arrays, but every gradient still written by hand.
+  03_pytorch/                PyTorch autograd takes over. Same model, ~30 lines shorter.
+  04_pytorch_batched/        Mini-batches, padding, masking. Training at scale.
+  05_jax/                    Functional style. Pure functions, explicit state, JIT compilation.
+  06_jax_batched/            jax.vmap: write for one example, run for a batch automatically.
+  07_mlx/                    Apple Silicon GPU via MLX. Unified memory, lazy evaluation.
+  08_mlx_batched/            Batched MLX. Same PyTorch-style padding, but on Apple GPU.
+  09_bpe_tokenizer/          Byte-Pair Encoding from scratch. The algorithm behind GPT's tokenizer.
+  10_rope/                   Rotary Position Embeddings. How modern LLMs encode position.
+  11_gqa/                    Grouped-Query Attention (MHA to GQA to MQA). KV head sharing.
+  12_kv_cache/               KV cache for inference. THE fundamental decoding optimization.
+  13_sampling/               Sampling strategies: greedy, temperature, top-k, top-p, min-p.
+  14_lora/                   LoRA. Parameter-efficient fine-tuning with low-rank adapters.
+  15_text_diffusion/         Masked diffusion model (MDLM/LLaDA). Names emerge from noise.
+  16_pytorch_quantized/      INT8 quantization for inference. FP32 to INT8, 4x smaller, faster.
+  17_speculative_decoding/   Draft model guesses, target model verifies. Lossless speedup.
+  18_tiled_attention/        FlashAttention algorithm from scratch. Tiling beats the memory wall.
+  19_paged_attention/        PagedAttention (vLLM). OS-style virtual memory for KV caches.
+  20_soft_thinking/          Concept tokens preserve the full output distribution at inference.
+  21_soft_training/          Soft input curriculum closes the train-test gap for concept tokens.
+  22_disaggregated_serving/  Split prefill and decode onto separate workers. No more head-of-line blocking.
+data/                        Shared dataset (auto-downloaded on first run if not present).
 ```
 
 ## The idea
@@ -118,10 +119,18 @@ The soft thinking and soft training labs explore **preserving the full output di
 
 **Browse online:** Visit the **[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** to read the code with line-by-line explanations, no installation needed.
 
-**Run locally with the tutorial:** Start the web tutorial server to browse code and run labs from the browser:
+**Run locally with the tutorial:** Start the [walk-the-code](https://github.com/danilop/walk-the-code) web tutorial server to browse code, read line-by-line explanations with diagrams, and run labs from the browser:
 
 ```bash
 ./start_tutorial.sh
+```
+
+The tutorial is powered by [walk-the-code](https://github.com/danilop/walk-the-code), a standalone project you can also install as a CLI tool:
+
+```bash
+uv tool install "walk-the-code @ git+https://github.com/danilop/walk-the-code"
+cd walk-the-code
+wtc-serve --config config.json
 ```
 
 **Quick start:** Use the `run_lab.py` helper script from the project root:
@@ -137,15 +146,15 @@ python run_lab.py --list      # List all available labs
 `01_pure_python`, `09_bpe_tokenizer`, and `19_paged_attention` have no dependencies and can be run with plain Python:
 
 ```bash
-python 01_pure_python/microgpt.py
-python 09_bpe_tokenizer/main.py
-python 19_paged_attention/main.py
+python labs/01_pure_python/microgpt.py
+python labs/09_bpe_tokenizer/main.py
+python labs/19_paged_attention/main.py
 ```
 
 All other labs are managed with [uv](https://docs.astral.sh/uv/) and have their own `pyproject.toml`:
 
 ```bash
-cd 02_numpy_manual_backprop
+cd labs/02_numpy_manual_backprop
 uv run python main.py
 ```
 
@@ -153,4 +162,6 @@ Each subfolder has its own README with a deeper look at what makes that implemen
 
 ## Credits
 
-This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy), a GPT trained and run in a single file of pure, dependency-free Python. The `01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). The framework labs reimplement the same algorithm in NumPy, PyTorch, JAX, and MLX to show how the same ideas translate across tools. Further labs extend the architecture with modern techniques and explore inference optimization, alternative generation paradigms, and production serving, showing that the core ideas behind today's LLM systems are accessible at any scale.
+This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy), a GPT trained and run in a single file of pure, dependency-free Python. The `labs/01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). The framework labs reimplement the same algorithm in NumPy, PyTorch, JAX, and MLX to show how the same ideas translate across tools. Further labs extend the architecture with modern techniques and explore inference optimization, alternative generation paradigms, and production serving, showing that the core ideas behind today's LLM systems are accessible at any scale.
+
+The interactive web tutorial is powered by [walk-the-code](https://github.com/danilop/walk-the-code), a standalone line-by-line code tutorial viewer with multi-language support and Mermaid diagrams.
