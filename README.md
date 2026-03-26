@@ -53,27 +53,34 @@ Every version trains the same architecture (a character-level transformer with R
 
 | Version | Autograd | Tensors | Batching | Hardware |
 |---------|----------|---------|----------|----------|
+| **Foundations** | | | | |
 | 01 pure Python | hand-built scalar engine | no | no | CPU (slow) |
 | 02 NumPy | none, manual backward pass | yes | no | CPU |
+| **Frameworks** | | | | |
 | 03 PyTorch | automatic | yes | no | CPU |
 | 04 PyTorch batched | automatic | yes | yes (32) | CPU |
 | 05 JAX | automatic (functional) | yes | no | CPU/GPU |
 | 06 JAX batched | automatic (functional) | yes | yes (32, vmap) | CPU/GPU |
 | 07 MLX | automatic | yes | no | Apple GPU |
 | 08 MLX batched | automatic | yes | yes (32) | Apple GPU |
+| **Tokenization & Architecture** | | | | |
 | 09 BPE tokenizer | n/a (bigram model) | no | no | CPU |
 | 10 RoPE | automatic | yes | no | CPU |
 | 11 GQA | automatic | yes | no | CPU |
+| **Inference Optimization** | | | | |
 | 12 KV cache | automatic | yes | no | CPU |
 | 13 sampling | automatic | yes | no | CPU |
+| **Fine-tuning & Deployment** | | | | |
 | 14 LoRA | automatic | yes | no | CPU |
-| 15 text diffusion | automatic | yes | no | CPU |
 | 16 PyTorch quantized | automatic | yes | no | CPU (INT8) |
+| **Alternative Paradigms** | | | | |
+| 15 text diffusion | automatic | yes | no | CPU |
+| 20 soft thinking | automatic | yes | no | CPU |
+| 21 soft training | automatic | yes | no | CPU |
+| **Production Serving** | | | | |
 | 17 speculative decoding | automatic | yes | no | CPU |
 | 18 tiled attention | automatic | yes | no | CPU |
 | 19 paged attention | hand-built scalar engine | no | no | CPU (slow) |
-| 20 soft thinking | automatic | yes | no | CPU |
-| 21 soft training | automatic | yes | no | CPU |
 | 22 disaggregated serving | automatic | yes | no | CPU |
 
 Beyond the framework comparisons, the labs extend the base model with **modern architecture and techniques**: BPE tokenization, rotary position embeddings, grouped-query attention, KV caching, sampling strategies, and LoRA fine-tuning.
