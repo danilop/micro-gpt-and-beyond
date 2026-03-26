@@ -2,7 +2,7 @@
 
 A progressive series of labs exploring tiny language models, inspired by Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html), a GPT trained and run in a single file of pure Python. Each lab teaches something different about how neural networks are built, trained, and served. The models learn to generate human names from a dataset of ~32,000 real ones.
 
-**[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** lets you browse the code with line-by-line explanations.
+**[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** — browse the code with line-by-line explanations, Mermaid diagrams with per-line node highlighting, and lab descriptions. The 22 labs are organized into 7 chapters (Foundations, Frameworks, Tokenization & Architecture, Inference Optimization, Fine-tuning & Deployment, Alternative Paradigms, Production Serving), each with an overview and a conceptual diagram. Run labs directly from the browser when using the local server.
 
 The progression goes from raw first principles to framework-powered GPU code, modern architecture upgrades, inference optimization, and alternative paradigms:
 
@@ -117,9 +117,9 @@ The soft thinking and soft training labs explore **preserving the full output di
 
 ## Running
 
-**Browse online:** Visit the **[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** to read the code with line-by-line explanations, no installation needed.
+**Browse online:** Visit the **[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** to read the code with line-by-line explanations — no installation needed. Labs are grouped into 7 chapters, each with a description and conceptual diagram. Click any code line to see what it does; annotated lines include Mermaid diagrams with highlighted nodes that change as you navigate.
 
-**Run locally with the tutorial:** Start the [walk-the-code](https://github.com/danilop/walk-the-code) web tutorial server to browse code, read line-by-line explanations with diagrams, and run labs from the browser:
+**Run locally with the tutorial:** Start the [walk-the-code](https://github.com/danilop/walk-the-code) web tutorial server to browse code, read explanations with diagrams, and run labs from the browser:
 
 ```bash
 ./start_tutorial.sh
@@ -164,4 +164,4 @@ Each subfolder has its own README with a deeper look at what makes that implemen
 
 This project is inspired by [microGPT](https://karpathy.ai/microgpt.html) by [Andrej Karpathy](https://github.com/karpathy), a GPT trained and run in a single file of pure, dependency-free Python. The `labs/01_pure_python` folder contains his original, unmodified code (the only change is the file path for the dataset to fit the project structure). The framework labs reimplement the same algorithm in NumPy, PyTorch, JAX, and MLX to show how the same ideas translate across tools. Further labs extend the architecture with modern techniques and explore inference optimization, alternative generation paradigms, and production serving, showing that the core ideas behind today's LLM systems are accessible at any scale.
 
-The interactive web tutorial is powered by [walk-the-code](https://github.com/danilop/walk-the-code), a standalone line-by-line code tutorial viewer with multi-language support and Mermaid diagrams.
+The interactive web tutorial is powered by [walk-the-code](https://github.com/danilop/walk-the-code), a standalone line-by-line code tutorial viewer with multi-language support, chapters, Mermaid diagrams with per-line node highlighting, and stale annotation detection.
