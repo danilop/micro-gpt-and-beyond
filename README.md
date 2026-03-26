@@ -33,6 +33,20 @@ labs/
 data/                        Shared dataset (auto-downloaded on first run if not present).
 ```
 
+## Chapters
+
+The [interactive web tutorial](https://danilop.github.io/micro-gpt-and-beyond/) organizes the labs into 7 chapters, each with a description and conceptual diagram:
+
+| Chapter | Labs | Theme |
+|---------|------|-------|
+| **Foundations** | 01, 02 | Scalar autograd and manual backprop — see every gradient |
+| **Frameworks** | 03–08 | PyTorch, JAX, MLX — same model, three paradigms, single and batched |
+| **Tokenization & Architecture** | 09, 10, 11 | BPE, RoPE, GQA — the upgrades behind LLaMA and Mistral |
+| **Inference Optimization** | 12, 13 | KV cache and sampling strategies — the basics of fast decoding |
+| **Fine-tuning & Deployment** | 14, 16 | LoRA and INT8 quantization — adapt and compress |
+| **Alternative Paradigms** | 15, 20, 21 | Text diffusion and soft thinking — beyond left-to-right |
+| **Production Serving** | 17, 18, 19, 22 | Speculative decoding, FlashAttention, PagedAttention, disaggregated serving |
+
 ## The idea
 
 Every version trains the same architecture (a character-level transformer with RMSNorm, ReLU, multi-head attention, and linear LR decay) on the same names dataset. What changes is *how* the computation is expressed:
