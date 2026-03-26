@@ -7,6 +7,7 @@ on:
       - 'labs/*/main.py'
       - 'labs/*/microgpt.py'
       - 'walk-the-code/**'
+      - '.github/workflows/deploy-tutorial.yml'
 
   workflow_dispatch: # allow manual trigger
 
