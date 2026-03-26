@@ -1,3 +1,5 @@
-graph TD
-    draft[Draft Model] --> propose[Propose K tokens cheaply]
-    propose --> target[Target: verify ALL in 1 pass]
+graph LR
+    prompt[Accepted prefix]
+    prompt --> draft[Small draft model]
+    draft --> propose[Propose K tokens]
+    propose --> target[Large target model<br/>verifies all K in 1 pass]

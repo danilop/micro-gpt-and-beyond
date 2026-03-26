@@ -1,4 +1,8 @@
 graph TD
-    c_step1[Step 1: process + cache]
-    c_step1 --> c_step2[Step 2: 1 new + cache]
-    c_step2 --> c_stepT[Step T: 1 new + cache]
+    c_step1[Reuse cached K,V<br/>for tokens 1..t-1]
+    c_new[Compute K,V<br/>for token t]
+    c_step2[Append the new token<br/>to the cache]
+    c_stepT[Attend over full history<br/>without recomputing old tokens]
+    c_step1 --> c_step2
+    c_new --> c_step2
+    c_step2 --> c_stepT

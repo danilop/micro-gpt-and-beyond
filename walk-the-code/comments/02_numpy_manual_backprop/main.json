@@ -1,34 +1,34 @@
 {
   "9": {
-    "text": "Standard math library, just for <code>sqrt</code> in the attention scaling.",
+    "text": "This lab keeps the same algorithm as pure Python, but swaps scalar arithmetic for arrays. The goal is speed without surrendering understanding of the gradients.",
     "hash": "b67c9dde"
   },
   "10": {
-    "text": "File path handling for the dataset.",
+    "text": "Same dataset, same task. That makes the comparison with lab 01 about representation and backprop mechanics, not about a different problem.",
     "hash": "de2abade"
   },
   "11": {
-    "text": "Python's random for shuffling, keeps dataset handling identical to lab 01.",
+    "text": "We keep the data pipeline close to lab 01 so the reader can focus on the real shift: vectorized forward pass, hand-derived backward pass.",
     "hash": "7e18ed42"
   },
   "13": {
-    "text": "NumPy replaces the scalar-by-scalar math from lab 01. One matrix multiply here replaces thousands of individual <code>Value</code> multiplications.",
+    "text": "Here is the big transition from lab 01: NumPy compresses the forward pass into matrix operations, but we still refuse to hide the gradient story behind autograd.",
     "hash": "6f11581d"
   },
   "15": {
-    "text": "Same seed as lab 01 for reproducible Python randomness.",
+    "text": "Use the same reproducible setup as lab 01 so the new complexity comes from arrays and manual gradients, not from a different run.",
     "hash": "f0726c6e"
   },
   "16": {
-    "text": "NumPy's modern RNG, separate from Python's <code>random</code> module, used for weight initialization.",
+    "text": "NumPy has its own RNG because arrays bring their own initialization path. That separation is the first hint that frameworks often manage randomness differently too.",
     "hash": "80f20623"
   },
   "21": {
-    "text": "Same dataset path as lab 01, all labs share the same data.",
+    "text": "Same shared corpus as lab 01. That continuity is what lets the framework progression feel like one unfolding story instead of separate demos.",
     "hash": "5ac9686d"
   },
   "22": {
-    "text": "Auto-download if missing, identical to lab 01.",
+    "text": "Keep the tutorial self-contained here too so the only new burden is understanding the math, not setting up the environment.",
     "hash": "9667c968"
   },
   "25": {
@@ -57,23 +57,23 @@
   },
   "40": {
     "text": "Same tiny architecture as lab 01, this lab is about the computation method, not the model size.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "41": {
     "text": "4 attention heads, each with 4 dimensions.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "42": {
     "text": "A single transformer layer keeps the model minimal. Real GPTs stack dozens, but one is enough to learn interesting name patterns and demonstrate the full algorithm.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "43": {
     "text": "Maximum sequence length of 16.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "44": {
     "text": "4 dimensions per head: 16 / 4 = 4.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "47": {
     "text": "Helper to create a random NumPy array, replaces lab 01's nested list of <code>Value</code> objects. One line, same effect.",
@@ -709,7 +709,7 @@
   },
   "323": {
     "text": "Temperature 0.5: slightly conservative generation.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "327": {
     "text": "Generate 20 entirely new names by sampling from the model's learned distribution. These names never appeared in the training data.",

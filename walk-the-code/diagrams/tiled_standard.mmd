@@ -1,6 +1,6 @@
 graph TD
-    s_qk[Load Q,K from HBM]
-    s_qk --> s_att[N x N scores]
-    s_att --> s_write[Write to HBM]
-    s_write --> s_softmax[Softmax + write HBM]
-    s_softmax --> s_out[Multiply V]
+    s_qk[Load Q and K<br/>from HBM]
+    s_qk --> s_att[Materialize full<br/>N x N score matrix]
+    s_att --> s_write[Write scores<br/>back to HBM]
+    s_write --> s_softmax[Read scores, softmax,<br/>write weights]
+    s_softmax --> s_out[Read weights and V,<br/>produce output]

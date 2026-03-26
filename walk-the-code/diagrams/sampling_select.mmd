@@ -1,6 +1,7 @@
-graph TD
-    logits[Logits] --> argmax[Greedy: top-1]
-    logits --> temperature[Temperature]
-    temperature --> sample[Sample]
-    argmax --> token[Output Token]
+graph LR
+    logits[Model logits]
+    logits --> argmax[Greedy:<br/>pick max]
+    logits --> temperature[Scale by temperature]
+    temperature --> sample[Sample from<br/>reshaped probs]
+    argmax --> token[Next token]
     sample --> token

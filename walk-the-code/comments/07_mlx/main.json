@@ -1,34 +1,34 @@
 {
   "9": {
-    "text": "Standard math library, used here for the square root in attention scaling. MLX handles all tensor math.",
+    "text": "MLX is the Apple-Silicon branch of the same transformer story: familiar tensor code, but with unified memory and lazy execution changing the runtime model underneath.",
     "hash": "b67c9dde"
   },
   "10": {
-    "text": "Provides utilities for constructing file paths to locate the dataset on disk.",
+    "text": "Same dataset, so the new thing to notice is MLX's execution model rather than a different workload.",
     "hash": "de2abade"
   },
   "11": {
-    "text": "Python's built-in random module for shuffling the dataset into a random training order.",
+    "text": "The outer loop stays simple. The interesting differences arrive from how MLX represents arrays and when it actually executes work.",
     "hash": "7e18ed42"
   },
   "13": {
-    "text": "<code>mlx.core</code> is MLX's tensor library, similar to NumPy but runs on Apple Silicon GPU. Arrays live in unified memory shared between CPU and GPU.",
+    "text": "<code>mlx.core</code> looks simple on the surface, but unified memory is the key idea: CPU and GPU see the same physical RAM, so data movement looks very different from PyTorch or JAX.",
     "hash": "00d25044"
   },
   "14": {
-    "text": "<code>mlx.nn</code> provides neural network modules, feels like PyTorch's <code>nn</code> module.",
+    "text": "The layer API feels comfortably familiar, which helps isolate what MLX changes at the runtime and memory level.",
     "hash": "826b699d"
   },
   "15": {
-    "text": "MLX ships with built-in optimizers like Adam, so we don't need to implement the update logic manually as we did in JAX.",
+    "text": "Compared with JAX, MLX swings back toward convenience. The interesting question becomes how much simplicity you get while still taking advantage of Apple hardware.",
     "hash": "8ee68a62"
   },
   "16": {
-    "text": "Utility functions for working with MLX's parameter trees.",
+    "text": "MLX still stores parameters in trees, so some of the explicitness from JAX remains even though the code reads more like a high-level framework.",
     "hash": "adb10b27"
   },
   "18": {
-    "text": "Python seed for dataset shuffling.",
+    "text": "Keep the experiment stable so differences in behavior can be traced back to MLX itself.",
     "hash": "f0726c6e"
   },
   "19": {
@@ -69,23 +69,23 @@
   },
   "43": {
     "text": "Same tiny architecture as labs 01-03, 05.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "44": {
     "text": "Split attention into 4 parallel heads so each can focus on different character relationships.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "45": {
     "text": "A single transformer layer keeps things minimal. One layer is enough to learn meaningful character-level patterns for names.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "46": {
     "text": "Names up to 16 characters fit in the context window. Most names are well within this limit.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "47": {
     "text": "Each attention head works with 4 dimensions, matching the small model scale.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "50": {
     "text": "RMSNorm module. MLX uses <code>__call__</code> instead of PyTorch's <code>forward</code>, Python convention for callable objects.",
@@ -443,7 +443,7 @@
   },
   "174": {
     "text": "Temperature 0.5 makes generation more conservative: the model favors high-confidence predictions, producing more typical-sounding names.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "176": {
     "text": "Generate 20 brand-new names by sampling from the model's learned distribution.",

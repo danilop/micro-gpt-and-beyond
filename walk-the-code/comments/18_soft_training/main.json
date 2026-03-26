@@ -1,34 +1,34 @@
 {
   "14": {
-    "text": "Standard <code>math</code> for log (entropy calculation).",
+    "text": "Soft training is about closing the gap between what the model sees during training and at soft-decoding time, so the math here supports that uncertainty-aware training signal.",
     "hash": "b67c9dde"
   },
   "15": {
-    "text": "Utilities for constructing the dataset file path relative to this script's location.",
+    "text": "Keep the data fixed. This lab is about the training curriculum, not about changing the problem.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "Standard random module for shuffling training data and seeding reproducibility across runs.",
+    "text": "We want to compare ordinary teacher forcing against gradual soft-input training, so the random parts of the run need to stay pinned down.",
     "hash": "7e18ed42"
   },
   "18": {
-    "text": "PyTorch for tensor computation and autograd.",
+    "text": "PyTorch gives us the normal training loop; the twist is that the model will increasingly train on its own blended concepts instead of only pristine ground truth.",
     "hash": "cf1070d3"
   },
   "19": {
-    "text": "Provides neural network building blocks like Linear and Embedding used to construct the transformer model.",
+    "text": "The architecture is not the novelty here. The novelty is what kind of inputs the architecture learns to expect during training.",
     "hash": "b802910c"
   },
   "20": {
-    "text": "Functional API: softmax, ReLU, cross-entropy.",
+    "text": "Softmax matters twice now: once for the usual prediction distribution, and again for turning that distribution into a concept-token training signal.",
     "hash": "5af419e1"
   },
   "22": {
-    "text": "Lock Python's random seed so dataset shuffling and any random decisions during training are exactly reproducible.",
+    "text": "Lock the training run down so the effect of the soft-input curriculum is visible instead of getting lost in randomness.",
     "hash": "f0726c6e"
   },
   "23": {
-    "text": "Fix PyTorch random seed for reproducible weight initialization.",
+    "text": "PyTorch's own RNG has to match too, otherwise the comparison with hard-only training would start from different models.",
     "hash": "7e7dcf46"
   },
   "28": {
@@ -81,23 +81,23 @@
   },
   "47": {
     "text": "Each token maps to a 16-dimensional vector. Small but sufficient for learning character-level name patterns.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "48": {
     "text": "Split the embedding dimension across four heads for multi-head attention.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "49": {
     "text": "A single transformer layer keeps the model small and training fast. This lab focuses on the training method, not model depth.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "50": {
     "text": "Max sequence length of 16.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "51": {
     "text": "Each head sees 4 dimensions.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "52": {
     "text": "CPU device for this demo.",
@@ -365,7 +365,7 @@
   },
   "139": {
     "text": "Controls the sharpness of the sampling distribution during generation. Temperature 0.5 balances diversity and coherence.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "140": {
     "text": "Soft temperature for concept token computation, 1.0 means full softmax probabilities (no sharpening).",

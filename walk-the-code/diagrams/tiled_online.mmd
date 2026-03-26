@@ -1,0 +1,9 @@
+graph TD
+    readq[Read one Q vector]
+    loop[Loop over K,V vectors]
+    update[Update running<br/>max and sum]
+    accum[Accumulate weighted<br/>output]
+    write[Write final<br/>output only]
+    readq --> loop --> update --> accum
+    accum --> loop
+    accum --> write

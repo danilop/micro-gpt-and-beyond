@@ -1,34 +1,34 @@
 {
   "13": {
-    "text": "Standard <code>math</code> for attention scaling and log/exp.",
+    "text": "Paged attention borrows an operating-systems idea, but it still lives inside ordinary transformer math, so the numerical pieces remain familiar.",
     "hash": "b67c9dde"
   },
   "14": {
-    "text": "Utilities for constructing the dataset file path relative to this script's location.",
+    "text": "Use the same names corpus so the story stays on memory layout and cache management rather than drifting into a different task.",
     "hash": "de2abade"
   },
   "15": {
-    "text": "Random for weight init, sampling, and shuffling.",
+    "text": "This lab mixes model behavior with cache-allocation behavior, so controlling randomness keeps the paging story readable.",
     "hash": "7e18ed42"
   },
   "17": {
-    "text": "Lock the random seed so every run produces identical training, generation, and cache allocation behavior.",
+    "text": "A stable run matters here because we want to watch page allocation and sharing as a deterministic systems story, not as a moving target.",
     "hash": "f0726c6e"
   },
   "22": {
-    "text": "Construct the dataset file path relative to this script's location so it works from any working directory.",
+    "text": "Locate the shared corpus. The model is familiar; the novelty is how its KV history gets laid out in memory.",
     "hash": "5ac9686d"
   },
   "23": {
-    "text": "If the names dataset file doesn't exist locally, download it on the fly so the script works out of the box.",
+    "text": "Fetch the corpus if needed so the lab remains runnable end to end, including the cache-allocation demonstrations.",
     "hash": "9667c968"
   },
   "24": {
-    "text": "Only import the URL library when we actually need to download, keeping startup fast.",
+    "text": "Only bring in the downloader if the dataset is missing. The real systems lesson starts after the model begins allocating KV storage.",
     "hash": "84cdb92b"
   },
   "26": {
-    "text": "The URL pointing to Karpathy's makemore names dataset hosted on GitHub.",
+    "text": "A small corpus is enough here because the important scaling problem is not training size, but how many requests and prefixes the cache must hold efficiently.",
     "hash": "5e579f27"
   },
   "27": {
@@ -65,23 +65,23 @@
   },
   "41": {
     "text": "Each token maps to a 16-dimensional vector. Small but sufficient for learning character-level name patterns in this demo.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "42": {
     "text": "Split the embedding dimension across four attention heads for multi-head attention.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "43": {
     "text": "Single layer, keeps training fast for the paging demo.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "44": {
     "text": "Max sequence length of 16 tokens.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "45": {
     "text": "Each head sees 4 dimensions: 16 / 4.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "49": {
     "text": "Same <code>Value</code> autograd engine from Lab 01, exact copy. Each node is a scalar that tracks its computation graph for automatic differentiation.",
@@ -89,7 +89,7 @@
   },
   "50": {
     "text": "<code>__slots__</code> for memory efficiency, especially matters here because we'll have thousands of Value nodes during training.",
-    "hash": "3b66839e"
+    "hash": "c344be41"
   },
   "52": {
     "text": "Constructor: scalar data, parent nodes, and local derivatives.",
@@ -589,7 +589,7 @@
     "hash": "109411f7",
     "diagram": "paged_virtual",
     "highlight": [
-      "write"
+      "share"
     ]
   },
   "217": {
@@ -681,7 +681,7 @@
     "hash": "bac20222",
     "diagram": "paged_virtual",
     "highlight": [
-      "write"
+      "share"
     ]
   },
   "244": {

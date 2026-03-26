@@ -1,34 +1,34 @@
 {
   "10": {
-    "text": "Import math, os, and random from the standard library for attention scaling and data loading.",
+    "text": "Sampling does not change the model's knowledge at all, only how we turn its logits into decisions, so the surrounding setup stays intentionally boring.",
     "hash": "b67c9dde"
   },
   "11": {
-    "text": "Import os for building portable file paths to the dataset.",
+    "text": "Same corpus, same trained model family. The lab is isolating one question: how much output behavior comes from decoding policy alone?",
     "hash": "de2abade"
   },
   "12": {
-    "text": "Import random for shuffling the dataset and seeding reproducibility.",
+    "text": "Reproducibility matters here because sampling is deliberately stochastic and we want to compare strategies, not chase random drift.",
     "hash": "7e18ed42"
   },
   "14": {
-    "text": "Import the core PyTorch library for tensor operations and autograd.",
+    "text": "PyTorch carries the same model as earlier labs. The interesting action comes after the model emits logits, not inside the network itself.",
     "hash": "cf1070d3"
   },
   "15": {
-    "text": "Neural network building blocks like <code>Linear</code>, <code>Embedding</code>, and <code>ModuleList</code> that automatically register their parameters for training.",
+    "text": "The transformer stays the same. That makes the lesson sharper: wildly different outputs can come from changing only the decoding rule.",
     "hash": "b802910c"
   },
   "16": {
-    "text": "Import PyTorch's functional API for operations like softmax, cross-entropy, and relu.",
+    "text": "Softmax is central here because every sampling strategy is really a different way of shaping or pruning the probability distribution before selection.",
     "hash": "5af419e1"
   },
   "18": {
-    "text": "Fix both the Python and PyTorch random seeds so results are reproducible across runs.",
+    "text": "Lock both RNGs so the demonstrations are repeatable and the difference between strategies is interpretable.",
     "hash": "f0726c6e"
   },
   "19": {
-    "text": "Set the PyTorch random seed for reproducible weight initialization and sampling.",
+    "text": "PyTorch's RNG also controls sampling itself, so seeding it is part of making the comparison honest.",
     "hash": "7e7dcf46"
   },
   "24": {
@@ -61,23 +61,23 @@
   },
   "42": {
     "text": "Same model config as lab 03, the model is identical, only the sampling changes.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "43": {
     "text": "Four parallel attention heads, each processing a different 4-dimensional slice of the embedding.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "44": {
     "text": "A single transformer layer is enough for this small character-level model.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "45": {
     "text": "Maximum context window of 16 tokens, which comfortably fits the longest names in the dataset.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "46": {
     "text": "Each attention head operates on a 4-dimensional slice of the 16-dimensional embedding.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "49": {
     "text": "Root-mean-square normalization that stabilizes activations without learned parameters.",

@@ -1,5 +1,8 @@
-graph TD
-    count[Count Pairs]
-    count --> find_best[Find Top Pair]
-    find_best --> merge[Merge + Vocab+=1]
-    merge -->|repeat| count
+graph LR
+    r0[Round 0<br/>m a r i a]
+    count[Count adjacent pairs<br/>across the corpus]
+    find_best[Pick the most<br/>frequent pair]
+    merge[Merge that pair<br/>everywhere]
+    r1[Round 1<br/>m ar i a]
+    r2[Later rounds<br/>m aria]
+    r0 --> count --> find_best --> merge --> r1 --> r2

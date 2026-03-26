@@ -1,34 +1,34 @@
 {
   "14": {
-    "text": "Standard math library for attention scaling.",
+    "text": "Speculative decoding keeps ordinary attention math but changes the control flow of inference: guess several tokens, then verify them in bulk.",
     "hash": "b67c9dde"
   },
   "15": {
-    "text": "File path handling for the dataset.",
+    "text": "Same names task, so the speedup story is about decoding strategy rather than about a different workload.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "Random number generation for sampling and shuffling.",
+    "text": "Sampling still matters because both the draft and target models are generating candidates inside the speculative loop.",
     "hash": "7e18ed42"
   },
   "17": {
-    "text": "<code>time</code> for benchmarking speculative vs autoregressive decoding speed.",
+    "text": "Timing is central here: speculative decoding only matters if one target-model pass can replace many expensive autoregressive passes.",
     "hash": "4f9b8491"
   },
   "19": {
-    "text": "PyTorch, this lab uses real tensors because we need two full models and speed benchmarks.",
+    "text": "This lab uses two real models at once, because the key production idea is a cheap draft model feeding a more expensive target model.",
     "hash": "cf1070d3"
   },
   "20": {
-    "text": "Provides the building blocks for defining neural network layers like Linear and Embedding used in both draft and target models.",
+    "text": "Both models share the same basic transformer recipe; the interesting part is not architectural novelty but how they cooperate during decoding.",
     "hash": "b802910c"
   },
   "21": {
-    "text": "Functional API for softmax, ReLU, cross-entropy.",
+    "text": "The probability math matters because speculative decoding lives or dies on correctly comparing what the draft wanted against what the target would allow.",
     "hash": "5af419e1"
   },
   "23": {
-    "text": "Fix Python's random seed for reproducible shuffling.",
+    "text": "Fix the run so the draft-vs-target story is reproducible enough to inspect and benchmark cleanly.",
     "hash": "f0726c6e"
   },
   "24": {
@@ -85,7 +85,7 @@
   },
   "48": {
     "text": "Max sequence length for all models, names rarely exceed 16 characters.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "51": {
     "text": "RMSNorm: cheaper than LayerNorm, just rescales by inverse root-mean-square.",
@@ -453,7 +453,7 @@
   },
   "173": {
     "text": "Temperature 0.5: moderate creativity. Lower values make output more deterministic.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "176": {
     "text": "Disable gradient computation for inference, saves memory and speeds things up.",

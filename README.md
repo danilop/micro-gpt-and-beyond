@@ -146,6 +146,8 @@ The soft thinking and soft training labs explore **preserving the full output di
 ./start_tutorial.sh
 ```
 
+If a sibling `../walk-the-code` checkout is present, `start_tutorial.sh` uses that local repo directly. That is the preferred setup when developing the two repos together because it avoids `uv tool install` and exercises your local `walk-the-code` changes end to end. If no sibling repo is present, the script falls back to an installed `wtc-serve`, and only installs it from GitHub as a last resort.
+
 The tutorial is powered by [walk-the-code](https://github.com/danilop/walk-the-code), a standalone project you can also install as a CLI tool:
 
 ```bash

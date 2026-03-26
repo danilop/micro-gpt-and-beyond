@@ -1,30 +1,30 @@
 {
   "14": {
-    "text": "Standard math library, used here for the square root in attention scaling. JAX handles everything else.",
+    "text": "The architecture is still the same transformer, but JAX changes the style of thinking completely: from objects with hidden state to pure functions and explicit parameter passing.",
     "hash": "b67c9dde"
   },
   "15": {
-    "text": "Provides utilities for constructing file paths to locate the dataset on disk.",
+    "text": "Keep the task fixed so the real contrast is PyTorch's imperative style versus JAX's functional one.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "Python's built-in random module for shuffling the dataset. JAX has its own separate RNG for tensor operations.",
+    "text": "This split already foreshadows JAX's philosophy: even randomness becomes explicit data you pass around instead of ambient framework state.",
     "hash": "7e18ed42"
   },
   "18": {
-    "text": "JAX: Google's functional autodiff framework. A completely different philosophy from PyTorch, no classes, no hidden state, pure functions everywhere.",
+    "text": "JAX is the same model seen through a different lens: no modules with internal state, just functions that transform inputs, parameters, and RNG keys.",
     "hash": "7092dc71"
   },
   "19": {
-    "text": "<code>jnp</code> is JAX's NumPy replacement, same API, but arrays live on GPU/TPU and support automatic differentiation.",
+    "text": "The surface syntax looks NumPy-like, which is deceptive in a good way: beneath it sits a much more explicit functional execution model.",
     "hash": "bcaa0f38"
   },
   "20": {
-    "text": "<code>grad</code> transforms a function into its gradient function. <code>jit</code> compiles Python into optimized machine code. These are JAX's core transformations.",
+    "text": "These transformations are the heart of JAX: instead of calling methods on a model object, you transform plain functions into gradient and compiled versions.",
     "hash": "46463ab9"
   },
   "22": {
-    "text": "Same seed for dataset reproducibility.",
+    "text": "Keep the data order fixed so the conceptual jump to functional programming does not get muddied by run-to-run noise.",
     "hash": "f0726c6e"
   },
   "28": {
@@ -61,23 +61,23 @@
   },
   "46": {
     "text": "Same hyperparameters as labs 01-03.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "47": {
     "text": "Split attention into 4 parallel heads so each can focus on different character relationships.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "48": {
     "text": "A single transformer layer, keeping the model minimal for this small-scale experiment.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "49": {
     "text": "Names up to 16 characters long fit in the context window. Longer names get truncated, but most fit easily.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "50": {
     "text": "Each of the 4 heads gets 4 dimensions of the 16-dimensional embedding, letting heads specialize on different character relationships.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "52": {
     "text": "JAX's PRNG is explicit, you create a key and split it for each random operation. No hidden global state, unlike NumPy/PyTorch.",
@@ -450,7 +450,7 @@
   },
   "189": {
     "text": "Temperature 0.5 makes generation more conservative: the model favors high-confidence predictions, producing more typical-sounding names.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "191": {
     "text": "JAX's PRNG needs explicit keys for every random operation during inference too.",

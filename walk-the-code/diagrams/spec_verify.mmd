@@ -1,5 +1,5 @@
-graph TD
+graph LR
     check{Accept?}
-    check -->|Yes| accept[Keep token]
-    check -->|No| reject[Resample + restart]
-    accept --> bonus[All accepted = bonus token]
+    check -->|Yes| accept[Keep draft token]
+    check -->|No| reject[Correction sample<br/>and restart]
+    accept --> bonus[If all drafts pass:<br/>take bonus token]

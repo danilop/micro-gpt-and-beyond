@@ -1,34 +1,34 @@
 {
   "12": {
-    "text": "Import math, os, random, and time from the standard library for various utilities.",
+    "text": "This lab is about wasted inference work, so even the imports hint at the story: same model, but now we can time the naive path against the cached one.",
     "hash": "b67c9dde"
   },
   "13": {
-    "text": "Import os for building portable file paths to the dataset.",
+    "text": "Same dataset, same task. That keeps the focus on the inference optimization rather than on model or data changes.",
     "hash": "de2abade"
   },
   "14": {
-    "text": "Import random for shuffling the dataset and seeding reproducibility.",
+    "text": "Randomness is only supporting cast here; the real experiment is how much repeated computation we can eliminate during generation.",
     "hash": "7e18ed42"
   },
   "15": {
-    "text": "Wall-clock timing for the naive vs cached benchmark.",
+    "text": "Timing matters in this lab because KV cache is not a theoretical nicety, it is the optimization that makes autoregressive decoding practical.",
     "hash": "4f9b8491"
   },
   "17": {
-    "text": "Import the core PyTorch library for tensor operations and autograd.",
+    "text": "PyTorch gives us the same baseline model as before. The important difference is that attention can now remember yesterday's K and V instead of recomputing them.",
     "hash": "cf1070d3"
   },
   "18": {
-    "text": "Neural network building blocks like <code>Linear</code>, <code>Embedding</code>, and <code>ModuleList</code> that automatically register their parameters for training.",
+    "text": "Nothing dramatic changes in the layer stack. That is the point: the speedup comes from preserving history, not from inventing a new model.",
     "hash": "b802910c"
   },
   "19": {
-    "text": "Import PyTorch's functional API for operations like softmax, cross-entropy, and relu.",
+    "text": "Softmax and loss stay ordinary. What changes is how much of the prefix attention has to rebuild at each decoding step.",
     "hash": "5af419e1"
   },
   "21": {
-    "text": "Pin seeds for reproducible benchmarks.",
+    "text": "Benchmarks only mean something if the runs are comparable, so we lock the stochastic pieces down before measuring.",
     "hash": "f0726c6e"
   },
   "22": {
@@ -65,23 +65,23 @@
   },
   "46": {
     "text": "Same tiny model config as lab 03, the model is identical, only inference changes.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "47": {
     "text": "Four parallel attention heads, each processing a different 4-dimensional slice.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "48": {
     "text": "A single transformer layer keeps the comparison focused on the caching optimization.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "49": {
     "text": "The longest sequence the model can process at once. Names are short, so 16 tokens is more than enough for this dataset.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "50": {
     "text": "Each attention head operates on a 4-dimensional slice of the 16-dimensional embedding.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "60": {
     "text": "RMSNorm, same as previous labs.",
@@ -144,7 +144,7 @@
     "hash": "328b177d"
   },
   "87": {
-    "text": "Concatenate cached keys with the new key. Now K covers all positions seen so far.",
+    "text": "This is the crucial reuse step: old keys stay alive, and only the new key is appended. The history grows without being recomputed.",
     "hash": "a418bc9d",
     "diagram": "kv_cached",
     "highlight": [
@@ -153,7 +153,7 @@
     ]
   },
   "88": {
-    "text": "Same for values. The new token can attend to the full history without recomputing it.",
+    "text": "Values follow the same pattern as keys, completing the cached prefix. The new token now sees the full past through reused K/V rather than rebuilt K/V.",
     "hash": "2f424894",
     "diagram": "kv_cached",
     "highlight": [
@@ -408,7 +408,7 @@
   },
   "191": {
     "text": "Temperature controls the sampling distribution's sharpness. At 0.5, high-probability tokens become even more dominant, producing more conservative but coherent names.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "192": {
     "text": "20 samples for a meaningful benchmark.",
@@ -541,7 +541,7 @@
     "hash": "bafa485e"
   },
   "237": {
-    "text": "Forward with cache. The cache grows by one position. Past K/V are NOT recomputed.",
+    "text": "This is the entire payoff of the lab in one line: feed one fresh token in, get one larger cache out. The old prefix survives as state instead of being rebuilt from scratch.",
     "hash": "b589a835",
     "diagram": "kv_cached",
     "highlight": [

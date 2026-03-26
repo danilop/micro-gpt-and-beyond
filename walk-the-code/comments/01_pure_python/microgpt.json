@@ -1,14 +1,14 @@
 {
   "1": {
-    "text": "Standard library only. No NumPy, no PyTorch, no nothing. This is pure Python all the way down.",
+    "text": "This is the irreducible version of the whole project: no tensor library, no autograd framework, just enough Python to expose every moving part of a tiny GPT.",
     "hash": "de2abade"
   },
   "2": {
-    "text": "Just <code>log</code> and <code>exp</code>, the two math functions that make neural networks work. That's all the math we need.",
+    "text": "The math toolkit is deliberately tiny. That is part of the lesson: underneath all the framework machinery, a language model is still just arithmetic, exponentials, and the chain rule.",
     "hash": "b67c9dde"
   },
   "3": {
-    "text": "Random numbers for weight initialization, data shuffling, and sampling during generation. The three sources of randomness in any language model.",
+    "text": "Randomness enters in three places that matter later too: how weights start, what order the data arrives in, and which token gets sampled at generation time.",
     "hash": "7e18ed42"
   },
   "5": {
@@ -16,19 +16,19 @@
     "hash": "f0726c6e"
   },
   "7": {
-    "text": "Builds the path to the dataset file relative to this script, one directory up in <code>data/</code>.",
+    "text": "Locate the shared corpus. Even in the pure-Python version, we want the exact same learning problem the later labs will use.",
     "hash": "5804e7ba"
   },
   "8": {
-    "text": "Auto-downloads the dataset if missing. The tutorial is entirely self-contained.",
+    "text": "Fetch the corpus if needed so the tutorial can be run from a fresh checkout with no manual setup.",
     "hash": "9667c968"
   },
   "9": {
-    "text": "Lazy import: only load <code>urllib</code> if we actually need to download.",
+    "text": "Only import the downloader on demand. The code stays focused on the model until the dataset actually has to be fetched.",
     "hash": "84cdb92b"
   },
   "10": {
-    "text": "Karpathy's \"makemore\" names dataset, ~32K human names. Perfect for a tiny language model.",
+    "text": "A tiny but rich dataset: enough spelling structure to learn real patterns, small enough that we can inspect the whole training story by eye.",
     "hash": "d5458b6a"
   },
   "11": {
@@ -100,7 +100,7 @@
     ]
   },
   "27": {
-    "text": "Starts at zero because gradients accumulate. Multiple paths through the graph can contribute to the same parameter's gradient.",
+    "text": "Starts at zero because gradients <strong>accumulate</strong>. Consider a simple example: <code>x=2, y=3, z=x*y, loss=z+x</code>. Here <code>x</code> is used twice — once in the multiply and once in the addition — so it receives gradient from both paths. That's why we start at zero and use <code>+=</code> later.",
     "hash": "84cc424b",
     "diagram": "value_node",
     "highlight": [
@@ -142,7 +142,7 @@
     ]
   },
   "33": {
-    "text": "Addition: result is <code>a + b</code>, and both local gradients are 1 because d(a+b)/da = d(a+b)/db = 1.",
+    "text": "Addition: result is <code>a + b</code>, and both local gradients are 1 because d(a+b)/da = d(a+b)/db = 1. In our example <code>loss = z + x</code>: loss.grad=1 flows equally to both z and x — each gets 1*1 = 1.",
     "hash": "160f0cba"
   },
   "35": {
@@ -168,7 +168,7 @@
     ]
   },
   "37": {
-    "text": "Product rule in action: d(a*b)/da = b and d(a*b)/db = a. The child values become each other's local gradients.",
+    "text": "Product rule: d(a*b)/da = b and d(a*b)/db = a. In our example <code>z = x*y</code> with x=2, y=3: local_grads are (y=3, x=2). When z.grad=1 arrives from backprop, x gets += 1*3 = 3 and y gets += 1*2 = 2.",
     "hash": "f8f8fcf2"
   },
   "39": {
@@ -297,7 +297,7 @@
     ]
   },
   "61": {
-    "text": "The loss's gradient w.r.t. itself is 1. This seed starts the chain reaction of gradient computation.",
+    "text": "The seed: dloss/dloss = 1. In our example (<code>loss = z + x = x*y + x</code>): this 1 flows backward through the addition, then through the multiply, accumulating at each parameter.",
     "hash": "03614c8c",
     "diagram": "autograd_backward",
     "highlight": [
@@ -322,7 +322,7 @@
     ]
   },
   "64": {
-    "text": "The <code>+=</code> is crucial. A parameter used in multiple operations receives gradients from all of them. This IS the chain rule.",
+    "text": "The <code>+=</code> is where multi-path gradients merge. In our example: <code>x</code> gets 1 from the addition path AND 3 from the multiply path, so <code>x.grad = 1 + 3 = 4</code>. Check: d(x*y+x)/dx = y+1 = 3+1 = 4. The chain rule works.",
     "hash": "23c1e33a"
   },
   "66": {

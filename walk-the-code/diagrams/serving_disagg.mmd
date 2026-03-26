@@ -1,6 +1,14 @@
-graph TD
-    d_pre1[Prefill Worker]
-    d_pre1 --> d_pre2[Prefill req0, req1...]
-    d_dec0[Decode Worker]
-    d_dec0 --> d_dec1[Decode all in parallel]
-    d_pre1 -.->|KV| d_dec0
+graph LR
+    subgraph pre[Prefill Lane]
+        direction TB
+        d_pre1[Prefill worker]
+        d_pre2[Compute full prompts]
+        d_pre1 --> d_pre2
+    end
+    subgraph dec[Decode Lane]
+        direction TB
+        d_dec0[Decode worker]
+        d_dec1[Keep decoding<br/>active requests]
+        d_dec0 --> d_dec1
+    end
+    d_pre2 -. KV handoff .-> d_dec0

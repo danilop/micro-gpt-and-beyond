@@ -1,7 +1,7 @@
 graph TD
-    t_load[Load Q block to SRAM]
-    t_load --> t_loop[For each K,V block]
-    t_loop --> t_kv[Load K,V to SRAM]
-    t_kv --> t_compute[Online softmax]
-    t_compute --> t_accum[Accumulate + write HBM]
+    t_load[Load one Q tile<br/>into SRAM]
+    t_load --> t_loop[Loop over KV tiles]
+    t_loop --> t_kv[Load K,V tile<br/>into SRAM]
+    t_kv --> t_compute[Block score update<br/>with online softmax]
+    t_compute --> t_accum[Accumulate output<br/>and write final tile]
     t_compute --> t_loop

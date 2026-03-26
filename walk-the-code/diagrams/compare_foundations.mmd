@@ -1,0 +1,6 @@
+graph TD
+    A1[Lab 01: Scalar Values] --> B1[Forward: Python loops<br/>one number at a time]
+    B1 --> C1[Backward: auto via<br/>computation graph]
+    A2[Lab 02: NumPy Arrays] --> B2[Forward: matrix multiply<br/>100x faster]
+    B2 --> C2[Backward: 150 lines<br/>of hand-derived gradients]
+    C1 -.->|same math| C2

@@ -1,4 +1,6 @@
-graph TD
-    n_step1[Step 1: process 1]
-    n_step1 --> n_step2[Step 2: redo 1+2]
-    n_step2 --> n_stepT[Step T: redo all T]
+graph LR
+    n_step1[Naive decode<br/>t1: compute 1]
+    n_step2[Naive decode<br/>t2: recompute 1..2]
+    n_stepT[Naive decode<br/>t3: recompute 1..3]
+    cached[KV cache<br/>reuse old K,V<br/>compute only new token]
+    n_step1 --> n_step2 --> n_stepT --> cached

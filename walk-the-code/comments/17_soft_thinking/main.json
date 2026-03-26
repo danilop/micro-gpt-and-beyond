@@ -1,34 +1,34 @@
 {
   "14": {
-    "text": "Standard math for entropy calculations.",
+    "text": "Soft thinking is about uncertainty that stays alive instead of being collapsed immediately, so entropy becomes part of the story rather than just a side metric.",
     "hash": "b67c9dde"
   },
   "15": {
-    "text": "Utilities for constructing the dataset file path relative to this script's location.",
+    "text": "Same names dataset again. The lab is changing the representation passed between steps, not the task itself.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "Seed-based randomness for shuffling training data and sampling during generation, ensuring reproducible runs.",
+    "text": "We need repeatable runs because this lab compares two very different decoding philosophies on the same underlying model.",
     "hash": "7e18ed42"
   },
   "18": {
-    "text": "PyTorch for model and inference.",
+    "text": "PyTorch provides the baseline model; the new idea is that the next-step input might be a probability-weighted concept, not a single hard token.",
     "hash": "cf1070d3"
   },
   "19": {
-    "text": "Provides neural network building blocks like Linear and Embedding used to construct the transformer layers.",
+    "text": "The transformer itself barely changes. What changes is what kind of object gets fed back into it after each prediction.",
     "hash": "b802910c"
   },
   "20": {
-    "text": "Softmax, cross-entropy, and crucially, the softmax that creates concept tokens.",
+    "text": "Softmax is the star here because it turns logits into the probability distribution that will either be collapsed away or preserved as a blended concept token.",
     "hash": "5af419e1"
   },
   "22": {
-    "text": "Fix seeds for reproducible comparisons between hard and soft decoding.",
+    "text": "Lock both modes to the same random baseline so the hard-vs-soft comparison is interpretable.",
     "hash": "f0726c6e"
   },
   "23": {
-    "text": "Fix PyTorch's random seed so weight initialization and sampling are reproducible.",
+    "text": "PyTorch's RNG controls both initialization and sampling, so it has to be fixed too.",
     "hash": "7e7dcf46"
   },
   "28": {
@@ -61,23 +61,23 @@
   },
   "47": {
     "text": "Small model, same architecture as Lab 03, but with one crucial addition: the forward pass accepts pre-computed embeddings, not just token IDs.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "48": {
     "text": "Split the embedding dimension across four heads for multi-head attention.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "49": {
     "text": "A single transformer layer keeps the model small and training fast for this demo.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "50": {
     "text": "Maximum sequence length of 16 tokens, matching the longest names in the dataset.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "51": {
     "text": "Each attention head operates on a 4-dimensional slice of the full embedding.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "52": {
     "text": "Run everything on CPU since this small model does not need GPU acceleration.",

@@ -1,0 +1,5 @@
+graph LR
+    q_mha[MHA<br/>4Q -> 4KV<br/>cache 4x]
+    q_gqa[GQA<br/>4Q -> 2KV<br/>cache 2x]
+    q_mqa[MQA<br/>4Q -> 1KV<br/>cache 1x]
+    q_mha --> q_gqa --> q_mqa

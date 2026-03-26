@@ -1,0 +1,7 @@
+graph TD
+    clean[Clean sequence input]
+    sample[Sample noise level t]
+    mask[Mask tokens with<br/>probability t]
+    predict[Model predicts<br/>masked tokens]
+    loss[Loss on masked<br/>positions only]
+    clean --> sample --> mask --> predict --> loss

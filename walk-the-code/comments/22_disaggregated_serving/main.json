@@ -1,34 +1,34 @@
 {
   "14": {
-    "text": "Standard library <code>math</code> for the <code>sqrt</code> function used to scale attention scores by the head dimension.",
+    "text": "Disaggregated serving keeps the transformer math the same; the real change is where prefill and decode work happen and how they stop blocking each other.",
     "hash": "b67c9dde"
   },
   "15": {
-    "text": "Filesystem utilities for locating the dataset file relative to this script's directory.",
+    "text": "Same tiny names task, so the systems lesson is not hidden behind a change in data or model complexity.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "Provides seed-based randomness for shuffling data and generating reproducible workloads.",
+    "text": "This lab simulates a workload, so reproducibility matters both for the training run and for the request-arrival pattern we want to analyze.",
     "hash": "7e18ed42"
   },
   "17": {
-    "text": "Threading: the prefill and decode workers run in parallel, communicating through a queue, simulating separate GPU workers.",
+    "text": "Threading is the star here because the lab is really about systems architecture: separate workers let prefill and decode stop fighting over the same execution lane.",
     "hash": "90781f3e"
   },
   "18": {
-    "text": "Wall-clock timing for performance measurement.",
+    "text": "Latency is the whole point. We care about time-to-first-token and throughput because serving architecture is judged by user-visible delay, not by elegance.",
     "hash": "4f9b8491"
   },
   "19": {
-    "text": "Thread-safe FIFO queue connecting the prefill worker to the decode worker.",
+    "text": "The queue is the handoff point between the two phases, where a finished prefill becomes decode-ready state instead of blocking later requests.",
     "hash": "0fef2c5d"
   },
   "20": {
-    "text": "Dataclass for clean request modeling.",
+    "text": "Each request carries its own prompt, timing, and decode state, because serving is really about how many such requests can coexist without stepping on each other.",
     "hash": "e98b1ef8"
   },
   "22": {
-    "text": "PyTorch handles both training and the model forward passes that the prefill and decode workers share.",
+    "text": "PyTorch runs the actual model so the serving simulation still feels like real inference, even though the central lesson is scheduling rather than modeling.",
     "hash": "cf1070d3"
   },
   "23": {
@@ -77,23 +77,23 @@
   },
   "51": {
     "text": "Small model config, enough to demonstrate the serving architecture.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "52": {
     "text": "Split the embedding dimension across four heads for multi-head attention.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "53": {
     "text": "A single transformer layer keeps the model small and training fast for this demo.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "54": {
     "text": "Maximum sequence length of 16 tokens, matching the longest names in the dataset.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "55": {
     "text": "Each attention head operates on a 4-dimensional slice of the full embedding.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "58": {
     "text": "RMSNorm, same as all labs.",
@@ -284,7 +284,7 @@
     "hash": "7c352239"
   },
   "140": {
-    "text": "Prefill: process the entire prompt in one parallel forward pass. This is COMPUTE-BOUND, lots of tokens, high parallelism, saturates GPU ALUs.",
+    "text": "Prefill is the wide, heavy phase: process the whole prompt at once, saturate compute, and prepare the KV state that decode will later consume token by token.",
     "hash": "d62ca2e1",
     "diagram": "serving_disagg",
     "highlight": [
@@ -297,7 +297,7 @@
     "hash": "7f71e530"
   },
   "143": {
-    "text": "Decode: process ONE new token using the cached KV history. This is MEMORY-BOUND, reading all cached K/V values but computing very little.",
+    "text": "Decode is the opposite shape: one new token, lots of KV reads, very little arithmetic. That mismatch is exactly why colocating it with prefill wastes hardware.",
     "hash": "3e987115",
     "diagram": "serving_disagg",
     "highlight": [
@@ -475,7 +475,7 @@
   },
   "227": {
     "text": "Controls how peaked the sampling distribution is. Lower temperature means more deterministic output; higher means more variety.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "228": {
     "text": "Simulated prefill cost: 0.5ms per prompt token. On real GPUs, this would be actual compute time.",
@@ -651,7 +651,7 @@
     "hash": "4fbb3996"
   },
   "296": {
-    "text": "Prefill worker: processes prompts and hands off to decode worker.",
+    "text": "The prefill worker owns the wide prompt-processing phase, then hands finished KV state across the queue instead of hanging around to decode tokens itself.",
     "hash": "d7cc4ce6",
     "diagram": "serving_disagg",
     "highlight": [
@@ -684,7 +684,7 @@
     "hash": "4c26a215"
   },
   "307": {
-    "text": "Decode worker: picks up prefilled requests and generates tokens. Can interleave decoding of multiple requests.",
+    "text": "The decode worker lives on the other side of that handoff, interleaving many in-flight requests while the prefill worker keeps chewing through new prompts.",
     "hash": "ce75c89b",
     "diagram": "serving_disagg",
     "highlight": [

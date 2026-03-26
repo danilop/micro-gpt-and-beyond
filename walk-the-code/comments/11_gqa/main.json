@@ -1,34 +1,34 @@
 {
   "13": {
-    "text": "Import math for attention scaling, os for file paths, and random for dataset shuffling. Standard library only, no external dependencies for data handling.",
+    "text": "GQA changes the economics of attention, not the surrounding training loop, so the setup stays familiar while the key-value sharing happens deeper in the model.",
     "hash": "b67c9dde"
   },
   "14": {
-    "text": "Path operations for dataset loading.",
+    "text": "Use the same shared corpus so the comparison is about attention head sharing, not about a different task.",
     "hash": "de2abade"
   },
   "15": {
-    "text": "Pin the random seed so shuffling and other random operations produce identical results on every run, making experiments comparable.",
+    "text": "The whole point is to compare MHA, GQA, and MQA fairly, so the stochastic parts of the run need to stay pinned down.",
     "hash": "7e18ed42"
   },
   "17": {
-    "text": "Import the core PyTorch library for tensor operations, autograd, and GPU support.",
+    "text": "PyTorch handles the usual tensor work. The new idea in this lab is architectural: query heads no longer need one private KV head each.",
     "hash": "cf1070d3"
   },
   "18": {
-    "text": "Neural network building blocks like <code>Linear</code>, <code>Embedding</code>, and <code>ModuleList</code> that automatically register their parameters for training.",
+    "text": "Same standard layers as before. That is useful here because it makes the KV-sharing change stand out clearly instead of being buried in unrelated refactors.",
     "hash": "b802910c"
   },
   "19": {
-    "text": "Functional API for softmax, cross-entropy, etc.",
+    "text": "Loss and softmax stay unchanged. GQA is a memory-layout and capacity tradeoff, not a new objective.",
     "hash": "5af419e1"
   },
   "21": {
-    "text": "Pin both seeds for reproducible comparison across MHA/GQA/MQA variants.",
+    "text": "Reset both RNGs so differences in quality, parameter count, and cache size are attributable to KV sharing alone.",
     "hash": "f0726c6e"
   },
   "22": {
-    "text": "Set PyTorch's random seed separately so weight initialization and tensor operations are also reproducible across runs.",
+    "text": "The weight initialization must match too; otherwise the variant comparison would be contaminated before attention even runs once.",
     "hash": "7e7dcf46"
   },
   "27": {
@@ -61,23 +61,23 @@
   },
   "45": {
     "text": "Same small model config as previous labs, differences will come from KV head sharing.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "46": {
     "text": "4 query heads, this stays constant across all three variants.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "47": {
     "text": "Single layer keeps the comparison focused on attention architecture.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "48": {
     "text": "The longest sequence the model can process at once. Names are short, so 16 tokens is more than enough for this dataset.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "49": {
     "text": "Each head operates on 4 dimensions.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "55": {
     "text": "RMSNorm, same lightweight normalization as lab 10.",
@@ -150,19 +150,17 @@
   "91": {
     "text": "Repeat each KV head to serve its group of query heads. Logically shared, but physically copied for the matmul. In practice, this repeat is nearly free, it's a view/broadcast, not a memcpy.",
     "hash": "8e93f815",
-    "diagram": "gqa_grouped",
+    "diagram": "gqa_compare",
     "highlight": [
-      "q1_gqa",
-      "q2_gqa"
+      "q_gqa"
     ]
   },
   "92": {
     "text": "Values get the same expansion as keys so that each query head has a matching value vector to retrieve content from.",
     "hash": "a5bf0970",
-    "diagram": "gqa_grouped",
+    "diagram": "gqa_compare",
     "highlight": [
-      "q1_gqa",
-      "q2_gqa"
+      "q_gqa"
     ]
   },
   "95": {
@@ -319,194 +317,190 @@
   },
   "158": {
     "text": "Temperature 0.5 for generation, moderately creative.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "160": {
     "text": "Three variants to compare, all using the same model class with different <code>n_kv_head</code> values.",
     "hash": "826c0643"
   },
   "161": {
-    "text": "MHA: <code>n_kv_head=4</code> (same as <code>n_head</code>), every query head gets its own K,V. The standard approach from labs 01-08.",
+    "text": "MHA is the no-sharing baseline: four query heads, four KV heads, and therefore the largest KV cache. It gives maximum per-head freedom, but also maximum memory cost.",
     "hash": "46cb8003",
-    "diagram": "gqa_mha",
+    "diagram": "gqa_compare",
     "highlight": [
-      "q1_mha",
-      "q2_mha",
-      "q3_mha",
-      "q4_mha"
+      "q_mha"
     ]
   },
   "162": {
-    "text": "GQA: <code>n_kv_head=2</code>, two groups of two query heads, each group sharing one K,V pair. The sweet spot used by LLaMA-2 70B.",
+    "text": "GQA is the compromise: the four query heads are still there, but they now flow through just two shared KV groups. That cuts cache size in half without collapsing all heads onto one shared memory.",
     "hash": "73e4025f",
-    "diagram": "gqa_grouped",
+    "diagram": "gqa_compare",
     "highlight": [
-      "q1_gqa",
-      "q2_gqa"
+      "q_gqa"
     ]
   },
   "163": {
-    "text": "MQA: <code>n_kv_head=1</code>, all query heads share a single K,V pair. Maximum compression, used by PaLM and Falcon.",
+    "text": "MQA pushes sharing to the limit: all four query heads read from the same single KV head. It is the cheapest in memory, but also the most aggressive loss of KV diversity.",
     "hash": "eeea829c",
-    "diagram": "gqa_multi",
+    "diagram": "gqa_compare",
     "highlight": [
-      "kv1_mqa"
+      "q_mqa"
     ]
   },
   "166": {
     "text": "Shared generation function for all variants.",
-    "hash": "9f2a2f34"
+    "hash": "e3b0c442"
   },
   "168": {
     "text": "Disable dropout and other training-only behavior so the model produces deterministic outputs.",
-    "hash": "45bf010c"
+    "hash": "7b319c2c"
   },
   "170": {
     "text": "No gradients needed during generation.",
-    "hash": "d4f61231"
+    "hash": "0ef4c54b"
   },
   "171": {
     "text": "Generate 10 sample names from this variant so we can visually compare output quality across MHA, GQA, and MQA configurations.",
-    "hash": "bb36d13f"
+    "hash": "d4f61231"
   },
   "172": {
     "text": "Begin each generated name with the beginning-of-sequence token so the model knows it is starting fresh.",
-    "hash": "5c52ddc4"
+    "hash": "bb36d13f"
   },
   "173": {
     "text": "Generate up to <code>block_size</code> tokens.",
-    "hash": "ab05dc73"
+    "hash": "5c52ddc4"
   },
   "174": {
     "text": "Feed current sequence through the model.",
-    "hash": "ce311cc5"
+    "hash": "ab05dc73"
   },
   "175": {
     "text": "Take the model's prediction for the very last position, which contains the logits for what token should come next in the sequence.",
-    "hash": "7d28f274"
+    "hash": "ce311cc5"
   },
   "176": {
     "text": "Divide the logits by the temperature before softmax to control how peaked or flat the distribution is.",
-    "hash": "e1a1328f"
+    "hash": "7d28f274"
   },
   "177": {
     "text": "Convert the temperature-scaled logits into a proper probability distribution that sums to one.",
-    "hash": "93ed4206"
+    "hash": "e1a1328f"
   },
   "178": {
     "text": "Randomly draw one token from the probability distribution to introduce controlled diversity.",
-    "hash": "5b83becd"
+    "hash": "93ed4206"
   },
   "179": {
     "text": "Stop if BOS is generated (end of name).",
-    "hash": "41a35c11"
+    "hash": "5b83becd"
   },
   "181": {
     "text": "Add the newly sampled token to the growing sequence and continue generating the next one.",
-    "hash": "a1ca669a"
+    "hash": "14ebe56a"
   },
   "182": {
     "text": "Convert the list of generated token IDs back into characters and join them into a readable name string.",
-    "hash": "b4368128"
+    "hash": "a1ca669a"
   },
   "186": {
     "text": "Train each variant in sequence with identical data and seeds.",
-    "hash": "8725aa67"
+    "hash": "e3b0c442"
   },
   "192": {
     "text": "Reset seeds before each variant for a fair comparison, same random init and data order.",
-    "hash": "f0726c6e"
+    "hash": "3caa6e6b"
   },
   "193": {
     "text": "Reset the PyTorch random seed so each variant starts from exactly the same weight initialization.",
-    "hash": "7e7dcf46"
+    "hash": "f0726c6e"
   },
   "194": {
     "text": "Re-shuffle to the same order.",
-    "hash": "c8f1cb86"
+    "hash": "7e7dcf46"
   },
   "196": {
     "text": "Instantiate the model with this variant's specific number of KV heads. The same class handles MHA, GQA, and MQA through this one parameter.",
-    "hash": "a668b5fa"
+    "hash": "e3b0c442"
   },
   "197": {
     "text": "Count total parameters, fewer KV heads = fewer KV projection parameters.",
-    "hash": "3ba34a25"
+    "hash": "a668b5fa"
   },
   "201": {
     "text": "KV cache memory estimate, the key metric for inference. Fewer KV heads = proportionally less cache memory. At 7B scale with 2048 context, this difference is gigabytes per request.",
-    "hash": "e1d9a6c7"
+    "hash": "e9058f18"
   },
   "207": {
     "text": "Same optimizer for all variants.",
-    "hash": "92d21e78"
+    "hash": "e3b0c442"
   },
   "209": {
     "text": "The standard training loop: pick a name, tokenize it, run a forward pass, compute loss, backpropagate, and update weights for 1000 steps.",
-    "hash": "53f56939"
+    "hash": "e3b0c442"
   },
   "210": {
     "text": "Pick the next name from the shuffled list, wrapping around when we reach the end. This cycling ensures continuous training across all steps.",
-    "hash": "47ec0e2c"
+    "hash": "53f56939"
   },
   "211": {
     "text": "Tokenize: BOS + chars + BOS.",
-    "hash": "ae86abd0"
+    "hash": "47ec0e2c"
   },
   "212": {
     "text": "Limit the sequence length to block_size so it fits the model's positional embedding table.",
-    "hash": "3d9da8cd"
+    "hash": "ae86abd0"
   },
   "214": {
     "text": "Convert the first n token IDs into a tensor the model can consume as input.",
-    "hash": "968a3346"
+    "hash": "e3b0c442"
   },
   "215": {
     "text": "Target tokens (shifted by one).",
-    "hash": "1b63fd95"
+    "hash": "968a3346"
   },
   "217": {
     "text": "Run the full model on the current input batch to get next-token predictions.",
-    "hash": "17df3885"
+    "hash": "e3b0c442"
   },
   "218": {
     "text": "Measure how far the model's predictions are from the true next tokens using cross-entropy loss.",
-    "hash": "4f1dd754"
+    "hash": "17df3885"
   },
   "220": {
     "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
-    "hash": "fbede2b3"
+    "hash": "e3b0c442"
   },
   "221": {
     "text": "Compute gradients for every parameter by propagating the loss backward through the computation graph.",
-    "hash": "227fe80d"
+    "hash": "fbede2b3"
   },
   "222": {
     "text": "Linearly reduce the learning rate from its initial value down to zero over the course of training.",
-    "hash": "60602e3a"
+    "hash": "227fe80d"
   },
   "223": {
     "text": "Write the decayed learning rate into every parameter group so the optimizer uses it on the next step.",
-    "hash": "9f6d3592"
+    "hash": "60602e3a"
   },
   "225": {
     "text": "Apply the optimizer step, adjusting every parameter in the direction that reduces the loss.",
-    "hash": "d9e59d7e"
+    "hash": "3030870a"
   },
   "231": {
     "text": "Generate sample names from this variant.",
-    "hash": "3da05715"
+    "hash": "26396fa0"
   },
   "239": {
     "text": "Summary table: show how KV sharing affects parameter count and cache size.",
-    "hash": "8725aa67"
+    "hash": "54a209e4"
   },
   "240": {
     "text": "Calculate KV projection parameters (wk + wv weights) for each variant.",
-    "hash": "0c2c323d"
+    "hash": "8725aa67"
   },
   "241": {
     "text": "Calculate KV cache memory in bytes (fp16 inference).",
-    "hash": "ce9d8873"
+    "hash": "0c2c323d"
   }
 }

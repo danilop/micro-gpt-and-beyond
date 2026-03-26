@@ -1,30 +1,30 @@
 {
   "14": {
-    "text": "Standard math library, used here for the square root in attention scaling. JAX handles everything else.",
+    "text": "This lab keeps the functional JAX style but adds the big batching idea: write the logic once for a single example, then lift it across a batch with transformation rather than manual rewiring.",
     "hash": "b67c9dde"
   },
   "15": {
-    "text": "Provides utilities for constructing file paths to locate the dataset on disk.",
+    "text": "Same corpus, so the teaching point is batching by transformation, not a new task.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "Python's built-in random module for shuffling the dataset into a random training order.",
+    "text": "The data pipeline stays ordinary. The interesting part is how little the model code has to change once <code>vmap</code> enters the picture.",
     "hash": "7e18ed42"
   },
   "18": {
-    "text": "JAX with its functional transformations.",
+    "text": "Same JAX foundation as the previous lab, but now the focus shifts from explicit functional modeling to automatic vectorization.",
     "hash": "7092dc71"
   },
   "19": {
-    "text": "JAX's drop-in NumPy replacement that runs on GPU/TPU and supports automatic differentiation.",
+    "text": "The array API stays familiar while the execution story grows more powerful under the surface.",
     "hash": "bcaa0f38"
   },
   "20": {
-    "text": "<code>vmap</code> is the star of this lab, it automatically vectorizes a single-example function across a batch. Write once, batch for free.",
+    "text": "<code>vmap</code> is the whole point of this lab: keep the single-example mental model, then let JAX lift that computation across the batch dimension for you.",
     "hash": "1aba950a"
   },
   "22": {
-    "text": "Fix the Python random seed so dataset shuffling is identical across runs, making results reproducible.",
+    "text": "Fix the outer randomness so the benefit of <code>vmap</code> is visible as a code-structure improvement rather than as a different experiment.",
     "hash": "f0726c6e"
   },
   "28": {
@@ -69,23 +69,23 @@
   },
   "48": {
     "text": "4x larger embeddings, same scale-up as lab 04.",
-    "hash": "203d0348"
+    "hash": "3b06c323"
   },
   "49": {
     "text": "4 heads with 16 dimensions each.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "50": {
     "text": "Two transformer layers give the model more depth to build progressively richer representations of character patterns.",
-    "hash": "0a695db7"
+    "hash": "6664fd8c"
   },
   "51": {
     "text": "Names up to 16 characters fit in the context window. Longer names get truncated, but most fit easily.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "52": {
     "text": "Each attention head operates on 16 dimensions, giving finer-grained representations than lab 05.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "53": {
     "text": "32 sequences processed in parallel per training step. Batching amortizes overhead and gives the optimizer a smoother gradient signal.",
@@ -544,7 +544,7 @@
   },
   "239": {
     "text": "Temperature 0.5 makes generation more conservative: the model favors high-confidence predictions, producing more typical-sounding names.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "241": {
     "text": "Initialize a PRNG key for sampling during generation. Each sampling step will split off a fresh sub-key to stay deterministic.",

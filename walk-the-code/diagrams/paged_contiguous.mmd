@@ -1,2 +1,6 @@
 graph TD
-    alloc_c[Pre-allocate max_len] --> waste[Most slots wasted]
+    alloc_c[Reserve max_len slots]
+    used[Short request<br/>uses only a few]
+    waste[Large unused tail<br/>still stays allocated]
+    alloc_c --> used
+    alloc_c --> waste

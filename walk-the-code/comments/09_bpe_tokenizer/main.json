@@ -1,34 +1,34 @@
 {
   "10": {
-    "text": "Standard library math, used later for <code>log</code> in the bigram log-likelihood calculation.",
+    "text": "This lab is mostly about counting and merging, but we still need a little math later to measure whether the learned subwords actually help the language model.",
     "hash": "b67c9dde"
   },
   "11": {
-    "text": "Filesystem ops, building a portable path to the shared dataset.",
+    "text": "BPE learns entirely from the corpus itself, so the first step is simply to find the raw names file we will mine for repeated character patterns.",
     "hash": "de2abade"
   },
   "12": {
-    "text": "Reproducibility seed and corpus shuffling.",
+    "text": "The merge history depends on corpus statistics, so we keep the setup stable enough that the same subwords emerge from run to run.",
     "hash": "7e18ed42"
   },
   "14": {
-    "text": "Pin the random seed so every run sees the same training order.",
+    "text": "BPE is a cumulative greedy process: early merges shape every later token, so reproducibility matters more than it first appears.",
     "hash": "f0726c6e"
   },
   "19": {
-    "text": "Portable path that works regardless of where you run the script from.",
+    "text": "Locate the shared names corpus. Every later merge rule will be discovered from these strings alone, with no hand-written vocabulary.",
     "hash": "5ac9686d"
   },
   "20": {
-    "text": "Auto-download the dataset on first run.",
+    "text": "Fetch the corpus if needed so the tokenizer can be learned from scratch with no manual setup.",
     "hash": "9667c968"
   },
   "21": {
-    "text": "Lazy import, only needed if the file is missing.",
+    "text": "Only import the downloader if the file is missing. The real story starts once we begin counting recurring fragments.",
     "hash": "84cdb92b"
   },
   "23": {
-    "text": "Karpathy's names dataset: ~32K human names, one per line.",
+    "text": "A tiny but realistic corpus: enough repeated fragments for subwords like <code>an</code>, <code>er</code>, and <code>ia</code> to emerge naturally.",
     "hash": "5e579f27"
   },
   "24": {
@@ -64,19 +64,23 @@
     "hash": "eef2603a"
   },
   "38": {
-    "text": "27 tokens total: 26 letters + BOS. Tiny vocab, but each token is just one character.",
+    "text": "27 tokens total: 26 lowercase letters plus one special BOS token. This tiny vocabulary is the starting point for both tokenizers.",
     "hash": "102a09ac"
   },
   "46": {
-    "text": "Wrap each name with BOS markers on both ends, the model learns to start and stop generating.",
-    "hash": "185117f7"
+    "text": "Encode a name to character tokens: wrap with BOS on both ends, look up each character's integer ID. This is the baseline that BPE will improve upon.",
+    "hash": "185117f7",
+    "diagram": "bpe_encode",
+    "highlight": [
+      "input"
+    ]
   },
   "48": {
-    "text": "BOS + character ids + BOS. Identical to how labs 01-08 encode, just factored into a function.",
+    "text": "BOS + character ids + BOS. Identical to how labs 01-08 encode, just factored into a reusable function.",
     "hash": "edde13e6"
   },
   "51": {
-    "text": "Reverse the encoding, filtering out BOS markers to recover the original name.",
+    "text": "Reverse the encoding: map each token ID back to its character, skipping the BOS markers.",
     "hash": "cb16ba44"
   },
   "53": {
@@ -100,7 +104,7 @@
     "hash": "51789795"
   },
   "82": {
-    "text": "Each name gets individually tokenized.",
+    "text": "Build the initial corpus for BPE training: each name becomes a list of integer token IDs, starting at character granularity.",
     "hash": "01ee5079"
   },
   "83": {
@@ -140,7 +144,7 @@
     "hash": "1d692e89"
   },
   "97": {
-    "text": "Once we find the winning pair, replace every occurrence with a brand new token id.",
+    "text": "The core merge operation: scan every sequence left-to-right, replacing adjacent tokens matching the pair with the new merged ID. This is greedy \u2014 the leftmost match wins.",
     "hash": "6cd51dc8",
     "diagram": "bpe_merge",
     "highlight": [
@@ -168,7 +172,7 @@
     "hash": "a309cd83"
   },
   "104": {
-    "text": "Found the pair! Both tokens match at adjacent positions.",
+    "text": "Pattern matching: if the current token and the next match our target pair, emit the merged token and skip ahead by two positions.",
     "hash": "2bb791ed"
   },
   "105": {
@@ -200,7 +204,7 @@
     "hash": "cf646663"
   },
   "121": {
-    "text": "Recursively decode a BPE token back to its string. Merged tokens unpack into their components.",
+    "text": "Recursive decoding: a merged token is decoded by looking up which two tokens were merged to create it, then decoding each of those. Base case: character tokens decode directly.",
     "hash": "d8064d27"
   },
   "123": {
@@ -256,11 +260,11 @@
     "hash": "e3b0c442"
   },
   "155": {
-    "text": "Track the frequency for the training log.",
+    "text": "Show the starting vocabulary size before any merges are applied.",
     "hash": "7e1f0c38"
   },
   "156": {
-    "text": "New token id = current vocab size (incrementing from 27).",
+    "text": "Announce how many merge operations we will perform.",
     "hash": "181cb2ed"
   },
   "157": {
@@ -272,8 +276,14 @@
     "hash": "e3b0c442"
   },
   "160": {
-    "text": "Show what character sequences are being fused together.",
-    "hash": "fa91a124"
+    "text": "The BPE training loop: each iteration finds the most frequent pair, creates a new token for it, and merges it everywhere in the corpus. Greedy, local, and surprisingly effective.",
+    "hash": "fa91a124",
+    "diagram": "bpe_merge",
+    "highlight": [
+      "count",
+      "find_best",
+      "merge"
+    ]
   },
   "163": {
     "text": "Apply the merge to the entire corpus, every occurrence of the pair becomes one token.",
@@ -293,7 +303,7 @@
     ]
   },
   "166": {
-    "text": "Final tally: 27 base + 50 merges = 77 tokens.",
+    "text": "Greedy selection: always merge the globally most frequent pair. Not optimal, but close \u2014 and fast.",
     "hash": "30a09694",
     "diagram": "bpe_merge",
     "highlight": [
@@ -301,11 +311,11 @@
     ]
   },
   "169": {
-    "text": "Decode a full sequence of BPE token ids back to a readable string.",
+    "text": "Record this merge in the table. The order matters: during encoding, merges are replayed in exactly this sequence.",
     "hash": "6e88f6e2"
   },
   "171": {
-    "text": "Concatenate the decoded string for each token in the sequence.",
+    "text": "Log the first 20 merges and every 10th after that, plus the very last one \u2014 so the output stays readable.",
     "hash": "9885032e"
   },
   "177": {
@@ -329,8 +339,12 @@
     "hash": "214d5241"
   },
   "195": {
-    "text": "Add some random names so the examples aren't cherry-picked.",
-    "hash": "c83f9efd"
+    "text": "Apply each merge by calling merge_pair on a single-element list, then unwrap. The sequence gets shorter with each applicable merge.",
+    "hash": "c83f9efd",
+    "diagram": "bpe_encode",
+    "highlight": [
+      "apply"
+    ]
   },
   "197": {
     "text": "Remove duplicates while preserving order, cap at 10.",
@@ -353,7 +367,7 @@
     "hash": "54a209e4"
   },
   "205": {
-    "text": "Show the BPE tokenization visually, so you can see subword boundaries.",
+    "text": "A mix of hand-picked and random names to show how BPE compression varies: short common names compress heavily, long unusual ones less so.",
     "hash": "0906fd5b"
   },
   "216": {
@@ -453,7 +467,7 @@
     "hash": "1cfb186a"
   },
   "290": {
-    "text": "Stop generating when we hit BOS again (end of name).",
+    "text": "Ancestral sampling from the bigram: pick a random next token weighted by the transition probabilities, repeat until BOS (end) or max length.",
     "hash": "267eca75"
   },
   "295": {
@@ -505,7 +519,7 @@
     "hash": "b2af2beb"
   },
   "334": {
-    "text": "Generate from the character bigram, expect babble-ish names since bigrams have no long-range memory.",
+    "text": "Evaluate the BPE bigram on the BPE-encoded corpus.",
     "hash": "c7618f8e"
   },
   "335": {
@@ -527,5 +541,427 @@
   "342": {
     "text": "Decode BPE tokens back to a string, merged tokens expand to multiple characters.",
     "hash": "0f3ae8ed"
+  },
+  "175": {
+    "text": "Apply the merge to every sequence in the corpus. The corpus shrinks because two tokens become one wherever this pair appeared.",
+    "hash": "87ff013f",
+    "diagram": "bpe_merge",
+    "highlight": [
+      "merge",
+      "r1"
+    ]
+  },
+  "189": {
+    "text": "Encoding with learned merges: start from characters, then replay every merge in training order. This greedy left-to-right strategy is how GPT-2/3/4 encode text.",
+    "hash": "e42616ee",
+    "diagram": "bpe_encode",
+    "highlight": [
+      "scan",
+      "apply"
+    ]
+  },
+  "194": {
+    "text": "Apply merges in the order they were learned. Earlier merges captured the most frequent patterns, so they fire most often.",
+    "hash": "be8191b0",
+    "diagram": "bpe_encode",
+    "highlight": [
+      "check"
+    ]
+  },
+  "229": {
+    "text": "Corpus-wide statistics: total tokens before and after BPE. The compression ratio shows how much shorter sequences become \u2014 directly translating to faster training and inference.",
+    "hash": "9a3e3c67"
+  },
+  "254": {
+    "text": "Display every learned merge rule. Reading this table reveals what patterns the algorithm discovered: common bigrams first (like 'an', 'er'), then longer chunks.",
+    "hash": "4417f60d"
+  },
+  "275": {
+    "text": "A bigram model is the simplest possible language model: just a table of P(next_token | current_token). No neural network \u2014 pure counting plus Laplace smoothing to handle unseen pairs.",
+    "hash": "ff9b9bb6"
+  },
+  "308": {
+    "text": "Evaluate model quality: average log-probability the model assigns to the actual next token. Higher means the model predicts the data better.",
+    "hash": "3ab2a558"
+  },
+  "323": {
+    "text": "Train the character-level bigram on the full corpus. With only 27 tokens, each bigram step covers one character \u2014 short-range patterns only.",
+    "hash": "189582bb"
+  },
+  "332": {
+    "text": "Train the BPE bigram on the same corpus. With 227 tokens, each step covers a subword \u2014 so a single bigram transition can capture multi-character patterns like 'an' \u2192 'na'.",
+    "hash": "e883bcc2"
+  },
+  "347": {
+    "text": "Generate names from the character bigram. Quality is limited because each step only sees one character of context.",
+    "hash": "8ab025e3"
+  },
+  "352": {
+    "text": "Generate names from the BPE bigram. Even with the same simple bigram model, BPE tokens capture longer patterns, producing more plausible names.",
+    "hash": "40655bff"
+  },
+  "364": {
+    "text": "The punchline: BPE is the algorithm behind every modern LLM tokenizer. At GPT scale (50K-100K merges on internet text), it's essential to keep sequences manageable.",
+    "hash": "35cd4244"
+  },
+  "1": {
+    "text": "Module docstring: this lab implements Byte-Pair Encoding from scratch, then compares character-level and BPE tokenization with a simple bigram model.",
+    "hash": "b6d267ef"
+  },
+  "33": {
+    "text": "Every unique character gets an integer id. BOS marks the start and end of each sequence \u2014 the model learns when to stop generating.",
+    "hash": "9e2e6130"
+  },
+  "40": {
+    "text": "Print a section header. The character tokenizer is the baseline that BPE will be measured against.",
+    "hash": "0f3ae8ed"
+  },
+  "43": {
+    "text": "Show the vocabulary breakdown: how many real characters vs control tokens.",
+    "hash": "120da5d3"
+  },
+  "47": {
+    "text": "Docstring for the character encoder function.",
+    "hash": "31f4345a"
+  },
+  "52": {
+    "text": "Docstring for the character decoder function.",
+    "hash": "848140d9"
+  },
+  "59": {
+    "text": "BPE starts with the character vocabulary and iteratively merges the most frequent adjacent pair into a new token.",
+    "hash": "0eeb9465"
+  },
+  "60": {
+    "text": "This is exactly how GPT-2, GPT-3, GPT-4, and LLaMA build their tokenizers \u2014 at much larger scale with ~50K merges.",
+    "hash": "a5df6f91"
+  },
+  "63": {
+    "text": "The fundamental tradeoff: larger vocab means shorter sequences (faster) but more embedding parameters.",
+    "hash": "12caad47"
+  },
+  "67": {
+    "text": "Print a section header for the BPE tokenizer training phase.",
+    "hash": "0f3ae8ed"
+  },
+  "70": {
+    "text": "Section separator before the BPE hyperparameter.",
+    "hash": "e3b0c442"
+  },
+  "72": {
+    "text": "200 merge operations is tiny compared to production (GPT-2 uses 50K). But it's enough to see clear compression on a names corpus.",
+    "hash": "e3b0c442"
+  },
+  "73": {
+    "text": "Step 1 comment: start with character-level tokens for each name, then iteratively merge.",
+    "hash": "9fa2b33c"
+  },
+  "78": {
+    "text": "Base vocabulary size includes all characters plus the BOS marker. Every merge will add one more token on top of this.",
+    "hash": "e3b0c442"
+  },
+  "80": {
+    "text": "Comment: build the initial corpus by wrapping each name with BOS and converting to integer IDs.",
+    "hash": "15d97253"
+  },
+  "85": {
+    "text": "End of the corpus building loop. Every name is now a list of integers ready for the merge iterations.",
+    "hash": "e3b0c442"
+  },
+  "88": {
+    "text": "Docstring: count how often each adjacent token pair appears across the entire corpus.",
+    "hash": "c8eb984f"
+  },
+  "94": {
+    "text": "Return the complete frequency dictionary. The pair with the highest count will be merged next.",
+    "hash": "c75b1fb5"
+  },
+  "98": {
+    "text": "Docstring for merge_pair: replace every occurrence of a given pair with a new single token ID.",
+    "hash": "413090e0"
+  },
+  "107": {
+    "text": "Else branch: no pair match at this position. Fall through to copy the current token unchanged.",
+    "hash": "675c27cf"
+  },
+  "111": {
+    "text": "Return the fully merged corpus. Every sequence is now shorter by the number of merges that fired.",
+    "hash": "283d6121"
+  },
+  "114": {
+    "text": "Step 2 comment: iteratively merge the most frequent pair. Each merge creates a new token and shrinks all sequences.",
+    "hash": "dca97509"
+  },
+  "116": {
+    "text": "The merge table records what was merged \u2014 it IS the tokenizer, replayed during encoding.",
+    "hash": "957e317a"
+  },
+  "119": {
+    "text": "Blank line separating the merge table setup from the decode function.",
+    "hash": "e3b0c442"
+  },
+  "122": {
+    "text": "Docstring: decode a single BPE token ID to its string representation, recursively expanding merges.",
+    "hash": "aa07c5c0"
+  },
+  "124": {
+    "text": "BOS decodes to empty string. It's a control token with no visible text representation.",
+    "hash": "2684f271"
+  },
+  "126": {
+    "text": "Base characters (a-z) decode directly from the id-to-character lookup table.",
+    "hash": "8199cf4e"
+  },
+  "131": {
+    "text": "Fallback for unknown token IDs \u2014 should never happen in practice.",
+    "hash": "6fe48aab"
+  },
+  "135": {
+    "text": "Docstring: like bpe_decode_token but keeps BOS visible as '|' for human-readable output.",
+    "hash": "c3ff74ff"
+  },
+  "141": {
+    "text": "For merged tokens, recursively expand both components into their display form.",
+    "hash": "1fe905d6"
+  },
+  "142": {
+    "text": "Concatenate the display strings of both halves of the merge.",
+    "hash": "e364298e"
+  },
+  "146": {
+    "text": "Helper function for the training log: convert any token ID to a human-readable string.",
+    "hash": "7a751fb3"
+  },
+  "151": {
+    "text": "Base characters display as themselves \u2014 single letter output.",
+    "hash": "8199cf4e"
+  },
+  "152": {
+    "text": "Merged tokens use bpe_decode_token to recursively expand to their full string.",
+    "hash": "b2469117"
+  },
+  "158": {
+    "text": "Print dashes to separate the table header from the data rows.",
+    "hash": "0de54e22"
+  },
+  "161": {
+    "text": "Count all adjacent pairs in the current (possibly already-merged) corpus.",
+    "hash": "899c0879"
+  },
+  "162": {
+    "text": "Safety check: if no pairs remain (all sequences are length 0 or 1), stop early.",
+    "hash": "8606ce29"
+  },
+  "167": {
+    "text": "Record the frequency of the best pair for the training log.",
+    "hash": "c3b547f1"
+  },
+  "168": {
+    "text": "Assign a new token ID: simply the current vocabulary size, so IDs increment from 27 upward.",
+    "hash": "c9b60455"
+  },
+  "172": {
+    "text": "Build a human-readable string showing which tokens were merged (e.g., 'a'+'n').",
+    "hash": "91ff0e44"
+  },
+  "173": {
+    "text": "Print one row of the training log: merge number, pair IDs, visual form, frequency, and new vocab size.",
+    "hash": "b6012b0c"
+  },
+  "176": {
+    "text": "Increment the vocabulary size. Every merge adds exactly one new token.",
+    "hash": "4a635626"
+  },
+  "178": {
+    "text": "Print the final BPE vocabulary size: base tokens plus all learned merges.",
+    "hash": "44f46344"
+  },
+  "181": {
+    "text": "Full-sequence decoder: given a list of BPE token IDs, reconstruct the original string.",
+    "hash": "a06edd78"
+  },
+  "192": {
+    "text": "Start with character-level tokens, exactly like the character encoder. BPE encoding then compresses from here.",
+    "hash": "dfccfcc4"
+  },
+  "196": {
+    "text": "Return the final compressed token sequence. Common subwords are now single tokens.",
+    "hash": "fe8eb2c5",
+    "diagram": "bpe_encode",
+    "highlight": [
+      "output"
+    ]
+  },
+  "207": {
+    "text": "Add some random names from the dataset so the examples are not cherry-picked.",
+    "hash": "ffb6c566"
+  },
+  "209": {
+    "text": "Deduplicate while preserving order and cap at 10 examples.",
+    "hash": "29f0b27a"
+  },
+  "214": {
+    "text": "Loop through each example name, encoding it with both tokenizers for comparison.",
+    "hash": "60db4701"
+  },
+  "215": {
+    "text": "Encode with the character tokenizer: always len(name) + 2 tokens (one per char plus two BOS).",
+    "hash": "7b7a8e46"
+  },
+  "230": {
+    "text": "Encode every name with BPE and sum up all tokens across the corpus.",
+    "hash": "fe9e5c2a"
+  },
+  "231": {
+    "text": "Average character tokens per name \u2014 the baseline measurement.",
+    "hash": "bb644c9b"
+  },
+  "232": {
+    "text": "Average BPE tokens per name \u2014 should be notably less than the character average.",
+    "hash": "37356414"
+  },
+  "234": {
+    "text": "Print the total number of names in the dataset.",
+    "hash": "04f86582"
+  },
+  "237": {
+    "text": "Print the total character tokens across the corpus \u2014 the 'before' number.",
+    "hash": "44701c6b"
+  },
+  "238": {
+    "text": "Print the total BPE tokens across the corpus \u2014 the 'after' number.",
+    "hash": "37de9864"
+  },
+  "249": {
+    "text": "Print the base tokens (a-z) that form the foundation of the vocabulary.",
+    "hash": "c9c5e5b7"
+  },
+  "250": {
+    "text": "Show which token ID is assigned to the BOS marker.",
+    "hash": "e1d568b2"
+  },
+  "255": {
+    "text": "Decode the merged token to show what string it represents (e.g., token 28 = 'an').",
+    "hash": "ed106312"
+  },
+  "256": {
+    "text": "Decode the first component of the merge, replacing the pipe symbol with a readable BOS tag.",
+    "hash": "814b73bc"
+  },
+  "258": {
+    "text": "Print one row: the new token ID, its decoded string, and which two tokens were merged to create it.",
+    "hash": "c10acfc2"
+  },
+  "263": {
+    "text": "Comment: the bigram model is P(next_token | current_token), just a lookup table of transition counts.",
+    "hash": "24593aab"
+  },
+  "276": {
+    "text": "Docstring: train a bigram model by counting transitions, smoothing, and normalizing.",
+    "hash": "57ccc043"
+  },
+  "278": {
+    "text": "Initialize a 2D count matrix of zeros: rows are current tokens, columns are next tokens.",
+    "hash": "91e77239"
+  },
+  "281": {
+    "text": "Increment the count for this specific token-to-token transition.",
+    "hash": "c1f41e14"
+  },
+  "284": {
+    "text": "Process each row of counts to produce a row of probabilities.",
+    "hash": "2775d48d"
+  },
+  "286": {
+    "text": "Laplace smoothing: add 1 to each count, then normalize. This ensures no probability is exactly zero.",
+    "hash": "d9e1822b"
+  },
+  "291": {
+    "text": "Docstring: sample a sequence from the bigram model by repeatedly drawing next tokens.",
+    "hash": "4397eb1c"
+  },
+  "292": {
+    "text": "Start the generated sequence with BOS \u2014 the model will sample what typically follows the start marker.",
+    "hash": "1e9ca6eb"
+  },
+  "296": {
+    "text": "Draw a uniform random number to use for sampling from the probability distribution.",
+    "hash": "10590257"
+  },
+  "298": {
+    "text": "Walk through tokens by probability until the cumulative sum exceeds the random threshold.",
+    "hash": "006385b9"
+  },
+  "304": {
+    "text": "Return the generated sequence once it terminates.",
+    "hash": "14ebe56a"
+  },
+  "309": {
+    "text": "Docstring: compute average log-likelihood per token to measure model quality.",
+    "hash": "2d025686"
+  },
+  "313": {
+    "text": "For each adjacent pair in each sequence, look up the probability the model assigns to that transition.",
+    "hash": "7e9f9b8b"
+  },
+  "316": {
+    "text": "Add the log of the transition probability. Log-space addition avoids floating-point underflow from multiplying many small numbers.",
+    "hash": "c79ed4a7"
+  },
+  "318": {
+    "text": "Return the average: total log-likelihood divided by number of tokens. This per-token measure is comparable across different vocab sizes.",
+    "hash": "5b6381c3"
+  },
+  "324": {
+    "text": "Train the character bigram: count transitions in a 27x27 table, smooth, and normalize.",
+    "hash": "c09e7522"
+  },
+  "325": {
+    "text": "Evaluate the character bigram: compute average log-likelihood on the training data.",
+    "hash": "e18c37fc"
+  },
+  "327": {
+    "text": "Print the average log-likelihood per token for the character bigram.",
+    "hash": "01bf38a7"
+  },
+  "328": {
+    "text": "Perplexity: exp(-avg_ll). Lower is better. Intuitively, it's the effective number of equally-likely choices at each step.",
+    "hash": "2aa61684"
+  },
+  "333": {
+    "text": "Train the BPE bigram: count transitions in a vocab_size x vocab_size table.",
+    "hash": "524b135b"
+  },
+  "337": {
+    "text": "Print the BPE perplexity. Expect lower perplexity per token since each BPE token carries more information.",
+    "hash": "63bb3c89"
+  },
+  "348": {
+    "text": "Sample a complete name from the character bigram by drawing from the 27x27 transition table.",
+    "hash": "39664a17"
+  },
+  "349": {
+    "text": "Decode the character token IDs back to a readable string.",
+    "hash": "7fc5e936"
+  },
+  "353": {
+    "text": "Sample a complete name from the BPE bigram. Each step can jump through multi-character patterns.",
+    "hash": "8ab025e3"
+  },
+  "354": {
+    "text": "Sample from the BPE bigram's larger transition table.",
+    "hash": "3ed78d93"
+  },
+  "355": {
+    "text": "Decode BPE tokens back to a string \u2014 merged tokens expand to multiple characters automatically.",
+    "hash": "87c2e8fc"
+  },
+  "365": {
+    "text": "Print the compression summary: how many tokens before vs after BPE, and the compression ratio.",
+    "hash": "8c96f8de"
+  },
+  "369": {
+    "text": "This is the algorithm behind GPT-2, LLaMA, and most modern LLM tokenizers. At GPT scale, BPE with 50K-100K merges is essential.",
+    "hash": "a20c68e5"
   }
 }

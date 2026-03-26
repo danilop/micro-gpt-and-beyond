@@ -1,34 +1,34 @@
 {
   "12": {
-    "text": "Standard library imports for math, paths, and randomness.",
+    "text": "RoPE changes how position is represented inside attention, not the surrounding training loop, so the setup remains intentionally familiar.",
     "hash": "b67c9dde"
   },
   "13": {
-    "text": "Path operations for portable dataset loading.",
+    "text": "Use the same shared corpus so the only meaningful change is how position enters the model.",
     "hash": "de2abade"
   },
   "14": {
-    "text": "Shuffle seed for reproducible training order.",
+    "text": "Fix the training order so any behavioral change comes from rotary position encoding, not from a different run.",
     "hash": "7e18ed42"
   },
   "16": {
-    "text": "PyTorch core, tensors and autograd.",
+    "text": "PyTorch handles the mechanics; the new idea in this lab is geometric, not infrastructural.",
     "hash": "cf1070d3"
   },
   "17": {
-    "text": "Neural network building blocks: <code>Linear</code>, <code>Embedding</code>, <code>ModuleList</code>.",
+    "text": "Same transformer building blocks as before. That makes RoPE easier to isolate as an attention-level upgrade rather than a full architectural rewrite.",
     "hash": "b802910c"
   },
   "18": {
-    "text": "Stateless ops: <code>softmax</code>, <code>cross_entropy</code>, <code>relu</code>.",
+    "text": "Softmax and loss stay ordinary. The interesting difference is where positional information enters the computation.",
     "hash": "5af419e1"
   },
   "20": {
-    "text": "Pin both Python and PyTorch random seeds for reproducibility.",
+    "text": "Lock both RNGs so the before-and-after story stays about position handling instead of run-to-run noise.",
     "hash": "f0726c6e"
   },
   "21": {
-    "text": "Separate seed for PyTorch's tensor operations.",
+    "text": "PyTorch gets its own seed because initialization is part of the experiment too.",
     "hash": "7e7dcf46"
   },
   "26": {
@@ -73,23 +73,23 @@
   },
   "44": {
     "text": "Embedding dimension, small enough to train quickly, large enough to see RoPE's effect.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "45": {
     "text": "4 attention heads, each operating on its own subspace.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "46": {
     "text": "Single layer keeps focus on the positional encoding change.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "47": {
     "text": "Maximum sequence length, names are short.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "48": {
     "text": "Each head sees <code>n_embd / n_head = 4</code> dimensions.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "54": {
     "text": "Precompute the rotation frequencies once, they never change during training or inference.",

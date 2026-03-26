@@ -1,34 +1,34 @@
 {
   "14": {
-    "text": "Standard math library for the attention scaling factor.",
+    "text": "This is the first framework jump where a huge amount of manual work disappears. The architecture stays recognizable; PyTorch absorbs the gradient bookkeeping.",
     "hash": "b67c9dde"
   },
   "15": {
-    "text": "Provides utilities for constructing file paths to locate the dataset on disk.",
+    "text": "Same dataset, same training problem. That keeps the lesson focused on what PyTorch changes rather than on what the model is asked to learn.",
     "hash": "de2abade"
   },
   "16": {
-    "text": "Python random for dataset shuffling.",
+    "text": "The outer training loop still looks familiar. The dramatic difference is not in data loading, but in how much machinery the framework now hides for us.",
     "hash": "7e18ed42"
   },
   "18": {
-    "text": "PyTorch enters the picture. Everything changes, tensors, autograd, GPU support, all in one package.",
+    "text": "PyTorch is the first place where the code starts looking like modern deep learning practice: tensors, autograd, modules, and the option of GPU acceleration all arrive together.",
     "hash": "cf1070d3"
   },
   "19": {
-    "text": "The <code>nn</code> module provides the building blocks: layers, modules, loss functions.",
+    "text": "Instead of manually juggling parameter arrays, we now assemble the model from objects that already know how to register, move, and update their own weights.",
     "hash": "b802910c"
   },
   "20": {
-    "text": "Functional API for operations like softmax and cross-entropy that don't have learned parameters.",
+    "text": "The important contrast with the previous lab is that the math stays the same while the amount of code we have to write around it drops sharply.",
     "hash": "5af419e1"
   },
   "22": {
-    "text": "Same Python seed for identical dataset ordering across all labs.",
+    "text": "Reproducibility still matters because we want the framework change to feel like a cleaner expression of the same model, not a different experiment.",
     "hash": "f0726c6e"
   },
   "23": {
-    "text": "PyTorch has its own RNG, seed it separately for reproducible weight initialization.",
+    "text": "PyTorch gets its own seed because the framework now owns initialization and tensor randomness, not just Python's outer loop.",
     "hash": "7e7dcf46"
   },
   "28": {
@@ -65,23 +65,23 @@
   },
   "46": {
     "text": "Same hyperparameters as labs 01-02, this lab changes the framework, not the architecture.",
-    "hash": "eb81fecf"
+    "hash": "f6d4f4da"
   },
   "47": {
     "text": "4 heads, each attending to different relationships.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "48": {
     "text": "A single transformer layer. Real GPTs stack 12 to 96+ layers deep, but one already captures meaningful character-level patterns.",
-    "hash": "9068cb85"
+    "hash": "cbfe55b3"
   },
   "49": {
     "text": "Names longer than 16 characters get truncated. Most names fit easily within this window.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "50": {
     "text": "Each of the 4 heads gets 4 dimensions of the 16-dimensional embedding, letting it focus on its own subspace of relationships.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "53": {
     "text": "RMSNorm as an <code>nn.Module</code>, PyTorch's standard way to define reusable layers. Compare to lab 01's bare function.",
@@ -435,7 +435,7 @@
   },
   "169": {
     "text": "Temperature 0.5 makes generation more conservative: the model favors its highest-confidence predictions, producing more typical-sounding names.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "171": {
     "text": "Switch to eval mode, disables dropout (if any). Good practice, though our model doesn't use dropout.",

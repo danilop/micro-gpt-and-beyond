@@ -1,34 +1,34 @@
 {
   "14": {
-    "text": "Standard math for attention scaling.",
+    "text": "The core model stays PyTorch, but the teaching goal changes: move from one-example-at-a-time training to the first version that feels structurally like real practice.",
     "hash": "de2abade"
   },
   "15": {
-    "text": "Standard library for file path construction. Used to locate the shared dataset relative to the script.",
+    "text": "Same dataset again. The new complexity comes from batching variable-length names, not from changing the task.",
     "hash": "7e18ed42"
   },
   "16": {
-    "text": "Python's built-in random module, used here to shuffle the dataset into a random training order.",
+    "text": "Random ordering is still ordinary. The real novelty is that once examples travel in groups, padding and masking become part of the model story.",
     "hash": "e3b0c442"
   },
   "18": {
-    "text": "Same PyTorch stack as lab 03.",
+    "text": "Same PyTorch foundation as lab 03. The interesting shift is from a toy single-example loop to a mini-batch training pipeline.",
     "hash": "b802910c"
   },
   "19": {
-    "text": "PyTorch's neural network building blocks: layers, modules, and everything needed to define model architecture.",
+    "text": "The layer stack is familiar, which is useful because batching should feel like an operational upgrade, not a whole new model.",
     "hash": "5af419e1"
   },
   "20": {
-    "text": "Functional API for softmax, cross-entropy, etc.",
+    "text": "The extra conceptual load in this lab is not new math, but how batch structure changes masking, loss computation, and input preparation.",
     "hash": "e3b0c442"
   },
   "22": {
-    "text": "Fix both Python and PyTorch random seeds so weight initialization and data ordering are identical across runs.",
+    "text": "Lock both RNGs so the new behavior you notice comes from batching and padding rather than from a different run.",
     "hash": "7e7dcf46"
   },
   "23": {
-    "text": "PyTorch seed for weight initialization.",
+    "text": "PyTorch's own RNG still needs to match because the batched and unbatched versions should be comparable as implementations of the same idea.",
     "hash": "e3b0c442"
   },
   "28": {
@@ -73,23 +73,23 @@
   },
   "48": {
     "text": "4x larger embedding dimension than lab 03. Batching amortizes the overhead, so we can afford a bigger model.",
-    "hash": "203d0348"
+    "hash": "3b06c323"
   },
   "49": {
     "text": "Same 4 attention heads, but now each has 16 dimensions instead of 4.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "50": {
     "text": "2 layers instead of 1, deeper model for richer representations.",
-    "hash": "0a695db7"
+    "hash": "6664fd8c"
   },
   "51": {
     "text": "Same 16-character context window as previous labs. Names longer than this get truncated.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "52": {
     "text": "Each head now has 16 dimensions (64 / 4), four times larger than in lab 03. More dimensions per head means richer attention patterns.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "53": {
     "text": "32 sequences per training step, the model sees 32 names simultaneously and averages their gradients.",
@@ -519,7 +519,7 @@
   },
   "210": {
     "text": "Temperature 0.5 makes generation more conservative: the model favors high-confidence predictions, producing more typical-sounding names.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "212": {
     "text": "Switch the model to evaluation mode, which disables training-specific behaviors like dropout.",

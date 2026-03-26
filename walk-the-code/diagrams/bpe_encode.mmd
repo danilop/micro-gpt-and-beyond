@@ -1,0 +1,9 @@
+graph LR
+    input[Input word<br/>split into characters]
+    scan[Scan for<br/>mergeable pairs]
+    apply[Apply highest-priority<br/>merge]
+    check{More<br/>merges?}
+    output[Output<br/>token sequence]
+    input --> scan --> apply --> check
+    check -- yes --> scan
+    check -- no --> output

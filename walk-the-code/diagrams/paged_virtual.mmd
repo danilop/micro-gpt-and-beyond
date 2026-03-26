@@ -1,5 +1,7 @@
-graph TD
-    req[New token] --> lookup[Page table lookup]
-    lookup --> alloc_p{Block full?}
-    alloc_p -->|Yes| write[Allocate + write K,V]
-    alloc_p -->|No| write
+graph LR
+    req[New logical token]
+    req --> lookup[Block-table lookup]
+    lookup --> alloc_p{Mapped block?}
+    alloc_p -->|No| write[Allocate block<br/>and write K,V]
+    alloc_p -->|Yes| write
+    write -. shared prefix .-> share[Two sequences can<br/>share prefix blocks]

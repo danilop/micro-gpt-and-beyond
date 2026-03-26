@@ -1,34 +1,34 @@
 {
   "9": {
-    "text": "Standard library <code>math</code> for the <code>sqrt</code> function used to scale attention scores by the head dimension.",
+    "text": "Quantization changes representation, not the model's architecture, so the ordinary transformer math remains the same around the compression step.",
     "hash": "b67c9dde"
   },
   "10": {
-    "text": "Import os for building portable file paths to the dataset.",
+    "text": "Same shared corpus again. That keeps the lesson focused on compression and inference cost rather than on task differences.",
     "hash": "de2abade"
   },
   "11": {
-    "text": "Import random for shuffling the dataset and seeding reproducibility.",
+    "text": "We still control the run setup because we want to compare FP32 and INT8 behavior on equal footing.",
     "hash": "7e18ed42"
   },
   "12": {
-    "text": "Wall-clock timing for the FP32 vs INT8 benchmark.",
+    "text": "Timing is part of the point here: quantization is valuable because smaller weights are cheaper to move through memory, not just because they save disk space.",
     "hash": "4f9b8491"
   },
   "14": {
-    "text": "Import the core PyTorch library for tensor operations and autograd.",
+    "text": "PyTorch handles training in normal precision first; only after that do we compress the learned weights into a cheaper format.",
     "hash": "cf1070d3"
   },
   "15": {
-    "text": "Imports PyTorch's neural network module, which provides layers like Linear and Embedding that we'll later quantize to INT8.",
+    "text": "The same familiar layers will later be wrapped or replaced with quantized versions so you can see exactly where the memory savings come from.",
     "hash": "b802910c"
   },
   "16": {
-    "text": "Import PyTorch's functional API for operations like softmax, cross-entropy, and relu.",
+    "text": "The model's behavior should stay approximately the same after quantization, so the surrounding functional operations are intentionally unchanged.",
     "hash": "5af419e1"
   },
   "18": {
-    "text": "Fix both the Python and PyTorch random seeds so results are reproducible across runs.",
+    "text": "Lock the RNGs so any quality drop after quantization reflects the compressed weights, not a different training run.",
     "hash": "f0726c6e"
   },
   "19": {
@@ -65,23 +65,23 @@
   },
   "43": {
     "text": "Larger model than lab 03 (64 vs 16 embedding dim) to make quantization effects visible. At 16 dimensions the savings are tiny; at 64 the 4x compression is meaningful.",
-    "hash": "203d0348"
+    "hash": "3b06c323"
   },
   "44": {
     "text": "4 attention heads, each with 16 dimensions.",
-    "hash": "5b7ba4c9"
+    "hash": "e804f3b9"
   },
   "45": {
     "text": "2 layers, more parameters to compress.",
-    "hash": "0a695db7"
+    "hash": "6664fd8c"
   },
   "46": {
     "text": "Names rarely exceed 16 characters, so this caps the positional embedding table and keeps sequences compact.",
-    "hash": "4f3059d5"
+    "hash": "ecfd6b0a"
   },
   "47": {
     "text": "Each attention head operates on a 16-dimensional slice of the 64-dimensional embedding.",
-    "hash": "1892cf11"
+    "hash": "77ba194a"
   },
   "50": {
     "text": "Root-mean-square normalization that stabilizes activations without learned parameters.",
@@ -431,7 +431,7 @@
   },
   "194": {
     "text": "Controls how peaked the sampling distribution is. Lower temperature means more deterministic output; higher means more creative variety.",
-    "hash": "d66aa849"
+    "hash": "7eca5b76"
   },
   "197": {
     "text": "Decorator: no gradient tracking needed for inference.",
