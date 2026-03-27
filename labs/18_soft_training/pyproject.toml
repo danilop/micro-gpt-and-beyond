@@ -1,5 +1,5 @@
 [project]
-name = "21-soft-training"
+name = "18-soft-training"
 version = "0.1.0"
 description = "microGPT with soft training (scheduled soft tokens) in PyTorch"
 readme = "README.md"

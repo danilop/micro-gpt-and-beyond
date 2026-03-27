@@ -1,5 +1,5 @@
 [project]
-name = "16-pytorch-quantized"
+name = "15-pytorch-quantized"
 version = "0.1.0"
 description = "microGPT in PyTorch with INT8 quantization"
 readme = "README.md"

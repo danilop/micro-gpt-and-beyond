@@ -1,5 +1,5 @@
 [project]
-name = "18-tiled-attention"
+name = "20-tiled-attention"
 version = "0.1.0"
 description = "microGPT with tiled attention (FlashAttention algorithm)"
 readme = "README.md"

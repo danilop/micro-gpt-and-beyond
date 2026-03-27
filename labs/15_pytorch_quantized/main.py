@@ -165,6 +165,10 @@ for step in range(num_steps):
 print("\n--- quantization ---")
 
 
+# NOTE: This is a *simulated* quantization for educational purposes.
+# The forward pass dequantizes INT8 weights back to the activation dtype,
+# so it does NOT use actual INT8 GEMM kernels. The benchmark below
+# demonstrates model SIZE savings, not speed improvements.
 class QuantizedLinear(nn.Module):
     def __init__(self, fp32_linear):
         super().__init__()
@@ -211,6 +215,9 @@ def generate(model, n=1):
     return samples
 
 
+# NOTE: Speed comparison is included for completeness, but this simulated
+# quantization path is expected to be similar or slower than FP32 because
+# we dequantize on every forward pass. The key takeaway is model size reduction.
 def benchmark(model):
     import tempfile
 

@@ -22,7 +22,7 @@ import torch.nn.functional as F
 random.seed(42)
 rng = np.random.default_rng(42)
 torch.manual_seed(42)
-torch.set_default_dtype(torch.float64)
+torch.set_default_dtype(torch.float64)  # Intentional for this standalone lab (float64 needed for numerical accuracy demos)
 
 # ---------------------------------------------------------------------------
 # Dataset & Tokenizer

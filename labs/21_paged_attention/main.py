@@ -188,6 +188,7 @@ class PagedKVCache:
         self.k_blocks = [[[0.0] * dims for _ in range(block_size_tokens)] for _ in range(total_blocks)]
         self.v_blocks = [[[0.0] * dims for _ in range(block_size_tokens)] for _ in range(total_blocks)]
         self.free_blocks = list(range(total_blocks))
+        self.refcounts = {i: 0 for i in range(total_blocks)}
         self.block_tables = {}
         self.seq_lengths = {}
         self.alloc_events = []
@@ -196,7 +197,9 @@ class PagedKVCache:
     def _alloc_block(self):
         if not self.free_blocks:
             raise RuntimeError("Out of physical blocks!")
-        return self.free_blocks.pop()
+        blk = self.free_blocks.pop()
+        self.refcounts[blk] = 1
+        return blk
 
     def new_sequence(self, seq_id):
         self.block_tables[seq_id] = {li: [] for li in range(self.n_layers)}
@@ -213,6 +216,14 @@ class PagedKVCache:
                 f"  seq {seq_id}, layer {layer}, logical block {logical_block} -> physical block {phys_id}"
             )
         phys_id = self.block_tables[seq_id][layer][logical_block]
+        # Copy-on-write: clone shared block before writing
+        if self.refcounts[phys_id] > 1:
+            new_id = self._alloc_block()
+            self.k_blocks[new_id] = [row[:] for row in self.k_blocks[phys_id]]
+            self.v_blocks[new_id] = [row[:] for row in self.v_blocks[phys_id]]
+            self.refcounts[phys_id] -= 1
+            self.block_tables[seq_id][layer][logical_block] = new_id
+            phys_id = new_id
         self.k_blocks[phys_id][slot_in_block] = k
         self.v_blocks[phys_id][slot_in_block] = v
         if layer == self.n_layers - 1:
@@ -231,7 +242,10 @@ class PagedKVCache:
 
     def free_sequence(self, seq_id):
         for layer_blocks in self.block_tables[seq_id].values():
-            self.free_blocks.extend(layer_blocks)
+            for blk in layer_blocks:
+                self.refcounts[blk] -= 1
+                if self.refcounts[blk] == 0:
+                    self.free_blocks.append(blk)
         del self.block_tables[seq_id]
         del self.seq_lengths[seq_id]
 
@@ -248,6 +262,7 @@ class PagedKVCache:
             for b in range(min(n_shared_blocks, len(self.block_tables[src_seq_id][layer]))):
                 phys_id = self.block_tables[src_seq_id][layer][b]
                 self.block_tables[dst_seq_id][layer].append(phys_id)
+                self.refcounts[phys_id] += 1
                 shared += 1
         self.seq_lengths[dst_seq_id] = prefix_len
         return shared

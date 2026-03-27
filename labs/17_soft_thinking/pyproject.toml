@@ -1,5 +1,5 @@
 [project]
-name = "20-soft-thinking"
+name = "17-soft-thinking"
 version = "0.1.0"
 description = "microGPT with soft thinking (concept tokens) in PyTorch"
 readme = "README.md"

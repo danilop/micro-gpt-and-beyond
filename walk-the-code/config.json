@@ -113,7 +113,7 @@
     {
       "id": "fine-tuning-and-deployment",
       "title": "Fine-tuning & Deployment",
-      "description": "<p>Training a model from scratch is expensive. These labs show how to <strong>adapt and compress</strong> existing models efficiently.</p><p>LoRA (Lab 14) freezes the original model weights and injects tiny low-rank matrices that capture task-specific knowledge — training only ~1% of parameters while matching full fine-tuning quality. Quantization (Lab 16) compresses a trained model from 32-bit floats to 8-bit integers, reducing size by 4× and speeding up inference. This is how production models run on edge devices.</p><p>Together they answer: <em>how do you take a large pretrained model and make it yours, then make it fast?</em></p>",
+      "description": "<p>Training a model from scratch is expensive. These labs show how to <strong>adapt and compress</strong> existing models efficiently.</p><p>LoRA (Lab 14) freezes the original model weights and injects tiny low-rank matrices that capture task-specific knowledge — training only ~1% of parameters while matching full fine-tuning quality. Quantization (Lab 15) compresses a trained model from 32-bit floats to 8-bit integers, reducing size by 4× and speeding up inference. This is how production models run on edge devices.</p><p>Together they answer: <em>how do you take a large pretrained model and make it yours, then make it fast?</em></p>",
       "diagram": "graph LR\n  A[Pretrained Model] --> B[LoRA Adapters]\n  B --> C[Fine-tuned Model]\n  C --> D[INT8 Quantization]\n  D --> E[Production Model]",
       "labs": ["14_lora", "15_pytorch_quantized"],
       "knowledge_checks": [

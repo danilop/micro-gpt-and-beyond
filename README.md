@@ -157,7 +157,7 @@ The soft thinking and soft training labs explore **preserving the full output di
 ### How to explore the interactive tutorial
 
 1. Run `./start_tutorial.sh` from the project root to start the local web server.
-2. Open the URL printed in the terminal (usually `http://localhost:8642`).
+2. Open the URL printed in the terminal (usually `http://localhost:8000`).
 3. Navigate chapters using the sidebar; click any code line to see its annotation.
 4. Annotated lines show Mermaid diagrams with highlighted nodes that update as you navigate.
 5. Use keyboard shortcuts: arrow keys to move between annotations, `Escape` to deselect.

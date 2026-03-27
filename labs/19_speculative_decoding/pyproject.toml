@@ -1,5 +1,5 @@
 [project]
-name = "17-speculative-decoding"
+name = "19-speculative-decoding"
 version = "0.1.0"
 description = "microGPT with speculative decoding in PyTorch"
 readme = "README.md"

@@ -3,10 +3,10 @@
 Run any lab from the project root.
 
 Usage:
-    python run.py 01          # Run lab 01 (pure Python)
-    python run.py 03          # Run lab 03 (PyTorch)
-    python run.py 09          # Run lab 09 (BPE tokenizer)
-    python run.py --list      # List all available labs
+    python run_lab.py 01          # Run lab 01 (pure Python)
+    python run_lab.py 03          # Run lab 03 (PyTorch)
+    python run_lab.py 09          # Run lab 09 (BPE tokenizer)
+    python run_lab.py --list      # List all available labs
 """
 
 import os
@@ -66,13 +66,13 @@ def list_labs():
     print("  20  tiled_attention        FlashAttention algorithm (memory wall)")
     print("  21  paged_attention        PagedAttention (vLLM-style KV cache)")
     print("  22  disaggregated_serving  Split prefill/decode onto separate workers")
-    print("\nUsage: python run.py <lab_number>")
+    print("\nUsage: python run_lab.py <lab_number>")
 
 
 def run_lab(lab_num):
     if lab_num not in LABS:
         print(f"Error: Lab '{lab_num}' not found.")
-        print("Run 'python run.py --list' to see available labs.")
+        print("Run 'python run_lab.py --list' to see available labs.")
         sys.exit(1)
 
     lab_dir, command = LABS[lab_num]

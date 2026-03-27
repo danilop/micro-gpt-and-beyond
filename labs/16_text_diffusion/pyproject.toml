@@ -1,5 +1,5 @@
 [project]
-name = "15-text-diffusion"
+name = "16-text-diffusion"
 version = "0.1.0"
 description = "Masked diffusion language model (MDLM/LLaDA) in PyTorch"
 readme = "README.md"

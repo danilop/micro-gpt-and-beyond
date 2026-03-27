@@ -37,7 +37,7 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Install walk-the-code
-        run: uv tool install "walk-the-code @ git+https://github.com/danilop/walk-the-code"
+        run: uv tool install "walk-the-code @ git+https://github.com/danilop/walk-the-code@905481c0e59ecc98f58f7570e3f29f56ec83b7a4"
 
       - name: Build static bundle
         run: wtc-build walk-the-code/config.json
