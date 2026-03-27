@@ -136,6 +136,93 @@ The soft thinking and soft training labs explore **preserving the full output di
 - `17_soft_thinking` for concept tokens that preserve the full distribution at inference
 - `18_soft_training` to train the model to expect soft inputs (scheduled curriculum)
 
+## How-to guides
+
+### How to run a specific lab
+
+1. From the project root, use the helper script: `python run_lab.py <number>` (e.g., `python run_lab.py 01`).
+2. Or run directly: `cd labs/<lab_dir>` and use `uv run python main.py`.
+3. Labs 01, 09, and 21 are pure Python — run them with `python3 main.py` (no `uv` needed).
+4. Use `python run_lab.py --list` to see all available labs.
+5. The dataset is auto-downloaded on first run if not already present in `data/`.
+
+### How to compare framework implementations
+
+1. Run the three unbatched framework labs side by side: `03_pytorch`, `05_jax`, `07_mlx`.
+2. Compare model definition: PyTorch uses `nn.Module` classes, JAX uses pure functions with explicit state, MLX uses a PyTorch-like API on Apple GPU.
+3. Compare training loops: look at how gradients are computed and parameters are updated in each.
+4. Run the batched variants (`04`, `06`, `08`) to see how each framework handles padding, masking, and vectorization.
+5. All six labs train the same architecture on the same data — differences in output come from framework semantics and hardware.
+
+### How to explore the interactive tutorial
+
+1. Run `./start_tutorial.sh` from the project root to start the local web server.
+2. Open the URL printed in the terminal (usually `http://localhost:8642`).
+3. Navigate chapters using the sidebar; click any code line to see its annotation.
+4. Annotated lines show Mermaid diagrams with highlighted nodes that update as you navigate.
+5. Use keyboard shortcuts: arrow keys to move between annotations, `Escape` to deselect.
+6. Run labs directly from the browser using the "Run" button when the local server is active.
+
+### How to add your own experiments
+
+1. Copy an existing lab directory (e.g., `cp -r labs/03_pytorch labs/99_my_experiment`).
+2. Edit `main.py` in your new directory — modify the model, hyperparameters, or training loop.
+3. Run with `cd labs/99_my_experiment && uv run python main.py` to test changes.
+4. To add your lab to the interactive tutorial, create a YAML annotation file and add an entry to `config.json`.
+5. Use the walk-the-code Edit mode to annotate your code line by line.
+
+## Reference
+
+### Lab reference table
+
+| # | Lab | Framework | Dependencies | Pure Python |
+|---|-----|-----------|--------------|-------------|
+| 01 | Pure Python | None | None | Yes |
+| 02 | NumPy manual backprop | NumPy | numpy | No |
+| 03 | PyTorch | PyTorch | numpy, torch | No |
+| 04 | PyTorch batched | PyTorch | numpy, torch | No |
+| 05 | JAX | JAX | jax | No |
+| 06 | JAX batched | JAX | jax | No |
+| 07 | MLX | MLX | mlx | No |
+| 08 | MLX batched | MLX | mlx | No |
+| 09 | BPE tokenizer | None | None | Yes |
+| 10 | RoPE | PyTorch | numpy, torch | No |
+| 11 | GQA | PyTorch | numpy, torch | No |
+| 12 | KV cache | PyTorch | numpy, torch | No |
+| 13 | Sampling | PyTorch | numpy, torch | No |
+| 14 | LoRA | PyTorch | numpy, torch | No |
+| 15 | PyTorch quantized | PyTorch | numpy, torch | No |
+| 16 | Text diffusion | PyTorch | numpy, torch | No |
+| 17 | Soft thinking | PyTorch | numpy, torch | No |
+| 18 | Soft training | PyTorch | numpy, torch | No |
+| 19 | Speculative decoding | PyTorch | numpy, torch | No |
+| 20 | Tiled attention | PyTorch | numpy, torch | No |
+| 21 | Paged attention | None | None | Yes |
+| 22 | Disaggregated serving | PyTorch | numpy, torch | No |
+
+### Hyperparameter defaults
+
+All labs (except 09) share these training hyperparameters:
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `n_embd` | 16 | Embedding dimension |
+| `n_head` | 4 | Number of attention heads |
+| `block_size` | 16 | Maximum sequence length (context window) |
+| Training steps | 1000 | Total optimization steps |
+| Dataset | names | ~32,000 real human names from `data/` |
+
+### Prerequisites per learning path
+
+| Path | Prerequisites |
+|------|---------------|
+| New to transformers | Python 3 |
+| Comparing frameworks | Python 3, uv; macOS for MLX labs |
+| Modern architecture | Python 3, uv, basic PyTorch familiarity |
+| Inference optimization | Python 3, uv, understanding of attention mechanism |
+| Fine-tuning & deployment | Python 3, uv, PyTorch basics |
+| Alternative paradigms | Python 3, uv, understanding of autoregressive models |
+
 ## Running
 
 **Browse online:** Visit the **[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** to read the code with line-by-line explanations — no installation needed. Labs are grouped into 7 chapters, each with a description and conceptual diagram. Click any code line to see what it does; annotated lines include Mermaid diagrams with highlighted nodes that change as you navigate.
