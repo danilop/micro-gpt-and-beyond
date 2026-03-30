@@ -8,6 +8,19 @@ reducing memory for the KV cache during inference.
 
 Same base architecture as lab 03 (PyTorch), but the attention module is
 parameterised by n_kv_head so a single class covers all three variants.
+
+The standard multi-head attention mechanism was introduced in "Attention Is All
+You Need" by Vaswani et al. (2017) (https://arxiv.org/abs/1706.03762). Shazeer
+(2019) later proposed Multi-Query Attention in "Fast Transformer Decoding: One
+Write-Head is All You Need" (https://arxiv.org/abs/1911.02150), which reduces
+the KV cache to a single head. Ainslie et al. (2023) generalised this idea in
+"GQA: Training Generalized Multi-Query Transformer Models from Multi-Head
+Checkpoints" (https://arxiv.org/abs/2305.13245), showing that an intermediate
+number of KV heads offers a favourable trade-off between quality and efficiency.
+
+This implementation demonstrates the core concept of KV head sharing as
+described in Ainslie et al., using a simplified single-file transformer so the
+mechanism is easy to study in isolation.
 """
 
 import math
@@ -184,15 +197,17 @@ def generate(model, label, num_samples=10):
             print(f"  sample {sample_idx + 1:2d}: {name}")
 
 
+docs_snapshot = list(docs)
+
 for variant_name, n_kv_head in variants:
     print(f"\n{'=' * 60}")
     print(f"  {variant_name}: n_head={n_head}, n_kv_head={n_kv_head}")
     print(f"{'=' * 60}")
 
-    # Reset seed for fair comparison
+    # Reset seed and restore original doc order for fair comparison
     random.seed(42)
     torch.manual_seed(42)
-    random.shuffle(docs)
+    docs = list(docs_snapshot)
 
     model = MicroGPT(n_kv_head).to(device)
     num_params = sum(p.numel() for p in model.parameters())

@@ -1,11 +1,18 @@
 """
 microGPT — Masked Diffusion Language Model (PyTorch).
 
-Instead of generating names left-to-right like a GPT, names emerge from pure noise
-— all [MASK] tokens — through iterative unmasking. Same transformer architecture,
-fundamentally different generative paradigm.
+Instead of generating names left-to-right like a GPT, names emerge from pure
+noise -- all [MASK] tokens -- through iterative unmasking. Same transformer
+architecture, fundamentally different generative paradigm.
 
-Diffusion framework from MDLM (Sahoo et al., 2024) and LLaDA (Nie et al., 2025).
+Built on the image-domain foundation of "Denoising Diffusion Probabilistic
+Models" (Ho et al., 2020), https://arxiv.org/abs/2006.11239. The discrete-text
+diffusion framework follows "Simple and Effective Masked Diffusion Language
+Models" (Sahoo et al., 2024), https://arxiv.org/abs/2406.07524, and "Large
+Language Diffusion Models" (Nie et al., 2025), https://arxiv.org/abs/2502.09992.
+The denoising schedule and confidence-based unmasking in this lab are
+illustrative simplifications -- the original MDLM uses a continuous-time ELBO
+with an absorbing-state forward process.
 """
 
 import math

@@ -1,0 +1,10 @@
+[project]
+name = "23-self-improving"
+version = "0.1.0"
+description = "Self-improving model via iterative self-training"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.4.3",
+    "torch>=2.10.0",
+]

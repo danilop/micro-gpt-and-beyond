@@ -1,0 +1,13 @@
+graph TD
+  A[Population of N Models] --> B[Train Each Briefly]
+  B --> C[Evaluate Fitness]
+  C --> D[Select Top-K]
+  D --> E[Mutate Configs]
+  E --> F{Architecture<br/>Changed?}
+  F -->|No| G[Inherit Parent Weights]
+  F -->|Yes| H[Random Init]
+  G --> I[New Population]
+  H --> I
+  I --> A
+  style D fill:#9f9,stroke:#333
+  style E fill:#f9f,stroke:#333

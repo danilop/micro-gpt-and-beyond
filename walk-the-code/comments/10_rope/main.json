@@ -1,101 +1,101 @@
 {
-  "12": {
+  "21": {
     "text": "RoPE changes how position is represented inside attention, not the surrounding training loop, so the setup remains intentionally familiar.",
     "hash": "b67c9dde"
   },
-  "13": {
+  "22": {
     "text": "Use the same shared corpus so the only meaningful change is how position enters the model.",
     "hash": "de2abade"
   },
-  "14": {
+  "23": {
     "text": "Fix the training order so any behavioral change comes from rotary position encoding, not from a different run.",
     "hash": "7e18ed42"
   },
-  "16": {
+  "25": {
     "text": "PyTorch handles the mechanics; the new idea in this lab is geometric, not infrastructural.",
     "hash": "cf1070d3"
   },
-  "17": {
+  "26": {
     "text": "Same transformer building blocks as before. That makes RoPE easier to isolate as an attention-level upgrade rather than a full architectural rewrite.",
     "hash": "b802910c"
   },
-  "18": {
+  "27": {
     "text": "Softmax and loss stay ordinary. The interesting difference is where positional information enters the computation.",
     "hash": "5af419e1"
   },
-  "20": {
+  "29": {
     "text": "Lock both RNGs so the before-and-after story stays about position handling instead of run-to-run noise.",
     "hash": "f0726c6e"
   },
-  "21": {
+  "30": {
     "text": "PyTorch gets its own seed because initialization is part of the experiment too.",
     "hash": "7e7dcf46"
   },
-  "26": {
+  "35": {
     "text": "Portable path to the shared dataset.",
     "hash": "5ac9686d"
   },
-  "27": {
+  "36": {
     "text": "If the dataset file is missing, we will download it automatically. This makes the script self-contained so you can run it without manual setup.",
     "hash": "9667c968"
   },
-  "28": {
+  "37": {
     "text": "Lazy import, only when the file needs downloading.",
     "hash": "84cdb92b"
   },
-  "30": {
+  "39": {
     "text": "The raw URL for Karpathy's names dataset. About 32K human names that serve as our training corpus across all labs.",
     "hash": "5e579f27"
   },
-  "31": {
+  "40": {
     "text": "Fetch the file from the internet once and save it locally. After the first download, every future run loads instantly from disk.",
     "hash": "25ec775b"
   },
-  "33": {
+  "42": {
     "text": "Read all names from disk, strip whitespace, and drop blank lines. Each name becomes one training document for next-token prediction.",
     "hash": "2f367d0b"
   },
-  "34": {
+  "43": {
     "text": "Shuffle so the model doesn't learn alphabetical order.",
     "hash": "c8f1cb86"
   },
-  "36": {
+  "45": {
     "text": "Unique sorted characters become the base vocabulary.",
     "hash": "5f7ca3bb"
   },
-  "37": {
+  "46": {
     "text": "BOS token gets the next available id.",
     "hash": "476ca504"
   },
-  "38": {
+  "47": {
     "text": "27 tokens: 26 letters + BOS.",
     "hash": "0a38d2ba"
   },
-  "44": {
+  "53": {
     "text": "Embedding dimension, small enough to train quickly, large enough to see RoPE's effect.",
     "hash": "f6d4f4da"
   },
-  "45": {
+  "54": {
     "text": "4 attention heads, each operating on its own subspace.",
     "hash": "e804f3b9"
   },
-  "46": {
+  "55": {
     "text": "Single layer keeps focus on the positional encoding change.",
     "hash": "cbfe55b3"
   },
-  "47": {
+  "56": {
     "text": "Maximum sequence length, names are short.",
     "hash": "ecfd6b0a"
   },
-  "48": {
+  "57": {
     "text": "Each head sees <code>n_embd / n_head = 4</code> dimensions.",
     "hash": "77ba194a"
   },
-  "54": {
+  "63": {
     "text": "Precompute the rotation frequencies once, they never change during training or inference.",
     "hash": "3f1d86fb"
   },
-  "60": {
+  "69": {
     "text": "Pair up dimensions: indices 0,2,4,... Each pair will be rotated together as a 2D vector.",
     "hash": "794d1a31",
     "diagram": "rope_freq",
@@ -103,7 +103,7 @@
       "freqs"
     ]
   },
-  "61": {
+  "70": {
     "text": "The frequency for each pair: <code>theta_i = 1/10000^(2i/dim)</code>. Lower pairs rotate fast (local patterns), higher pairs rotate slowly (global patterns). 10000 is the standard base from the RoPE paper.",
     "hash": "f064df7b",
     "diagram": "rope_freq",
@@ -111,35 +111,35 @@
       "freqs"
     ]
   },
-  "62": {
+  "71": {
     "text": "Position indices: 0, 1, 2, ... Each position gets a different rotation angle.",
     "hash": "b1c01761"
   },
-  "63": {
+  "72": {
     "text": "Outer product gives a 2D table: <code>angles[pos][pair]</code> = how much to rotate dimension-pair <code>pair</code> at position <code>pos</code>.",
     "hash": "6baa5e3b"
   },
-  "64": {
+  "73": {
     "text": "Return cos and sin, the two components of the rotation matrix. Precomputed once, reused every forward pass.",
     "hash": "209e909f"
   },
-  "67": {
+  "76": {
     "text": "Apply the rotation to query or key tensors. This is where position information enters the attention computation.",
     "hash": "65a46054"
   },
-  "73": {
+  "82": {
     "text": "Grab the sequence length to slice the precomputed frequencies.",
     "hash": "3ffb953e"
   },
-  "74": {
+  "83": {
     "text": "Broadcast cos frequencies to match the (batch, heads, time, pairs) shape.",
     "hash": "5aef90ef"
   },
-  "75": {
+  "84": {
     "text": "Same broadcast for sin frequencies.",
     "hash": "5804e649"
   },
-  "76": {
+  "85": {
     "text": "Split each head's dimensions into even-indexed (x1) and odd-indexed (x2), these form 2D rotation pairs.",
     "hash": "ba48f828",
     "diagram": "rope_apply",
@@ -147,7 +147,7 @@
       "split"
     ]
   },
-  "77": {
+  "86": {
     "text": "The paired dimension, together with x1, this forms a 2D vector that gets rotated.",
     "hash": "dedacfc1",
     "diagram": "rope_apply",
@@ -155,7 +155,7 @@
       "split"
     ]
   },
-  "78": {
+  "87": {
     "text": "2D rotation formula, real part: <code>x1*cos - x2*sin</code>. Same as rotating a point in 2D space.",
     "hash": "65df7984",
     "diagram": "rope_apply",
@@ -163,7 +163,7 @@
       "rotate"
     ]
   },
-  "79": {
+  "88": {
     "text": "2D rotation formula, imaginary part: <code>x1*sin + x2*cos</code>. The angle encodes the absolute position.",
     "hash": "e1fa383c",
     "diagram": "rope_apply",
@@ -171,7 +171,7 @@
       "rotate"
     ]
   },
-  "80": {
+  "89": {
     "text": "Interleave rotated pairs back into the original dimension ordering. The key insight: when Q at position m and K at position n are dot-producted, the rotation angles subtract, making attention depend on <code>m-n</code> (relative distance) automatically.",
     "hash": "b26c2556",
     "diagram": "rope_apply",
@@ -179,79 +179,79 @@
       "output"
     ]
   },
-  "84": {
+  "93": {
     "text": "Compute once at startup. These frequency tables are shared by all layers and all forward passes.",
     "hash": "25836b0d"
   },
-  "90": {
+  "99": {
     "text": "RMSNorm instead of LayerNorm, simpler (no mean subtraction), works just as well. Used by LLaMA and most modern LLMs.",
     "hash": "69fade3d"
   },
-  "91": {
+  "100": {
     "text": "Dimension parameter stored for documentation; RMSNorm doesn't actually need it.",
     "hash": "d1f0a37b"
   },
-  "93": {
+  "102": {
     "text": "A tiny epsilon (1e-5) added inside the square root to prevent division by zero when activations happen to be near-zero.",
     "hash": "7cedf2b6"
   },
-  "96": {
+  "105": {
     "text": "Normalize by root-mean-square of activations. No learned scale parameter in this minimal version.",
     "hash": "53678ba7"
   },
-  "99": {
+  "108": {
     "text": "Attention module with a flag to switch between learned positional embeddings and RoPE.",
     "hash": "c20aaac2"
   },
-  "100": {
+  "109": {
     "text": "The <code>use_rope</code> flag lets us run a fair A/B comparison with identical architecture otherwise.",
     "hash": "e114ba12"
   },
-  "102": {
+  "111": {
     "text": "Store the flag so <code>forward</code> knows which position strategy to use.",
     "hash": "e2ebce76"
   },
-  "103": {
+  "112": {
     "text": "Query projection, same for both variants.",
     "hash": "433b771f"
   },
-  "104": {
+  "113": {
     "text": "Key projection, same weights, but RoPE will rotate these before the dot product.",
     "hash": "bf2475c8"
   },
-  "105": {
+  "114": {
     "text": "Value projection, notably, RoPE does NOT touch values.",
     "hash": "d1a077cb"
   },
-  "106": {
+  "115": {
     "text": "Output projection merges heads back together.",
     "hash": "887b9875"
   },
-  "108": {
+  "117": {
     "text": "The attention forward pass takes a full input tensor and produces contextualized output. RoPE rotation happens internally before the dot product.",
     "hash": "a87869a2"
   },
-  "109": {
+  "118": {
     "text": "Unpack batch size, sequence length, and embedding dimension.",
     "hash": "4584ac61"
   },
-  "110": {
+  "119": {
     "text": "Project to queries, reshape into heads: (B, T, C) -> (B, n_head, T, head_dim).",
     "hash": "d0c33c49"
   },
-  "111": {
+  "120": {
     "text": "Keys get the same per-head reshape as queries. Each head's keys will only be compared against that same head's queries.",
     "hash": "a48e9c7a"
   },
-  "112": {
+  "121": {
     "text": "Same for values, but values won't be rotated even with RoPE.",
     "hash": "7fcca8ac"
   },
-  "114": {
+  "123": {
     "text": "Branch: if RoPE is enabled, rotate Q and K by position-dependent angles.",
     "hash": "eda59c90"
   },
-  "115": {
+  "124": {
     "text": "Rotate queries, each position gets a unique rotation angle.",
     "hash": "2068575f",
     "diagram": "rope_apply",
@@ -260,7 +260,7 @@
       "output"
     ]
   },
-  "116": {
+  "125": {
     "text": "Rotate keys, when Q and K are dot-producted, the rotation angles subtract to give relative position.",
     "hash": "1d1abe19",
     "diagram": "rope_apply",
@@ -269,343 +269,343 @@
       "output"
     ]
   },
-  "119": {
+  "128": {
     "text": "Scaled dot-product attention: <code>softmax(QK^T / sqrt(d))</code>.",
     "hash": "308b188d"
   },
-  "120": {
+  "129": {
     "text": "Upper-triangular mask: each position can only attend to itself and earlier positions (causal/autoregressive).",
     "hash": "14eeec63"
   },
-  "121": {
+  "130": {
     "text": "Set future positions to -infinity so softmax gives them zero weight.",
     "hash": "a2e76efa"
   },
-  "122": {
+  "131": {
     "text": "Normalize attention scores to probabilities.",
     "hash": "62dc999a"
   },
-  "124": {
+  "133": {
     "text": "Weighted sum of values, reshape back from heads to embedding dimension.",
     "hash": "a1aef68f"
   },
-  "125": {
+  "134": {
     "text": "Output projection, mix information across heads.",
     "hash": "36f2db67"
   },
-  "128": {
+  "137": {
     "text": "Feed-forward network: expand to 4x, apply nonlinearity, project back.",
     "hash": "3ad666a1"
   },
-  "131": {
+  "140": {
     "text": "Expand to 4x the embedding dimension, the \"hidden\" layer of the MLP.",
     "hash": "8e9f0642"
   },
-  "132": {
+  "141": {
     "text": "Project back down to embedding dimension.",
     "hash": "62c4768b"
   },
-  "134": {
+  "143": {
     "text": "ReLU activation between the two linear layers.",
     "hash": "a87869a2"
   },
-  "135": {
+  "144": {
     "text": "Two-layer MLP with ReLU: the pattern-matching complement to attention's pattern-finding.",
     "hash": "8aa6bebb"
   },
-  "138": {
+  "147": {
     "text": "Transformer block: attention + MLP, each with pre-norm and residual connection.",
     "hash": "4bcc8ea8"
   },
-  "139": {
+  "148": {
     "text": "Thread the RoPE flag down to the attention layer so it knows whether to apply rotary position encoding or rely on the learned position embeddings.",
     "hash": "e114ba12"
   },
-  "141": {
+  "150": {
     "text": "Pre-norm before attention (LLaMA-style, more stable than post-norm).",
     "hash": "e92b587d"
   },
-  "142": {
+  "151": {
     "text": "Attention layer, configured for either learned positions or RoPE.",
     "hash": "1600b853"
   },
-  "143": {
+  "152": {
     "text": "Normalize activations before the feed-forward network. Like the pre-attention norm, this stabilizes training by keeping activations on a consistent scale.",
     "hash": "f58a7657"
   },
-  "144": {
+  "153": {
     "text": "The position-independent feed-forward network. After attention has mixed information across positions, the MLP transforms each position's representation individually.",
     "hash": "17fdd551"
   },
-  "146": {
+  "155": {
     "text": "Forward: residual connections let gradients flow straight through.",
     "hash": "a87869a2"
   },
-  "147": {
+  "156": {
     "text": "Attention with residual: <code>x = x + attn(norm(x))</code>.",
     "hash": "5133b743"
   },
-  "148": {
+  "157": {
     "text": "MLP with residual: same pattern.",
     "hash": "50e2183f"
   },
-  "152": {
+  "161": {
     "text": "The full model, identical architecture for both variants, differing only in positional encoding.",
     "hash": "e94c5dc2"
   },
-  "153": {
+  "162": {
     "text": "Constructor takes <code>use_rope</code> to choose the position strategy.",
     "hash": "e114ba12"
   },
-  "155": {
+  "164": {
     "text": "Remember whether this model uses RoPE so the forward pass knows whether to add learned position embeddings or skip them entirely.",
     "hash": "e2ebce76"
   },
-  "156": {
+  "165": {
     "text": "Token embedding table: maps each of 27 token ids to a 16-dimensional vector.",
     "hash": "2a2b79bb"
   },
-  "157": {
+  "166": {
     "text": "Only create learned positional embeddings when NOT using RoPE, this is the parameter saving.",
     "hash": "7bfe41c9"
   },
-  "158": {
+  "167": {
     "text": "Learned position embeddings: one vector per position. RoPE eliminates this entire table.",
     "hash": "5338449e"
   },
-  "159": {
+  "168": {
     "text": "Pre-norm before the transformer blocks.",
     "hash": "5caa073e"
   },
-  "160": {
+  "169": {
     "text": "Stack transformer blocks, each configured with the same position strategy.",
     "hash": "9f2f0fbd"
   },
-  "161": {
+  "170": {
     "text": "Output projection: from embedding space back to vocabulary logits.",
     "hash": "1774314d"
   },
-  "162": {
+  "171": {
     "text": "Walk through every submodule and apply the custom weight initializer. This ensures consistent starting conditions whether the module is a linear layer or an embedding.",
     "hash": "e4941829"
   },
-  "165": {
+  "174": {
     "text": "Small random initialization (std=0.08) for all linear and embedding weights.",
     "hash": "2e476132"
   },
-  "167": {
+  "176": {
     "text": "Normal distribution init, not too large (exploding), not too small (vanishing).",
     "hash": "9677d3fd"
   },
-  "169": {
+  "178": {
     "text": "Forward pass: embed, add positions (if learned), normalize, transform, project to logits.",
     "hash": "1bc7099c"
   },
-  "170": {
+  "179": {
     "text": "Unpack batch and sequence dimensions.",
     "hash": "47cad82b"
   },
-  "171": {
+  "180": {
     "text": "Convert each input token ID into a dense 16-dimensional vector. These embeddings are the model's learned representation of each character.",
     "hash": "f03e810b"
   },
-  "172": {
+  "181": {
     "text": "Only add learned positional embeddings for the baseline variant.",
     "hash": "50929a06"
   },
-  "173": {
+  "182": {
     "text": "Add position vectors to token embeddings, the learned-position approach from labs 01-08.",
     "hash": "a0ae034f"
   },
-  "174": {
+  "183": {
     "text": "Normalize before the transformer blocks.",
     "hash": "a3bfcdd6"
   },
-  "175": {
+  "184": {
     "text": "Send the representation through each transformer block in sequence. Each block first applies attention (with or without RoPE) then the MLP.",
     "hash": "359aba32"
   },
-  "177": {
+  "186": {
     "text": "Project to vocabulary-sized logits for next-token prediction.",
     "hash": "9ef9adcf"
   },
-  "183": {
+  "192": {
     "text": "Shared training function, both models train with identical hyperparameters for a fair comparison.",
     "hash": "c493cb95"
   },
-  "185": {
+  "194": {
     "text": "Adam optimizer with slightly aggressive betas for small-model training.",
     "hash": "92d21e78"
   },
-  "187": {
+  "196": {
     "text": "Train for 1000 steps, cycling through the shuffled dataset.",
     "hash": "53f56939"
   },
-  "188": {
+  "197": {
     "text": "Cycle through names. With 32K names and 1000 steps, we see ~3% of the data.",
     "hash": "47ec0e2c"
   },
-  "189": {
+  "198": {
     "text": "Tokenize: BOS + character ids + BOS.",
     "hash": "ae86abd0"
   },
-  "190": {
+  "199": {
     "text": "Clip to block_size to handle names longer than 16 characters.",
     "hash": "3d9da8cd"
   },
-  "192": {
+  "201": {
     "text": "Input: all tokens except the last.",
     "hash": "c99ff416"
   },
-  "193": {
+  "202": {
     "text": "Target: all tokens shifted by one, the next-token prediction task.",
     "hash": "cee86f76"
   },
-  "195": {
+  "204": {
     "text": "Forward pass through the model.",
     "hash": "17df3885"
   },
-  "196": {
+  "205": {
     "text": "Cross-entropy loss: how surprised is the model by the correct next token?",
     "hash": "4f1dd754"
   },
-  "198": {
+  "207": {
     "text": "Zero out gradients from the previous step.",
     "hash": "fbede2b3"
   },
-  "199": {
+  "208": {
     "text": "Backpropagate the loss through the entire computation graph.",
     "hash": "227fe80d"
   },
-  "200": {
+  "209": {
     "text": "Linear learning rate warmdown: start at 1e-2, linearly decay to 0.",
     "hash": "60602e3a"
   },
-  "201": {
+  "210": {
     "text": "Write the decayed learning rate into every optimizer parameter group so the next weight update takes a smaller step as training progresses.",
     "hash": "9f6d3592"
   },
-  "203": {
+  "212": {
     "text": "Update weights based on gradients.",
     "hash": "d9e59d7e"
   },
-  "204": {
+  "213": {
     "text": "Track loss history for comparison.",
     "hash": "01d5e9eb"
   },
-  "212": {
+  "221": {
     "text": "Generate names autoregressively, one token at a time, feeding each back as input.",
     "hash": "b749c7d2"
   },
-  "214": {
+  "223": {
     "text": "Switch to eval mode (disables dropout, etc.).",
     "hash": "45bf010c"
   },
-  "216": {
+  "225": {
     "text": "No gradient computation needed during generation.",
     "hash": "d4f61231"
   },
-  "218": {
+  "227": {
     "text": "Start with just the BOS token.",
     "hash": "5c52ddc4"
   },
-  "219": {
+  "228": {
     "text": "Generate up to <code>block_size</code> tokens.",
     "hash": "ab05dc73"
   },
-  "220": {
+  "229": {
     "text": "Feed the current sequence (up to block_size) through the model.",
     "hash": "e05597da"
   },
-  "221": {
+  "230": {
     "text": "Get logits for the last position, the model's prediction for the next token.",
     "hash": "7d28f274"
   },
-  "222": {
+  "231": {
     "text": "Divide by temperature: lower = more confident/repetitive, higher = more random/creative.",
     "hash": "e1a1328f"
   },
-  "223": {
+  "232": {
     "text": "Turn raw logits into a proper probability distribution via softmax. Sampling from these probabilities gives us the next token.",
     "hash": "93ed4206"
   },
-  "224": {
+  "233": {
     "text": "Sample from the distribution, stochastic generation.",
     "hash": "5b83becd"
   },
-  "225": {
+  "234": {
     "text": "If we sampled BOS, the name is complete.",
     "hash": "41a35c11"
   },
-  "227": {
+  "236": {
     "text": "Add the sampled token and continue generating.",
     "hash": "a1ca669a"
   },
-  "228": {
+  "237": {
     "text": "Decode token ids back to characters.",
     "hash": "b4368128"
   },
-  "234": {
+  "243": {
     "text": "Train the baseline first: standard learned positional embeddings, same as labs 01-08.",
     "hash": "59ab3c7e"
   },
-  "235": {
+  "244": {
     "text": "Reset seed so both models start from the same random initialization.",
     "hash": "7e7dcf46"
   },
-  "236": {
+  "245": {
     "text": "Baseline model with learned position embeddings.",
     "hash": "911fb52c"
   },
-  "237": {
+  "246": {
     "text": "Count parameters, the baseline has extra parameters for the position embedding table.",
     "hash": "aab27446"
   },
-  "239": {
+  "248": {
     "text": "Train the baseline and capture loss history.",
     "hash": "903fae2d"
   },
-  "241": {
+  "250": {
     "text": "Now train the RoPE variant with the same seed and data order.",
     "hash": "6abac42d"
   },
-  "242": {
+  "251": {
     "text": "Same random init for a fair comparison.",
     "hash": "7e7dcf46"
   },
-  "243": {
+  "252": {
     "text": "RoPE model, no learned position embeddings, positions encoded through rotation.",
     "hash": "9bc1d033"
   },
-  "244": {
+  "253": {
     "text": "Count parameters, fewer than baseline because there's no <code>wpe</code> embedding table.",
     "hash": "9472de0f"
   },
-  "245": {
+  "254": {
     "text": "Show the parameter saving: RoPE encodes position for free (no learned parameters).",
     "hash": "d69ff5bd"
   },
-  "246": {
+  "255": {
     "text": "Train RoPE variant with identical hyperparameters.",
     "hash": "43f445e0"
   },
-  "250": {
+  "259": {
     "text": "Moving average of recent losses smooths out step-to-step noise.",
     "hash": "768dec2b"
   },
-  "251": {
+  "260": {
     "text": "Average the last 50 losses for each model.",
     "hash": "834c28c4"
   },
-  "252": {
+  "261": {
     "text": "Same window for the RoPE model.",
     "hash": "c53527db"
   },
-  "256": {
+  "265": {
     "text": "Generate names from the learned-position model.",
     "hash": "8354355a"
   },
-  "257": {
+  "266": {
     "text": "Generate names from the RoPE model, quality should be comparable despite fewer parameters.",
     "hash": "f6552e4d"
   }

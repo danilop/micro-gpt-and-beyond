@@ -5,8 +5,17 @@ Same architecture as version 03 (PyTorch), but learned positional embeddings are
 replaced with Rotary Position Embeddings. RoPE encodes position by rotating query
 and key vectors in complex space, so the dot product q·k naturally depends on the
 *relative* distance (m-n) rather than absolute positions m and n separately.
-
 Every modern LLM (LLaMA, Mistral, GPT-NeoX) uses RoPE. This lab shows why.
+
+The RoPE technique is from "RoFormer: Enhanced Transformer with Rotary Position
+Embedding" (Su et al., 2021), https://arxiv.org/abs/2104.09864. The implementation
+uses the real-valued rotation form (pairs of adjacent dimensions), matching the
+approach used in production by LLaMA ("LLaMA: Open and Efficient Foundation
+Language Models", Touvron et al., 2023, https://arxiv.org/abs/2302.13971). Note
+that the base frequency of 10000 follows the original paper; later work like
+"YaRN: Efficient Context Window Extension of Large Language Models" (Peng et al.,
+2023, https://arxiv.org/abs/2309.00071) explores different base frequencies for
+length extension.
 """
 
 import math

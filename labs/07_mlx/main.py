@@ -1,9 +1,15 @@
 """
 microGPT — MLX edition.
 
-Same architecture, running on Apple Silicon GPU via MLX.
+A framework port of the same decoder-only GPT architecture from
+"Attention Is All You Need" (Vaswani et al., 2017),
+https://arxiv.org/abs/1706.03762, running on Apple Silicon GPU via MLX.
+MLX is described in "MLX: Efficient and flexible machine learning on Apple
+silicon" (Hannun et al., 2023), https://github.com/ml-explore/mlx.
+
 MLX has a NumPy-like API with automatic differentiation and lazy evaluation.
-Arrays live in unified memory — no CPU/GPU transfers needed.
+Arrays live in unified memory, so Apple Silicon's unified memory architecture
+eliminates CPU-GPU transfer overhead entirely.
 """
 
 import math

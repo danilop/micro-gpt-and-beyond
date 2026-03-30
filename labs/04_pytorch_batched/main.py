@@ -8,6 +8,12 @@ Same architecture as 03_pytorch, but with proper mini-batch training:
   - 1000 training steps
 
 This is what "engineering for efficiency" looks like on top of the same algorithm.
+
+The batched version adds padding, masking, and mini-batch SGD — standard
+engineering for production training.
+
+Reference: "Attention Is All You Need" (Vaswani et al., 2017),
+https://arxiv.org/abs/1706.03762
 """
 
 import math
@@ -128,6 +134,9 @@ class MicroGPT(nn.Module):
         self.layers = nn.ModuleList([Block() for _ in range(n_layer)])
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)  # output over real vocab only
         self.apply(self._init_weights)
+        # Re-zero the padding embedding after init
+        with torch.no_grad():
+            self.wte.weight[PAD].zero_()
 
     @staticmethod
     def _init_weights(module):

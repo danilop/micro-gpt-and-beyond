@@ -3,7 +3,7 @@ revision = 3
 requires-python = ">=3.13"
 
 [[package]]
-name = "16-pytorch-quantized"
+name = "15-pytorch-quantized"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

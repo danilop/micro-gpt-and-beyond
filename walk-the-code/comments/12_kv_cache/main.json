@@ -1,149 +1,149 @@
 {
-  "12": {
+  "20": {
     "text": "This lab is about wasted inference work, so even the imports hint at the story: same model, but now we can time the naive path against the cached one.",
     "hash": "b67c9dde"
   },
-  "13": {
+  "21": {
     "text": "Same dataset, same task. That keeps the focus on the inference optimization rather than on model or data changes.",
     "hash": "de2abade"
   },
-  "14": {
+  "22": {
     "text": "Randomness is only supporting cast here; the real experiment is how much repeated computation we can eliminate during generation.",
     "hash": "7e18ed42"
   },
-  "15": {
+  "23": {
     "text": "Timing matters in this lab because KV cache is not a theoretical nicety, it is the optimization that makes autoregressive decoding practical.",
     "hash": "4f9b8491"
   },
-  "17": {
+  "25": {
     "text": "PyTorch gives us the same baseline model as before. The important difference is that attention can now remember yesterday's K and V instead of recomputing them.",
     "hash": "cf1070d3"
   },
-  "18": {
+  "26": {
     "text": "Nothing dramatic changes in the layer stack. That is the point: the speedup comes from preserving history, not from inventing a new model.",
     "hash": "b802910c"
   },
-  "19": {
+  "27": {
     "text": "Softmax and loss stay ordinary. What changes is how much of the prefix attention has to rebuild at each decoding step.",
     "hash": "5af419e1"
   },
-  "21": {
+  "29": {
     "text": "Benchmarks only mean something if the runs are comparable, so we lock the stochastic pieces down before measuring.",
     "hash": "f0726c6e"
   },
-  "22": {
+  "30": {
     "text": "Set the PyTorch random seed for reproducible weight initialization and sampling.",
     "hash": "7e7dcf46"
   },
-  "27": {
+  "35": {
     "text": "Construct a portable file path to the shared dataset, relative to this script's location, so the code works regardless of where you clone the repo.",
     "hash": "5ac9686d"
   },
-  "28": {
+  "36": {
     "text": "If the dataset file is missing, we download it automatically. This keeps the script self-contained with no manual setup required.",
     "hash": "9667c968"
   },
-  "34": {
+  "42": {
     "text": "Read all names from the dataset file, one per line, stripping whitespace.",
     "hash": "2f367d0b"
   },
-  "35": {
+  "43": {
     "text": "Randomize the training order so the model does not memorize sequences of names.",
     "hash": "c8f1cb86"
   },
-  "38": {
+  "46": {
     "text": "Gather every unique character from all names and sort them to build a deterministic character-to-integer vocabulary mapping.",
     "hash": "5f7ca3bb"
   },
-  "39": {
+  "47": {
     "text": "Use the length of the character set as the beginning-of-sequence token ID.",
     "hash": "476ca504"
   },
-  "40": {
+  "48": {
     "text": "The full vocabulary has 27 tokens: 26 lowercase letters plus the BOS marker.",
     "hash": "0a38d2ba"
   },
-  "46": {
+  "54": {
     "text": "Same tiny model config as lab 03, the model is identical, only inference changes.",
     "hash": "f6d4f4da"
   },
-  "47": {
+  "55": {
     "text": "Four parallel attention heads, each processing a different 4-dimensional slice.",
     "hash": "e804f3b9"
   },
-  "48": {
+  "56": {
     "text": "A single transformer layer keeps the comparison focused on the caching optimization.",
     "hash": "cbfe55b3"
   },
-  "49": {
+  "57": {
     "text": "The longest sequence the model can process at once. Names are short, so 16 tokens is more than enough for this dataset.",
     "hash": "ecfd6b0a"
   },
-  "50": {
+  "58": {
     "text": "Each attention head operates on a 4-dimensional slice of the 16-dimensional embedding.",
     "hash": "77ba194a"
   },
-  "60": {
+  "68": {
     "text": "RMSNorm, same as previous labs.",
     "hash": "69fade3d"
   },
-  "66": {
+  "74": {
     "text": "Divide by the root-mean-square of the activation vector. Simpler than LayerNorm since it skips mean subtraction, but equally effective for stabilizing training.",
     "hash": "53678ba7"
   },
-  "69": {
+  "77": {
     "text": "The critical change: attention now accepts an optional KV cache. Same weights, two inference paths.",
     "hash": "c20aaac2"
   },
-  "72": {
+  "80": {
     "text": "Constructor is unchanged from lab 03.",
     "hash": "220b14ab"
   },
-  "74": {
+  "82": {
     "text": "Q, K, V, and output projections, identical to the uncached version.",
     "hash": "433b771f"
   },
-  "75": {
+  "83": {
     "text": "Linear projection that transforms embeddings into key vectors for attention.",
     "hash": "bf2475c8"
   },
-  "76": {
+  "84": {
     "text": "Linear projection that transforms embeddings into value vectors for attention.",
     "hash": "d1a077cb"
   },
-  "77": {
+  "85": {
     "text": "Project the concatenated multi-head output back to the model dimension.",
     "hash": "887b9875"
   },
-  "79": {
+  "87": {
     "text": "Forward now takes an optional <code>kv_cache</code>, this is the entire innovation of this lab.",
     "hash": "8644a184"
   },
-  "80": {
+  "88": {
     "text": "<code>T_new</code> is 1 during cached inference (just the new token) vs. full sequence length without cache.",
     "hash": "dbcc0799"
   },
-  "81": {
+  "89": {
     "text": "Project queries for the new positions only. During cached inference, this is a single token.",
     "hash": "9e163990"
   },
-  "82": {
+  "90": {
     "text": "Project keys for the new positions only.",
     "hash": "c90e879b"
   },
-  "83": {
+  "91": {
     "text": "Project values for the new positions only.",
     "hash": "01144d94"
   },
-  "85": {
+  "93": {
     "text": "If we have a cache from previous steps, prepend it.",
     "hash": "aa6ad26f"
   },
-  "86": {
+  "94": {
     "text": "Unpack the cached K and V tensors from previous positions.",
     "hash": "328b177d"
   },
-  "87": {
+  "95": {
     "text": "This is the crucial reuse step: old keys stay alive, and only the new key is appended. The history grows without being recomputed.",
     "hash": "a418bc9d",
     "diagram": "kv_cached",
@@ -152,7 +152,7 @@
       "c_step2"
     ]
   },
-  "88": {
+  "96": {
     "text": "Values follow the same pattern as keys, completing the cached prefix. The new token now sees the full past through reused K/V rather than rebuilt K/V.",
     "hash": "2f424894",
     "diagram": "kv_cached",
@@ -161,7 +161,7 @@
       "c_stepT"
     ]
   },
-  "90": {
+  "98": {
     "text": "Save the updated cache for the next step, it grows by one position each time.",
     "hash": "1bfbdd29",
     "diagram": "kv_cached",
@@ -169,7 +169,7 @@
       "c_step1"
     ]
   },
-  "91": {
+  "99": {
     "text": "<code>T_total</code> = total sequence length including cached positions.",
     "hash": "49990b2c",
     "diagram": "kv_cached",
@@ -178,291 +178,291 @@
       "c_stepT"
     ]
   },
-  "93": {
+  "101": {
     "text": "Attention: Q is (B, heads, T_new, hd), K is (B, heads, T_total, hd). The result is (B, heads, T_new, T_total).",
     "hash": "308b188d"
   },
-  "95": {
+  "103": {
     "text": "Build the causal mask with <code>torch.triu</code>: each new query at absolute position T_total-T_new+i can attend to all positions up to and including itself, but not beyond.",
     "hash": "f7463530"
   },
-  "96": {
+  "104": {
     "text": "Replace scores for future positions with negative infinity. After softmax, these become exactly zero, enforcing the causal constraint that tokens cannot peek ahead.",
     "hash": "a2e76efa"
   },
-  "97": {
+  "105": {
     "text": "Softmax to get attention weights.",
     "hash": "62dc999a"
   },
-  "99": {
+  "107": {
     "text": "Weighted sum of values and reshape.",
     "hash": "bc3bf4e4"
   },
-  "100": {
+  "108": {
     "text": "Return both the output AND the updated cache, the cache is passed to the next step.",
     "hash": "2c3a1768"
   },
-  "103": {
+  "111": {
     "text": "The two-layer feed-forward network, unchanged from previous labs. The MLP operates per-position and does not need any caching since it has no cross-position state.",
     "hash": "3ad666a1"
   },
-  "106": {
+  "114": {
     "text": "Project each token's representation into a 4x wider hidden space for richer computation.",
     "hash": "8e9f0642"
   },
-  "107": {
+  "115": {
     "text": "Compress the expanded hidden representation back down to the original embedding dimension.",
     "hash": "62c4768b"
   },
-  "109": {
+  "117": {
     "text": "Run the input through the two-layer feed-forward network with ReLU activation.",
     "hash": "a87869a2"
   },
-  "110": {
+  "118": {
     "text": "Two linear layers with ReLU in between. The expansion to 4x width gives the network more room to learn nonlinear transformations before compressing back down.",
     "hash": "8aa6bebb"
   },
-  "113": {
+  "121": {
     "text": "Transformer block, now threads the KV cache through.",
     "hash": "4bcc8ea8"
   },
-  "116": {
+  "124": {
     "text": "Normalize activations before the attention sublayer. Pre-norm keeps gradients well-behaved and is the standard in modern transformers like LLaMA.",
     "hash": "e92b587d"
   },
-  "117": {
+  "125": {
     "text": "The attention sublayer, now accepting an optional KV cache. When a cache is provided, it only processes new positions and prepends cached keys and values.",
     "hash": "95b016d9"
   },
-  "121": {
+  "129": {
     "text": "Forward now accepts and returns a cache.",
     "hash": "8644a184"
   },
-  "122": {
+  "130": {
     "text": "Attention: receives cache, returns updated cache.",
     "hash": "1e4dac19"
   },
-  "123": {
+  "131": {
     "text": "Add the attention output back to the input via a residual connection. The MLP and attention each contribute refinements without overwriting the original representation.",
     "hash": "d038b58c"
   },
-  "124": {
+  "132": {
     "text": "MLP with residual (MLP doesn't need a cache).",
     "hash": "50e2183f"
   },
-  "125": {
+  "133": {
     "text": "Return both the block's output and the updated KV cache. The caller collects caches from all layers and passes them back on the next generation step.",
     "hash": "20dd8643"
   },
-  "128": {
+  "136": {
     "text": "Full model, threads caches through all layers.",
     "hash": "e94c5dc2"
   },
-  "131": {
+  "139": {
     "text": "Look up a learned embedding vector for each input token to represent its identity.",
     "hash": "2a2b79bb"
   },
-  "132": {
+  "140": {
     "text": "Positional embeddings, <code>start_pos</code> will offset these during cached inference.",
     "hash": "5338449e"
   },
-  "133": {
+  "141": {
     "text": "Normalize the combined embeddings before feeding them into the transformer layers.",
     "hash": "5caa073e"
   },
-  "134": {
+  "142": {
     "text": "A stack of transformer blocks, each with its own attention and MLP. During cached inference, each layer maintains its own independent KV cache.",
     "hash": "d10311df"
   },
-  "135": {
+  "143": {
     "text": "Map the final hidden states to vocabulary-sized logits for next-token prediction.",
     "hash": "1774314d"
   },
-  "136": {
+  "144": {
     "text": "Apply the custom weight initialization function to every module in the model.",
     "hash": "e4941829"
   },
-  "139": {
+  "147": {
     "text": "Static method that initializes weights with a small Gaussian for stable early training.",
     "hash": "2e476132"
   },
-  "141": {
+  "149": {
     "text": "Draw initial weights from a narrow Gaussian so activations stay reasonably scaled.",
     "hash": "9677d3fd"
   },
-  "143": {
+  "151": {
     "text": "Forward now takes <code>past_caches</code> and <code>start_pos</code>, the KV cache interface.",
     "hash": "6203bc9f"
   },
-  "144": {
+  "152": {
     "text": "Extract the batch size and sequence length from the input tensor shape.",
     "hash": "47cad82b"
   },
-  "145": {
+  "153": {
     "text": "Look up a learned embedding vector for each input token to represent its identity.",
     "hash": "8d137e9c"
   },
-  "146": {
+  "154": {
     "text": "Position embeddings offset by <code>start_pos</code>. During cached inference, this is the position of the new token, not 0. Without this offset, the model would think every new token is at position 0.",
     "hash": "3c913831"
   },
-  "147": {
+  "155": {
     "text": "Combine token and position embeddings, normalize.",
     "hash": "b88a95ea"
   },
-  "148": {
+  "156": {
     "text": "Collect updated caches from each layer.",
     "hash": "b2039659"
   },
-  "149": {
+  "157": {
     "text": "Thread caches through each layer.",
     "hash": "065d031b"
   },
-  "150": {
+  "158": {
     "text": "Grab the cache for this layer (or None on the first pass).",
     "hash": "f7722f87"
   },
-  "151": {
+  "159": {
     "text": "Forward through the layer, receiving the updated cache.",
     "hash": "10fa535b"
   },
-  "152": {
+  "160": {
     "text": "Save this layer's updated cache into the collection. On the next generation step, it will be passed back so the layer can skip recomputing past keys and values.",
     "hash": "7c160f4c"
   },
-  "153": {
+  "161": {
     "text": "Return logits AND the full cache stack for the next generation step.",
     "hash": "7c352239"
   },
-  "159": {
+  "167": {
     "text": "Use CPU for this tiny model since it trains in seconds without a GPU.",
     "hash": "b39e14b0"
   },
-  "160": {
+  "168": {
     "text": "Instantiate the model with the same architecture as lab 03. The only difference is that the forward pass now supports an optional KV cache for efficient generation.",
     "hash": "40b7fcd9"
   },
-  "161": {
+  "169": {
     "text": "Same parameter count as lab 03.",
     "hash": "ea4a5d11"
   },
-  "163": {
+  "171": {
     "text": "Set up the Adam optimizer with momentum and epsilon tuned for this small model.",
     "hash": "92d21e78"
   },
-  "164": {
+  "172": {
     "text": "Train for 1000 steps, which is enough for this tiny model to learn basic name patterns.",
     "hash": "f105aa30"
   },
-  "166": {
+  "174": {
     "text": "Training loop, caches are ignored during training (standard teacher-forced training).",
     "hash": "53f56939"
   },
-  "167": {
+  "175": {
     "text": "Pick the next training document by cycling through the shuffled name list.",
     "hash": "47ec0e2c"
   },
-  "168": {
+  "176": {
     "text": "Encode each character in the name as a token ID, bookended by BOS markers.",
     "hash": "ae86abd0"
   },
-  "169": {
+  "177": {
     "text": "Limit the sequence length to block_size so it fits the model's positional embeddings.",
     "hash": "3d9da8cd"
   },
-  "171": {
+  "179": {
     "text": "Convert the token IDs into a tensor the model can consume as its input sequence.",
     "hash": "968a3346"
   },
-  "172": {
+  "180": {
     "text": "Build the target sequence by shifting the input one position to the right for next-token prediction.",
     "hash": "1b63fd95"
   },
-  "174": {
+  "182": {
     "text": "Forward pass. The <code>_</code> discards caches, training doesn't need them.",
     "hash": "495ef1c7"
   },
-  "175": {
+  "183": {
     "text": "Measure how far the model's predictions are from the true next tokens using cross-entropy.",
     "hash": "4f1dd754"
   },
-  "177": {
+  "185": {
     "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
     "hash": "fbede2b3"
   },
-  "178": {
+  "186": {
     "text": "Compute gradients for every parameter by propagating the loss backward through the graph.",
     "hash": "227fe80d"
   },
-  "179": {
+  "187": {
     "text": "Linearly reduce the learning rate from its initial value down to zero over the course of training.",
     "hash": "60602e3a"
   },
-  "180": {
+  "188": {
     "text": "Write the decayed learning rate into every parameter group so the optimizer uses it.",
     "hash": "9f6d3592"
   },
-  "182": {
+  "190": {
     "text": "Apply the optimizer step, adjusting every parameter in the direction that reduces the loss.",
     "hash": "d9e59d7e"
   },
-  "191": {
+  "199": {
     "text": "Temperature controls the sampling distribution's sharpness. At 0.5, high-probability tokens become even more dominant, producing more conservative but coherent names.",
     "hash": "7eca5b76"
   },
-  "192": {
+  "200": {
     "text": "20 samples for a meaningful benchmark.",
     "hash": "c7ed7c80"
   },
-  "193": {
+  "201": {
     "text": "Switch to eval mode for inference.",
     "hash": "45bf010c"
   },
-  "196": {
+  "204": {
     "text": "Shared sampling helper: take logits, apply temperature, sample one token.",
     "hash": "2b1aaf78"
   },
-  "197": {
+  "205": {
     "text": "Temperature-scaled softmax on the last position's logits.",
     "hash": "36be8315"
   },
-  "198": {
+  "206": {
     "text": "Multinomial sampling, stochastic generation.",
     "hash": "56925d03"
   },
-  "201": {
+  "209": {
     "text": "Naive generation: re-run the FULL sequence through the model at every step. This is O(n^3) total attention.",
     "hash": "0f384532"
   },
-  "203": {
+  "211": {
     "text": "Track attention operations to quantify the difference.",
     "hash": "720e096c"
   },
-  "205": {
+  "213": {
     "text": "Fixed seed per sample so naive and cached produce identical outputs.",
     "hash": "bb36d13f"
   },
-  "206": {
+  "214": {
     "text": "Same seed as cached generation, outputs MUST match.",
     "hash": "79dd3c9e"
   },
-  "207": {
+  "215": {
     "text": "Begin each generated name with the beginning-of-sequence token so the model starts fresh.",
     "hash": "5c52ddc4"
   },
-  "208": {
+  "216": {
     "text": "Generate up to <code>block_size</code> tokens.",
     "hash": "ab05dc73"
   },
-  "209": {
+  "217": {
     "text": "Feed the ENTIRE sequence so far. This is the waste, we recompute Q/K/V for all previous tokens.",
     "hash": "ce311cc5"
   },
-  "210": {
+  "218": {
     "text": "Count attention operations: T*T per head, for all heads.",
     "hash": "8ef73feb"
   },
-  "211": {
+  "219": {
     "text": "O(T^2) per step, and T grows each step, giving O(T^3) total.",
     "hash": "7ba66460",
     "diagram": "kv_naive",
@@ -472,75 +472,75 @@
       "n_stepT"
     ]
   },
-  "212": {
+  "220": {
     "text": "No cache, everything is recomputed from scratch every step.",
     "hash": "403effec"
   },
-  "213": {
+  "221": {
     "text": "Randomly draw one token from the probability distribution for stochastic generation.",
     "hash": "abb8f162"
   },
-  "214": {
+  "222": {
     "text": "If the model predicts BOS, treat it as an end-of-name signal and stop generating.",
     "hash": "41a35c11"
   },
-  "216": {
+  "224": {
     "text": "Add the newly sampled token to the growing sequence and continue generating.",
     "hash": "a1ca669a"
   },
-  "217": {
+  "225": {
     "text": "Convert the list of generated token IDs back into a readable name string.",
     "hash": "40b7dea8"
   },
-  "221": {
+  "229": {
     "text": "KV-cached generation: only process the NEW token each step. O(n^2) total attention.",
     "hash": "ff9fc7d9"
   },
-  "223": {
+  "231": {
     "text": "Count the attention operations (Q times K multiply-adds) at each step so we can precisely measure how much computation the KV cache saves.",
     "hash": "720e096c"
   },
-  "226": {
+  "234": {
     "text": "Same seed, outputs will be identical.",
     "hash": "79dd3c9e"
   },
-  "227": {
+  "235": {
     "text": "Begin each generated name with the beginning-of-sequence token so the model starts fresh.",
     "hash": "5c52ddc4"
   },
-  "228": {
+  "236": {
     "text": "Initialize the cache as empty since no tokens have been processed yet on the first pass.",
     "hash": "fcf1f5af"
   },
-  "229": {
+  "237": {
     "text": "Generate up to <code>block_size</code> tokens.",
     "hash": "ab05dc73"
   },
-  "230": {
+  "238": {
     "text": "First step: no cache yet, process the full initial sequence (just BOS).",
     "hash": "d58e196e"
   },
-  "231": {
+  "239": {
     "text": "Feed the full initial token(s).",
     "hash": "187c396f"
   },
-  "232": {
+  "240": {
     "text": "Position zero for the very first token. The positional embedding needs this offset to assign the correct position encoding to the BOS token.",
     "hash": "aef55fa6"
   },
-  "234": {
+  "242": {
     "text": "Subsequent steps: only feed the LAST token. This is the key optimization, one token instead of the full sequence.",
     "hash": "b07d8397"
   },
-  "235": {
+  "243": {
     "text": "Start position = where this token sits in the sequence.",
     "hash": "1a56faac"
   },
-  "236": {
+  "244": {
     "text": "Attention ops: T_new * T_total per head. With T_new=1, this is just T_total, linear, not quadratic.",
     "hash": "bafa485e"
   },
-  "237": {
+  "245": {
     "text": "This is the entire payoff of the lab in one line: feed one fresh token in, get one larger cache out. The old prefix survives as state instead of being rebuilt from scratch.",
     "hash": "b589a835",
     "diagram": "kv_cached",
@@ -550,87 +550,87 @@
       "c_stepT"
     ]
   },
-  "238": {
+  "246": {
     "text": "Randomly draw one token from the probability distribution for stochastic generation.",
     "hash": "abb8f162"
   },
-  "239": {
+  "247": {
     "text": "If the model predicts BOS, treat it as an end-of-name signal and stop generating.",
     "hash": "41a35c11"
   },
-  "241": {
+  "249": {
     "text": "Add the newly sampled token to the growing sequence and continue generating.",
     "hash": "a1ca669a"
   },
-  "242": {
+  "250": {
     "text": "Convert the list of generated token IDs back into a readable name string.",
     "hash": "40b7dea8"
   },
-  "250": {
+  "258": {
     "text": "Disable gradient tracking for both generation methods so the comparison is fair and neither wastes time computing gradients during inference.",
     "hash": "d4f61231"
   },
-  "251": {
+  "259": {
     "text": "Start the wall-clock timer for naive generation. Even at this tiny scale, the cubic cost is measurable against the quadratic cached version.",
     "hash": "d5030329"
   },
-  "252": {
+  "260": {
     "text": "Generate 20 names without cache.",
     "hash": "9727a1df"
   },
-  "253": {
+  "261": {
     "text": "Wall-clock time for naive generation.",
     "hash": "b7fd7b6d"
   },
-  "255": {
+  "263": {
     "text": "Start the wall-clock timer for cached generation. Comparing against the naive timer reveals the real-world speedup from avoiding recomputation.",
     "hash": "d5030329"
   },
-  "256": {
+  "264": {
     "text": "Generate 20 names with cache.",
     "hash": "b8f48f56"
   },
-  "257": {
+  "265": {
     "text": "Wall-clock time for cached generation.",
     "hash": "9e5e9e06"
   },
-  "261": {
+  "269": {
     "text": "Verify outputs are IDENTICAL, the cache is an optimization, not an approximation. Same model, same weights, same random seed = same output.",
     "hash": "b0668b1e"
   },
-  "262": {
+  "270": {
     "text": "Side-by-side comparison of every generated name.",
     "hash": "7a273596"
   },
-  "263": {
+  "271": {
     "text": "Flag any mismatch (there shouldn't be any).",
     "hash": "fca8de5d"
   },
-  "265": {
+  "273": {
     "text": "All outputs should match perfectly.",
     "hash": "a3e7d637"
   },
-  "271": {
+  "279": {
     "text": "The headline metric: how many fewer attention operations the cache requires.",
     "hash": "96bb0a87"
   },
-  "277": {
+  "285": {
     "text": "Real timing comparison. At this tiny scale the speedup is modest; at 7B scale it's 100x+.",
     "hash": "a9dfb8a0"
   },
-  "281": {
+  "289": {
     "text": "Theoretical analysis of the complexity difference.",
     "hash": "8d29f04a"
   },
-  "284": {
+  "292": {
     "text": "Naive: sum of t^2 for t=1..T = T(T+1)(2T+1)/6. Cubic growth.",
     "hash": "2187acfc"
   },
-  "285": {
+  "293": {
     "text": "Cached: sum of t for t=1..T = T(T+1)/2. Quadratic growth.",
     "hash": "d4da27bf"
   },
-  "286": {
+  "294": {
     "text": "The ratio grows linearly with sequence length, longer sequences benefit more from caching.",
     "hash": "e0bd336a"
   }

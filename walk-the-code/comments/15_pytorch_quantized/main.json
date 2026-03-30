@@ -1,343 +1,343 @@
 {
-  "9": {
+  "19": {
     "text": "Quantization changes representation, not the model's architecture, so the ordinary transformer math remains the same around the compression step.",
     "hash": "b67c9dde"
   },
-  "10": {
+  "20": {
     "text": "Same shared corpus again. That keeps the lesson focused on compression and inference cost rather than on task differences.",
     "hash": "de2abade"
   },
-  "11": {
+  "21": {
     "text": "We still control the run setup because we want to compare FP32 and INT8 behavior on equal footing.",
     "hash": "7e18ed42"
   },
-  "12": {
+  "22": {
     "text": "Timing is part of the point here: quantization is valuable because smaller weights are cheaper to move through memory, not just because they save disk space.",
     "hash": "4f9b8491"
   },
-  "14": {
+  "24": {
     "text": "PyTorch handles training in normal precision first; only after that do we compress the learned weights into a cheaper format.",
     "hash": "cf1070d3"
   },
-  "15": {
+  "25": {
     "text": "The same familiar layers will later be wrapped or replaced with quantized versions so you can see exactly where the memory savings come from.",
     "hash": "b802910c"
   },
-  "16": {
+  "26": {
     "text": "The model's behavior should stay approximately the same after quantization, so the surrounding functional operations are intentionally unchanged.",
     "hash": "5af419e1"
   },
-  "18": {
+  "28": {
     "text": "Lock the RNGs so any quality drop after quantization reflects the compressed weights, not a different training run.",
     "hash": "f0726c6e"
   },
-  "19": {
+  "29": {
     "text": "Set the PyTorch random seed for reproducible weight initialization and sampling.",
     "hash": "7e7dcf46"
   },
-  "24": {
+  "34": {
     "text": "Build a portable file path to the dataset, relative to this script's location.",
     "hash": "5ac9686d"
   },
-  "25": {
+  "35": {
     "text": "Download the dataset from the internet if it is not already on disk.",
     "hash": "9667c968"
   },
-  "31": {
+  "41": {
     "text": "Read all names from the dataset file, one per line, stripping whitespace.",
     "hash": "2f367d0b"
   },
-  "32": {
+  "42": {
     "text": "Randomize the training order so the model does not memorize sequences of names.",
     "hash": "c8f1cb86"
   },
-  "35": {
+  "45": {
     "text": "Build a sorted list of unique characters in the dataset to form the token vocabulary.",
     "hash": "5f7ca3bb"
   },
-  "36": {
+  "46": {
     "text": "Use the length of the character set as the beginning-of-sequence token ID.",
     "hash": "476ca504"
   },
-  "37": {
+  "47": {
     "text": "The full vocabulary has 27 tokens: 26 lowercase letters plus the BOS marker.",
     "hash": "0a38d2ba"
   },
-  "43": {
+  "53": {
     "text": "Larger model than lab 03 (64 vs 16 embedding dim) to make quantization effects visible. At 16 dimensions the savings are tiny; at 64 the 4x compression is meaningful.",
     "hash": "3b06c323"
   },
-  "44": {
+  "54": {
     "text": "4 attention heads, each with 16 dimensions.",
     "hash": "e804f3b9"
   },
-  "45": {
+  "55": {
     "text": "2 layers, more parameters to compress.",
     "hash": "6664fd8c"
   },
-  "46": {
+  "56": {
     "text": "Names rarely exceed 16 characters, so this caps the positional embedding table and keeps sequences compact.",
     "hash": "ecfd6b0a"
   },
-  "47": {
+  "57": {
     "text": "Each attention head operates on a 16-dimensional slice of the 64-dimensional embedding.",
     "hash": "77ba194a"
   },
-  "50": {
+  "60": {
     "text": "Root-mean-square normalization that stabilizes activations without learned parameters.",
     "hash": "69fade3d"
   },
-  "56": {
+  "66": {
     "text": "Scale the input by its inverse root-mean-square, ensuring activations have roughly unit magnitude without learned parameters.",
     "hash": "53678ba7"
   },
-  "59": {
+  "69": {
     "text": "Standard causal attention, same as lab 03.",
     "hash": "c20aaac2"
   },
-  "62": {
+  "72": {
     "text": "Q, K, V, output projections. These are the weights that will be quantized to INT8.",
     "hash": "433b771f"
   },
-  "63": {
+  "73": {
     "text": "Linear projection that transforms embeddings into key vectors for attention.",
     "hash": "bf2475c8"
   },
-  "64": {
+  "74": {
     "text": "Linear projection that transforms embeddings into value vectors for attention.",
     "hash": "d1a077cb"
   },
-  "65": {
+  "75": {
     "text": "Project the concatenated multi-head output back to the model dimension.",
     "hash": "887b9875"
   },
-  "67": {
+  "77": {
     "text": "Run the attention computation: project to Q, K, V, apply the causal mask, and combine.",
     "hash": "a87869a2"
   },
-  "68": {
+  "78": {
     "text": "Extract batch size, sequence length, and embedding dimension from the input tensor shape.",
     "hash": "4584ac61"
   },
-  "69": {
+  "79": {
     "text": "Project and reshape the input into query vectors, one per attention head.",
     "hash": "d0c33c49"
   },
-  "70": {
+  "80": {
     "text": "Project and reshape the input into key vectors, one per attention head.",
     "hash": "a48e9c7a"
   },
-  "71": {
+  "81": {
     "text": "Project and reshape the input into value vectors, one per attention head.",
     "hash": "7fcca8ac"
   },
-  "73": {
+  "83": {
     "text": "Compute Q dot K transposed, scaled by sqrt(head_dim). The scaling prevents softmax from saturating as dimensionality grows.",
     "hash": "308b188d"
   },
-  "74": {
+  "84": {
     "text": "Build an upper-triangular boolean mask so each token can only attend to itself and earlier positions.",
     "hash": "14eeec63"
   },
-  "75": {
+  "85": {
     "text": "Set all future positions to negative infinity so softmax assigns them zero weight, enforcing the causal left-to-right constraint.",
     "hash": "a2e76efa"
   },
-  "76": {
+  "86": {
     "text": "Convert attention scores into a probability distribution that sums to one over the key dimension.",
     "hash": "62dc999a"
   },
-  "78": {
+  "88": {
     "text": "Multiply attention weights by value vectors and reshape. Each position now holds a context-aware blend of information from earlier tokens.",
     "hash": "a1aef68f"
   },
-  "79": {
+  "89": {
     "text": "Project the concatenated multi-head output back to the model dimension through a linear layer.",
     "hash": "36f2db67"
   },
-  "82": {
+  "92": {
     "text": "A standard two-layer feed-forward network with ReLU activation in between.",
     "hash": "3ad666a1"
   },
-  "85": {
+  "95": {
     "text": "Expand to 4x (256 dimensions).",
     "hash": "8e9f0642"
   },
-  "86": {
+  "96": {
     "text": "Compress the expanded 256-dimensional representation back to the 64-dimensional embedding.",
     "hash": "62c4768b"
   },
-  "88": {
+  "98": {
     "text": "Run the input through the two-layer feed-forward network with ReLU activation.",
     "hash": "a87869a2"
   },
-  "89": {
+  "99": {
     "text": "The complete feed-forward computation: expand to 4x width, apply ReLU nonlinearity, and compress back in a single expression.",
     "hash": "8aa6bebb"
   },
-  "92": {
+  "102": {
     "text": "One transformer block containing self-attention and a feed-forward network with residual connections.",
     "hash": "4bcc8ea8"
   },
-  "95": {
+  "105": {
     "text": "Normalize activations before the attention sublayer to stabilize training gradients.",
     "hash": "e92b587d"
   },
-  "96": {
+  "106": {
     "text": "The causal self-attention sublayer that lets each token attend to previous positions.",
     "hash": "95b016d9"
   },
-  "97": {
+  "107": {
     "text": "Normalize activations before the MLP sublayer to stabilize training gradients.",
     "hash": "f58a7657"
   },
-  "98": {
+  "108": {
     "text": "The feed-forward network that processes each token independently after attention has mixed information across positions.",
     "hash": "17fdd551"
   },
-  "100": {
+  "110": {
     "text": "Apply attention and MLP sublayers with residual connections that let gradients flow easily.",
     "hash": "a87869a2"
   },
-  "101": {
+  "111": {
     "text": "Add the attention output to the residual stream, preserving the original information.",
     "hash": "5133b743"
   },
-  "102": {
+  "112": {
     "text": "Add the MLP output to the residual stream so the model can refine representations incrementally.",
     "hash": "50e2183f"
   },
-  "106": {
+  "116": {
     "text": "Full model, same architecture as lab 03 but larger (64-dim instead of 16-dim).",
     "hash": "e94c5dc2"
   },
-  "109": {
+  "119": {
     "text": "Look up learned token embeddings in a 27 by 64 table, one vector per token.",
     "hash": "2a2b79bb"
   },
-  "110": {
+  "120": {
     "text": "Look up learned position embeddings in a 16 by 64 table, one vector per position.",
     "hash": "5338449e"
   },
-  "111": {
+  "121": {
     "text": "Normalize the combined token-plus-position embedding before feeding it into the transformer.",
     "hash": "5caa073e"
   },
-  "112": {
+  "122": {
     "text": "A stack of transformer blocks, each containing attention and MLP sublayers.",
     "hash": "d10311df"
   },
-  "113": {
+  "123": {
     "text": "Output projection: 64 -> 27.",
     "hash": "1774314d"
   },
-  "114": {
+  "124": {
     "text": "Apply the custom weight initialization function to every module in the model.",
     "hash": "e4941829"
   },
-  "118": {
+  "128": {
     "text": "Draw initial weights from a narrow Gaussian so activations stay reasonably scaled at the start.",
     "hash": "e2ce6cde"
   },
-  "121": {
+  "131": {
     "text": "Run the full model on the input sequence to produce next-token logits for every position.",
     "hash": "1bc7099c"
   },
-  "122": {
+  "132": {
     "text": "Extract the batch size and sequence length from the input tensor shape.",
     "hash": "47cad82b"
   },
-  "123": {
+  "133": {
     "text": "Look up a learned embedding vector for each input token to represent its identity.",
     "hash": "8d137e9c"
   },
-  "124": {
+  "134": {
     "text": "Create a position embedding for each slot in the sequence so the model knows token ordering.",
     "hash": "2b319b15"
   },
-  "125": {
+  "135": {
     "text": "Add token and position embeddings together, then normalize before entering the transformer.",
     "hash": "b88a95ea"
   },
-  "126": {
+  "136": {
     "text": "Pass the normalized representation through each transformer block in sequence.",
     "hash": "359aba32"
   },
-  "128": {
+  "138": {
     "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
     "hash": "9ef9adcf"
   },
-  "134": {
+  "144": {
     "text": "Use CPU for this tiny model since it trains in seconds without a GPU.",
     "hash": "b39e14b0"
   },
-  "135": {
+  "145": {
     "text": "Instantiate the model and move it to the target device for training.",
     "hash": "40b7fcd9"
   },
-  "138": {
+  "148": {
     "text": "Set up the Adam optimizer with momentum and epsilon tuned for this small model.",
     "hash": "92d21e78"
   },
-  "139": {
+  "149": {
     "text": "Train for 1000 steps, enough for this model to learn basic character-level name patterns.",
     "hash": "f105aa30"
   },
-  "141": {
+  "151": {
     "text": "Standard training loop, identical to other labs.",
     "hash": "53f56939"
   },
-  "142": {
+  "152": {
     "text": "Pick the next training document by cycling through the shuffled name list.",
     "hash": "47ec0e2c"
   },
-  "143": {
+  "153": {
     "text": "Encode each character in the name as a token ID, bookended by BOS markers.",
     "hash": "ae86abd0"
   },
-  "144": {
+  "154": {
     "text": "Limit the sequence length to block_size so it fits the model's positional embedding table.",
     "hash": "3d9da8cd"
   },
-  "146": {
+  "156": {
     "text": "Convert the first n token IDs into a tensor the model can consume as input.",
     "hash": "968a3346"
   },
-  "147": {
+  "157": {
     "text": "Build the target sequence by shifting the input one position to the right for next-token prediction.",
     "hash": "1b63fd95"
   },
-  "149": {
+  "159": {
     "text": "Run the full model on the current input batch to get next-token predictions.",
     "hash": "17df3885"
   },
-  "150": {
+  "160": {
     "text": "Measure how far the model's predictions are from the true next tokens using cross-entropy loss.",
     "hash": "4f1dd754"
   },
-  "152": {
+  "162": {
     "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
     "hash": "fbede2b3"
   },
-  "153": {
+  "163": {
     "text": "Compute gradients for every parameter by propagating the loss backward through the graph.",
     "hash": "227fe80d"
   },
-  "154": {
+  "164": {
     "text": "Linearly reduce the learning rate from its initial value down to zero over the course of training.",
     "hash": "60602e3a"
   },
-  "155": {
+  "165": {
     "text": "Write the decayed learning rate into every parameter group so the optimizer uses it on the next step.",
     "hash": "9f6d3592"
   },
-  "157": {
+  "167": {
     "text": "Apply the optimizer step, adjusting every parameter in the direction that reduces the loss.",
     "hash": "d9e59d7e"
   },
-  "168": {
+  "178": {
     "text": "The quantized linear layer: stores weights as INT8 integers (1 byte each) instead of FP32 floats (4 bytes each). A single scale factor maps between the two representations.",
-    "hash": "4dc60741",
+    "hash": "4aee07ac",
     "diagram": "quant_compress",
     "highlight": [
       "fp32",
@@ -346,191 +346,191 @@
       "store"
     ]
   },
-  "169": {
+  "179": {
     "text": "Takes a trained FP32 linear layer and quantizes its weights.",
-    "hash": "c6f83bf2"
+    "hash": "df38bb8f"
   },
-  "171": {
+  "181": {
     "text": "Detach the FP32 weight tensor from the computation graph since we only need the raw numbers for the quantization math.",
-    "hash": "f998db9f"
+    "hash": "4e8fd185"
   },
-  "172": {
+  "182": {
     "text": "Compute the scale factor: map the weight range [-max, +max] to [-127, +127]. This single scalar is the key, it determines the precision of the quantization.",
-    "hash": "c992b589",
+    "hash": "4dc60741",
     "diagram": "quant_compress",
     "highlight": [
       "find_scale"
     ]
   },
-  "173": {
+  "183": {
     "text": "Round to nearest integer and cast to INT8. Each weight now fits in 1 byte instead of 4. The <code>register_buffer</code> saves it as a non-parameter tensor (no gradients).",
-    "hash": "54b4244c",
+    "hash": "c6f83bf2",
     "diagram": "quant_compress",
     "highlight": [
       "quantize",
       "store"
     ]
   },
-  "174": {
+  "184": {
     "text": "Keep the scale factor as a buffer so we can undo the quantization during inference by multiplying INT8 values back to float.",
-    "hash": "cef3861c",
+    "hash": "7678213b",
     "diagram": "quant_compress",
     "highlight": [
       "store"
     ]
   },
-  "175": {
+  "185": {
     "text": "Carry over bias if the original layer had one (ours don't).",
-    "hash": "88995ffb"
+    "hash": "f998db9f"
   },
-  "177": {
+  "187": {
     "text": "Forward: dequantize on-the-fly by casting back to float and multiplying by scale. In production, INT8 matmul kernels avoid this cast entirely, they compute directly in integer arithmetic.",
-    "hash": "a87869a2"
+    "hash": "54b4244c"
   },
-  "178": {
+  "188": {
     "text": "Cast INT8 to float, multiply by scale, then do the matrix multiply. Mathematically: <code>x @ (W_int8 * scale)^T</code>. The approximation error is small because neural network weights are typically well-distributed.",
-    "hash": "d5e435df",
+    "hash": "cef3861c",
     "diagram": "quant_inference",
     "highlight": [
       "dequant",
       "matmul"
     ]
   },
-  "181": {
+  "191": {
     "text": "Quantize the entire model: create a fresh copy and replace all Linear layers with QuantizedLinear.",
-    "hash": "26d31172",
+    "hash": "a87869a2",
     "diagram": "quant_compress",
     "highlight": [
       "fp32",
       "quantize"
     ]
   },
-  "182": {
+  "192": {
     "text": "Instantiate a fresh model with the same architecture. We'll load trained weights into it and then swap its Linear layers for quantized ones.",
-    "hash": "ee92562a"
+    "hash": "d5e435df"
   },
-  "183": {
+  "193": {
     "text": "Copy the trained FP32 weights into the new model so we preserve learned behavior before replacing layers with quantized versions.",
-    "hash": "2d07d5d9"
-  },
-  "184": {
-    "text": "Walk every module in the model.",
-    "hash": "cc42539c"
-  },
-  "185": {
-    "text": "Look for Linear layers to quantize.",
-    "hash": "e21a43a2"
-  },
-  "186": {
-    "text": "Found one, replace with quantized version.",
-    "hash": "2993579f"
-  },
-  "187": {
-    "text": "Swap in the quantized layer.",
-    "hash": "06bbc60d"
+    "hash": "e3b0c442"
   },
   "194": {
-    "text": "Controls how peaked the sampling distribution is. Lower temperature means more deterministic output; higher means more creative variety.",
-    "hash": "7eca5b76"
+    "text": "Walk every module in the model.",
+    "hash": "e3b0c442"
+  },
+  "195": {
+    "text": "Look for Linear layers to quantize.",
+    "hash": "26d31172"
+  },
+  "196": {
+    "text": "Found one, replace with quantized version.",
+    "hash": "ee92562a"
   },
   "197": {
-    "text": "Decorator: no gradient tracking needed for inference.",
-    "hash": "eec96875"
-  },
-  "198": {
-    "text": "Generate names, same function for both FP32 and INT8 models.",
-    "hash": "03d99faf"
-  },
-  "199": {
-    "text": "Switch to evaluation mode so the model produces consistent outputs during generation.",
-    "hash": "45bf010c"
-  },
-  "201": {
-    "text": "Loop through each sample, generating one name at a time from the model.",
-    "hash": "925b5120"
-  },
-  "202": {
-    "text": "Begin each generated name with the beginning-of-sequence token so the model starts fresh.",
-    "hash": "5c52ddc4"
-  },
-  "203": {
-    "text": "Generate up to block_size tokens.",
-    "hash": "ab05dc73"
+    "text": "Swap in the quantized layer.",
+    "hash": "2d07d5d9"
   },
   "204": {
-    "text": "Feed the current token sequence through the model to get next-token logits, keeping only the last <code>block_size</code> tokens.",
-    "hash": "ce311cc5"
-  },
-  "205": {
-    "text": "Temperature-scaled softmax and sample in one line.",
-    "hash": "77b96a33"
-  },
-  "206": {
-    "text": "Randomly draw one token from the probability distribution for stochastic generation.",
-    "hash": "5b83becd"
+    "text": "Controls how peaked the sampling distribution is. Lower temperature means more deterministic output; higher means more creative variety.",
+    "hash": "e3b0c442"
   },
   "207": {
-    "text": "If the model predicts BOS, treat it as an end-of-name signal and stop generating.",
-    "hash": "41a35c11"
+    "text": "Decorator: no gradient tracking needed for inference.",
+    "hash": "5c4688e3"
+  },
+  "208": {
+    "text": "Generate names, same function for both FP32 and INT8 models.",
+    "hash": "7eca5b76"
   },
   "209": {
-    "text": "Add the newly sampled token to the growing sequence and continue generating the next one.",
-    "hash": "a1ca669a"
+    "text": "Switch to evaluation mode so the model produces consistent outputs during generation.",
+    "hash": "e3b0c442"
+  },
+  "211": {
+    "text": "Loop through each sample, generating one name at a time from the model.",
+    "hash": "eec96875"
+  },
+  "212": {
+    "text": "Begin each generated name with the beginning-of-sequence token so the model starts fresh.",
+    "hash": "03d99faf"
+  },
+  "213": {
+    "text": "Generate up to block_size tokens.",
+    "hash": "45bf010c"
   },
   "214": {
-    "text": "Benchmark: measure model size on disk and generation speed.",
-    "hash": "e0eb508b"
+    "text": "Feed the current token sequence through the model to get next-token logits, keeping only the last <code>block_size</code> tokens.",
+    "hash": "62ce5983"
   },
   "215": {
-    "text": "Temp file import for saving the model.",
-    "hash": "09d25239"
+    "text": "Temperature-scaled softmax and sample in one line.",
+    "hash": "925b5120"
+  },
+  "216": {
+    "text": "Randomly draw one token from the probability distribution for stochastic generation.",
+    "hash": "5c52ddc4"
   },
   "217": {
-    "text": "Write the model's state dict to a temporary file on disk so we can measure its serialized size in bytes.",
-    "hash": "9074b473"
+    "text": "If the model predicts BOS, treat it as an end-of-name signal and stop generating.",
+    "hash": "ab05dc73"
   },
   "219": {
-    "text": "Serialize the state dict, this is what you'd ship to production.",
-    "hash": "f2a9c859"
+    "text": "Add the newly sampled token to the growing sequence and continue generating the next one.",
+    "hash": "77b96a33"
   },
-  "220": {
-    "text": "File size in MB, INT8 should be roughly 4x smaller.",
-    "hash": "401a2a26"
+  "224": {
+    "text": "Benchmark: measure model size on disk and generation speed.",
+    "hash": "b46fb0e2"
   },
-  "221": {
-    "text": "Time 100 generations for a stable measurement.",
-    "hash": "25ba4727"
+  "225": {
+    "text": "Temp file import for saving the model.",
+    "hash": "816f9481"
   },
-  "222": {
-    "text": "Generate 100 names in a batch to get a stable timing measurement for the benchmark.",
-    "hash": "5d140f22"
-  },
-  "223": {
-    "text": "Package the file size in MB and average time per generation into a tuple for the benchmark comparison table.",
-    "hash": "50c117a4"
-  },
-  "226": {
-    "text": "Benchmark the original FP32 model.",
-    "hash": "b66a958d"
+  "227": {
+    "text": "Write the model's state dict to a temporary file on disk so we can measure its serialized size in bytes.",
+    "hash": "e3b0c442"
   },
   "229": {
-    "text": "Quantize the trained model to INT8.",
-    "hash": "9eddf55e"
+    "text": "Serialize the state dict, this is what you'd ship to production.",
+    "hash": "18edbed6"
   },
   "230": {
-    "text": "Run the same benchmark suite on the INT8 model to compare size and speed against the original FP32 baseline.",
-    "hash": "82b004f1"
+    "text": "File size in MB, INT8 should be roughly 4x smaller.",
+    "hash": "34c7dc94"
   },
-  "237": {
-    "text": "Side-by-side comparison: generate 10 names from each model. Quality should be nearly identical despite 4x compression.",
-    "hash": "3f78e613"
+  "231": {
+    "text": "Time 100 generations for a stable measurement.",
+    "hash": "e0eb508b"
+  },
+  "232": {
+    "text": "Generate 100 names in a batch to get a stable timing measurement for the benchmark.",
+    "hash": "09d25239"
+  },
+  "233": {
+    "text": "Package the file size in MB and average time per generation into a tuple for the benchmark comparison table.",
+    "hash": "e3b0c442"
+  },
+  "236": {
+    "text": "Benchmark the original FP32 model.",
+    "hash": "f2a9c859"
   },
   "239": {
-    "text": "Show samples from both models.",
-    "hash": "828817a8"
+    "text": "Quantize the trained model to INT8.",
+    "hash": "5d140f22"
   },
   "240": {
+    "text": "Run the same benchmark suite on the INT8 model to compare size and speed against the original FP32 baseline.",
+    "hash": "50c117a4"
+  },
+  "247": {
+    "text": "Side-by-side comparison: generate 10 names from each model. Quality should be nearly identical despite 4x compression.",
+    "hash": "82b004f1"
+  },
+  "249": {
+    "text": "Show samples from both models.",
+    "hash": "c816c228"
+  },
+  "250": {
     "text": "Decode and print each generated name.",
-    "hash": "2a0d1a6c"
+    "hash": "ba5ec51d"
   }
 }

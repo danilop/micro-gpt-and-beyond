@@ -9,6 +9,12 @@ Same architecture as 05_jax, but with mini-batch training via jax.vmap:
   - Batches of 32, 1000 training steps
 
 This is JAX's signature trick: "write for one, run for many."
+
+The batched version adds padding, masking, and mini-batch SGD — standard
+engineering for production training.
+
+Reference: "Attention Is All You Need" (Vaswani et al., 2017),
+https://arxiv.org/abs/1706.03762
 """
 
 import math
@@ -68,9 +74,13 @@ ki = iter(keys)
 
 params = {
     "wte": init_param(next(ki), (vocab_size_with_pad, n_embd)),
+}
+# Zero the PAD embedding row so padding tokens contribute nothing
+params["wte"] = params["wte"].at[PAD].set(jnp.zeros(n_embd))
+params.update({
     "wpe": init_param(next(ki), (block_size, n_embd)),
     "lm_head": init_param(next(ki), (vocab_size, n_embd)),
-}
+})
 for i in range(n_layer):
     params[f"l{i}.wq"] = init_param(next(ki), (n_embd, n_embd))
     params[f"l{i}.wk"] = init_param(next(ki), (n_embd, n_embd))

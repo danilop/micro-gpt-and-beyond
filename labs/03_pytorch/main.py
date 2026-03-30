@@ -3,12 +3,14 @@ microGPT — PyTorch edition.
 
 Same algorithm as microgpt.py (pure-Python scalar version), but using PyTorch
 tensors for efficient computation. Every architectural choice is preserved:
-  - Character-level tokenizer
-  - RMSNorm (not LayerNorm)
-  - ReLU (not GeLU)
-  - No biases
-  - Linear LR decay
-  - Adam with beta1=0.85, beta2=0.99
+character-level tokenizer, RMSNorm (not LayerNorm), ReLU (not GeLU), no
+biases, linear LR decay, and Adam with beta1=0.85, beta2=0.99.
+
+The transformer architecture follows "Attention Is All You Need" (Vaswani et
+al., 2017, https://arxiv.org/abs/1706.03762), though this is a decoder-only
+GPT variant rather than the original encoder-decoder design. Normalization
+uses RMSNorm instead of LayerNorm, following "Root Mean Square Layer
+Normalization" (Zhang & Sennrich, 2019, https://arxiv.org/abs/1910.07467).
 """
 
 import math

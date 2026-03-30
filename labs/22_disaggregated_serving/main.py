@@ -9,6 +9,15 @@ Production systems like Splitwise (Microsoft), DistServe, and TetriInfer
 use this to avoid head-of-line blocking: a long prompt prefill on a shared
 GPU stalls all the decode requests waiting behind it. Disaggregation lets
 each phase run on hardware optimized for its bottleneck.
+
+Based on "DistServe: Disaggregating Prefill and Decoding for Goodput-optimized
+Large Language Model Serving" (Zhong et al., 2024),
+https://arxiv.org/abs/2401.09670, and "Splitwise: Efficient generative LLM
+inference using phase splitting" (Patel et al., 2024),
+https://arxiv.org/abs/2311.18677. Also relevant: "TetriInfer: Disaggregated
+LLM Inference on Heterogeneous GPUs" (2024). This lab simulates disaggregation
+with threads and queues -- production systems transfer KV caches over
+NVLink/RDMA between physical GPU workers.
 """
 
 import math

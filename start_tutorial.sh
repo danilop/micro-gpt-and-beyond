@@ -5,7 +5,7 @@ set -e
 
 PORT="${1:-8000}"
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONTENT_DIR="$ROOT_DIR/walk-the-code@905481c0e59ecc98f58f7570e3f29f56ec83b7a4"
+CONTENT_DIR="$ROOT_DIR/walk-the-code"
 SIBLING_WTC_DIR="$(cd "$ROOT_DIR/../walk-the-code" 2>/dev/null && pwd || true)"
 
 SERVER_CMD=()

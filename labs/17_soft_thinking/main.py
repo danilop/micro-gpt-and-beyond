@@ -3,12 +3,19 @@ microGPT — Soft thinking edition.
 
 Same architecture as the PyTorch version (03), but with soft decoding at
 inference time. Instead of collapsing to a single token at each step, soft
-thinking passes a "concept token" — a probability-weighted blend of all
-token embeddings — to the next step. The full distribution flows forward,
+thinking passes a "concept token" -- a probability-weighted blend of all
+token embeddings -- to the next step. The full distribution flows forward,
 preserving information that hard decoding discards.
 
   Hard:  logits -> sample -> embed(token)            -> next input
   Soft:  logits -> softmax(logits/T) @ embed_table   -> next input
+
+Based on "Soft Thinking: Unlocking the Reasoning Potential of LLMs in Continuous
+Concept Space" (Zhang et al., 2025), https://arxiv.org/abs/2505.15778. The
+concept token computation follows the paper's formulation. Note that this is an
+inference-only technique -- the model is trained with standard teacher forcing on
+hard tokens, which creates a train-test distribution mismatch that Lab 18 (soft
+training) addresses.
 """
 
 import math

@@ -5,317 +5,317 @@
   },
   "8": {
     "text": "Two key papers: MDLM (Sahoo et al., 2024) introduced the masked diffusion framework; LLaDA (Nie et al., 2025) scaled it to large language models and showed competitive results.",
-    "hash": "e4b2397d"
+    "hash": "e7ef9f69"
   },
   "2": {
     "text": "The model name says it all: instead of predicting the next token, this model starts from an all-MASK sequence and iteratively reveals tokens.",
     "hash": "3ef0c3f9"
   },
-  "10": {
+  "17": {
     "text": "Same imports as the autoregressive labs. The diffusion magic is all in the training loop and inference procedure, not in exotic dependencies.",
     "hash": "e3b0c442"
   },
-  "11": {
+  "18": {
     "text": "Diffusion replaces left-to-right generation with a denoising process, so the math here supports both ordinary attention scaling and the noise schedule that drives unmasking.",
     "hash": "b67c9dde"
   },
-  "12": {
+  "19": {
     "text": "Same names corpus as the autoregressive labs. That makes the paradigm shift easier to feel: the data is familiar, the generation process is not.",
     "hash": "de2abade"
   },
-  "13": {
+  "20": {
     "text": "Randomness is part of the model here, not just setup noise. Diffusion repeatedly corrupts and reveals tokens, so stochasticity is part of the teaching story.",
     "hash": "7e18ed42"
   },
-  "15": {
+  "22": {
     "text": "PyTorch gives us the same transformer machinery, but this lab asks it to solve a different problem: predict masked positions everywhere at once instead of next-token only.",
     "hash": "cf1070d3"
   },
-  "16": {
+  "23": {
     "text": "The building blocks look familiar, which is useful because it shows how much of the transformer survives even when the generation paradigm changes completely.",
     "hash": "b802910c"
   },
-  "17": {
+  "24": {
     "text": "The loss and softmax are ordinary; the unusual part is that the model keeps revisiting uncertain positions instead of committing left to right.",
     "hash": "5af419e1"
   },
-  "19": {
+  "26": {
     "text": "Even a stochastic denoising process should be inspectable, so we seed the run to make the unmasking trajectory reproducible.",
     "hash": "f0726c6e"
   },
-  "20": {
+  "27": {
     "text": "PyTorch's RNG also needs to be pinned so the diffusion behavior you see comes from the algorithm, not a different initialization.",
     "hash": "7e7dcf46"
   },
-  "22": {
+  "29": {
     "text": "Section header: the dataset and tokenizer are identical to previous labs, keeping the focus on the new generation paradigm.",
     "hash": "5c4688e3"
   },
-  "25": {
+  "32": {
     "text": "Builds the path to the dataset file relative to this script, one directory up in <code>data/</code>.",
     "hash": "5ac9686d"
   },
-  "26": {
+  "33": {
     "text": "Auto-downloads the dataset if missing.",
     "hash": "9667c968"
   },
-  "27": {
+  "34": {
     "text": "Lazy import: only load <code>urllib</code> if we actually need to download.",
     "hash": "84cdb92b"
   },
-  "32": {
+  "39": {
     "text": "Each line becomes one document. Stripping whitespace prevents ghost tokens.",
     "hash": "2f367d0b"
   },
-  "33": {
+  "40": {
     "text": "Shuffling prevents the model from memorizing alphabetical order.",
     "hash": "c8f1cb86"
   },
-  "34": {
+  "41": {
     "text": "Quick sanity check: we should see ~32K names.",
     "hash": "08bb2551"
   },
-  "36": {
+  "43": {
     "text": "In autoregressive models we needed BOS to start generation. In diffusion, MASK serves that role \u2014 the model starts from all-MASK and denoises. PAD is still needed for fixed-length batching.",
     "hash": "077bf37a"
   },
-  "37": {
+  "44": {
     "text": "Sorted unique characters become our vocabulary. Each character gets a deterministic token ID from 0 to n-1.",
     "hash": "5f7ca3bb"
   },
-  "38": {
+  "45": {
     "text": "<code>MASK</code> is the \"noise\" token. In diffusion, we corrupt data by replacing real tokens with MASK, then train the model to reverse that corruption. This replaces the BOS token used in autoregressive models.",
     "hash": "5e1cce49"
   },
-  "39": {
+  "46": {
     "text": "<code>PAD</code> fills unused positions in fixed-length sequences. Diffusion processes every position simultaneously, so all sequences must be the same length.",
     "hash": "30dd4747"
   },
-  "40": {
+  "47": {
     "text": "Two extra tokens beyond the character set: MASK and PAD.",
     "hash": "9b88fc70"
   },
-  "41": {
+  "48": {
     "text": "28 tokens: 26 lowercase letters + MASK + PAD. The small vocabulary makes it easy to see diffusion dynamics without complexity.",
     "hash": "1cb38e2c"
   },
-  "44": {
+  "51": {
     "text": "The model section. The transformer architecture is nearly identical to the autoregressive labs \u2014 the key difference is bidirectional attention (no causal mask).",
     "hash": "2dec5eee"
   },
-  "46": {
+  "53": {
     "text": "16-dimensional embeddings, small but enough for character-level patterns.",
     "hash": "f6d4f4da"
   },
-  "47": {
+  "54": {
     "text": "4 attention heads, each seeing 4 dimensions of the 16-dim embedding.",
     "hash": "e804f3b9"
   },
-  "48": {
+  "55": {
     "text": "2 layers instead of 1 \u2014 diffusion needs more depth because it must gather clues from scattered unmasked positions, unlike autoregressive models that always have full left context.",
     "hash": "c7f1f218"
   },
-  "49": {
+  "56": {
     "text": "Fixed sequence length of 16. All names are padded or truncated to fit. Diffusion processes every position in parallel.",
     "hash": "4e7adfdd"
   },
-  "50": {
+  "57": {
     "text": "Each head operates on a 4-dimensional slice: 16 / 4 = 4.",
     "hash": "5288dfb6"
   },
-  "53": {
+  "60": {
     "text": "RMSNorm: simpler than LayerNorm, just scales by inverse root-mean-square. No learnable parameters.",
     "hash": "69fade3d"
   },
-  "59": {
+  "66": {
     "text": "Compute root-mean-square and scale so vectors have roughly unit magnitude. The <code>rsqrt</code> fuses the division and square root for efficiency.",
     "hash": "53678ba7"
   },
-  "58": {
+  "65": {
     "text": "The forward method normalizes by root-mean-square: simpler than LayerNorm because there is no mean subtraction or learned bias.",
     "hash": "a87869a2"
   },
-  "62": {
+  "69": {
     "text": "The key difference from GPT: <strong>bidirectional</strong> attention. Every position can see every other position \u2014 no causal mask. This lets the model gather clues from all unmasked tokens in any direction to fill in the blanks.",
     "hash": "9125ee1f"
   },
-  "65": {
+  "72": {
     "text": "Constructor sets up the same Q/K/V/O projections as the autoregressive attention. The difference is purely in the forward pass: no causal mask.",
     "hash": "220b14ab"
   },
-  "67": {
+  "74": {
     "text": "Query projection: \"what am I looking for?\"",
     "hash": "433b771f"
   },
-  "68": {
+  "75": {
     "text": "Key projection: \"what do I contain?\"",
     "hash": "bf2475c8"
   },
-  "69": {
+  "76": {
     "text": "Value projection: the actual content that attention retrieves.",
     "hash": "d1a077cb"
   },
-  "70": {
+  "77": {
     "text": "Output projection recombines heads.",
     "hash": "887b9875"
   },
-  "72": {
+  "79": {
     "text": "The forward pass computes multi-head attention. B=batch, T=sequence length, C=embedding dimension.",
     "hash": "a87869a2"
   },
-  "74": {
+  "81": {
     "text": "Reshape Q into (batch, heads, seq_len, head_dim) so each head attends independently.",
     "hash": "d0c33c49"
   },
-  "75": {
+  "82": {
     "text": "Keys and values get the same (B, heads, T, head_dim) reshape so all three tensors align for batched attention.",
     "hash": "a48e9c7a"
   },
-  "79": {
+  "86": {
     "text": "Scaled dot-product attention. No causal mask here \u2014 this is the key difference from GPT. Every position sees every other.",
     "hash": "308b188d"
   },
-  "80": {
+  "87": {
     "text": "Softmax over all positions gives attention weights. In GPT, future positions would be masked to -inf here.",
     "hash": "62dc999a"
   },
-  "82": {
+  "89": {
     "text": "Weighted sum of values, then reshape back to (batch, seq_len, n_embd).",
     "hash": "a1aef68f"
   },
-  "86": {
+  "93": {
     "text": "Standard two-layer feed-forward network, identical to the autoregressive labs. The MLP processes each position independently after attention has mixed information across positions.",
     "hash": "3ad666a1"
   },
-  "89": {
+  "96": {
     "text": "Expand to 4x width \u2014 the \"thinking space\" of the MLP.",
     "hash": "8e9f0642"
   },
-  "90": {
+  "97": {
     "text": "Project back to model dimension.",
     "hash": "62c4768b"
   },
-  "93": {
+  "100": {
     "text": "ReLU between the two linear layers creates the nonlinearity that lets the network learn complex patterns.",
     "hash": "8aa6bebb"
   },
-  "96": {
+  "103": {
     "text": "Transformer block: attention then MLP, each with pre-norm and residual connections. Same architecture as autoregressive labs \u2014 only the attention mask changes.",
     "hash": "4bcc8ea8"
   },
-  "99": {
+  "106": {
     "text": "Pre-norm: normalize before each sublayer for stable training.",
     "hash": "e92b587d"
   },
-  "100": {
+  "107": {
     "text": "Bidirectional attention instead of the causal attention used in GPT.",
     "hash": "f82c6ad9"
   },
-  "105": {
+  "112": {
     "text": "Attention sublayer with residual connection. Gradients flow through both the attention path and the skip connection.",
     "hash": "5133b743"
   },
-  "106": {
+  "113": {
     "text": "MLP sublayer with residual connection. Same pattern: normalize, transform, add back.",
     "hash": "50e2183f"
   },
-  "101": {
+  "108": {
     "text": "Second pre-norm before the MLP sublayer.",
     "hash": "f58a7657"
   },
-  "110": {
+  "117": {
     "text": "The full model: a bidirectional transformer that predicts clean tokens from masked input.",
     "hash": "da0c06c1"
   },
-  "113": {
+  "120": {
     "text": "Token embeddings: each of the 28 tokens (26 chars + MASK + PAD) gets a 16-dim vector.",
     "hash": "2a2b79bb"
   },
-  "114": {
+  "121": {
     "text": "Position embeddings: each of the 16 positions gets its own vector so the model knows where tokens sit.",
     "hash": "5338449e"
   },
-  "115": {
+  "122": {
     "text": "Normalize the combined embeddings before the transformer layers, same stabilization as the autoregressive model.",
     "hash": "5caa073e"
   },
-  "116": {
+  "123": {
     "text": "Stack of transformer blocks. More layers let the model reason across longer distances in the masked sequence.",
     "hash": "d10311df"
   },
-  "117": {
+  "124": {
     "text": "Output projection: maps hidden states to vocabulary logits.",
     "hash": "1774314d"
   },
-  "119": {
+  "126": {
     "text": "Weight tying: the same matrix that embeds input tokens also projects outputs to logits. Halves embedding parameters and creates a consistent token space.",
     "hash": "4393622d"
   },
-  "120": {
+  "127": {
     "text": "Walk all submodules and apply the weight initialization so training starts from a well-scaled random state.",
     "hash": "e4941829"
   },
-  "125": {
+  "132": {
     "text": "Small std (0.08) prevents exploding activations at initialization.",
     "hash": "9677d3fd"
   },
-  "127": {
+  "134": {
     "text": "Forward pass: embed tokens and positions, normalize, pass through transformer layers, project to vocabulary logits. Identical to autoregressive forward except attention is bidirectional.",
     "hash": "1bc7099c"
   },
-  "129": {
+  "136": {
     "text": "Look up token embeddings for the input sequence.",
     "hash": "8d137e9c"
   },
-  "130": {
+  "137": {
     "text": "Add position embeddings so the model knows where each token sits.",
     "hash": "2b319b15"
   },
-  "131": {
+  "138": {
     "text": "Normalize the combined embedding before feeding into the transformer layers.",
     "hash": "b88a95ea"
   },
-  "132": {
+  "139": {
     "text": "Pass through each transformer layer sequentially. Each layer refines the representation using bidirectional attention across all positions.",
     "hash": "359aba32"
   },
-  "134": {
+  "141": {
     "text": "Project every position to vocabulary logits using the tied embedding matrix.",
     "hash": "9ef9adcf"
   },
-  "138": {
+  "145": {
     "text": "Training section. The loop structure is different from autoregressive: each step randomly masks a batch, predicts the masked tokens, and only backpropagates through masked positions.",
     "hash": "bead0df7"
   },
-  "140": {
+  "147": {
     "text": "CPU is sufficient for this tiny model. The focus is on understanding the diffusion algorithm, not raw speed.",
     "hash": "b39e14b0"
   },
-  "141": {
+  "148": {
     "text": "Instantiate the model on CPU. For this tiny model, CPU is plenty fast.",
     "hash": "4c6a851c"
   },
-  "142": {
+  "149": {
     "text": "Print the parameter count so you can verify this is a tiny model \u2014 same order of magnitude as the autoregressive labs.",
     "hash": "ea4a5d11"
   },
-  "144": {
+  "151": {
     "text": "Adam optimizer with the same hyperparameters as other labs.",
     "hash": "92d21e78"
   },
-  "145": {
+  "152": {
     "text": "3000 training steps. Diffusion needs more iterations than autoregressive models because each step only trains on randomly masked positions.",
     "hash": "88b7b1e1"
   },
-  "146": {
+  "153": {
     "text": "Batch size of 32 is critical for diffusion. With batch=1, each gradient is based on a single random masking pattern \u2014 far too noisy for the model to learn. Batching averages over 32 different mask patterns per step, giving stable gradients.",
     "hash": "6d652f87"
   },
-  "147": {
+  "154": {
     "text": "Print batch size so it's visible in the output \u2014 a reminder that batching is essential for diffusion.",
     "hash": "7bc4179a"
   },
-  "149": {
+  "156": {
     "text": "Each training step: build a batch of masked sequences, predict the masked tokens, compute loss only on masked positions. This is the core diffusion training loop.",
     "hash": "53f56939",
     "diagram": "diffusion_training",
@@ -327,7 +327,7 @@
       "loss"
     ]
   },
-  "151": {
+  "158": {
     "text": "Three parallel lists accumulate the batch: clean sequences (targets), noisy sequences (inputs), and mask flags (where to compute loss).",
     "hash": "b68036b0",
     "diagram": "diffusion_training",
@@ -335,7 +335,7 @@
       "clean"
     ]
   },
-  "155": {
+  "162": {
     "text": "Build each example independently: tokenize a name, corrupt it with random masking, record which positions were masked.",
     "hash": "7518725f",
     "diagram": "diffusion_training",
@@ -344,19 +344,19 @@
       "mask"
     ]
   },
-  "156": {
+  "163": {
     "text": "Cycle through documents, advancing by batch_size each step to see different names.",
     "hash": "95b71ad3"
   },
-  "157": {
+  "164": {
     "text": "Tokenize the name and pad with PAD tokens to fill the fixed-length sequence.",
     "hash": "577cb5c7"
   },
-  "158": {
+  "165": {
     "text": "Truncate if the name is longer than <code>block_size</code>.",
     "hash": "c3e0b886"
   },
-  "160": {
+  "167": {
     "text": "The forward diffusion process: corrupt clean tokens by randomly masking them. The noise level <code>t</code> controls how much corruption to apply.",
     "hash": "6839b6bc",
     "diagram": "diffusion_training",
@@ -365,27 +365,27 @@
       "mask"
     ]
   },
-  "162": {
+  "169": {
     "text": "Sample noise level <code>t</code> from a log-uniform distribution between 0.2 and 1.0. Log-uniform means t \u221d 1/t, which cancels the 1/t factor in the ELBO loss \u2014 a clever importance sampling trick from MDLM.",
     "hash": "6bcbfbcb"
   },
-  "163": {
+  "170": {
     "text": "Corrupt the clean sequence: each token is independently replaced with MASK with probability <code>t</code>. High <code>t</code> \u2192 heavy corruption (mostly MASK), low <code>t</code> \u2192 light (mostly clean).",
     "hash": "abc2ff93"
   },
-  "164": {
+  "171": {
     "text": "Record which positions were masked \u2014 we'll only compute loss on these.",
     "hash": "072ee72c"
   },
-  "166": {
+  "173": {
     "text": "Edge case: if nothing got masked, force at least one mask so there's a training signal.",
     "hash": "ba132f2f"
   },
-  "172": {
+  "179": {
     "text": "Append the clean, noisy, and mask data for this example to the batch lists.",
     "hash": "8a260241"
   },
-  "176": {
+  "183": {
     "text": "Forward pass: feed the entire batch of noisy sequences through the model in one shot.",
     "hash": "4825e545",
     "diagram": "diffusion_training",
@@ -393,51 +393,51 @@
       "predict"
     ]
   },
-  "177": {
+  "184": {
     "text": "Stack all noisy sequences into a batch tensor.",
     "hash": "95c6560e"
   },
-  "178": {
+  "185": {
     "text": "Stack all clean (target) sequences.",
     "hash": "2b8305d6"
   },
-  "179": {
+  "186": {
     "text": "Boolean mask tensor: True where the token was masked.",
     "hash": "14e239c5"
   },
-  "181": {
+  "188": {
     "text": "Forward the entire batch through the bidirectional model in one pass.",
     "hash": "ac9ea726"
   },
-  "182": {
+  "189": {
     "text": "Suppress MASK in predictions by subtracting a huge number from its logit. The model should predict real tokens, never MASK itself. This is the \"subs\" parameterization from MDLM.",
     "hash": "2afd4a95"
   },
-  "185": {
+  "192": {
     "text": "Cross-entropy loss only on masked positions. The boolean mask indexes into both logits and targets, selecting just the positions the model should reconstruct. PyTorch averages automatically.",
     "hash": "8a465cc4"
   },
-  "187": {
+  "194": {
     "text": "Clear gradients from the previous step before backpropagation.",
     "hash": "fbede2b3"
   },
-  "188": {
+  "195": {
     "text": "Backpropagate: compute gradients for every parameter.",
     "hash": "227fe80d"
   },
-  "189": {
+  "196": {
     "text": "Linear learning rate decay: start fast, end slow.",
     "hash": "60602e3a"
   },
-  "192": {
+  "199": {
     "text": "Apply the computed gradients to update model weights one step toward lower loss.",
     "hash": "d9e59d7e"
   },
-  "194": {
+  "201": {
     "text": "Log every 10 steps so we can track convergence. Loss should decrease from ~3.3 (random) toward ~1.5 (learning patterns).",
     "hash": "cf37956f"
   },
-  "197": {
+  "204": {
     "text": "Inference section. The trained model generates names by starting from all-MASK and iteratively unmasking positions based on confidence.",
     "hash": "5c4688e3",
     "diagram": "diffusion_unmasking",
@@ -448,27 +448,27 @@
       "clean"
     ]
   },
-  "200": {
+  "207": {
     "text": "64 denoising steps: each step unmasks a few more positions, gradually revealing the name from pure noise.",
     "hash": "658186c1"
   },
-  "201": {
+  "208": {
     "text": "Print a header to separate training output from generated samples.",
     "hash": "1902bf84"
   },
-  "203": {
+  "210": {
     "text": "Switch to eval mode and disable gradient tracking for inference.",
     "hash": "45bf010c"
   },
-  "204": {
+  "211": {
     "text": "Disable gradient tracking during inference \u2014 we're only sampling, not training.",
     "hash": "d4f61231"
   },
-  "205": {
+  "212": {
     "text": "Generate 20 sample names, each starting from pure noise and iteratively crystallizing through confidence-based unmasking.",
     "hash": "64d836c5"
   },
-  "206": {
+  "213": {
     "text": "Start from pure noise: every position is MASK. The name doesn't exist yet \u2014 it will crystallize through iterative unmasking.",
     "hash": "b2fbeb8b",
     "diagram": "diffusion_unmasking",
@@ -476,7 +476,7 @@
       "noise"
     ]
   },
-  "208": {
+  "215": {
     "text": "Count down from full noise to clean. Each step reduces the noise level.",
     "hash": "26934eb7",
     "diagram": "diffusion_unmasking",
@@ -485,35 +485,35 @@
       "remask1"
     ]
   },
-  "209": {
+  "216": {
     "text": "Cosine noise schedule: more time is spent at intermediate noise levels where the interesting decisions happen.",
     "hash": "7ed82316"
   },
-  "210": {
+  "217": {
     "text": "Next noise level (one step less noisy). The gap between <code>t</code> and <code>s</code> determines how many tokens to unmask this step.",
     "hash": "228390fe"
   },
-  "211": {
+  "218": {
     "text": "Temperature annealing: explore broadly early on (0.8) when the model is uncertain, commit to specific choices later (0.3) as the name takes shape.",
     "hash": "ccf08d68"
   },
-  "213": {
+  "220": {
     "text": "Wrap the current sequence as a batch-of-one tensor for the model forward pass.",
     "hash": "1da2d9c7"
   },
-  "214": {
+  "221": {
     "text": "Get the model's predictions for all positions in one bidirectional forward pass.",
     "hash": "b60f0c74"
   },
-  "216": {
+  "223": {
     "text": "Copy the current sequence. Masked positions will be overwritten with model predictions; unmasked positions stay as-is.",
     "hash": "0abe4783"
   },
-  "217": {
+  "224": {
     "text": "Track how confident the model is at each masked position. After predicting, the least-confident positions get re-masked for another try.",
     "hash": "a3acef54"
   },
-  "219": {
+  "226": {
     "text": "Only predict for currently masked positions \u2014 unmasked tokens are already decided.",
     "hash": "de76ce4d",
     "diagram": "diffusion_unmasking",
@@ -521,15 +521,15 @@
       "step1"
     ]
   },
-  "221": {
+  "228": {
     "text": "Suppress MASK in predictions, same trick as training.",
     "hash": "45e76408"
   },
-  "222": {
+  "229": {
     "text": "Apply temperature scaling before sampling. Low temperature sharpens the distribution, high temperature flattens it.",
     "hash": "db5170aa"
   },
-  "223": {
+  "230": {
     "text": "Sample a token from the probability distribution. Unlike argmax, this preserves diversity.",
     "hash": "347a4cdc",
     "diagram": "diffusion_unmasking",
@@ -537,11 +537,11 @@
       "step1"
     ]
   },
-  "224": {
+  "231": {
     "text": "Record the model's confidence (max probability) alongside the position \u2014 high confidence means the model is sure.",
     "hash": "105d0152"
   },
-  "227": {
+  "234": {
     "text": "If we haven't reached the final step, re-mask the least confident predictions to give them another chance.",
     "hash": "4f35a3ca",
     "diagram": "diffusion_unmasking",
@@ -549,23 +549,23 @@
       "remask1"
     ]
   },
-  "228": {
+  "235": {
     "text": "How many to re-mask: proportional to remaining noise ratio s/t. As noise decreases, fewer tokens get re-masked.",
     "hash": "970bee43"
   },
-  "229": {
+  "236": {
     "text": "Sort by confidence (ascending) so the least confident predictions are first \u2014 these get re-masked.",
     "hash": "90cb2129"
   },
-  "231": {
+  "238": {
     "text": "Put MASK back \u2014 this position will get another try in the next denoising step.",
     "hash": "bf9d78a0"
   },
-  "232": {
+  "239": {
     "text": "Update the sequence with the (partially re-masked) predictions for the next iteration.",
     "hash": "1feca68f"
   },
-  "234": {
+  "241": {
     "text": "Decode: convert token IDs back to characters, skipping any PAD tokens.",
     "hash": "937e768c",
     "diagram": "diffusion_unmasking",
@@ -573,7 +573,7 @@
       "clean"
     ]
   },
-  "235": {
+  "242": {
     "text": "Print each generated name \u2014 these emerged from pure noise through iterative unmasking, with no left-to-right constraint.",
     "hash": "f9d6f741"
   }

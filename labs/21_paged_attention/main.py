@@ -3,11 +3,21 @@ microGPT — PagedAttention edition.
 
 Same architecture as the pure-Python version (01), but demonstrating two
 KV cache strategies for inference: contiguous (wasteful) and paged (efficient).
-PagedAttention is the core innovation in vLLM — it applies the operating
+PagedAttention is the core innovation in vLLM -- it applies the operating
 system's virtual memory paging concept to KV caches, achieving near-perfect
 memory utilization.
 
 Zero dependencies. Pure Python. The algorithms are pure data structures.
+
+Based on "Efficient Memory Management for Large Language Model Serving with
+PagedAttention" (Kwon et al., 2023), https://arxiv.org/abs/2309.06180, the
+core innovation behind vLLM. The concept directly parallels virtual memory
+paging in operating systems, as described in standard texts like "Operating
+System Concepts" (Silberschatz et al.). This lab implements the memory
+management side of PagedAttention (block tables, on-demand allocation,
+copy-on-write prefix sharing) -- not the fused PagedAttention CUDA attention
+kernel itself. The pure-Python scalar implementation makes the data structure
+logic fully transparent.
 """
 
 import math

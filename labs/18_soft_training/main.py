@@ -9,6 +9,14 @@ predictions, closing the train-test gap that limits inference-only soft thinking
   Standard training:  input = embed(ground_truth_token)
   Soft training:      input = (1-mix) * embed(ground_truth) + mix * concept_token
                       where mix increases from 0 -> 1 during training
+
+Extends the concept from "Soft Thinking" (Zhang et al., 2025),
+https://arxiv.org/abs/2505.15778 by also using concept tokens during training.
+The curriculum schedule (linear ramp from hard to soft inputs) is inspired by
+"Scheduled Sampling for Sequence Prediction with Recurrent Neural Networks"
+(Bengio et al., 2015), https://arxiv.org/abs/1506.03099. Note that soft training
+is an educational extension exploring how to close the train-test gap -- the
+original Soft Thinking paper focuses on inference-time techniques.
 """
 
 import math

@@ -9,6 +9,15 @@ LoRA matrices are trained — the base model stays frozen. Demonstrates:
   - Freezing base weights and injecting low-rank adapters
   - Training a small fraction of parameters to shift the output distribution
   - Merging LoRA weights back into the base model (zero runtime overhead)
+
+Reference:
+  "LoRA: Low-Rank Adaptation of Large Language Models" (Hu et al., 2021)
+  https://arxiv.org/abs/2106.09685
+
+This implementation follows the core LoRA algorithm from Hu et al. (2021),
+including the alpha/rank scaling factor. For simplicity, adapters are
+injected only on the query and value projections (wq, wv) — the original
+paper found this subset sufficient for most tasks.
 """
 
 import copy
@@ -51,20 +60,23 @@ class LoRALinear(nn.Module):
 
     The base weight is frozen. Only lora_A and lora_B are trainable.
     B is zero-initialized so the adapter starts as a no-op (W + 0).
+    The scaling factor alpha/rank controls the magnitude of the adaptation
+    (see Hu et al., 2021, Section 4.1).
     """
 
-    def __init__(self, base_linear, rank=4):
+    def __init__(self, base_linear, rank=4, alpha=None):
         super().__init__()
         self.base = base_linear
         self.base.weight.requires_grad_(False)  # freeze base
         d_out, d_in = base_linear.weight.shape
         self.lora_A = nn.Parameter(torch.randn(rank, d_in) * 0.01)
         self.lora_B = nn.Parameter(torch.zeros(d_out, rank))  # init B to zero
+        self.scaling = (alpha if alpha is not None else rank) / rank
 
     def forward(self, x):
-        # base output + low-rank adaptation
-        # W*x + B*A*x  (B is zero-init, so LoRA starts as no-op)
-        return self.base(x) + (x @ self.lora_A.T) @ self.lora_B.T
+        # base output + scaled low-rank adaptation
+        # W*x + (alpha/rank) * B*A*x  (B is zero-init, so LoRA starts as no-op)
+        return self.base(x) + (x @ self.lora_A.T) @ self.lora_B.T * self.scaling
 
 
 # ---------------------------------------------------------------------------
@@ -257,17 +269,17 @@ def is_soft(name):
     return (set(name.lower()) - vowels).issubset(soft_consonants) and len(name) > 0
 
 
-def inject_lora(module, rank, targets=("wq", "wv")):
+def inject_lora(module, rank, alpha=None, targets=("wq", "wv")):
     """Replace targeted nn.Linear layers with LoRALinear wrappers."""
     for name, child in module.named_children():
         if isinstance(child, nn.Linear) and name in targets:
-            setattr(module, name, LoRALinear(child, rank=rank))
+            setattr(module, name, LoRALinear(child, rank=rank, alpha=alpha))
         else:
-            inject_lora(child, rank=rank, targets=targets)
+            inject_lora(child, rank=rank, alpha=alpha, targets=targets)
 
 
 def merge_lora(module):
-    """Merge LoRA weights back: W_new = W_base + B @ A."""
+    """Merge LoRA weights back: W_new = W_base + scaling * B @ A."""
     for name, child in module.named_children():
         if isinstance(child, LoRALinear):
             merged = nn.Linear(
@@ -275,7 +287,7 @@ def merge_lora(module):
                 child.base.weight.shape[0],
                 bias=False,
             )
-            merged.weight = nn.Parameter(child.base.weight + child.lora_B @ child.lora_A)
+            merged.weight = nn.Parameter(child.base.weight + child.scaling * child.lora_B @ child.lora_A)
             setattr(module, name, merged)
         else:
             merge_lora(child)

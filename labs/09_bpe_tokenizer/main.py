@@ -2,9 +2,16 @@
 microGPT and Beyond — BPE Tokenizer
 
 Byte-Pair Encoding from scratch, then a side-by-side comparison of
-character-level vs BPE tokenization on the names dataset.
+character-level vs BPE tokenization on the names dataset. The BPE algorithm
+was originally introduced for data compression in "A New Algorithm for Data
+Compression" (Gage, 1994) and adapted for NLP in "Neural Machine Translation
+of Rare Words with Subword Units" (Sennrich, Haddow & Birch, 2016),
+https://arxiv.org/abs/1508.07909. GPT-2 uses byte-level BPE as described in
+"Language Models are Unsupervised Multitask Learners" (Radford et al., 2019).
 
-Zero dependencies. Pure Python. The algorithm is just counting and merging.
+This lab implements character-level BPE for simplicity — production tokenizers
+like GPT's operate on bytes, not characters, and use a much larger vocabulary
+(50K-100K merges). Zero dependencies. Pure Python. Just counting and merging.
 """
 
 import math

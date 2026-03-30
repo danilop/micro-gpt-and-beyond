@@ -1,14 +1,20 @@
 """
 microGPT — JAX edition.
 
-Same architecture as the PyTorch version, but in JAX's functional style:
+Same decoder-only GPT architecture as the PyTorch version, based on
+"Attention Is All You Need" (Vaswani et al., 2017),
+https://arxiv.org/abs/1706.03762, but expressed in JAX's purely functional
+paradigm — no classes, no mutation, explicit PRNG keys. The functional
+approach reflects the style described in "Compiling machine learning programs
+via high-level tracing" (Frostig et al., 2018),
+https://mlsys.org/Conferences/doc/2018/146.pdf.
+
+Key differences from the PyTorch version:
   - All parameters are explicit pytrees (no hidden state)
   - Forward pass is a pure function (no side effects)
   - Gradients via jax.grad (automatic, like PyTorch, but functional)
   - JIT compilation for speed
   - Explicit PRNG key threading
-
-This shows how the same transformer looks in a purely functional framework.
 """
 
 import math

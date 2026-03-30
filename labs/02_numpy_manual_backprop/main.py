@@ -4,6 +4,14 @@ microGPT — NumPy edition with manual backpropagation.
 Same architecture as the pure-Python version, but using NumPy arrays for
 vectorized math. Every gradient is derived and coded by hand — no autograd.
 This is what PyTorch computes for you behind the scenes.
+
+The transformer architecture follows "Attention Is All You Need" (Vaswani et
+al., 2017, https://arxiv.org/abs/1706.03762), implemented here as a
+decoder-only variant with hand-derived gradients for every operation. The
+manual backpropagation applies the chain rule as described in "Learning
+representations by back-propagating errors" (Rumelhart, Hinton & Williams,
+1986). Normalization uses RMSNorm following "Root Mean Square Layer
+Normalization" (Zhang & Sennrich, 2019, https://arxiv.org/abs/1910.07467).
 """
 
 import math

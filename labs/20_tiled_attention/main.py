@@ -8,6 +8,18 @@ the difference is how many "slow memory" (HBM) operations they need.
 
 Training uses PyTorch; the attention implementations are in explicit NumPy
 to make every memory access visible and countable.
+
+The tiled algorithm implements the core idea from "FlashAttention: Fast and
+Memory-Efficient Exact Attention with IO-Awareness" (Dao et al., 2022),
+https://arxiv.org/abs/2205.14135. The online softmax technique used within
+tiles is from "Online normalizer calculation for softmax" (Milakov &
+Gimelshein, 2018), https://arxiv.org/abs/1805.02867. Also see
+"FlashAttention-2: Faster Attention with Better Parallelism and Work
+Partitioning" (Dao, 2023), https://arxiv.org/abs/2307.08691. Note that this
+is a pedagogical NumPy implementation of the algorithmic idea -- the real
+FlashAttention is a fused CUDA kernel that exploits GPU SRAM directly. The
+math is identical; the performance difference comes from hardware-level
+memory management.
 """
 
 import math

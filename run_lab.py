@@ -39,6 +39,8 @@ LABS = {
     "20": ("labs/20_tiled_attention", ["uv", "run", "python", "main.py"]),
     "21": ("labs/21_paged_attention", [PYTHON, "main.py"]),
     "22": ("labs/22_disaggregated_serving", ["uv", "run", "python", "main.py"]),
+    "23": ("labs/23_self_improving", ["uv", "run", "python", "main.py"]),
+    "24": ("labs/24_evolutionary", ["uv", "run", "python", "main.py"]),
 }
 
 
@@ -66,6 +68,8 @@ def list_labs():
     print("  20  tiled_attention        FlashAttention algorithm (memory wall)")
     print("  21  paged_attention        PagedAttention (vLLM-style KV cache)")
     print("  22  disaggregated_serving  Split prefill/decode onto separate workers")
+    print("  23  self_improving         Self-improvement via generate-score-retrain")
+    print("  24  evolutionary           Population-based training (evolutionary)")
     print("\nUsage: python run_lab.py <lab_number>")
 
 

@@ -10,6 +10,12 @@ Same architecture as 07_mlx, but with mini-batch training:
 Unlike JAX's vmap, MLX batching works the PyTorch way: reshape your tensors
 to include a batch dimension and write the forward pass to handle (B, T, ...).
 Same idea, same manual padding — unified memory is the difference.
+
+The batched version adds padding, masking, and mini-batch SGD — standard
+engineering for production training.
+
+Reference: "Attention Is All You Need" (Vaswani et al., 2017),
+https://arxiv.org/abs/1706.03762
 """
 
 import math
@@ -181,6 +187,9 @@ model = MicroGPT()
 # Match original init: N(0, 0.08) for all weights
 weights = mlx.utils.tree_flatten(model.parameters())
 model.load_weights([(k, mx.random.normal(v.shape) * 0.08) for k, v in weights])
+# Re-zero the padding embedding after init
+model.wte.weight[PAD] = mx.zeros((n_embd,))
+mx.eval(model.parameters())
 num_params = sum(p.size for _, p in mlx.utils.tree_flatten(model.parameters()))
 print(f"num params: {num_params}")
 

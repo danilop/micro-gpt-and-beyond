@@ -4,9 +4,17 @@ microGPT — KV Cache edition.
 Same model as lab 03, but with a KV-cache-aware inference path that avoids
 recomputing Key and Value tensors for already-processed positions. This is
 THE fundamental optimization behind every fast LLM serving system.
+Without KV cache: each new token reprocesses the full sequence -> O(n^3) total.
+With KV cache: each new token only computes attention for ONE position -> O(n^2) total.
 
-Without KV cache: each new token reprocesses the full sequence → O(n³) total.
-With KV cache: each new token only computes attention for ONE position → O(n²) total.
+KV caching is a standard inference optimization for autoregressive transformers,
+implicit in the original "Attention Is All You Need" (Vaswani et al., 2017),
+https://arxiv.org/abs/1706.03762 decoder design. The technique became essential
+at scale as documented in "Efficient Transformers: A Survey" (Tay et al., 2022),
+https://arxiv.org/abs/2009.06732. This lab implements the basic form: cache K and
+V tensors from previous positions, compute only the new position's Q/K/V, and
+concatenate with the cache. Every production serving system (vLLM, TensorRT-LLM,
+etc.) uses this as its foundation.
 """
 
 import math

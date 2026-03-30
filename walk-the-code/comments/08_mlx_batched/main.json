@@ -1,157 +1,157 @@
 {
-  "14": {
+  "20": {
     "text": "This lab combines two ideas at once: the realistic mini-batch training structure from the PyTorch track and the Apple-Silicon execution model from the MLX track.",
     "hash": "e3b0c442"
   },
-  "15": {
+  "21": {
     "text": "Same dataset again. The point is to see what batched training feels like once MLX's lazy, unified-memory model enters the picture.",
     "hash": "b67c9dde"
   },
-  "16": {
+  "22": {
     "text": "The outer randomness stays framework-independent so the comparison with the other batched labs remains meaningful.",
     "hash": "de2abade"
   },
-  "19": {
+  "25": {
     "text": "MLX's core runtime is still the differentiator here: batched training now runs through a system designed around Apple hardware and deferred execution.",
     "hash": "00d25044"
   },
-  "20": {
+  "26": {
     "text": "The layer API is familiar on purpose. That lets the reader focus on how batching interacts with MLX rather than relearning the model definition itself.",
     "hash": "826b699d"
   },
-  "21": {
+  "27": {
     "text": "The optimizer is where MLX's runtime story becomes concrete: training steps are shaped by lazy execution and a memory model tuned for Apple Silicon.",
     "hash": "8ee68a62"
   },
-  "22": {
+  "28": {
     "text": "Even in a higher-level MLX model, parameter trees still matter. These helpers make the runtime feel manageable without hiding the structure completely.",
     "hash": "adb10b27"
   },
-  "24": {
+  "30": {
     "text": "Lock the run down so the interesting differences come from batching and MLX execution, not from shuffled luck.",
     "hash": "f0726c6e"
   },
-  "25": {
+  "31": {
     "text": "Seed MLX's random number generator separately for reproducible weight initialization.",
     "hash": "f9057c48"
   },
-  "30": {
+  "36": {
     "text": "Path to the shared dataset file used consistently across all labs.",
     "hash": "5ac9686d"
   },
-  "31": {
+  "37": {
     "text": "Download the names dataset from the internet if it is not already present locally.",
     "hash": "9667c968"
   },
-  "34": {
+  "40": {
     "text": "URL pointing to the raw names dataset hosted in Karpathy's repository.",
     "hash": "5e579f27"
   },
-  "37": {
+  "43": {
     "text": "Read the text file and split it into individual name strings, one per line.",
     "hash": "2f367d0b"
   },
-  "38": {
+  "44": {
     "text": "Randomize the training order so the model does not memorize sequences of names.",
     "hash": "c8f1cb86"
   },
-  "41": {
+  "47": {
     "text": "Gather every unique character from all names to build our token vocabulary. Sorting ensures a deterministic, reproducible mapping from characters to integer IDs.",
     "hash": "5f7ca3bb"
   },
-  "42": {
+  "48": {
     "text": "The beginning-of-sequence token doubles as the end-of-sequence marker for name boundaries.",
     "hash": "476ca504"
   },
-  "43": {
+  "49": {
     "text": "The real vocabulary has 27 tokens: 26 lowercase letters plus the BOS/EOS marker.",
     "hash": "0a38d2ba"
   },
-  "44": {
+  "50": {
     "text": "PAD token for batch alignment.",
     "hash": "615f41c9"
   },
-  "45": {
+  "51": {
     "text": "The total embedding table size includes the PAD token. The model needs an embedding for PAD even though we mask it during attention and loss.",
     "hash": "f3abd8f4"
   },
-  "51": {
+  "57": {
     "text": "4x larger than lab 07, same scale-up as PyTorch batched (lab 04).",
     "hash": "3b06c323"
   },
-  "52": {
+  "58": {
     "text": "Four attention heads, each working on 16 dimensions. Multiple heads let the model attend to different relationship types simultaneously.",
     "hash": "e804f3b9"
   },
-  "53": {
+  "59": {
     "text": "Two transformer layers for deeper representations, matching the batched PyTorch lab.",
     "hash": "6664fd8c"
   },
-  "54": {
+  "60": {
     "text": "Each name can be at most 16 characters long, setting the attention window size.",
     "hash": "ecfd6b0a"
   },
-  "55": {
+  "61": {
     "text": "Each attention head operates on 16 dimensions, giving finer-grained representations.",
     "hash": "77ba194a"
   },
-  "56": {
+  "62": {
     "text": "Process 32 names at once in each training step. Batching amortizes the overhead of each forward/backward pass and provides more stable gradient estimates.",
     "hash": "d607968f"
   },
-  "57": {
+  "63": {
     "text": "Train for 1000 steps, same as all other labs but each step processes a full batch.",
     "hash": "f105aa30"
   },
-  "63": {
+  "69": {
     "text": "RMSNorm, identical to lab 07.",
     "hash": "69fade3d"
   },
-  "66": {
+  "72": {
     "text": "A tiny constant that prevents division by zero during normalization.",
     "hash": "a6082d20"
   },
-  "68": {
+  "74": {
     "text": "Run the input through RMSNorm to stabilize activations before the transformer.",
     "hash": "54e7034e"
   },
-  "69": {
+  "75": {
     "text": "Compute the mean of squared values along the last axis for RMS normalization.",
     "hash": "f12ba3c4"
   },
-  "70": {
+  "76": {
     "text": "Divide each element by the root-mean-square of its vector. This rescales activations to a consistent magnitude without shifting them by their mean, which is simpler than LayerNorm.",
     "hash": "9989efa7"
   },
-  "73": {
+  "79": {
     "text": "Attention module, now handles (B, T, C) shapes and padding masks, like lab 04.",
     "hash": "c20aaac2"
   },
-  "76": {
+  "82": {
     "text": "Project the input into query vectors that will attend to other positions.",
     "hash": "433b771f"
   },
-  "77": {
+  "83": {
     "text": "Project the input into key vectors that other positions will compare against.",
     "hash": "bf2475c8"
   },
-  "78": {
+  "84": {
     "text": "Project the input into value vectors carrying content to aggregate by attention.",
     "hash": "d1a077cb"
   },
-  "79": {
+  "85": {
     "text": "Project the concatenated multi-head output back into the embedding space.",
     "hash": "887b9875"
   },
-  "81": {
+  "87": {
     "text": "Forward with optional padding mask.",
     "hash": "6736f90f"
   },
-  "82": {
+  "88": {
     "text": "Unpack batch, time, channel dims.",
     "hash": "4584ac61"
   },
-  "83": {
+  "89": {
     "text": "Q reshape: (B, T, D) -> (B, T, nh, hd) -> (B, nh, T, hd). Note the 4D transpose, batch dimension is preserved, unlike lab 07's 3D version.",
     "hash": "e50e37bd",
     "diagram": "transformer_attn",
@@ -159,7 +159,7 @@
       "Q"
     ]
   },
-  "84": {
+  "90": {
     "text": "Reshape key projections into separate attention heads for multi-head processing.",
     "hash": "d98e3c16",
     "diagram": "transformer_attn",
@@ -167,7 +167,7 @@
       "K"
     ]
   },
-  "85": {
+  "91": {
     "text": "Reshape value projections into separate attention heads for parallel computation.",
     "hash": "6371da67",
     "diagram": "transformer_attn",
@@ -175,7 +175,7 @@
       "V"
     ]
   },
-  "87": {
+  "93": {
     "text": "Compute scaled dot-product attention scores between all query-key pairs.",
     "hash": "a0d7787c",
     "diagram": "transformer_attn",
@@ -183,23 +183,23 @@
       "scores"
     ]
   },
-  "89": {
+  "95": {
     "text": "Build an upper-triangular boolean mask that blocks attention to future positions.",
     "hash": "9a239573"
   },
-  "90": {
+  "96": {
     "text": "Set future positions to a large negative value so softmax gives them zero weight.",
     "hash": "8625aed2"
   },
-  "92": {
+  "98": {
     "text": "Padding mask handling, identical logic to lab 04's PyTorch version.",
     "hash": "6e5b0338"
   },
-  "93": {
+  "99": {
     "text": "Expand pad_mask to (B, 1, 1, T) and fill PAD positions with -inf.",
     "hash": "169b172f"
   },
-  "94": {
+  "100": {
     "text": "Turn raw attention scores into a probability distribution so weights sum to one.",
     "hash": "ebebc376",
     "diagram": "transformer_attn",
@@ -207,11 +207,11 @@
       "softmax"
     ]
   },
-  "95": {
+  "101": {
     "text": "Replace NaN with 0 for fully-masked rows. MLX doesn't have <code>nan_to_num</code>, so we use <code>where(isnan, 0, att)</code>.",
     "hash": "fb8a223a"
   },
-  "97": {
+  "103": {
     "text": "Multiply attention weights by value vectors, then transpose heads back to the time dimension and flatten into the original embedding shape for the output projection.",
     "hash": "e6fc56cb",
     "diagram": "transformer_attn",
@@ -219,7 +219,7 @@
       "attn_out"
     ]
   },
-  "98": {
+  "104": {
     "text": "Project the combined multi-head output through the final linear layer.",
     "hash": "36f2db67",
     "diagram": "transformer_out",
@@ -227,23 +227,23 @@
       "wo"
     ]
   },
-  "101": {
+  "107": {
     "text": "A two-layer feed-forward network identical to lab 07. Attention mixes information between positions; the MLP then processes each position independently to add nonlinear capacity.",
     "hash": "3ad666a1"
   },
-  "104": {
+  "110": {
     "text": "Widen the representation to 4x the embedding dimension for richer nonlinear transformations.",
     "hash": "8e9f0642"
   },
-  "105": {
+  "111": {
     "text": "Compress the expanded hidden state back to the original embedding dimension.",
     "hash": "62c4768b"
   },
-  "107": {
+  "113": {
     "text": "Run the input through the MLP combining expansion, ReLU activation, and contraction.",
     "hash": "54e7034e"
   },
-  "108": {
+  "114": {
     "text": "MLX's equivalent of ReLU: <code>mx.maximum(x, 0)</code> zeroes out negative values, giving the network a simple nonlinearity between the two linear layers.",
     "hash": "3aa8c8cc",
     "diagram": "transformer_mlp",
@@ -253,31 +253,31 @@
       "fc2"
     ]
   },
-  "111": {
+  "117": {
     "text": "Transformer block with padding mask.",
     "hash": "4bcc8ea8"
   },
-  "114": {
+  "120": {
     "text": "Normalize the input before passing it to the attention sub-layer for stable training.",
     "hash": "e92b587d"
   },
-  "115": {
+  "121": {
     "text": "The self-attention sub-layer that mixes information across positions in the sequence.",
     "hash": "95b016d9"
   },
-  "116": {
+  "122": {
     "text": "Normalize before the feed-forward network, following the pre-norm transformer pattern.",
     "hash": "f58a7657"
   },
-  "117": {
+  "123": {
     "text": "The feed-forward network that processes each position independently after attention mixing.",
     "hash": "17fdd551"
   },
-  "119": {
+  "125": {
     "text": "Forward passes mask through to attention.",
     "hash": "6736f90f"
   },
-  "120": {
+  "126": {
     "text": "Attention with residual and padding mask.",
     "hash": "5c9f1363",
     "diagram": "transformer_out",
@@ -285,7 +285,7 @@
       "res1"
     ]
   },
-  "121": {
+  "127": {
     "text": "Apply the MLP with a residual connection that preserves the original signal.",
     "hash": "50e2183f",
     "diagram": "transformer_mlp",
@@ -293,39 +293,39 @@
       "fc2"
     ]
   },
-  "125": {
+  "131": {
     "text": "The full transformer model, now handling batched input with padding masks. Same architecture as lab 07 but with an extra batch dimension throughout.",
     "hash": "e94c5dc2"
   },
-  "128": {
+  "134": {
     "text": "Embedding table with PAD token. Like lab 04, the embedding table has <code>vocab_size_with_pad</code> rows.",
     "hash": "fadfb807"
   },
-  "129": {
+  "135": {
     "text": "A learned vector for each position in the sequence. Added to token embeddings so the model knows where each token sits, since attention alone is position-agnostic.",
     "hash": "5338449e"
   },
-  "130": {
+  "136": {
     "text": "Apply RMSNorm to stabilize embeddings before they enter the transformer layers.",
     "hash": "5caa073e"
   },
-  "131": {
+  "137": {
     "text": "Register all transformer layers so MLX can discover and manage their parameters.",
     "hash": "7efcda6b"
   },
-  "132": {
+  "138": {
     "text": "Output head maps to real vocab (no PAD).",
     "hash": "1774314d"
   },
-  "134": {
+  "140": {
     "text": "Forward pass with optional padding mask.",
     "hash": "2de15fc3"
   },
-  "135": {
+  "141": {
     "text": "Unpack batch size and sequence length from the input shape. These dimensions drive how we construct position embeddings and propagate through the layers.",
     "hash": "47cad82b"
   },
-  "136": {
+  "142": {
     "text": "Look up a learned embedding vector for each input token in the batch.",
     "hash": "8d137e9c",
     "diagram": "transformer_embed",
@@ -333,7 +333,7 @@
       "wte"
     ]
   },
-  "137": {
+  "143": {
     "text": "Position embeddings broadcast across the batch.",
     "hash": "63121461",
     "diagram": "transformer_embed",
@@ -341,7 +341,7 @@
       "wpe"
     ]
   },
-  "138": {
+  "144": {
     "text": "Combine token and position embeddings and normalize before entering the transformer.",
     "hash": "b88a95ea",
     "diagram": "transformer_embed",
@@ -349,15 +349,15 @@
       "norm_in"
     ]
   },
-  "139": {
+  "145": {
     "text": "Feed the normalized embeddings through each transformer block in sequence. Each layer refines the representations through attention and MLP sublayers.",
     "hash": "359aba32"
   },
-  "140": {
+  "146": {
     "text": "The padding mask tells each layer's attention which positions are filler so those positions get zero weight and do not corrupt the real token representations.",
     "hash": "3b78410a"
   },
-  "141": {
+  "147": {
     "text": "Project the final hidden states to vocabulary-sized logits for next-token prediction.",
     "hash": "9ef9adcf",
     "diagram": "transformer_mlp",
@@ -365,11 +365,11 @@
       "fc2"
     ]
   },
-  "147": {
+  "153": {
     "text": "Batch creation, same strategy as labs 04 and 06.",
     "hash": "b170f5cb"
   },
-  "149": {
+  "155": {
     "text": "Grab the next batch of names from the corpus, wrapping around if we reach the end. This cycling ensures we keep training even if the dataset is smaller than the total steps.",
     "hash": "84e051fc",
     "diagram": "batch_prep",
@@ -378,19 +378,19 @@
       "tokenize"
     ]
   },
-  "151": {
+  "157": {
     "text": "Convert each name into a sequence of integer token IDs. Each character maps to its position in the sorted vocabulary, with BOS tokens bookending the name.",
     "hash": "0f605b9f"
   },
-  "152": {
+  "158": {
     "text": "Wrap each name with beginning-of-sequence tokens to mark the start and end boundaries.",
     "hash": "9fe8ad12"
   },
-  "153": {
+  "159": {
     "text": "Clip any name longer than the model's maximum context window. Names beyond this length would exceed the positional embedding table and cause errors.",
     "hash": "fd45d40a"
   },
-  "156": {
+  "162": {
     "text": "Pad to longest sequence in batch.",
     "hash": "d5c54ef8",
     "diagram": "batch_prep",
@@ -398,75 +398,75 @@
       "pad"
     ]
   },
-  "157": {
+  "163": {
     "text": "Allocate four parallel arrays (input, target, pad mask, target mask) all padded to the same length so they can be stacked into rectangular tensors.",
     "hash": "4fa495a3"
   },
-  "159": {
+  "165": {
     "text": "The number of real tokens in this name, before any padding was added. This tells us where the actual content ends and the padding begins.",
     "hash": "52424931"
   },
-  "160": {
+  "166": {
     "text": "Input: real tokens + PAD.",
     "hash": "9de6a4a2",
     "diagram": "batch_prep",
     "highlight": []
   },
-  "161": {
+  "167": {
     "text": "Targets: shifted + dummy 0s.",
     "hash": "32a8915b",
     "diagram": "batch_prep",
     "highlight": []
   },
-  "162": {
+  "168": {
     "text": "Boolean mask marking which positions are padding so attention can ignore them.",
     "hash": "0e6e57e9"
   },
-  "163": {
+  "169": {
     "text": "Target mask for loss weighting.",
     "hash": "5f83ca8d"
   },
-  "169": {
+  "175": {
     "text": "Convert all to MLX arrays.",
     "hash": "fc4c1868"
   },
-  "170": {
+  "176": {
     "text": "Convert the target token IDs into an MLX array for loss computation.",
     "hash": "b305741c"
   },
-  "171": {
+  "177": {
     "text": "Boolean mask marking which positions are padding so attention can skip them.",
     "hash": "b011dad8"
   },
-  "172": {
+  "178": {
     "text": "Float mask that weights the loss so padding positions contribute zero to the gradient.",
     "hash": "2d2a300b"
   },
-  "180": {
+  "186": {
     "text": "Create the model with all its layers and projections. MLX initializes parameters immediately in unified memory shared between CPU and GPU.",
     "hash": "15299a22"
   },
-  "182": {
+  "188": {
     "text": "Flatten parameter tree for re-initialization.",
     "hash": "b00451e2"
   },
-  "183": {
+  "192": {
     "text": "N(0, 0.08) initialization, match all other labs.",
-    "hash": "606b1ac0"
+    "hash": "35f0345a"
   },
-  "184": {
+  "193": {
     "text": "Sum up all parameter sizes to report the total number of trainable weights.",
     "hash": "339de0cf"
   },
-  "187": {
+  "196": {
     "text": "Adam optimizer settings: a learning rate of 1e-2 with conservative momentum (beta1=0.85, beta2=0.99). These match the other labs for a fair comparison.",
     "hash": "dca02c26"
   },
-  "190": {
+  "199": {
     "text": "Loss function. Takes the model as first arg for MLX's autograd.",
     "hash": "24f01561"
   },
-  "191": {
+  "200": {
     "text": "Batched forward pass with padding mask.",
     "hash": "f95b7eef",
     "diagram": "batch_train",
@@ -475,23 +475,23 @@
       "logits"
     ]
   },
-  "192": {
+  "201": {
     "text": "Subtract the log-sum-exp to get log-probabilities. This is numerically more stable than taking softmax and then log, which can lose precision on small probabilities.",
     "hash": "e8b01f5c"
   },
-  "193": {
+  "202": {
     "text": "Unpack the batch, sequence length, and vocabulary dimensions from the log-prob tensor.",
     "hash": "6fd1445a"
   },
-  "195": {
+  "204": {
     "text": "Gather target log-probs via fancy indexing. Same pattern as lab 06.",
     "hash": "f3e3ebd2"
   },
-  "196": {
+  "205": {
     "text": "Multiply by the target mask so padding positions contribute zero to the loss. Without this, the model would waste capacity trying to predict padding tokens.",
     "hash": "04bbd9c3"
   },
-  "197": {
+  "206": {
     "text": "Normalize by real token count, same as lab 06.",
     "hash": "3c4cc88b",
     "diagram": "batch_train",
@@ -499,91 +499,91 @@
       "loss"
     ]
   },
-  "201": {
+  "210": {
     "text": "Value-and-grad: compute loss and gradients simultaneously.",
     "hash": "fc7d4fe4"
   },
-  "202": {
+  "211": {
     "text": "MLX's built-in Adam optimizer manages momentum and adaptive learning rates for every parameter. It works with MLX's lazy evaluation, updating only when evaluated.",
     "hash": "d828d8b5"
   },
-  "204": {
+  "213": {
     "text": "Iterate over training steps, processing a batch of 32 names per step.",
     "hash": "53f56939"
   },
-  "205": {
+  "214": {
     "text": "Assemble a padded batch of 32 names for this training step. Each sequence is tokenized, truncated, and padded so all sequences share the same length.",
     "hash": "e9483f2a"
   },
-  "207": {
+  "216": {
     "text": "Run the forward pass and backpropagation together. MLX's <code>value_and_grad</code> returns both the scalar loss and the gradient tree in one efficient pass.",
     "hash": "e4b3bfdd"
   },
-  "209": {
+  "218": {
     "text": "Linearly reduce the learning rate toward zero over the course of training.",
     "hash": "a7ee9183"
   },
-  "210": {
+  "219": {
     "text": "Write the decayed learning rate into the optimizer so the next weight update uses a slightly smaller step, gradually stabilizing training as we near convergence.",
     "hash": "945beed3"
   },
-  "211": {
+  "220": {
     "text": "Push the computed gradients into the optimizer to update all model weights.",
     "hash": "f28c1e54"
   },
-  "212": {
+  "221": {
     "text": "Force lazy evaluation. Without this, MLX builds up a huge unevaluated computation graph that eventually exhausts memory.",
     "hash": "172e53fd"
   },
-  "214": {
+  "223": {
     "text": "Print the loss periodically so we can monitor whether the model is learning.",
     "hash": "cf37956f"
   },
-  "220": {
+  "229": {
     "text": "Temperature controls how peaked or flat the sampling distribution is. At 0.5, the model becomes more confident, favoring high-probability characters over rare ones.",
     "hash": "7eca5b76"
   },
-  "222": {
+  "231": {
     "text": "Generate 20 brand-new names by sampling from the model's learned distribution.",
     "hash": "64d836c5"
   },
-  "223": {
+  "232": {
     "text": "Begin each generated name with the beginning-of-sequence token as the initial prompt.",
     "hash": "5c52ddc4"
   },
-  "224": {
+  "233": {
     "text": "Autoregressive generation loop: predict one character at a time, append it to the sequence, and feed the extended sequence back into the model for the next prediction.",
     "hash": "ab05dc73"
   },
-  "225": {
+  "234": {
     "text": "Feed as (1, T) batch, the batched model always expects a batch dimension.",
     "hash": "637b4070"
   },
-  "226": {
+  "235": {
     "text": "Run the full batched model on the current token sequence to predict the next character.",
     "hash": "17df3885"
   },
-  "227": {
+  "236": {
     "text": "Grab the logits for the very last position (the model's prediction for the next token) and divide by temperature to sharpen or soften the probability distribution.",
     "hash": "e1a1328f"
   },
-  "228": {
+  "237": {
     "text": "Randomly pick one token from the probability distribution. This stochastic sampling produces diverse outputs instead of always choosing the most likely character.",
     "hash": "eae262da"
   },
-  "229": {
+  "238": {
     "text": "When the model predicts BOS, it signals the name is complete, so we stop generating.",
     "hash": "41a35c11"
   },
-  "231": {
+  "240": {
     "text": "Append the newly sampled token to the growing sequence for the next forward pass.",
     "hash": "a1ca669a"
   },
-  "232": {
+  "241": {
     "text": "Map each integer token ID back to its corresponding character and join them into a readable name string, skipping the initial BOS token.",
     "hash": "b4368128"
   },
-  "233": {
+  "242": {
     "text": "Display the generated name so we can visually assess the model's output quality and check whether it learned plausible name patterns.",
     "hash": "f9d6f741"
   }

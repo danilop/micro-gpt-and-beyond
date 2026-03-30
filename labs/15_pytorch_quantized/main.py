@@ -3,7 +3,17 @@ microGPT — PyTorch quantized edition.
 
 Same architecture as 03_pytorch, but with INT8 quantization for inference.
 Trains in FP32, quantizes Linear layers to INT8, compares size and speed.
-Shows ~4× memory reduction. Production systems also get speed improvements.
+Shows ~4x memory reduction. Production systems also get speed improvements.
+
+Post-training quantization follows the principles in "Quantization and Training
+of Neural Networks for Efficient Integer-Arithmetic-Only Inference" (Jacob et al.,
+2018), https://arxiv.org/abs/1712.05877. For LLM-specific quantization, see
+"LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale" (Dettmers
+et al., 2022), https://arxiv.org/abs/2208.07339. Note that this lab implements
+simulated per-tensor symmetric quantization for educational purposes -- the
+forward pass dequantizes INT8 weights back to float, so it demonstrates model
+SIZE savings, not the speed improvements that real INT8 GEMM kernels provide.
+Production systems use per-channel quantization and also quantize activations.
 """
 
 import math

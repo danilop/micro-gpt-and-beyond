@@ -1,0 +1,12 @@
+graph LR
+  subgraph With Filter
+    A1[Generate] --> B1[Score] --> C1[Keep Best] --> D1[Retrain]
+    D1 --> E1[Quality Improves]
+  end
+  subgraph Without Filter
+    A2[Generate] --> B2[Keep All] --> C2[Retrain]
+    C2 --> D2[Errors Amplify]
+    D2 --> E2[Collapse]
+  end
+  style E1 fill:#9f9,stroke:#333
+  style E2 fill:#f99,stroke:#333

@@ -215,6 +215,15 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
         (normalized), which corrects for the draft model's bias
 
     This is mathematically proven to sample from p(x) exactly.
+
+    This technique was introduced in "Fast Inference from Transformers via
+    Speculative Decoding" by Leviathan, Kalman, and Matias (2023),
+    available at https://arxiv.org/abs/2211.17192. A concurrent and closely
+    related approach was presented in "Accelerating Large Language Model
+    Decoding with Speculative Sampling" by Chen, Borgeaud, Irving et al.
+    (2023), available at https://arxiv.org/abs/2302.01318. The implementation
+    here faithfully follows the accept/reject algorithm from Leviathan et al.
+    (2023), which provably preserves the target model's output distribution.
     """
     tokens = [BOS]
     stats = {"drafted": 0, "accepted": 0, "target_fwd": 0, "draft_fwd": 0}
@@ -223,14 +232,14 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
         while len(tokens) - 1 < max_len:
             # Step 1: Draft model generates K candidate tokens
             draft_tokens = list(tokens)
-            draft_probs_list = []  # probability of each drafted token under draft model
+            draft_probs_list = []  # (token_id, q(x), full distribution) for each drafted token
             for _ in range(K):
                 if len(draft_tokens) - 1 >= max_len:
                     break
                 probs_d = get_probs(draft, draft_tokens)[-1]
                 stats["draft_fwd"] += 1
                 token_id = torch.multinomial(probs_d, 1).item()
-                draft_probs_list.append((token_id, probs_d[token_id].item()))
+                draft_probs_list.append((token_id, probs_d[token_id].item(), probs_d))
                 draft_tokens.append(token_id)
 
             if not draft_probs_list:
@@ -245,7 +254,7 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
 
             # Step 3: Accept/reject each drafted token
             n_accepted = 0
-            for i, (drafted_token, q_x) in enumerate(draft_probs_list):
+            for i, (drafted_token, q_x, draft_dist) in enumerate(draft_probs_list):
                 # Target model's probability for the drafted token
                 # Position in target_probs: tokens before draft + i
                 pos = len(tokens) - 1 + i
@@ -269,9 +278,7 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
                 else:
                     # Reject: sample from adjusted distribution max(0, p - q)
                     pos_probs = target_probs[pos]
-                    accepted_drafts = draft_tokens[len(tokens) : len(tokens) + i + 1]
-                    draft_full = get_probs(draft, tokens + accepted_drafts)[-1]
-                    adjusted = torch.clamp(pos_probs - draft_full, min=0)
+                    adjusted = torch.clamp(pos_probs - draft_dist, min=0)
                     adj_sum = adjusted.sum()
                     if adj_sum > 0:
                         adjusted = adjusted / adj_sum

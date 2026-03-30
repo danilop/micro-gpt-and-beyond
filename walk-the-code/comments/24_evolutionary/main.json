@@ -1,0 +1,370 @@
+{
+  "5": {
+    "text": "The key insight: instead of improving one model's outputs, we improve the model population itself through evolutionary pressure.",
+    "hash": "575237c0"
+  },
+  "6": {
+    "text": "Each variant has different hyperparameters -- this diversity is what gives evolution something to select from.",
+    "hash": "7db7a55a"
+  },
+  "9": {
+    "text": "PBT is the core algorithm here: train many models in parallel, periodically replacing the worst with mutated copies of the best.",
+    "hash": "3c45bfe4"
+  },
+  "22": {
+    "text": "No LLM needed for mutations -- simple random perturbations of numeric hyperparameters are enough for effective search.",
+    "hash": "87871d61"
+  },
+  "24": {
+    "text": "Validation loss is our fitness function -- evolution will minimize it by discovering good hyperparameter combinations.",
+    "hash": "31a36a2f"
+  },
+  "37": {
+    "text": "Fixed seeds ensure reproducibility -- every run produces the same evolutionary trajectory for fair comparison.",
+    "hash": "7e18ed42"
+  },
+  "51": {
+    "text": "Shuffling before the train/val split prevents any ordering bias (e.g. alphabetical) from skewing results.",
+    "hash": "84cdb92b"
+  },
+  "62": {
+    "text": "Holding out 1000 names for validation is critical -- fitness must be measured on unseen data to avoid overfitting.",
+    "hash": "476ca504"
+  },
+  "69": {
+    "text": "block_size is fixed across the population -- it defines the maximum context window all models share.",
+    "hash": "543342fa"
+  },
+  "120": {
+    "text": "MicroGPT accepts n_embd, n_head, and n_layer as constructor arguments, making the architecture evolvable.",
+    "hash": "a87869a2"
+  },
+  "125": {
+    "text": "n_layer controls depth -- evolution can discover whether 1 or 2 layers works best for this task.",
+    "hash": "e3b0c442"
+  },
+  "126": {
+    "text": "The lm_head projects back to vocab_size, which stays fixed regardless of the evolved embedding dimension.",
+    "hash": "e94c5dc2"
+  },
+  "132": {
+    "text": "Small init std (0.08) keeps initial outputs low-entropy -- important so all population members start trainable.",
+    "hash": "08b0a2bd"
+  },
+  "136": {
+    "text": "Token and position embeddings are summed then normalized -- this is the model's input pipeline.",
+    "hash": "ab645c3c"
+  },
+  "147": {
+    "text": "HP_SPACE defines the search space -- evolution can only explore combinations of these discrete values.",
+    "hash": "e3b0c442"
+  },
+  "148": {
+    "text": "Embedding dimensions range from tiny (16) to small (64) -- the population will discover which size works best.",
+    "hash": "e3b0c442"
+  },
+  "149": {
+    "text": "Number of attention heads: 1, 2, or 4. Must evenly divide n_embd, which the code enforces.",
+    "hash": "5c4688e3"
+  },
+  "150": {
+    "text": "Depth is limited to 1 or 2 layers -- even this binary choice has a big impact on model capacity vs. training speed.",
+    "hash": "eacd93ac"
+  },
+  "151": {
+    "text": "Learning rate varies by 4x across the space -- this is often the most impactful hyperparameter to tune.",
+    "hash": "5c4688e3"
+  },
+  "152": {
+    "text": "Beta1 controls momentum in Adam -- lower values make the optimizer more responsive to recent gradients.",
+    "hash": "e3b0c442"
+  },
+  "156": {
+    "text": "random_config() is the initialization operator: it creates a single random individual for the population.",
+    "hash": "63dfa0d3"
+  },
+  "158": {
+    "text": "Each hyperparameter is sampled independently and uniformly from its allowed values.",
+    "hash": "1cf7d9d1"
+  },
+  "160": {
+    "text": "Constraint repair: if n_embd isn't divisible by n_head, resample n_head until the constraint is satisfied.",
+    "hash": "d10b36aa"
+  },
+  "165": {
+    "text": "mutate_config() is the mutation operator -- the 'explore' step that introduces variation into the population.",
+    "hash": "35f65a63"
+  },
+  "167": {
+    "text": "Copy first, then mutate -- we never modify the parent's config, preserving it for potential reuse.",
+    "hash": "bfce5cba"
+  },
+  "168": {
+    "text": "Usually mutate 1 hyperparameter, sometimes 2. Small mutations keep children close to proven parents.",
+    "hash": "c54d8797"
+  },
+  "169": {
+    "text": "random.sample picks which hyperparameters to change -- any combination is possible.",
+    "hash": "355d4a58"
+  },
+  "171": {
+    "text": "The new value is sampled uniformly from the full range, not perturbed from the current value. This is a 'resample' mutation.",
+    "hash": "e3b0c442"
+  },
+  "173": {
+    "text": "Same constraint repair as in random_config -- mutations must also produce valid architectures.",
+    "hash": "718fd049"
+  },
+  "178": {
+    "text": "build_model() is a factory: given a config dict, it returns a fresh MicroGPT with those hyperparameters.",
+    "hash": "211d6060"
+  },
+  "180": {
+    "text": "The config dict is unpacked into constructor arguments -- this decouples evolution logic from model internals.",
+    "hash": "78694e95"
+  },
+  "183": {
+    "text": "train_model() runs a fixed number of gradient steps -- in PBT, all members train for the same number of steps per generation.",
+    "hash": "e3b0c442"
+  },
+  "185": {
+    "text": "The optimizer uses the evolved lr and beta1 -- these are the 'phenotype' that evolution tunes.",
+    "hash": "718e1622"
+  },
+  "186": {
+    "text": "beta1 comes from the evolved config, beta2 is fixed at 0.99. Evolution only searches over the most impactful knob.",
+    "hash": "8424d573"
+  },
+  "189": {
+    "text": "Cycling through train_data with modulo ensures we use all examples even if num_steps exceeds dataset size.",
+    "hash": "e3b0c442"
+  },
+  "196": {
+    "text": "Cross-entropy loss is the training signal -- each member independently minimizes its own loss.",
+    "hash": "53f56939"
+  },
+  "201": {
+    "text": "Returning average loss lets us monitor training quality, though fitness is measured separately on validation data.",
+    "hash": "1b63fd95"
+  },
+  "204": {
+    "text": "@torch.no_grad() disables gradient tracking during evaluation -- we only need forward passes for fitness.",
+    "hash": "fbede2b3"
+  },
+  "205": {
+    "text": "evaluate_model() computes the fitness function: validation loss on held-out data. Lower is better.",
+    "hash": "227fe80d"
+  },
+  "209": {
+    "text": "Capping at max_samples=200 speeds up evaluation -- we don't need the full val set to rank members.",
+    "hash": "8fe57775"
+  },
+  "220": {
+    "text": "Average validation loss is the fitness score. The evolution loop will sort the population by this value.",
+    "hash": "df318831"
+  },
+  "224": {
+    "text": "generate_names() lets us qualitatively inspect what each model has learned -- a sanity check beyond loss numbers.",
+    "hash": "cee86f76"
+  },
+  "230": {
+    "text": "Autoregressive generation: predict one token at a time, append it, and feed the growing sequence back in.",
+    "hash": "e3b0c442"
+  },
+  "234": {
+    "text": "Temperature controls randomness: 0.5 is fairly conservative, producing more typical (less surprising) names.",
+    "hash": "22dfb5e8"
+  },
+  "235": {
+    "text": "BOS token acts as both start and end marker -- generating BOS means the name is complete.",
+    "hash": "45bf010c"
+  },
+  "250": {
+    "text": "Phase 1 establishes a baseline: one randomly configured model trained for 500 steps. Evolution must beat this.",
+    "hash": "e3b0c442"
+  },
+  "253": {
+    "text": "Counting parameters shows model capacity -- evolution might discover that smaller or larger models work better.",
+    "hash": "5660d0fd"
+  },
+  "256": {
+    "text": "500 training steps for the baseline gives it a fair amount of learning before we compare.",
+    "hash": "77b6d26c"
+  },
+  "257": {
+    "text": "baseline_val_loss is the number to beat -- if evolution can't improve on a random config, it isn't working.",
+    "hash": "e629d456"
+  },
+  "268": {
+    "text": "POP_SIZE=8 is small but enough to demonstrate selection pressure. Production PBT uses dozens to hundreds.",
+    "hash": "33cdf373"
+  },
+  "269": {
+    "text": "NUM_GENERATIONS=6 means 6 rounds of train-evaluate-select-mutate. Each generation refines the population.",
+    "hash": "e3b0c442"
+  },
+  "270": {
+    "text": "STEPS_PER_GEN=200 means each member trains for 200 steps before being evaluated. Total: 200 x 6 = 1200 steps for survivors.",
+    "hash": "35a57e98"
+  },
+  "271": {
+    "text": "TOP_K=3 means the best 3 survive each generation. The other 5 are replaced by mutated offspring.",
+    "hash": "290429b2"
+  },
+  "275": {
+    "text": "Population initialization: create POP_SIZE individuals, each with a random config and fresh model.",
+    "hash": "e629d456"
+  },
+  "278": {
+    "text": "val_loss starts at infinity -- every member must earn its fitness through actual training and evaluation.",
+    "hash": "851ef511"
+  },
+  "283": {
+    "text": "Selection pressure: top-3 survive, bottom-5 are replaced. This is truncation selection, the simplest form.",
+    "hash": "3b6eff6b"
+  },
+  "287": {
+    "text": "The main evolution loop: each generation trains, evaluates, selects, and mutates the population.",
+    "hash": "4ea4784a"
+  },
+  "289": {
+    "text": "Inner loop: every population member trains for the same number of steps -- fair comparison.",
+    "hash": "1020bc83"
+  },
+  "290": {
+    "text": "Training continues from where the member left off -- survivors accumulate learning across generations.",
+    "hash": "b9907ff1"
+  },
+  "291": {
+    "text": "After training, measure fitness. This val_loss determines who survives and who gets replaced.",
+    "hash": "cb24d679"
+  },
+  "294": {
+    "text": "Sorting by val_loss implements fitness ranking -- population[0] is the fittest, population[-1] is the weakest.",
+    "hash": "d59be0c9"
+  },
+  "296": {
+    "text": "Track the best individual each generation -- this lets us see if evolution is making progress.",
+    "hash": "3f36c440"
+  },
+  "298": {
+    "text": "Average loss across the population shows overall population fitness, not just the best individual.",
+    "hash": "2634752f"
+  },
+  "320": {
+    "text": "Survivors are the elite: the top-K members that pass to the next generation unchanged.",
+    "hash": "52e7945d"
+  },
+  "321": {
+    "text": "Survivors keep their trained weights -- this is the 'exploit' part of PBT. Good solutions are preserved.",
+    "hash": "b6a8376f"
+  },
+  "323": {
+    "text": "We need POP_SIZE - TOP_K new children to fill the population back to its original size.",
+    "hash": "4bd974fa"
+  },
+  "325": {
+    "text": "Random parent selection from survivors: each child descends from one of the top-K. This spreads good genes.",
+    "hash": "da259717"
+  },
+  "326": {
+    "text": "mutate_config creates the child's config by randomly perturbing 1-2 hyperparameters of the parent.",
+    "hash": "ba5ec51d"
+  },
+  "329": {
+    "text": "Architecture change detection: if n_embd, n_head, or n_layer changed, the weight tensors have different shapes.",
+    "hash": "b78d7127"
+  },
+  "335": {
+    "text": "If architecture changed, the child starts from scratch -- weight inheritance is impossible with different tensor shapes.",
+    "hash": "cbf74ca9"
+  },
+  "336": {
+    "text": "A fresh model with random weights. This child must learn everything from zero, but may have a better architecture.",
+    "hash": "e3b0c442"
+  },
+  "338": {
+    "text": "The PBT 'exploit' step: same architecture means we can copy the parent's learned weights to the child.",
+    "hash": "ed517cfa"
+  },
+  "340": {
+    "text": "load_state_dict copies all parameters -- the child starts where the parent left off, a huge head start.",
+    "hash": "5497eb67"
+  },
+  "342": {
+    "text": "Each child gets a unique ID for tracking lineage across generations.",
+    "hash": "ba5ec51d"
+  },
+  "345": {
+    "text": "New children start with inf val_loss -- they haven't been evaluated yet and will be assessed next generation.",
+    "hash": "51cc3aec"
+  },
+  "349": {
+    "text": "Replace the entire population with survivors + children. The cycle repeats.",
+    "hash": "91cb0e44"
+  },
+  "359": {
+    "text": "Final sort to identify the overall best model after all generations of evolution.",
+    "hash": "e3b0c442"
+  },
+  "360": {
+    "text": "best_evolved is the fittest individual discovered across the entire evolutionary run.",
+    "hash": "35a57e98"
+  },
+  "365": {
+    "text": "Generation-by-generation table shows whether evolution is making progress -- best loss should decrease over time.",
+    "hash": "e629d456"
+  },
+  "373": {
+    "text": "The key comparison: did evolution find a better configuration than a single random guess?",
+    "hash": "e3b0c442"
+  },
+  "375": {
+    "text": "Positive improvement means evolution beat the baseline -- the search found a better region of hyperparameter space.",
+    "hash": "03530a54"
+  },
+  "380": {
+    "text": "Qualitative comparison: do the evolved model's generated names look more realistic than the baseline's?",
+    "hash": "ebe6826a"
+  },
+  "389": {
+    "text": "Population diversity in the final generation: shows whether evolution converged to one config or maintained variety.",
+    "hash": "ef2629c5"
+  },
+  "391": {
+    "text": "Printing each member's config reveals how much the population has converged -- similar configs suggest a fitness peak.",
+    "hash": "cb07b519"
+  },
+  "408": {
+    "text": "The PBT loop in summary: initialize, train, evaluate, select, mutate, inherit, repeat.",
+    "hash": "9dd1dc82"
+  },
+  "418": {
+    "text": "Lab 23 improves training data (output quality); Lab 24 improves the model architecture and optimizer settings.",
+    "hash": "b5ecfd52"
+  },
+  "420": {
+    "text": "Lab 23 is like self-play refinement (STaR); Lab 24 is like natural selection -- fundamentally different strategies.",
+    "hash": "b5ecfd52"
+  },
+  "424": {
+    "text": "EXPLOIT: children inherit trained weights from successful parents, getting a head start on learning.",
+    "hash": "5febceb7"
+  },
+  "425": {
+    "text": "EXPLORE: random hyperparameter mutations ensure the population doesn't get stuck in a local optimum.",
+    "hash": "dac2ae7c"
+  },
+  "428": {
+    "text": "PBT was originally designed to evolve learning rate schedules and data augmentation during training.",
+    "hash": "fbf122d6"
+  },
+  "430": {
+    "text": "FunSearch uses the same pattern but evolves LLM-generated programs instead of numeric hyperparameters.",
+    "hash": "7965beda"
+  },
+  "431": {
+    "text": "Neural Architecture Search (NAS) is the extreme version: evolve the network topology itself.",
+    "hash": "e3b0c442"
+  }
+}

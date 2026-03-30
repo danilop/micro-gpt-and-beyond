@@ -5,6 +5,14 @@ Same microGPT architecture as the PyTorch edition (03), but focused on
 demonstrating how different sampling strategies shape model output.
 Five strategies: greedy, temperature, top-k, top-p (nucleus), min-p.
 Same model, completely different outputs.
+
+Top-p (nucleus) sampling is from "The Curious Case of Neural Text Degeneration"
+(Holtzman et al., 2020), https://arxiv.org/abs/1904.09751. Min-p sampling is
+from "Min P Sampling: Balancing Creativity and Coherence at High Temperature"
+(Nguyen et al., 2024), https://arxiv.org/abs/2407.01082. Temperature scaling
+and top-k are standard techniques. Top-p and min-p are the most widely used in
+production -- top-p dynamically adjusts the candidate set based on distribution
+shape, while min-p offers a simpler adaptive threshold.
 """
 
 import math

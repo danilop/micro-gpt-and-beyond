@@ -1,3 +1,19 @@
+"""
+microGPT — pure-Python scalar autograd edition.
+
+A minimal decoder-only GPT built entirely from scratch in Python, with no
+external libraries. The scalar autograd engine is inspired by Andrej Karpathy's
+micrograd (https://github.com/karpathy/micrograd), and the character-level
+language model follows his makemore (https://github.com/karpathy/makemore).
+
+The transformer architecture originates from "Attention Is All You Need"
+(Vaswani et al., 2017, https://arxiv.org/abs/1706.03762), though this
+implementation uses only the decoder half rather than the full encoder-decoder
+design. Normalization follows "Root Mean Square Layer Normalization" (Zhang &
+Sennrich, 2019, https://arxiv.org/abs/1910.07467), replacing the original
+paper's LayerNorm with the simpler RMSNorm.
+"""
+
 import os
 import math
 import random
