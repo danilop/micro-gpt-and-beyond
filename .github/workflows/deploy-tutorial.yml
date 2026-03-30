@@ -37,7 +37,7 @@ jobs:
         uses: astral-sh/setup-uv@v4
 
       - name: Install walk-the-code
-        run: uv tool install "walk-the-code @ git+https://github.com/danilop/walk-the-code@905481c0e59ecc98f58f7570e3f29f56ec83b7a4"
+        run: uv tool install "walk-the-code @ git+https://github.com/danilop/walk-the-code"
 
       - name: Build static bundle
         run: wtc-build walk-the-code/config.json
@@ -47,8 +47,7 @@ jobs:
           WTC_PYTHON="$(uv tool dir)/walk-the-code/bin/python"
           WTC_ASSETS=$("$WTC_PYTHON" -c "from walk_the_code import ASSETS_DIR; print(ASSETS_DIR)")
           mkdir -p _site/data
-          cp "$WTC_ASSETS"/index.html "$WTC_ASSETS"/lab.html "$WTC_ASSETS"/chapter.html "$WTC_ASSETS"/favicon.svg _site/
-          cp "$WTC_ASSETS"/style.css "$WTC_ASSETS"/site.js "$WTC_ASSETS"/lab.js "$WTC_ASSETS"/terminal.js "$WTC_ASSETS"/chapter.js _site/
+          cp "$WTC_ASSETS"/*.html "$WTC_ASSETS"/*.js "$WTC_ASSETS"/*.css "$WTC_ASSETS"/*.svg _site/
           cp walk-the-code/data/labs.json _site/data/
 
       - uses: actions/upload-pages-artifact@v3
