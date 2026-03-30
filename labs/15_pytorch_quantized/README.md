@@ -1,4 +1,4 @@
-# microGPT and Beyond, PyTorch Quantized
+# Understanding LLMs by Building One: PyTorch Quantized
 
 Same architecture as the batched versions (04/06/08), but with inference-only quantization. This version shows how to compress a trained model from 32-bit floats (FP32) to 8-bit integers (INT8), the technique used to deploy models on phones, edge devices, and production servers.
 

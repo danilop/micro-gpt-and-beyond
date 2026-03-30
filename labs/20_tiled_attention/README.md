@@ -1,4 +1,4 @@
-# microGPT and Beyond, Tiled Attention (FlashAttention)
+# Understanding LLMs by Building One: Tiled Attention (FlashAttention)
 
 Same architecture as the PyTorch version (03), but with three attention implementations for inference: standard, online softmax, and tiled (the FlashAttention algorithm). All three produce identical outputs, and the difference is how many trips to slow memory they need. This shows why FlashAttention is the single most impactful optimization in modern LLM inference.
 

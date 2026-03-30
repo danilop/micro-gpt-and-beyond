@@ -3,8 +3,8 @@ microGPT with LoRA — parameter-efficient fine-tuning.
 
 Pre-trains a standard microGPT on all names, then fine-tunes with LoRA
 (Low-Rank Adaptation) on a filtered subset — names whose consonants are
-all drawn from {m, n, r} (e.g., emma, aria, naomi, aurora). This phonetic
-style shift cannot be achieved by input conditioning alone. Only the small
+all drawn from {m, n, r} (e.g., emma, aria, naomi, aurora). This creates a
+distinct phonetic style that is easy to inspect in the generated samples. Only the small
 LoRA matrices are trained — the base model stays frozen. Demonstrates:
   - Freezing base weights and injecting low-rank adapters
   - Training a small fraction of parameters to shift the output distribution

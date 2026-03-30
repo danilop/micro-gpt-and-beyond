@@ -104,7 +104,14 @@
     "hash": "a6ff69d4"
   },
   "84": {
-    "text": "How many query heads share each KV head. MHA: 1 (no sharing). GQA: 2. MQA: 4 (all share one).",
+    "text": "The repeat factor is the whole sharing ratio: 1 means classic MHA, 2 means grouped-query attention, 4 means multi-query attention.",
+    "diagram": "gqa_mha",
+    "highlight": [
+      "q1_mha",
+      "q2_mha",
+      "q3_mha",
+      "q4_mha"
+    ],
     "hash": "cd9ee927"
   },
   "87": {
@@ -112,11 +119,20 @@
     "hash": "433b771f"
   },
   "89": {
-    "text": "Keys use fewer heads, this is where the memory saving comes from. With MQA, this is just <code>1 * head_dim = 4</code> parameters per position instead of <code>4 * head_dim = 16</code>.",
+    "text": "Reducing key heads is where GQA saves KV-cache memory. Here two query-head groups can share one K stream instead of learning four separate ones.",
+    "diagram": "gqa_grouped",
+    "highlight": [
+      "q1_gqa",
+      "q2_gqa"
+    ],
     "hash": "1283664d"
   },
   "90": {
-    "text": "Values match keys, always the same number of KV heads. The KV cache stores these, so fewer heads = less memory during inference.",
+    "text": "MQA is the extreme case on the same axis: one shared value head can serve all query heads, minimizing cache size at some quality cost.",
+    "diagram": "gqa_multi",
+    "highlight": [
+      "kv1_mqa"
+    ],
     "hash": "3af97cec"
   },
   "92": {
@@ -347,9 +363,9 @@
       "q_mqa"
     ]
   },
-  "179": {
+  "180": {
     "text": "Shared generation function for all variants.",
-    "hash": "e3b0c442"
+    "hash": "9f2a2f34"
   },
   "181": {
     "text": "Disable dropout and other training-only behavior so the model produces deterministic outputs.",
@@ -403,9 +419,9 @@
     "text": "Convert the list of generated token IDs back into characters and join them into a readable name string.",
     "hash": "a1ca669a"
   },
-  "201": {
+  "202": {
     "text": "Train each variant in sequence with identical data and seeds.",
-    "hash": "e3b0c442"
+    "hash": "8725aa67"
   },
   "207": {
     "text": "Reset seeds before each variant for a fair comparison, same random init and data order.",
@@ -419,25 +435,21 @@
     "text": "Re-shuffle to the same order.",
     "hash": "7e7dcf46"
   },
-  "211": {
-    "text": "Instantiate the model with this variant's specific number of KV heads. The same class handles MHA, GQA, and MQA through this one parameter.",
-    "hash": "e3b0c442"
-  },
   "212": {
     "text": "Count total parameters, fewer KV heads = fewer KV projection parameters.",
     "hash": "a668b5fa"
+  },
+  "213": {
+    "text": "Instantiate the model with this variant's specific number of KV heads. The same class handles MHA, GQA, and MQA through this one parameter.",
+    "hash": "3ba34a25"
   },
   "216": {
     "text": "KV cache memory estimate, the key metric for inference. Fewer KV heads = proportionally less cache memory. At 7B scale with 2048 context, this difference is gigabytes per request.",
     "hash": "e9058f18"
   },
-  "222": {
+  "223": {
     "text": "Same optimizer for all variants.",
-    "hash": "e3b0c442"
-  },
-  "224": {
-    "text": "The standard training loop: pick a name, tokenize it, run a forward pass, compute loss, backpropagate, and update weights for 1000 steps.",
-    "hash": "e3b0c442"
+    "hash": "92d21e78"
   },
   "225": {
     "text": "Pick the next name from the shuffled list, wrapping around when we reach the end. This cycling ensures continuous training across all steps.",
@@ -451,25 +463,25 @@
     "text": "Limit the sequence length to block_size so it fits the model's positional embedding table.",
     "hash": "ae86abd0"
   },
-  "229": {
-    "text": "Convert the first n token IDs into a tensor the model can consume as input.",
-    "hash": "e3b0c442"
+  "228": {
+    "text": "The standard training loop: pick a name, tokenize it, run a forward pass, compute loss, backpropagate, and update weights for 1000 steps.",
+    "hash": "3d9da8cd"
   },
   "230": {
     "text": "Target tokens (shifted by one).",
     "hash": "968a3346"
   },
-  "232": {
-    "text": "Run the full model on the current input batch to get next-token predictions.",
-    "hash": "e3b0c442"
+  "231": {
+    "text": "Convert the first n token IDs into a tensor the model can consume as input.",
+    "hash": "1b63fd95"
   },
   "233": {
     "text": "Measure how far the model's predictions are from the true next tokens using cross-entropy loss.",
     "hash": "17df3885"
   },
-  "235": {
-    "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
-    "hash": "e3b0c442"
+  "234": {
+    "text": "Run the full model on the current input batch to get next-token predictions.",
+    "hash": "4f1dd754"
   },
   "236": {
     "text": "Compute gradients for every parameter by propagating the loss backward through the computation graph.",
@@ -482,6 +494,10 @@
   "238": {
     "text": "Write the decayed learning rate into every parameter group so the optimizer uses it on the next step.",
     "hash": "60602e3a"
+  },
+  "239": {
+    "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
+    "hash": "9f6d3592"
   },
   "240": {
     "text": "Apply the optimizer step, adjusting every parameter in the direction that reduces the loss.",

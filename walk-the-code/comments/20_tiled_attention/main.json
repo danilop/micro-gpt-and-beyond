@@ -1,8 +1,4 @@
 {
-  "24": {
-    "text": "This lab is really about memory traffic, so the math imports are there to let us write attention explicitly enough that every read, write, and normalization step becomes visible.",
-    "hash": "e3b0c442"
-  },
   "25": {
     "text": "Same dataset, same model family. The point is not what the model learns, but how different attention algorithms move data while producing the same answer.",
     "hash": "b67c9dde"
@@ -10,6 +6,10 @@
   "26": {
     "text": "We keep the run deterministic so the only meaningful comparison is between standard, online, and tiled attention implementations.",
     "hash": "de2abade"
+  },
+  "27": {
+    "text": "This lab mixes PyTorch training with NumPy attention kernels because the real teaching target is memory traffic, not autograd machinery.",
+    "hash": "7e18ed42"
   },
   "29": {
     "text": "NumPy is the right tool here because it lets the attention algorithm stay explicit and inspectable instead of disappearing behind fused kernels.",
@@ -488,7 +488,11 @@
     "hash": "33c601d1"
   },
   "244": {
-    "text": "Read query vector from HBM once.",
+    "text": "Online softmax begins by loading one query row at a time. That is why memory use stays linear instead of materializing the whole attention matrix.",
+    "diagram": "tiled_online",
+    "highlight": [
+      "readq"
+    ],
     "hash": "f6e5cf98"
   },
   "245": {
@@ -508,7 +512,11 @@
     "hash": "922ccbf3"
   },
   "251": {
-    "text": "Only attend to positions 0..i (causal). Process each key-value pair one at a time.",
+    "text": "The inner loop streams over past keys and values only, matching the causal structure without ever storing an NxN score table.",
+    "diagram": "tiled_online",
+    "highlight": [
+      "loop"
+    ],
     "hash": "9580a58e"
   },
   "252": {
@@ -524,7 +532,11 @@
     "hash": "55eca396"
   },
   "257": {
-    "text": "Track the running maximum for numerical stability.",
+    "text": "Track the running maximum so softmax can be updated stably as more keys arrive instead of needing the full row upfront.",
+    "diagram": "tiled_online",
+    "highlight": [
+      "update"
+    ],
     "hash": "b7e6abcd"
   },
   "258": {
@@ -536,7 +548,11 @@
     "hash": "9c6536c3"
   },
   "260": {
-    "text": "Rescale the running output and add the new value's weighted contribution. Same rescaling trick as the sum.",
+    "text": "Accumulate the weighted output incrementally alongside the running normalization terms. This is the core online-softmax trick.",
+    "diagram": "tiled_online",
+    "highlight": [
+      "accum"
+    ],
     "hash": "3d2fdc9f"
   },
   "261": {
@@ -544,7 +560,11 @@
     "hash": "a1fbcf2f"
   },
   "263": {
-    "text": "Divide by the final sum to complete the softmax, equivalent to standard softmax, but computed in a single pass without storing N scores.",
+    "text": "Only the final normalized output row is written back. The intermediate attention probabilities never hit main memory.",
+    "diagram": "tiled_online",
+    "highlight": [
+      "write"
+    ],
     "hash": "4f996065"
   },
   "264": {
@@ -780,7 +800,7 @@
     "hash": "1dcc631b"
   },
   "367": {
-    "text": "Standard attention writes 2*N*N elements (scores + probabilities) per head, the O(N^2) cost. Tiled and online write only N*d elements (just the output), a dramatic reduction that grows with sequence length.",
+    "text": "Summary of the exact write counts. Across all heads, standard attention writes 2*n_head*N*N score/probability elements while tiled and online write only n_head*N*d output elements; per head that is 2*N*N vs N*d.",
     "hash": "6d9733f3"
   },
   "394": {

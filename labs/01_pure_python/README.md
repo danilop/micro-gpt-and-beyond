@@ -1,4 +1,4 @@
-# microGPT and Beyond, Pure Python
+# Understanding LLMs by Building One: Pure Python
 
 > *"This file is the complete algorithm. Everything else is just efficiency."*
 > -- Andrej Karpathy

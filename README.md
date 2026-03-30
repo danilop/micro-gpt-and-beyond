@@ -1,8 +1,8 @@
-# microGPT and Beyond
+# Understanding LLMs by Building One
 
 A progressive series of labs exploring tiny language models, inspired by Andrej Karpathy's [microGPT](https://karpathy.ai/microgpt.html), a GPT trained and run in a single file of pure Python. Each lab teaches something different about how neural networks are built, trained, and served. The models learn to generate human names from a dataset of ~32,000 real ones.
 
-**[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** — browse the code with line-by-line explanations, Mermaid diagrams with per-line node highlighting, and lab descriptions. The 22 labs are organized into 7 chapters (Foundations, Frameworks, Tokenization & Architecture, Inference Optimization, Fine-tuning & Deployment, Alternative Paradigms, Production Serving), each with an overview and a conceptual diagram. Run labs directly from the browser when using the local server.
+**[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** — browse the code with line-by-line explanations, Mermaid diagrams with per-line node highlighting, and lab descriptions. The 24 labs are organized into 8 chapters (Foundations, Frameworks, Tokenization & Architecture, Inference Optimization, Fine-tuning & Deployment, Alternative Paradigms, Production Serving, Self-Improvement), each with an overview and a conceptual diagram. Run labs directly from the browser when using the local server.
 
 The progression goes from raw first principles to framework-powered GPU code, modern architecture upgrades, inference optimization, and alternative paradigms:
 
@@ -30,12 +30,14 @@ labs/
   20_tiled_attention/        FlashAttention algorithm from scratch. Tiling beats the memory wall.
   21_paged_attention/        PagedAttention (vLLM). OS-style virtual memory for KV caches.
   22_disaggregated_serving/  Split prefill and decode onto separate workers. No more head-of-line blocking.
+  23_self_improving/         Generate, score, filter, retrain. Improve the training data.
+  24_evolutionary/           Population-based training. Improve the model itself.
 data/                        Shared dataset (auto-downloaded on first run if not present).
 ```
 
 ## Chapters
 
-The [interactive web tutorial](https://danilop.github.io/micro-gpt-and-beyond/) organizes the labs into 7 chapters, each with a description and conceptual diagram:
+The [interactive web tutorial](https://danilop.github.io/micro-gpt-and-beyond/) organizes the labs into 8 chapters, each with a description and conceptual diagram:
 
 | Chapter | Labs | Theme |
 |---------|------|-------|
@@ -46,6 +48,7 @@ The [interactive web tutorial](https://danilop.github.io/micro-gpt-and-beyond/) 
 | **Fine-tuning & Deployment** | 14, 15 | LoRA and INT8 quantization — adapt and compress |
 | **Alternative Paradigms** | 16, 17, 18 | Text diffusion and soft thinking — beyond left-to-right |
 | **Production Serving** | 19, 20, 21, 22 | Speculative decoding, FlashAttention, PagedAttention, disaggregated serving |
+| **Self-Improvement** | 23, 24 | Filtered self-training and population-based evolution |
 
 ## The idea
 
@@ -82,12 +85,15 @@ Every version trains the same architecture (a character-level transformer with R
 | 20 tiled attention | automatic | yes | no | CPU |
 | 21 paged attention | hand-built scalar engine | no | no | CPU (slow) |
 | 22 disaggregated serving | automatic | yes | no | CPU |
+| **Self-Improvement** | | | | |
+| 23 self-improving | automatic | yes | no | CPU |
+| 24 evolutionary | automatic | yes | no | CPU |
 
 Beyond the framework comparisons, the labs extend the base model with **modern architecture and techniques**: BPE tokenization, rotary position embeddings, grouped-query attention, KV caching, sampling strategies, and LoRA fine-tuning.
 
-The text diffusion lab takes a different path: instead of autoregressive (left-to-right) generation, it uses a **masked diffusion model** (MDLM/LLaDA). Names emerge from pure noise, all [MASK] tokens, through iterative unmasking. Same scalar autograd engine as the pure Python version, same zero dependencies, but a fundamentally different generative paradigm.
+The text diffusion lab takes a different path: instead of autoregressive (left-to-right) generation, it uses a **masked diffusion model** (MDLM/LLaDA). Names emerge from pure noise, all [MASK] tokens, through iterative unmasking. It keeps the same small-transformer scale as the PyTorch labs, but swaps in bidirectional attention and a different training objective.
 
-The quantization lab shows how to deploy efficiently: **INT8 quantization** compresses a trained model from 32-bit floats to 8-bit integers, reducing size by ~4x and speeding up inference. This is how production models run on edge devices and servers.
+The quantization lab shows how to deploy efficiently: **INT8 quantization** compresses a trained model from 32-bit floats to 8-bit integers, reducing size by ~4x. The educational implementation demonstrates the size tradeoff directly and explains why production kernels also translate that compression into inference speedups.
 
 Several labs explore **inference optimization**, the techniques used by production systems like vLLM, FlashAttention, and TensorRT-LLM. Speculative decoding uses a small draft model to propose tokens while a larger target model verifies them in one pass. FlashAttention restructures attention to stay in fast on-chip memory. PagedAttention applies OS-style virtual memory paging to KV caches. Disaggregated serving splits prefill and decode onto separate workers, eliminating head-of-line blocking.
 
@@ -136,6 +142,10 @@ The soft thinking and soft training labs explore **preserving the full output di
 - `17_soft_thinking` for concept tokens that preserve the full distribution at inference
 - `18_soft_training` to train the model to expect soft inputs (scheduled curriculum)
 
+**Curious about self-improvement?** See the two complementary loops:
+- `23_self_improving` for generate-score-filter-retrain on the model's own outputs
+- `24_evolutionary` for population-based training over architecture and optimizer choices
+
 ## How-to guides
 
 ### How to run a specific lab
@@ -153,6 +163,13 @@ The soft thinking and soft training labs explore **preserving the full output di
 3. Compare training loops: look at how gradients are computed and parameters are updated in each.
 4. Run the batched variants (`04`, `06`, `08`) to see how each framework handles padding, masking, and vectorization.
 5. All six labs train the same architecture on the same data — differences in output come from framework semantics and hardware.
+
+### How to run workspace smoke checks
+
+1. From the shared workspace root, run `python3 smoke_check.py`.
+2. This always validates the tutorial config, runs the `walk-the-code` core unit subset, and executes the pure-Python labs `09` and `21`.
+3. Optional framework-heavy labs are reported separately based on whether `numpy`, `torch`, `jax`, and `mlx` are installed in the interpreter you used.
+4. To include socket-binding server tests for `walk-the-code`, run `python3 smoke_check.py --include-server-tests`.
 
 ### How to explore the interactive tutorial
 
@@ -199,6 +216,8 @@ The soft thinking and soft training labs explore **preserving the full output di
 | 20 | Tiled attention | PyTorch | numpy, torch | No |
 | 21 | Paged attention | None | None | Yes |
 | 22 | Disaggregated serving | PyTorch | numpy, torch | No |
+| 23 | Self-improving | PyTorch | numpy, torch | No |
+| 24 | Evolutionary | PyTorch | numpy, torch | No |
 
 ### Hyperparameter defaults
 
@@ -223,9 +242,17 @@ All labs (except 09) share these training hyperparameters:
 | Fine-tuning & deployment | Python 3, uv, PyTorch basics |
 | Alternative paradigms | Python 3, uv, understanding of autoregressive models |
 
+### Runtime environments
+
+| Environment | What should work |
+|-------------|------------------|
+| Minimal Python | `walk-the-code` validation/tests, labs `01`, `09`, `21`, and the workspace smoke checks |
+| Full PyTorch env | All PyTorch-based labs (`03`, `04`, `10`–`24`) plus the minimal set |
+| Full research env | PyTorch labs + JAX labs (`05`, `06`) + MLX labs (`07`, `08`) on Apple Silicon |
+
 ## Running
 
-**Browse online:** Visit the **[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** to read the code with line-by-line explanations — no installation needed. Labs are grouped into 7 chapters, each with a description and conceptual diagram. Click any code line to see what it does; annotated lines include Mermaid diagrams with highlighted nodes that change as you navigate.
+**Browse online:** Visit the **[Interactive Web Tutorial](https://danilop.github.io/micro-gpt-and-beyond/)** to read the code with line-by-line explanations — no installation needed. Labs are grouped into 8 chapters, each with a description and conceptual diagram. Click any code line to see what it does; annotated lines include Mermaid diagrams with highlighted nodes that change as you navigate.
 
 **Run locally with the tutorial:** Start the [walk-the-code](https://github.com/danilop/walk-the-code) web tutorial server to browse code, read explanations with diagrams, and run labs from the browser:
 

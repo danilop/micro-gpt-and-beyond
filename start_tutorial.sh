@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start the microGPT interactive web tutorial
+# Start the Understanding LLMs by Building One interactive web tutorial
 # Usage: ./start_tutorial.sh [port]  (default: 8000)
 set -e
 
@@ -24,7 +24,7 @@ else
     SERVER_SOURCE="newly installed tool: $(command -v wtc-serve)"
 fi
 
-echo "Starting microGPT tutorial at http://localhost:$PORT"
+echo "Starting Understanding LLMs by Building One at http://localhost:$PORT"
 echo "Using walk-the-code from $SERVER_SOURCE"
 
 # Open browser after a short delay (background)

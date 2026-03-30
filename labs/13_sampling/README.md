@@ -1,4 +1,4 @@
-# microGPT and Beyond, Sampling Strategies
+# Understanding LLMs by Building One: Sampling Strategies
 
 Same microGPT architecture as the PyTorch edition (03), trained identically, but focused entirely on what happens after training: how you turn logits into tokens. Five sampling strategies (greedy, temperature, top-k, top-p/nucleus, min-p), each producing completely different output from the same model.
 

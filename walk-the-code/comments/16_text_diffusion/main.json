@@ -3,17 +3,13 @@
     "text": "This lab implements a masked diffusion language model \u2014 the text equivalent of image diffusion. Instead of adding Gaussian noise to pixels, we replace characters with MASK tokens.",
     "hash": "b6d267ef"
   },
-  "8": {
-    "text": "Two key papers: MDLM (Sahoo et al., 2024) introduced the masked diffusion framework; LLaDA (Nie et al., 2025) scaled it to large language models and showed competitive results.",
-    "hash": "e7ef9f69"
-  },
   "2": {
     "text": "The model name says it all: instead of predicting the next token, this model starts from an all-MASK sequence and iteratively reveals tokens.",
     "hash": "3ef0c3f9"
   },
-  "17": {
-    "text": "Same imports as the autoregressive labs. The diffusion magic is all in the training loop and inference procedure, not in exotic dependencies.",
-    "hash": "e3b0c442"
+  "8": {
+    "text": "Two key papers: MDLM (Sahoo et al., 2024) introduced the masked diffusion framework; LLaDA (Nie et al., 2025) scaled it to large language models and showed competitive results.",
+    "hash": "e7ef9f69"
   },
   "18": {
     "text": "Diffusion replaces left-to-right generation with a denoising process, so the math here supports both ordinary attention scaling and the noise schedule that drives unmasking.",
@@ -48,7 +44,7 @@
     "hash": "7e7dcf46"
   },
   "29": {
-    "text": "Section header: the dataset and tokenizer are identical to previous labs, keeping the focus on the new generation paradigm.",
+    "text": "The setup is still standard PyTorch. The diffusion-specific behavior shows up in the masking objective and the iterative unmasking loop, not in the imports.",
     "hash": "5c4688e3"
   },
   "32": {
@@ -127,13 +123,13 @@
     "text": "RMSNorm: simpler than LayerNorm, just scales by inverse root-mean-square. No learnable parameters.",
     "hash": "69fade3d"
   },
-  "66": {
-    "text": "Compute root-mean-square and scale so vectors have roughly unit magnitude. The <code>rsqrt</code> fuses the division and square root for efficiency.",
-    "hash": "53678ba7"
-  },
   "65": {
     "text": "The forward method normalizes by root-mean-square: simpler than LayerNorm because there is no mean subtraction or learned bias.",
     "hash": "a87869a2"
+  },
+  "66": {
+    "text": "Compute root-mean-square and scale so vectors have roughly unit magnitude. The <code>rsqrt</code> fuses the division and square root for efficiency.",
+    "hash": "53678ba7"
   },
   "69": {
     "text": "The key difference from GPT: <strong>bidirectional</strong> attention. Every position can see every other position \u2014 no causal mask. This lets the model gather clues from all unmasked tokens in any direction to fill in the blanks.",
@@ -211,6 +207,10 @@
     "text": "Bidirectional attention instead of the causal attention used in GPT.",
     "hash": "f82c6ad9"
   },
+  "108": {
+    "text": "Second pre-norm before the MLP sublayer.",
+    "hash": "f58a7657"
+  },
   "112": {
     "text": "Attention sublayer with residual connection. Gradients flow through both the attention path and the skip connection.",
     "hash": "5133b743"
@@ -218,10 +218,6 @@
   "113": {
     "text": "MLP sublayer with residual connection. Same pattern: normalize, transform, add back.",
     "hash": "50e2183f"
-  },
-  "108": {
-    "text": "Second pre-norm before the MLP sublayer.",
-    "hash": "f58a7657"
   },
   "117": {
     "text": "The full model: a bidirectional transformer that predicts clean tokens from masked input.",

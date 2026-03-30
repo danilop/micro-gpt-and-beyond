@@ -1,4 +1,4 @@
-# microGPT and Beyond, Soft Training
+# Understanding LLMs by Building One: Soft Training
 
 Builds on Lab 17 (soft thinking): instead of only using concept tokens at inference, this version also uses them during training. A curriculum gradually replaces ground-truth token embeddings with the model's own soft predictions, closing the train-test gap that limits inference-only soft thinking.
 

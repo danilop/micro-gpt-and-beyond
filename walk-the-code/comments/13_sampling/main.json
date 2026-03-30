@@ -614,17 +614,17 @@
     "text": "Logits for the next token after \"mar\".",
     "hash": "7d28f274"
   },
-  "294": {
+  "295": {
     "text": "Helper to format the top probabilities as a readable string.",
-    "hash": "e3b0c442"
+    "hash": "11ad67e7"
   },
   "296": {
     "text": "Show the top tokens and their probabilities, plus how many tokens have non-zero probability.",
     "hash": "47a6d438"
   },
-  "307": {
+  "308": {
     "text": "Raw model distribution at T=1.0, the model's unfiltered opinion.",
-    "hash": "e3b0c442"
+    "hash": "08560b58"
   },
   "311": {
     "text": "T=0.3: the distribution becomes very peaked, the top token dominates.",

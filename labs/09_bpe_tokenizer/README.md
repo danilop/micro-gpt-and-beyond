@@ -1,4 +1,4 @@
-# microGPT and Beyond, BPE Tokenizer
+# Understanding LLMs by Building One: BPE Tokenizer
 
 Byte-Pair Encoding from scratch, then a side-by-side comparison of character-level vs BPE tokenization on the names dataset. Zero dependencies, pure Python.
 

@@ -1,4 +1,4 @@
-# microGPT and Beyond, KV Cache
+# Understanding LLMs by Building One: KV Cache
 
 Same model as lab 03, but with the single most important inference optimization in all of LLM serving: caching Key and Value tensors so each new token only computes attention for ONE position instead of reprocessing the entire sequence.
 

@@ -1,4 +1,4 @@
-# microGPT and Beyond, Rotary Position Embeddings (RoPE)
+# Understanding LLMs by Building One: Rotary Position Embeddings (RoPE)
 
 Same architecture as version 03 (PyTorch), but learned positional embeddings are replaced with Rotary Position Embeddings. RoPE encodes position by rotating query and key vectors in complex space, so the attention dot product naturally captures *relative* position without any learned parameters.
 

@@ -366,9 +366,9 @@ for name, stats, note in [
 N, d, nh = seq_len, head_dim, n_head
 print(
     f"Summary:\n"
-    f"  Standard writes {2 * nh * N * N:>5d} elements for the attention matrix (O(N^2))\n"
-    f"  Tiled and online write only {nh * N * d:>5d} elements for the output (O(N*d))\n"
-    f"  At GPT-3 scale (N=2048, d=128): that's 16M vs 1M elements per head"
+    f"  Across all heads, standard writes {2 * nh * N * N:>5d} score/probability elements (O(n_head*N^2))\n"
+    f"  Across all heads, tiled and online write only {nh * N * d:>5d} output elements (O(n_head*N*d))\n"
+    f"  Per head at N=2048, d=128: 2*N^2 = {2 * 2048 * 2048 / 1e6:.1f}M vs N*d = {2048 * 128 / 1024:.0f}K elements"
 )
 
 # ---------------------------------------------------------------------------

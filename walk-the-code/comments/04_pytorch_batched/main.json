@@ -7,9 +7,9 @@
     "text": "Same dataset again. The new complexity comes from batching variable-length names, not from changing the task.",
     "hash": "7e18ed42"
   },
-  "22": {
+  "23": {
     "text": "Random ordering is still ordinary. The real novelty is that once examples travel in groups, padding and masking become part of the model story.",
-    "hash": "e3b0c442"
+    "hash": "cf1070d3"
   },
   "24": {
     "text": "Same PyTorch foundation as lab 03. The interesting shift is from a toy single-example loop to a mini-batch training pipeline.",
@@ -19,17 +19,17 @@
     "text": "The layer stack is familiar, which is useful because batching should feel like an operational upgrade, not a whole new model.",
     "hash": "5af419e1"
   },
-  "26": {
+  "27": {
     "text": "The extra conceptual load in this lab is not new math, but how batch structure changes masking, loss computation, and input preparation.",
-    "hash": "e3b0c442"
+    "hash": "f0726c6e"
   },
   "28": {
     "text": "Lock both RNGs so the new behavior you notice comes from batching and padding rather than from a different run.",
     "hash": "7e7dcf46"
   },
-  "29": {
+  "30": {
     "text": "PyTorch's own RNG still needs to match because the batched and unbatched versions should be comparable as implementations of the same idea.",
-    "hash": "e3b0c442"
+    "hash": "5c4688e3"
   },
   "34": {
     "text": "Dataset path, shared across all labs.",

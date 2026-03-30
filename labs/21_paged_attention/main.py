@@ -260,8 +260,20 @@ class PagedKVCache:
         del self.seq_lengths[seq_id]
 
     def utilization(self):
-        used = self.total_blocks - len(self.free_blocks)
-        return used / self.total_blocks if self.total_blocks > 0 else 0
+        used_blocks = self.total_blocks - len(self.free_blocks)
+        if used_blocks <= 0:
+            return 0.0
+
+        occupied_slots = set()
+        for seq_id, length in self.seq_lengths.items():
+            for layer in range(self.n_layers):
+                for pos in range(length):
+                    logical_block = pos // self.block_size
+                    slot = pos % self.block_size
+                    phys_id = self.block_tables[seq_id][layer][logical_block]
+                    occupied_slots.add((phys_id, slot))
+
+        return len(occupied_slots) / (used_blocks * self.block_size)
 
     def share_prefix(self, src_seq_id, dst_seq_id, prefix_len):
         """Copy-on-write prefix sharing: point dst's block table at src's physical blocks."""
@@ -378,7 +390,7 @@ sample_c, _ = generate(cache_c)
 name_c = "".join(uchars[t] for t in sample_c)
 used_c = cache_c.length * n_layer * n_embd * 2
 print(f"contiguous: '{name_c}' ({cache_c.length} tokens)")
-print(f"  allocated {cache_c.allocated} slots, used {used_c} ({cache_c.utilization():.0%} utilization)")
+print(f"  allocated {cache_c.allocated} slots, used {used_c} ({cache_c.utilization():.0%} slot utilization)")
 
 total_blocks = 32
 paged = PagedKVCache(total_blocks, n_layer, n_embd)
@@ -386,7 +398,10 @@ random.seed(100)
 sample_p, _ = generate(paged, seq_id=0)
 name_p = "".join(uchars[t] for t in sample_p)
 print(f"paged:      '{name_p}' ({paged.seq_lengths[0]} tokens)")
-print(f"  {total_blocks - len(paged.free_blocks)} blocks allocated on demand ({paged.utilization():.0%} utilization)")
+print(
+    f"  {total_blocks - len(paged.free_blocks)} blocks allocated on demand "
+    f"({paged.utilization():.0%} slot utilization)"
+)
 assert name_c == name_p, f"Outputs differ: {name_c} vs {name_p}"
 print("  -> identical output, paged allocates only what's needed")
 

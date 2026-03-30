@@ -252,6 +252,6 @@ print("\nNote: This implementation prioritizes memory savings.")
 print("Production systems use INT8 kernels for both size and speed benefits.")
 
 for label, m in [("FP32", model), ("INT8", model_int8)]:
-    print(f"\n--- {label} samples ---")
+    torch.manual_seed(42); print(f"\n--- {label} samples ---")
     for i, s in enumerate(generate(m, 10)):
         print(f"  {i + 1:2d}: {''.join(uchars[t] for t in s)}")

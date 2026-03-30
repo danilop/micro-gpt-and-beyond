@@ -1,4 +1,4 @@
-# microGPT and Beyond, LoRA (Low-Rank Adaptation)
+# Understanding LLMs by Building One: LoRA (Low-Rank Adaptation)
 
 Parameter-efficient fine-tuning: freeze a trained model's weights, inject small low-rank matrices, and train only those. The base model never changes. You learn a tiny adapter that shifts its behavior.
 

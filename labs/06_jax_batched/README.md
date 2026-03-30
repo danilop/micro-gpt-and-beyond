@@ -1,4 +1,4 @@
-# microGPT and Beyond, JAX Batched
+# Understanding LLMs by Building One: JAX Batched
 
 Same architecture as `05_jax`, but with mini-batch training, and this is where JAX's design really shines. Instead of rewriting the forward pass to handle a batch dimension, you use `jax.vmap` to automatically vectorize the single-example code across a batch.
 

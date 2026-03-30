@@ -1,4 +1,4 @@
-# microGPT and Beyond, Soft Thinking
+# Understanding LLMs by Building One: Soft Thinking
 
 Same architecture as the PyTorch version (03), but with soft decoding at inference time. Instead of collapsing to a single token (argmax) at each step, soft thinking passes a "concept token," a probability-weighted blend of all token embeddings, to the next step. The full probability distribution flows forward, preserving information that hard decoding discards.
 

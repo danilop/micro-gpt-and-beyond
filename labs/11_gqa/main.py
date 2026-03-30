@@ -3,8 +3,8 @@ microGPT — Grouped-Query Attention (GQA/MQA) edition.
 
 Shows the progression from Multi-Head Attention (MHA) → Multi-Query Attention
 (MQA) → Grouped-Query Attention (GQA). The key idea: KV heads can be shared
-across multiple query heads without significant quality loss, dramatically
-reducing memory for the KV cache during inference.
+across multiple query heads. At production scale this often preserves most of
+the quality while dramatically reducing memory for the KV cache during inference.
 
 Same base architecture as lab 03 (PyTorch), but the attention module is
 parameterised by n_kv_head so a single class covers all three variants.
@@ -260,5 +260,5 @@ for variant_name, n_kv_head in variants:
         f"KV proj params={kv_params:4d}, "
         f"KV cache (fp16)={kv_cache:4d} bytes"
     )
-print("\n  GQA gives a sweet spot: fewer KV params than MHA,")
-print("  more capacity than MQA, with minimal quality loss.")
+print("\n  At production scale, GQA is often the expected sweet spot: fewer KV params than MHA,")
+print("  more capacity than MQA. This tiny run mainly demonstrates the KV-cache tradeoff, not a decisive quality ranking.")

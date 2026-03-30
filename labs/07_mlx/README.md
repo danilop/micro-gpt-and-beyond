@@ -1,4 +1,4 @@
-# microGPT and Beyond, MLX (Apple Silicon)
+# Understanding LLMs by Building One: MLX (Apple Silicon)
 
 Same architecture, running on Apple Silicon GPU via [MLX](https://ml-explore.github.io/mlx/). MLX is Apple's array framework for machine learning. It has a NumPy-like API, automatic differentiation, and runs natively on the M-series GPU.
 

@@ -1,4 +1,4 @@
-# microGPT and Beyond, Disaggregated Serving
+# Understanding LLMs by Building One: Disaggregated Serving
 
 Same model as lab 03/12, but demonstrating disaggregated inference: the prefill phase (process the prompt, compute-bound) and the decode phase (generate tokens, memory-bound) run on separate workers. This is how production systems like Splitwise, DistServe, and TetriInfer avoid head-of-line blocking and improve both throughput and latency.
 

@@ -1,4 +1,4 @@
-# microGPT and Beyond, Paged KV Cache (PagedAttention)
+# Understanding LLMs by Building One: Paged KV Cache (PagedAttention)
 
 Same architecture as the pure-Python version (01), but with two KV cache implementations for inference: contiguous (wasteful pre-allocation) and paged (on-demand block allocation). PagedAttention is the core innovation in vLLM. It applies the operating system's virtual memory paging concept to KV caches, reducing memory waste from 60-80% to near zero.
 

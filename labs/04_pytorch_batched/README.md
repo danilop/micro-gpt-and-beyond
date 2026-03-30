@@ -1,4 +1,4 @@
-# microGPT and Beyond, PyTorch Batched
+# Understanding LLMs by Building One: PyTorch Batched
 
 Same PyTorch architecture as version 03, but scaled up with mini-batch training. This is the version that bridges the gap between "educational toy" and "how real models are trained."
 

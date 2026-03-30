@@ -409,14 +409,6 @@
     "text": "Instantiate a fresh model with the same architecture. We'll load trained weights into it and then swap its Linear layers for quantized ones.",
     "hash": "d5e435df"
   },
-  "193": {
-    "text": "Copy the trained FP32 weights into the new model so we preserve learned behavior before replacing layers with quantized versions.",
-    "hash": "e3b0c442"
-  },
-  "194": {
-    "text": "Walk every module in the model.",
-    "hash": "e3b0c442"
-  },
   "195": {
     "text": "Look for Linear layers to quantize.",
     "hash": "26d31172"
@@ -429,9 +421,17 @@
     "text": "Swap in the quantized layer.",
     "hash": "2d07d5d9"
   },
-  "204": {
+  "198": {
+    "text": "Copy the trained FP32 weights into the new model so we preserve learned behavior before replacing layers with quantized versions.",
+    "hash": "cc42539c"
+  },
+  "199": {
+    "text": "Walk every module in the model.",
+    "hash": "e21a43a2"
+  },
+  "205": {
     "text": "Controls how peaked the sampling distribution is. Lower temperature means more deterministic output; higher means more creative variety.",
-    "hash": "e3b0c442"
+    "hash": "5c4688e3"
   },
   "207": {
     "text": "Decorator: no gradient tracking needed for inference.",
@@ -440,10 +440,6 @@
   "208": {
     "text": "Generate names, same function for both FP32 and INT8 models.",
     "hash": "7eca5b76"
-  },
-  "209": {
-    "text": "Switch to evaluation mode so the model produces consistent outputs during generation.",
-    "hash": "e3b0c442"
   },
   "211": {
     "text": "Loop through each sample, generating one name at a time from the model.",
@@ -473,6 +469,10 @@
     "text": "If the model predicts BOS, treat it as an end-of-name signal and stop generating.",
     "hash": "ab05dc73"
   },
+  "218": {
+    "text": "Switch to evaluation mode so the model produces consistent outputs during generation.",
+    "hash": "ce311cc5"
+  },
   "219": {
     "text": "Add the newly sampled token to the growing sequence and continue generating the next one.",
     "hash": "77b96a33"
@@ -485,9 +485,9 @@
     "text": "Temp file import for saving the model.",
     "hash": "816f9481"
   },
-  "227": {
+  "228": {
     "text": "Write the model's state dict to a temporary file on disk so we can measure its serialized size in bytes.",
-    "hash": "e3b0c442"
+    "hash": "6f31f0ea"
   },
   "229": {
     "text": "Serialize the state dict, this is what you'd ship to production.",
@@ -505,9 +505,9 @@
     "text": "Generate 100 names in a batch to get a stable timing measurement for the benchmark.",
     "hash": "09d25239"
   },
-  "233": {
+  "234": {
     "text": "Package the file size in MB and average time per generation into a tuple for the benchmark comparison table.",
-    "hash": "e3b0c442"
+    "hash": "9074b473"
   },
   "236": {
     "text": "Benchmark the original FP32 model.",
@@ -521,16 +521,20 @@
     "text": "Run the same benchmark suite on the INT8 model to compare size and speed against the original FP32 baseline.",
     "hash": "50c117a4"
   },
-  "247": {
-    "text": "Side-by-side comparison: generate 10 names from each model. Quality should be nearly identical despite 4x compression.",
-    "hash": "82b004f1"
+  "254": {
+    "text": "Side-by-side comparison loop for FP32 and INT8 samples. Each model will be sampled under the same random seed so differences come from the weights, not different random draws.",
+    "hash": "3f78e613"
   },
-  "249": {
-    "text": "Show samples from both models.",
-    "hash": "c816c228"
+  "255": {
+    "text": "Reset the random seed before sampling each model, then print the label. This makes the sample comparison reproducible and directly comparable.",
+    "hash": "e9cae3c1"
   },
-  "250": {
+  "256": {
+    "text": "Generate 10 samples from the current model under that fixed seed.",
+    "hash": "828817a8"
+  },
+  "257": {
     "text": "Decode and print each generated name.",
-    "hash": "ba5ec51d"
+    "hash": "2a0d1a6c"
   }
 }

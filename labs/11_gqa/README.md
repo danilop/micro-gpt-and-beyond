@@ -1,4 +1,4 @@
-# microGPT and Beyond, Grouped-Query Attention (GQA/MQA)
+# Understanding LLMs by Building One: Grouped-Query Attention (GQA/MQA)
 
 This lab shows the progression from Multi-Head Attention (MHA) to Multi-Query Attention (MQA) to Grouped-Query Attention (GQA), demonstrating how sharing KV heads reduces memory during inference while preserving quality.
 

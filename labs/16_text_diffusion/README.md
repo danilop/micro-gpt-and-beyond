@@ -1,4 +1,4 @@
-# microGPT and Beyond, Text Diffusion
+# Understanding LLMs by Building One: Text Diffusion
 
 > *Instead of generating names left-to-right, names emerge from pure noise, all [MASK] tokens, through iterative unmasking.*
 

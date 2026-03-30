@@ -1,4 +1,4 @@
-# microGPT and Beyond, Speculative Decoding
+# Understanding LLMs by Building One: Speculative Decoding
 
 Same architecture as the PyTorch version (03/16), but with two model sizes, a small "draft" model and a larger "target" model, demonstrating speculative decoding. The draft model guesses multiple tokens ahead, the target model verifies them all in a single forward pass. The output distribution is mathematically identical to target-only generation, but faster.
 

@@ -1,4 +1,4 @@
-# microGPT and Beyond, MLX Batched
+# Understanding LLMs by Building One: MLX Batched
 
 Same architecture as `07_mlx`, scaled up with mini-batch training on Apple Silicon. This version follows the same batching approach as `04_pytorch_batched` (padding, masking, and explicit `(B, T, ...)` tensor shapes) because MLX's API is intentionally PyTorch-like.
 

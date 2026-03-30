@@ -1,8 +1,4 @@
 {
-  "20": {
-    "text": "This lab combines two ideas at once: the realistic mini-batch training structure from the PyTorch track and the Apple-Silicon execution model from the MLX track.",
-    "hash": "e3b0c442"
-  },
   "21": {
     "text": "Same dataset again. The point is to see what batched training feels like once MLX's lazy, unified-memory model enters the picture.",
     "hash": "b67c9dde"
@@ -10,6 +6,10 @@
   "22": {
     "text": "The outer randomness stays framework-independent so the comparison with the other batched labs remains meaningful.",
     "hash": "de2abade"
+  },
+  "23": {
+    "text": "This lab combines two ideas at once: the realistic mini-batch training structure from the PyTorch track and the Apple-Silicon execution model from the MLX track.",
+    "hash": "7e18ed42"
   },
   "25": {
     "text": "MLX's core runtime is still the differentiator here: batched training now runs through a system designed around Apple hardware and deferred execution.",
