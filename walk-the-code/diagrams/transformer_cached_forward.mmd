@@ -1,0 +1,12 @@
+graph TD
+    token[Current token] --> wte[Token embedding]
+    start_pos[Position offset] --> wpe[Position embedding]
+    wte --> add_emb[Combine token + position]
+    wpe --> add_emb
+    add_emb --> norm_in[Input RMSNorm]
+    cache_in[Past KV cache] --> blocks[Transformer blocks with cache]
+    norm_in --> blocks
+    blocks --> cache_out["Append new K,V"]
+    blocks --> norm_out[Final RMSNorm]
+    norm_out --> lm_head["Output projection<br/>(lm_head)"]
+    lm_head --> logits[Vocabulary logits]

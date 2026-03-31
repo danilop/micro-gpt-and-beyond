@@ -9,7 +9,26 @@
   },
   "5": {
     "text": "The key insight: instead of improving one model's outputs, we improve the model population itself through evolutionary pressure.",
-    "hash": "575237c0"
+    "hash": "575237c0",
+    "diagram": "evo_generation",
+    "highlight": {
+      "nodes": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "I"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        6,
+        7
+      ]
+    }
   },
   "6": {
     "text": "Each variant has different hyperparameters -- this diversity is what gives evolution something to select from.",
@@ -277,7 +296,14 @@
   },
   "126": {
     "text": "The top-level model constructor exposes the exact architectural knobs that evolution is allowed to search over.",
-    "hash": "e94c5dc2"
+    "hash": "e94c5dc2",
+    "diagram": "evo_genome",
+    "highlight": [
+      "genome",
+      "arch",
+      "opt",
+      "model"
+    ]
   },
   "127": {
     "text": "n_layer controls depth -- evolution can discover whether 1 or 2 layers works best for this task.",
@@ -321,7 +347,12 @@
   },
   "153": {
     "text": "This discrete table is the search landscape. Evolution can only step among these predefined choices.",
-    "hash": "f0aaa577"
+    "hash": "f0aaa577",
+    "diagram": "evo_genome",
+    "highlight": [
+      "search",
+      "genome"
+    ]
   },
   "154": {
     "text": "The search space is deliberately discrete and small so the reader can reason about every possible mutation.",
@@ -585,7 +616,13 @@
   },
   "275": {
     "text": "Population initialization: create POP_SIZE individuals, each with a random config and fresh model.",
-    "hash": "e629d456"
+    "hash": "e629d456",
+    "diagram": "evo_generation",
+    "highlight": [
+      "A",
+      "B",
+      "C"
+    ]
   },
   "277": {
     "text": "Population size controls how much diversity the search can maintain at once.",
@@ -682,7 +719,13 @@
   },
   "323": {
     "text": "We need POP_SIZE - TOP_K new children to fill the population back to its original size.",
-    "hash": "4bd974fa"
+    "hash": "4bd974fa",
+    "diagram": "evo_generation",
+    "highlight": [
+      "D",
+      "E",
+      "I"
+    ]
   },
   "325": {
     "text": "Random parent selection from survivors: each child descends from one of the top-K. This spreads good genes.",

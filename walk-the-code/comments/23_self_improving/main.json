@@ -5,7 +5,29 @@
   },
   "4": {
     "text": "The core idea: the model generates outputs, scores them for quality, keeps only the best, and retrains on those. This is the generate-evaluate-retrain loop.",
-    "hash": "4e07f15d"
+    "hash": "4e07f15d",
+    "diagram": "self_improve_loop",
+    "highlight": {
+      "nodes": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "G",
+        "H",
+        "I"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        4,
+        6,
+        7,
+        8
+      ]
+    }
   },
   "5": {
     "text": "Verification is explicit here. The model does not automatically trust its own samples; each candidate must pass an external quality check first.",
@@ -129,7 +151,14 @@
   },
   "59": {
     "text": "The bigram scorer is the 'verifier' in the self-improvement loop. It encodes what real names look like statistically, so the model has a ground-truth signal to filter against.",
-    "hash": "37728d8e"
+    "hash": "37728d8e",
+    "diagram": "self_improve_loop",
+    "highlight": [
+      "C",
+      "D",
+      "E",
+      "F"
+    ]
   },
   "60": {
     "text": "The verifier is not checking truth, only resemblance to the real data distribution. That limitation matters later when collapse is discussed.",
@@ -333,7 +362,29 @@
   },
   "180": {
     "text": "Forward is standard next-token prediction: embed, add position, run the transformer, project back to vocabulary logits.",
-    "hash": "1bc7099c"
+    "hash": "1bc7099c",
+    "diagram": "transformer_forward",
+    "highlight": {
+      "nodes": [
+        "wte",
+        "wpe",
+        "add_emb",
+        "norm_in",
+        "blocks",
+        "lm_head",
+        "logits"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    }
   },
   "181": {
     "text": "The batch and sequence dimensions are unpacked for readability. This lab never hides tensor shapes from the reader.",
@@ -506,7 +557,27 @@
   },
   "279": {
     "text": "The outer self-improvement loop. Each iteration: generate -> score -> filter -> mix -> retrain -> evaluate. This is the core algorithm.",
-    "hash": "cfc052b7"
+    "hash": "cfc052b7",
+    "diagram": "self_improve_loop",
+    "highlight": {
+      "nodes": [
+        "B",
+        "C",
+        "D",
+        "E",
+        "G",
+        "H",
+        "I"
+      ],
+      "links": [
+        1,
+        2,
+        4,
+        6,
+        7,
+        8
+      ]
+    }
   },
   "280": {
     "text": "Retraining is intentionally short and local. The lab is modeling iterative improvement, not a full second training run.",
@@ -530,7 +601,14 @@
   },
   "289": {
     "text": "Step 2: score every candidate with the bigram quality function. This is where the verifier separates good from bad generations.",
-    "hash": "95bb6f0f"
+    "hash": "95bb6f0f",
+    "diagram": "self_improve_loop",
+    "highlight": [
+      "C",
+      "D",
+      "E",
+      "F"
+    ]
   },
   "290": {
     "text": "Every candidate is paired with a verifier score before any retraining happens. This explicit score table is what separates filtered self-training from naive bootstrapping.",
@@ -574,7 +652,13 @@
   },
   "303": {
     "text": "Sampling from the kept set with wraparound means a small number of high-quality names can influence many retraining steps.",
-    "hash": "b57874e1"
+    "hash": "b57874e1",
+    "diagram": "self_improve_mix",
+    "highlight": [
+      "kept",
+      "mix",
+      "train"
+    ]
   },
   "305": {
     "text": "The rest of the stream stays grounded in real data. That anchor is what keeps the loop from drifting too quickly.",

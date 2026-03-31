@@ -1,4 +1,6 @@
 graph TD
-    logits[Logits] --> softmax_blend[Softmax blend]
+    logits[Logits] --> temp[Apply soft temperature]
+    temp --> softmax_blend[Softmax blend]
     softmax_blend --> weighted[Blend ALL embeds]
-    weighted --> preserves[Preserves distribution]
+    weighted --> next_in[Next-step input]
+    next_in --> preserves[Preserves distribution]

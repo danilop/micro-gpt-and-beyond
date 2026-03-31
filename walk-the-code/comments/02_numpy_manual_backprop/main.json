@@ -410,9 +410,10 @@
   "187": {
     "text": "Final linear projection to vocabulary logits. Note the transpose on <code>lm_head</code>, weight tying convention.",
     "hash": "9773cdf2",
-    "diagram": "transformer_mlp",
+    "diagram": "transformer_logits",
     "highlight": [
-      "fc2"
+      "lm_head",
+      "logits"
     ]
   },
   "188": {

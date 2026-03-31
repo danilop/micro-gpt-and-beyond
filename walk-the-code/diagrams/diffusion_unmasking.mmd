@@ -1,5 +1,8 @@
 graph TD
     noise[All MASK tokens]
-    noise --> step1[Predict + unmask confident]
-    step1 --> remask1[Remask rest + repeat]
-    remask1 --> clean[Clean output]
+    noise --> step1[Predict masked positions]
+    step1 --> sample[Sample with annealed temperature]
+    sample --> rank[Rank tokens by confidence]
+    rank --> remask1[Re-mask least confident]
+    remask1 --> schedule[Repeat under cosine schedule]
+    schedule --> clean[Clean output]

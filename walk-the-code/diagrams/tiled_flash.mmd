@@ -1,7 +1,9 @@
 graph TD
     t_load[Load one Q tile<br/>into SRAM]
-    t_load --> t_loop[Loop over KV tiles]
+    t_load --> t_loop[Iterate KV tiles]
     t_loop --> t_kv[Load K,V tile<br/>into SRAM]
-    t_kv --> t_compute[Block score update<br/>with online softmax]
-    t_compute --> t_accum[Accumulate output<br/>and write final tile]
+    t_kv --> t_scores[Block QK scores]
+    t_scores --> t_mask[Apply causal mask<br/>inside tile]
+    t_mask --> t_compute[Online softmax update<br/>for the tile]
+    t_compute --> t_accum[Accumulate + normalize<br/>output tile]
     t_compute --> t_loop

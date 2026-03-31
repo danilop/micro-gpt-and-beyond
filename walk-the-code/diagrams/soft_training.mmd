@@ -1,5 +1,5 @@
 graph TD
-    gt[Ground Truth] --> mix[Blend]
-    concept[Concept Token] --> mix
-    schedule[Mix 0 to 1] --> mix
-    mix --> model[Forward + Backprop]
+    gt[Ground truth] --> mix[Blend<br/>inputs]
+    concept[Concept<br/>token] --> mix
+    schedule[Curriculum<br/>0 to 1] --> mix
+    mix --> model[Forward<br/>backprop]

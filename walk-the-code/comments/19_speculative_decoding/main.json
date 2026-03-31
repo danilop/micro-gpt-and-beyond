@@ -1,7 +1,29 @@
 {
   "14": {
     "text": "Speculative decoding keeps ordinary attention math but changes the control flow of inference: guess several tokens, then verify them in bulk.",
-    "hash": "b67c9dde"
+    "hash": "b67c9dde",
+    "diagram": "spec_round",
+    "highlight": {
+      "nodes": [
+        "prefix",
+        "draft",
+        "ktokens",
+        "target",
+        "check",
+        "keep",
+        "restart",
+        "bonus"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    }
   },
   "15": {
     "text": "Same names task, so the speedup story is about decoding strategy rather than about a different workload.",
@@ -265,7 +287,14 @@
   },
   "107": {
     "text": "The full GPT model, used for both draft and target, just with different sizes.",
-    "hash": "e94c5dc2"
+    "hash": "e94c5dc2",
+    "diagram": "transformer_forward",
+    "highlight": [
+      "wte",
+      "wpe",
+      "blocks",
+      "lm_head"
+    ]
   },
   "108": {
     "text": "Parameterized constructor: embedding size, heads, and layers are configurable for creating differently-sized models.",
@@ -293,7 +322,12 @@
   },
   "114": {
     "text": "Language model head: projects hidden states to vocabulary logits.",
-    "hash": "1774314d"
+    "hash": "1774314d",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "115": {
     "text": "Walk through every submodule and apply the weight initialization function, ensuring all layers start with well-scaled parameters.",
@@ -345,7 +379,12 @@
   },
   "129": {
     "text": "Project to vocabulary logits, one score per token in the vocabulary.",
-    "hash": "9ef9adcf"
+    "hash": "9ef9adcf",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "135": {
     "text": "CPU for this demo, the speedup story is cleaner on GPU where memory-boundedness is stark.",
@@ -517,7 +556,27 @@
   },
   "203": {
     "text": "The heart of the lab: speculative decoding with draft model <code>draft</code> and target model <code>target</code>. <code>K=4</code> means the draft model guesses 4 tokens ahead.",
-    "hash": "dce5929f"
+    "hash": "dce5929f",
+    "diagram": "spec_round",
+    "highlight": {
+      "nodes": [
+        "draft",
+        "ktokens",
+        "target",
+        "check",
+        "keep",
+        "restart",
+        "bonus"
+      ],
+      "links": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    }
   },
   "228": {
     "text": "Start the sequence with BOS.",
@@ -545,7 +604,13 @@
   },
   "236": {
     "text": "Speculatively generate K tokens using the cheap draft model. These guesses will be verified against the target in one batch.",
-    "hash": "f4a4cd2e"
+    "hash": "f4a4cd2e",
+    "diagram": "spec_draft",
+    "highlight": [
+      "draft",
+      "propose",
+      "target"
+    ]
   },
   "237": {
     "text": "Stop if we've hit the length limit.",
@@ -610,7 +675,13 @@
   },
   "257": {
     "text": "Verify each drafted token against the target model's distribution.",
-    "hash": "1385998e"
+    "hash": "1385998e",
+    "diagram": "spec_verify",
+    "highlight": [
+      "check",
+      "accept",
+      "reject"
+    ]
   },
   "260": {
     "text": "Map draft position to target's output position.",
@@ -734,7 +805,12 @@
   },
   "296": {
     "text": "When all K drafts are accepted, we get a bonus: the target already computed the probability distribution for the position after the last draft.",
-    "hash": "a2b946dd"
+    "hash": "a2b946dd",
+    "diagram": "spec_verify",
+    "highlight": [
+      "accept",
+      "bonus"
+    ]
   },
   "297": {
     "text": "Bounds check on the bonus position.",

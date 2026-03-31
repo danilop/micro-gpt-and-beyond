@@ -1,0 +1,9 @@
+graph TD
+    hard[Token IDs]
+    soft[Concept embedding]
+    hard --> lookup[Embedding lookup]
+    lookup --> stream[Input embedding stream]
+    soft --> stream
+    stream --> blocks[Transformer blocks]
+    blocks --> lm_head[Output projection]
+    lm_head --> logits[Vocabulary logits]

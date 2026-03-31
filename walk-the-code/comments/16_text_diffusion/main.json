@@ -133,7 +133,23 @@
   },
   "69": {
     "text": "The key difference from GPT: <strong>bidirectional</strong> attention. Every position can see every other position \u2014 no causal mask. This lets the model gather clues from all unmasked tokens in any direction to fill in the blanks.",
-    "hash": "9125ee1f"
+    "hash": "9125ee1f",
+    "diagram": "bidirectional_attn",
+    "highlight": {
+      "nodes": [
+        "masked",
+        "visible",
+        "attend",
+        "context",
+        "predict"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3
+      ]
+    }
   },
   "72": {
     "text": "Constructor sets up the same Q/K/V/O projections as the autoregressive attention. The difference is purely in the forward pass: no causal mask.",
@@ -221,7 +237,14 @@
   },
   "117": {
     "text": "The full model: a bidirectional transformer that predicts clean tokens from masked input.",
-    "hash": "da0c06c1"
+    "hash": "da0c06c1",
+    "diagram": "transformer_forward",
+    "highlight": [
+      "wte",
+      "wpe",
+      "blocks",
+      "lm_head"
+    ]
   },
   "120": {
     "text": "Token embeddings: each of the 28 tokens (26 chars + MASK + PAD) gets a 16-dim vector.",
@@ -257,7 +280,29 @@
   },
   "134": {
     "text": "Forward pass: embed tokens and positions, normalize, pass through transformer layers, project to vocabulary logits. Identical to autoregressive forward except attention is bidirectional.",
-    "hash": "1bc7099c"
+    "hash": "1bc7099c",
+    "diagram": "transformer_forward",
+    "highlight": {
+      "nodes": [
+        "wte",
+        "wpe",
+        "add_emb",
+        "norm_in",
+        "blocks",
+        "lm_head",
+        "logits"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    }
   },
   "136": {
     "text": "Look up token embeddings for the input sequence.",
@@ -386,7 +431,10 @@
     "hash": "4825e545",
     "diagram": "diffusion_training",
     "highlight": [
-      "predict"
+      "sample",
+      "mask",
+      "predict",
+      "loss"
     ]
   },
   "184": {
@@ -499,7 +547,13 @@
   },
   "221": {
     "text": "Get the model's predictions for all positions in one bidirectional forward pass.",
-    "hash": "b60f0c74"
+    "hash": "b60f0c74",
+    "diagram": "diffusion_unmasking",
+    "highlight": [
+      "step1",
+      "sample",
+      "rank"
+    ]
   },
   "223": {
     "text": "Copy the current sequence. Masked positions will be overwritten with model predictions; unmasked positions stay as-is.",

@@ -3,3 +3,5 @@ graph TD
     norm2 --> fc1[Expand 4x]
     fc1 --> relu[ReLU]
     relu --> fc2[Contract]
+    skip2[Residual stream] --> res2[Add residual]
+    fc2 --> res2

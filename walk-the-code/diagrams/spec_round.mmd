@@ -1,0 +1,9 @@
+graph TD
+    prefix[Accepted prefix]
+    prefix --> draft[Draft model]
+    draft --> ktokens[Propose K tokens]
+    ktokens --> target[Target scores<br/>all K at once]
+    target --> check{Accept each token?}
+    check -->|Yes| keep[Keep<br/>draft tokens]
+    check -->|No| restart[Sample correction<br/>restart]
+    keep --> bonus[If all pass:<br/>bonus token]

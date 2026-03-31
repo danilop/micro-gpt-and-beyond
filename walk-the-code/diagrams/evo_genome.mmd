@@ -1,0 +1,8 @@
+graph TD
+    search[Discrete search space]
+    search --> genome[Sample or mutate genome]
+    genome --> arch[Architecture knobs]
+    genome --> opt[Optimizer knobs]
+    arch --> model[Instantiate model]
+    opt --> model
+    model --> fitness[Train then score fitness]

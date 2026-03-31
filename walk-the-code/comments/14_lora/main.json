@@ -65,7 +65,15 @@
   },
   "58": {
     "text": "The LoRA wrapper: the key innovation of this lab. Wraps an existing <code>nn.Linear</code> and adds two tiny matrices that learn to steer the original layer's output.",
-    "hash": "56c214a9"
+    "hash": "56c214a9",
+    "diagram": "lora_adapter",
+    "highlight": [
+      "x",
+      "base",
+      "down",
+      "up",
+      "add"
+    ]
   },
   "67": {
     "text": "Takes an existing trained linear layer and wraps it with low-rank adapters.",
@@ -109,7 +117,23 @@
   },
   "76": {
     "text": "Forward pass: base output + adapter output. Two paths, summed.",
-    "hash": "a87869a2"
+    "hash": "a87869a2",
+    "diagram": "lora_adapter",
+    "highlight": {
+      "nodes": [
+        "base",
+        "down",
+        "up",
+        "add"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    }
   },
   "79": {
     "text": "The math: <code>W*x + B*A*x</code>. Since B starts at zero, the adapter contributes nothing initially. As B learns non-zero values, the adapter gently steers the output. With rank=2, A is (2, d_in) and B is (d_out, 2) &mdash; tiny compared to W's (d_out, d_in).",
@@ -289,7 +313,12 @@
   },
   "155": {
     "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
-    "hash": "1774314d"
+    "hash": "1774314d",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "156": {
     "text": "Apply the custom weight initialization function to every module in the model.",
@@ -325,7 +354,12 @@
   },
   "170": {
     "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
-    "hash": "9ef9adcf"
+    "hash": "9ef9adcf",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "176": {
     "text": "Use CPU for this tiny model since it trains in seconds without a GPU.",

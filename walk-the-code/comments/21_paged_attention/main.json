@@ -534,7 +534,12 @@
   },
   "211": {
     "text": "Initialize a new sequence's page table, one empty block list per layer.",
-    "hash": "ab285876"
+    "hash": "ab285876",
+    "diagram": "paged_block_table",
+    "highlight": [
+      "seq",
+      "table"
+    ]
   },
   "212": {
     "text": "Create the page table: each layer gets its own list of physical block mappings.",
@@ -546,7 +551,15 @@
   },
   "215": {
     "text": "Append K,V to the paged cache, the hot path that makes paging work.",
-    "hash": "99708958"
+    "hash": "99708958",
+    "diagram": "paged_block_table",
+    "highlight": [
+      "append",
+      "table",
+      "block",
+      "slot",
+      "kv"
+    ]
   },
   "216": {
     "text": "Current sequence length determines which logical block and slot.",
@@ -606,7 +619,15 @@
   },
   "231": {
     "text": "Reconstruct the full K,V history by walking the page table, translating logical positions to physical locations.",
-    "hash": "65987033"
+    "hash": "65987033",
+    "diagram": "paged_block_table",
+    "highlight": [
+      "read",
+      "table",
+      "block",
+      "slot",
+      "kv"
+    ]
   },
   "232": {
     "text": "Look up how many tokens this sequence has cached so far, which tells us how many KV pairs to gather.",
@@ -646,7 +667,13 @@
   },
   "242": {
     "text": "Free a sequence's blocks back to the pool, like deallocating pages in an OS.",
-    "hash": "56fde3ab"
+    "hash": "56fde3ab",
+    "diagram": "paged_block_table",
+    "highlight": [
+      "free",
+      "table",
+      "block"
+    ]
   },
   "243": {
     "text": "Collect all physical block IDs from every layer's page table and return them to the free pool for reuse by other sequences.",
@@ -730,7 +757,31 @@
   },
   "271": {
     "text": "Unified GPT forward pass: processes one token at a time using any cache implementation. The cache abstraction means the model code doesn't know or care whether it's paged or contiguous.",
-    "hash": "b4203b46"
+    "hash": "b4203b46",
+    "diagram": "transformer_cached_forward",
+    "highlight": {
+      "nodes": [
+        "token",
+        "wte",
+        "wpe",
+        "cache_in",
+        "blocks",
+        "cache_out",
+        "lm_head",
+        "logits"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    }
   },
   "272": {
     "text": "Default to the training state dict if no weights provided.",
@@ -822,7 +873,12 @@
   },
   "300": {
     "text": "Map the final hidden state to a score for every token in the vocabulary, producing the logits used for next-token prediction.",
-    "hash": "34e14cd2"
+    "hash": "34e14cd2",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "301": {
     "text": "Normalize the combined token-plus-position embedding before feeding it into the transformer layers.",
@@ -1118,7 +1174,13 @@
   },
   "395": {
     "text": "Share the prefix's physical blocks with the new sequence, zero data copying, just page table duplication.",
-    "hash": "d91b6297"
+    "hash": "d91b6297",
+    "diagram": "paged_block_table",
+    "highlight": [
+      "share",
+      "table",
+      "block"
+    ]
   },
   "396": {
     "text": "Report how many blocks were shared (should match the prefix's block count).",
