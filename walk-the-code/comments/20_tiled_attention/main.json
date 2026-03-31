@@ -173,7 +173,14 @@
   },
   "109": {
     "text": "Full GPT model, identical architecture to Lab 03.",
-    "hash": "e94c5dc2"
+    "hash": "e94c5dc2",
+    "diagram": "transformer_forward",
+    "highlight": [
+      "wte",
+      "wpe",
+      "blocks",
+      "lm_head"
+    ]
   },
   "112": {
     "text": "Learned dense vectors for each token in the vocabulary, mapping discrete IDs into continuous embedding space.",
@@ -193,7 +200,12 @@
   },
   "116": {
     "text": "Project embeddings to vocabulary logits.",
-    "hash": "1774314d"
+    "hash": "1774314d",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "117": {
     "text": "Walk every submodule and apply the weight initialization function so all parameters start with well-scaled random values.",
@@ -209,7 +221,26 @@
   },
   "124": {
     "text": "Forward pass: embed, normalize, transform, predict.",
-    "hash": "1bc7099c"
+    "hash": "1bc7099c",
+    "diagram": "transformer_forward",
+    "highlight": {
+      "nodes": [
+        "add_emb",
+        "norm_in",
+        "blocks",
+        "norm_out",
+        "lm_head",
+        "logits"
+      ],
+      "links": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    }
   },
   "126": {
     "text": "Combine token and position embeddings, then normalize.",
@@ -221,7 +252,12 @@
   },
   "129": {
     "text": "Final linear layer produces next-token logits.",
-    "hash": "9ef9adcf"
+    "hash": "9ef9adcf",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "135": {
     "text": "Instantiate the PyTorch model for training.",
@@ -393,7 +429,12 @@
   },
   "203": {
     "text": "Final projection to vocabulary logits. Return logits and memory stats from the last layer's attention.",
-    "hash": "b8c51244"
+    "hash": "b8c51244",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "209": {
     "text": "Algorithm 1: Standard attention. Materializes the full N*N attention matrix in HBM (slow GPU memory). This is what everyone learned first, and it's the memory bottleneck FlashAttention eliminates.",
@@ -466,10 +507,25 @@
   "232": {
     "text": "Algorithm 2: Online softmax. Processes one key at a time, never materializing the N*N matrix. The foundation of FlashAttention, same output, far less memory traffic.",
     "hash": "bb2bf2ef",
-    "diagram": "tiled_standard",
-    "highlight": [
-      "s_qk"
-    ]
+    "diagram": "tiled_online",
+    "highlight": {
+      "nodes": [
+        "readq",
+        "loop",
+        "score",
+        "update",
+        "accum",
+        "write"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
   },
   "239": {
     "text": "Track HBM operations, this algorithm has zero N*N writes.",

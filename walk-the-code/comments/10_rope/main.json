@@ -399,7 +399,29 @@
   },
   "178": {
     "text": "Forward pass: embed, add positions (if learned), normalize, transform, project to logits.",
-    "hash": "1bc7099c"
+    "hash": "1bc7099c",
+    "diagram": "transformer_forward",
+    "highlight": {
+      "nodes": [
+        "wte",
+        "wpe",
+        "add_emb",
+        "norm_in",
+        "blocks",
+        "lm_head",
+        "logits"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    }
   },
   "179": {
     "text": "Unpack batch and sequence dimensions.",
@@ -427,7 +449,12 @@
   },
   "186": {
     "text": "Project to vocabulary-sized logits for next-token prediction.",
-    "hash": "9ef9adcf"
+    "hash": "9ef9adcf",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "192": {
     "text": "Shared training function, both models train with identical hyperparameters for a fair comparison.",

@@ -1,0 +1,7 @@
+graph TD
+    real[Real dataset]
+    kept[Kept high-score samples]
+    kept --> mix[Mixed retraining batch]
+    real --> mix
+    mix --> train[Retrain model]
+    train --> eval[Evaluate new model]

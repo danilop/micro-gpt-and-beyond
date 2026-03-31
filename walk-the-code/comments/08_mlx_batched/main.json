@@ -355,14 +355,25 @@
   },
   "146": {
     "text": "The padding mask tells each layer's attention which positions are filler so those positions get zero weight and do not corrupt the real token representations.",
-    "hash": "3b78410a"
+    "hash": "3b78410a",
+    "diagram": "transformer_block",
+    "highlight": {
+      "nodes": [
+        "padmask",
+        "attn"
+      ],
+      "links": [
+        2
+      ]
+    }
   },
   "147": {
     "text": "Project the final hidden states to vocabulary-sized logits for next-token prediction.",
     "hash": "9ef9adcf",
-    "diagram": "transformer_mlp",
+    "diagram": "transformer_logits",
     "highlight": [
-      "fc2"
+      "lm_head",
+      "logits"
     ]
   },
   "153": {

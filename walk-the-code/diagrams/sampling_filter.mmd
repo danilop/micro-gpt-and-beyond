@@ -1,8 +1,8 @@
 graph TD
-    temperature[Ranked token probs<br/>after temperature]
-    temperature --> topk[Top-k:<br/>keep best k]
-    temperature --> topp[Top-p:<br/>keep smallest set<br/>reaching p]
-    temperature --> minp[Min-p:<br/>keep tokens above<br/>a relative floor]
+    temperature[Ranked probs<br/>after temperature]
+    temperature --> topk[Top-k<br/>best k]
+    temperature --> topp[Top-p<br/>smallest set<br/>reaching p]
+    temperature --> minp[Min-p<br/>relative floor]
     topk --> renorm[Renormalize<br/>survivors]
     topp --> renorm
     minp --> renorm

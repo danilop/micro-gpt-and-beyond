@@ -93,7 +93,13 @@
   },
   "77": {
     "text": "The critical change: attention now accepts an optional KV cache. Same weights, two inference paths.",
-    "hash": "c20aaac2"
+    "hash": "c20aaac2",
+    "diagram": "kv_cached",
+    "highlight": [
+      "c_step1",
+      "c_new",
+      "c_step2"
+    ]
   },
   "80": {
     "text": "Constructor is unchanged from lab 03.",
@@ -117,7 +123,25 @@
   },
   "87": {
     "text": "Forward now takes an optional <code>kv_cache</code>, this is the entire innovation of this lab.",
-    "hash": "8644a184"
+    "hash": "8644a184",
+    "diagram": "transformer_cached_forward",
+    "highlight": {
+      "nodes": [
+        "cache_in",
+        "blocks",
+        "cache_out",
+        "lm_head",
+        "logits"
+      ],
+      "links": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    }
   },
   "88": {
     "text": "<code>T_new</code> is 1 during cached inference (just the new token) vs. full sequence length without cache.",
@@ -137,7 +161,12 @@
   },
   "93": {
     "text": "If we have a cache from previous steps, prepend it.",
-    "hash": "aa6ad26f"
+    "hash": "aa6ad26f",
+    "diagram": "kv_cached",
+    "highlight": [
+      "c_step1",
+      "c_step2"
+    ]
   },
   "94": {
     "text": "Unpack the cached K and V tensors from previous positions.",
@@ -224,7 +253,13 @@
   },
   "121": {
     "text": "Transformer block, now threads the KV cache through.",
-    "hash": "4bcc8ea8"
+    "hash": "4bcc8ea8",
+    "diagram": "transformer_cached_forward",
+    "highlight": [
+      "cache_in",
+      "blocks",
+      "cache_out"
+    ]
   },
   "124": {
     "text": "Normalize activations before the attention sublayer. Pre-norm keeps gradients well-behaved and is the standard in modern transformers like LLaMA.",
@@ -276,7 +311,12 @@
   },
   "143": {
     "text": "Map the final hidden states to vocabulary-sized logits for next-token prediction.",
-    "hash": "1774314d"
+    "hash": "1774314d",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "144": {
     "text": "Apply the custom weight initialization function to every module in the model.",

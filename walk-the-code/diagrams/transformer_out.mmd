@@ -1,3 +1,5 @@
 graph TD
-    attn_out[Attn Output] --> wo[Output Proj]
-    wo --> res1[+ Residual]
+    attn_out[Per-head attention output] --> wo[Output projection]
+    skip1[Residual stream] --> res1[Add residual]
+    wo --> res1
+    res1 --> block_mid[Block hidden state]

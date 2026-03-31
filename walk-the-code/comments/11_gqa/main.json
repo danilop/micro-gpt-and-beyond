@@ -281,7 +281,12 @@
   },
   "148": {
     "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
-    "hash": "1774314d"
+    "hash": "1774314d",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "149": {
     "text": "Apply the custom weight initialization function to every module in the model.",
@@ -321,7 +326,12 @@
   },
   "163": {
     "text": "Map the final hidden state at each position to a 27-dimensional vector of logits, one per vocabulary token, for next-token prediction.",
-    "hash": "9ef9adcf"
+    "hash": "9ef9adcf",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "169": {
     "text": "Use the CPU since this tiny 16-dimensional model trains in seconds. At this scale, GPU transfer overhead would actually slow things down.",

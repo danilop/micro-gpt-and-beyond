@@ -1,6 +1,17 @@
 graph TD
-    Q[Q] --> scores[QK / sqrt d]
-    K[K] --> scores
-    scores --> softmax[Softmax + Mask]
-    softmax --> attn_out[Weighted Sum]
-    V[V] --> attn_out
+    x_in[Hidden<br/>state]
+    subgraph proj[Project Q / K / V]
+        direction LR
+        Q[Q]
+        K[K]
+        V[V]
+    end
+    x_in --> Q
+    x_in --> K
+    x_in --> V
+    Q --> scores["QK^T<br/>/ sqrt(d)"]
+    K --> scores
+    mask[Causal / padding<br/>mask] --> softmax[Masked<br/>softmax]
+    scores --> softmax
+    softmax --> attn_out[Weight V<br/>concat]
+    V --> attn_out

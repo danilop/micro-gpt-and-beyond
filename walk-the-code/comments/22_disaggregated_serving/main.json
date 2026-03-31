@@ -1,7 +1,28 @@
 {
   "23": {
     "text": "Disaggregated serving keeps the transformer math the same; the real change is where prefill and decode work happen and how they stop blocking each other.",
-    "hash": "b67c9dde"
+    "hash": "b67c9dde",
+    "diagram": "serving_request_timeline",
+    "highlight": {
+      "nodes": [
+        "req",
+        "pre_q",
+        "prefill",
+        "handoff",
+        "dec_q",
+        "decode",
+        "token"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    }
   },
   "24": {
     "text": "Same tiny names task, so the systems lesson is not hidden behind a change in data or model complexity.",
@@ -21,7 +42,13 @@
   },
   "28": {
     "text": "The queue is the handoff point between the two phases, where a finished prefill becomes decode-ready state instead of blocking later requests.",
-    "hash": "0fef2c5d"
+    "hash": "0fef2c5d",
+    "diagram": "serving_request_timeline",
+    "highlight": [
+      "pre_q",
+      "handoff",
+      "dec_q"
+    ]
   },
   "29": {
     "text": "Each request carries its own prompt, timing, and decode state, because serving is really about how many such requests can coexist without stepping on each other.",
@@ -109,7 +136,13 @@
   },
   "84": {
     "text": "Accepts an optional KV cache: <code>None</code> for prefill (process all tokens), populated for decode (only new token's K/V are computed).",
-    "hash": "8644a184"
+    "hash": "8644a184",
+    "diagram": "transformer_cached_forward",
+    "highlight": [
+      "cache_in",
+      "blocks",
+      "cache_out"
+    ]
   },
   "85": {
     "text": "<code>T_new</code> is the full prompt length during prefill, but just 1 during decode.",
@@ -241,7 +274,12 @@
   },
   "132": {
     "text": "Final linear layer that projects hidden states to vocabulary-sized logits for next-token prediction.",
-    "hash": "1774314d"
+    "hash": "1774314d",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "133": {
     "text": "Walk every submodule and apply the weight initialization function so all parameters start with well-scaled random values.",
@@ -253,7 +291,31 @@
   },
   "140": {
     "text": "Forward pass with KV cache support. <code>start_pos</code> offsets the position embeddings, during decode, positions continue from where prefill left off.",
-    "hash": "6203bc9f"
+    "hash": "6203bc9f",
+    "diagram": "transformer_cached_forward",
+    "highlight": {
+      "nodes": [
+        "token",
+        "start_pos",
+        "wpe",
+        "cache_in",
+        "blocks",
+        "cache_out",
+        "lm_head",
+        "logits"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    }
   },
   "141": {
     "text": "Sequence length of new tokens.",
@@ -427,7 +489,13 @@
   },
   "204": {
     "text": "Run a prefill forward pass on the prompt and capture the resulting KV caches that decode will build upon.",
-    "hash": "33881965"
+    "hash": "33881965",
+    "diagram": "serving_request_timeline",
+    "highlight": [
+      "prefill",
+      "handoff",
+      "dec_q"
+    ]
   },
   "206": {
     "text": "Time the decode phase: generate tokens one at a time.",
@@ -443,7 +511,12 @@
   },
   "209": {
     "text": "One token forward pass with KV cache.",
-    "hash": "9f4fb3e7"
+    "hash": "9f4fb3e7",
+    "diagram": "serving_request_timeline",
+    "highlight": [
+      "decode",
+      "token"
+    ]
   },
   "212": {
     "text": "Measure how long the autoregressive decode phase takes, separate from the prefill measurement.",

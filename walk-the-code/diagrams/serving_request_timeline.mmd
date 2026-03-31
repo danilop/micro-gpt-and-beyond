@@ -1,0 +1,9 @@
+graph TD
+    req[Request arrives]
+    req --> pre_q[Prefill queue]
+    pre_q --> prefill[Prefill worker]
+    prefill --> handoff[KV cache handoff]
+    handoff --> dec_q[Decode queue]
+    dec_q --> decode[Decode worker]
+    decode --> token[Stream token]
+    token --> decode

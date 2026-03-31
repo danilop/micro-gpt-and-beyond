@@ -10,7 +10,7 @@
       "id": "foundations",
       "title": "Foundations",
       "description": "<p>Every deep learning framework hides the same core loop: <strong>forward pass → loss → backward pass → update</strong>. These two labs strip away all abstraction so you see exactly what happens.</p><p>Lab 01 implements Karpathy's original microGPT — a complete GPT in pure Python with a hand-built scalar autograd engine. Every gradient flows through a graph you can inspect. Lab 02 replaces scalars with NumPy arrays for speed, but still derives every gradient by hand. Together they answer: <em>what is a neural network actually computing?</em></p><p>Start here if you're new to transformers, or if you want to truly understand what <code>loss.backward()</code> does under the hood.</p>",
-      "diagram": "graph LR\n  A[Input] --> B[Forward Pass]\n  B --> C[Loss]\n  C --> D[Backward Pass]\n  D --> E[Update Weights]\n  E --> A",
+      "diagram": "graph TD\n  A[Input] --> B[Forward pass]\n  B --> C[Loss]\n  C --> D[Backward pass]\n  D --> E[Update weights]\n  E --> F[Next step]",
       "comparison_diagram": "compare_foundations",
       "labs": ["01_pure_python", "02_numpy_manual_backprop"],
       "knowledge_checks": [
@@ -38,7 +38,7 @@
       "id": "frameworks",
       "title": "Frameworks",
       "description": "<p>The same transformer architecture expressed in three different frameworks — <strong>PyTorch, JAX, and MLX</strong> — each with a single-example and batched variant.</p><p>PyTorch is imperative and object-oriented: you define <code>nn.Module</code> classes and call <code>.backward()</code>. JAX is purely functional: no classes, no mutation, explicit random keys, and <code>jax.vmap</code> to auto-vectorize. MLX targets Apple Silicon with unified CPU/GPU memory and lazy evaluation.</p><p>Comparing these side-by-side reveals what's essential to the algorithm vs. what's just framework convention. The batched variants add padding, masking, and mini-batch training — the bridge from educational toy to real training.</p>",
-      "diagram": "graph TD\n  A[Same Transformer] --> B[PyTorch: nn.Module + .backward]\n  A --> C[JAX: Pure Functions + jax.grad]\n  A --> D[MLX: Lazy Eval + Apple GPU]\n  B --> E[Compare Side-by-Side]\n  C --> E\n  D --> E",
+      "diagram": "graph TD\n  A[Same transformer] --> B[PyTorch]\n  B --> C[nn.Module + backward]\n  C --> D[JAX]\n  D --> E[Pure functions + grad]\n  E --> F[MLX]\n  F --> G[Lazy eval + Apple GPU]\n  G --> H[Compare implementations]",
       "comparison_diagram": "compare_frameworks",
       "labs": ["03_pytorch", "04_pytorch_batched", "05_jax", "06_jax_batched", "07_mlx", "08_mlx_batched"],
       "knowledge_checks": [
@@ -66,7 +66,7 @@
       "id": "tokenization-and-architecture",
       "title": "Tokenization & Architecture",
       "description": "<p>Modern LLMs differ from the original transformer in three key ways: <strong>how they tokenize text, encode position, and share attention heads</strong>. These labs implement each upgrade from scratch.</p><p>BPE tokenization (Lab 09) replaces character-level input with learned subword units — the same algorithm behind GPT's tokenizer. RoPE (Lab 10) encodes position by rotating query and key vectors in complex space, enabling length generalization. GQA (Lab 11) shares key-value heads across query heads, cutting memory without losing quality.</p><p>These are the building blocks of LLaMA, Mistral, and every modern open-weight model.</p>",
-      "diagram": "graph LR\n  A[Text] --> B[BPE Tokenizer]\n  B --> C[Embeddings]\n  C --> D[RoPE Position]\n  D --> E[GQA Attention]",
+      "diagram": "graph TD\n  A[Raw text] --> B[BPE merges]\n  B --> C[Token IDs]\n  C --> D[Token embeddings]\n  D --> E[RoPE rotates Q and K]\n  E --> F[GQA shares KV heads]\n  F --> G[Modern transformer input pipeline]",
       "labs": ["09_bpe_tokenizer", "10_rope", "11_gqa"],
       "knowledge_checks": [
         {
@@ -93,7 +93,7 @@
       "id": "inference-optimization",
       "title": "Inference Optimization",
       "description": "<p>Autoregressive generation is inherently sequential: each token depends on all previous tokens. These labs tackle the two fundamental questions: <strong>how to avoid redundant computation</strong> and <strong>how to control output quality</strong>.</p><p>The KV cache (Lab 12) is the single most important inference optimization — it stores previously computed key-value pairs so each new token only needs one matrix multiply instead of reprocessing the entire sequence. Sampling strategies (Lab 13) show how temperature, top-k, top-p, and min-p produce completely different outputs from the same model.</p><p>Every production LLM serving system uses both of these techniques.</p>",
-      "diagram": "graph LR\n  A[Model] --> B[KV Cache]\n  B --> C[Next Token Logits]\n  C --> D[Sampling Strategy]\n  D --> E[Output Token]\n  E --> B",
+      "diagram": "graph TD\n  A[Prompt prefix] --> B[KV cache reuse]\n  B --> C[Next-token logits]\n  C --> D{Sampling rule}\n  D --> E[Greedy]\n  D --> F[Top-k / top-p / min-p]\n  E --> G[Next token]\n  F --> G\n  G --> B",
       "labs": ["12_kv_cache", "13_sampling"],
       "knowledge_checks": [
         {
@@ -114,7 +114,7 @@
       "id": "fine-tuning-and-deployment",
       "title": "Fine-tuning & Deployment",
       "description": "<p>Training a model from scratch is expensive. These labs show how to <strong>adapt and compress</strong> existing models efficiently.</p><p>LoRA (Lab 14) freezes the original model weights and injects tiny low-rank matrices that capture task-specific knowledge — training only ~1% of parameters while matching full fine-tuning quality. Quantization (Lab 15) compresses a trained model from 32-bit floats to 8-bit integers, reducing size by 4×. This educational implementation demonstrates the memory savings directly and explains why production INT8 kernels also improve latency.</p><p>Together they answer: <em>how do you take a large pretrained model and make it yours, then make it fast?</em></p>",
-      "diagram": "graph LR\n  A[Pretrained Model] --> B[LoRA Adapters]\n  B --> C[Fine-tuned Model]\n  C --> D[INT8 Quantization]\n  D --> E[Production Model]",
+      "diagram": "graph TD\n  A[Base model] --> B[LoRA adapters]\n  A --> C[Post-training quantization]\n  B --> D[Merge or keep adapters]\n  C --> E[Smaller weights]\n  D --> F[Deployable model]\n  E --> F",
       "labs": ["14_lora", "15_pytorch_quantized"],
       "knowledge_checks": [
         {
@@ -135,7 +135,7 @@
       "id": "alternative-paradigms",
       "title": "Alternative Paradigms",
       "description": "<p>Not all language models generate left-to-right. These labs explore <strong>fundamentally different approaches</strong> to text generation.</p><p>Text diffusion (Lab 16) starts from pure noise — all [MASK] tokens — and iteratively unmasks them, like image diffusion but for text. Soft thinking (Lab 17) preserves the full output distribution instead of collapsing to a single token, passing probability-weighted \"concept tokens\" forward. Soft training (Lab 18) closes the train-test gap by teaching the model to work with its own uncertain outputs during training.</p><p>These represent active research frontiers in how we think about language generation.</p>",
-      "diagram": "graph TD\n  A[Text Generation] --> B[Autoregressive: Token by Token]\n  A --> C[Diffusion: Unmask from Noise]\n  A --> D[Soft Thinking: Blend Probabilities]\n  B --> E[Different Tradeoffs]\n  C --> E\n  D --> E",
+      "diagram": "graph TD\n  A[Text generation] --> B[Autoregressive]\n  B --> B2[One next token<br/>at a time]\n  B2 --> C[Diffusion]\n  C --> C2[Predict masked positions<br/>in parallel]\n  C2 --> D[Soft tokens]\n  D --> D2[Preserve uncertainty<br/>as embeddings]",
       "labs": ["16_text_diffusion", "17_soft_thinking", "18_soft_training"],
       "knowledge_checks": [
         {
@@ -162,7 +162,7 @@
       "id": "production-serving",
       "title": "Production Serving",
       "description": "<p>Serving LLMs at scale requires solving memory, latency, and throughput problems simultaneously. These labs implement the <strong>key algorithms behind vLLM, FlashAttention, and TensorRT-LLM</strong>.</p><p>Speculative decoding (Lab 19) uses a small draft model to guess ahead while a larger model verifies in one pass — lossless speedup. FlashAttention (Lab 20) restructures attention to stay in fast on-chip SRAM, avoiding the memory wall. PagedAttention (Lab 21) applies OS-style virtual memory paging to KV caches, eliminating fragmentation. Disaggregated serving (Lab 22) splits prefill and decode onto separate workers, removing head-of-line blocking.</p><p>These are the techniques that make it possible to serve millions of concurrent LLM requests.</p>",
-      "diagram": "graph LR\n  A[Request] --> B[Prefill Worker]\n  B --> C[KV Cache Pages]\n  C --> D[Decode Worker]\n  D --> E[Speculative Draft]\n  E --> F[Verify & Output]",
+      "diagram": "graph TD\n  A[Serving stack] --> B[Speculative decoding]\n  B --> B2[Fewer target passes]\n  B2 --> C[FlashAttention]\n  C --> C2[Less attention traffic]\n  C2 --> D[PagedAttention]\n  D --> D2[Better KV utilization]\n  D2 --> E[Disaggregated serving]\n  E --> E2[Separate prefill and decode]\n  E2 --> F[Higher throughput]",
       "labs": ["19_speculative_decoding", "20_tiled_attention", "21_paged_attention", "22_disaggregated_serving"],
       "knowledge_checks": [
         {
@@ -189,7 +189,7 @@
       "id": "self-improvement",
       "title": "Self-Improvement",
       "description": "<p>Can a model make itself better? These labs explore two fundamentally different approaches to <strong>self-improvement</strong> — one of the most active frontiers in AI research.</p><p>Lab 23 improves model <em>outputs</em>: generate candidates, score them with a verifiable quality function, keep the best, retrain. This is the pattern behind STaR, self-rewarding language models, and Karpathy's autoresearch. Lab 24 improves the <em>model itself</em>: maintain a population of model variants with different hyperparameters, select the fittest, mutate and evolve. This is Population Based Training — the same evolutionary loop behind FunSearch and neural architecture search.</p><p>Together they cover both axes of self-improvement: better data (what the model learns from) and better architecture (how the model is structured).</p>",
-      "diagram": "graph TD\n  A[Self-Improvement] --> B[Improve Outputs]\n  A --> C[Improve Architecture]\n  B --> D[Generate + Score + Filter + Retrain]\n  C --> E[Population + Select + Mutate + Evolve]\n  D --> F[STaR / Self-Rewarding / Autoresearch]\n  E --> G[PBT / FunSearch / NAS]",
+      "diagram": "graph TD\n  A[Model improvement] --> B[Improve outputs]\n  A --> C[Improve configurations]\n  B --> D[Generate<br/>score<br/>filter<br/>retrain]\n  C --> E[Population<br/>evaluate<br/>select<br/>mutate]\n  D --> F[Better samples]\n  E --> G[Better models]",
       "labs": ["23_self_improving", "24_evolutionary"],
       "knowledge_checks": [
         {

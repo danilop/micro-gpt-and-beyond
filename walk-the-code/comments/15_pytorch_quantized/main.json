@@ -265,7 +265,12 @@
   },
   "138": {
     "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
-    "hash": "9ef9adcf"
+    "hash": "9ef9adcf",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "144": {
     "text": "Use CPU for this tiny model since it trains in seconds without a GPU.",

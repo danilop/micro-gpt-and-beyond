@@ -1,0 +1,7 @@
+graph TD
+    masked[Masked / noisy tokens]
+    visible[Visible context tokens]
+    masked --> attend[Bidirectional attention]
+    visible --> attend
+    attend --> context[All positions exchange clues]
+    context --> predict[Predict masked positions in parallel]

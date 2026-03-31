@@ -1,0 +1,11 @@
+graph TD
+    input[Hidden state] --> norm1[Pre-norm]
+    norm1 --> attn[Attention]
+    padmask[Mask / causal rule] --> attn
+    attn --> res1[Residual add]
+    input --> res1
+    res1 --> norm2[Pre-norm]
+    norm2 --> mlp[MLP]
+    mlp --> res2[Residual add]
+    res1 --> res2
+    res2 --> output[Block output]

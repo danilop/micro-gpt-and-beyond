@@ -61,7 +61,14 @@
   },
   "54": {
     "text": "Small model, same architecture as Lab 03, but with one crucial addition: the forward pass accepts pre-computed embeddings, not just token IDs.",
-    "hash": "f6d4f4da"
+    "hash": "f6d4f4da",
+    "diagram": "transformer_soft_input",
+    "highlight": [
+      "hard",
+      "soft",
+      "stream",
+      "blocks"
+    ]
   },
   "55": {
     "text": "Split the embedding dimension across four heads for multi-head attention.",
@@ -253,7 +260,12 @@
   },
   "139": {
     "text": "Map the final hidden states to a score for every vocabulary token, producing the logits for next-token prediction.",
-    "hash": "9ef9adcf"
+    "hash": "9ef9adcf",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "145": {
     "text": "1000 training steps, shared with Lab 18.",
@@ -285,7 +297,25 @@
   },
   "156": {
     "text": "Forward pass using embeddings (not token IDs), this is how concept tokens flow through the model.",
-    "hash": "3c166ac3"
+    "hash": "3c166ac3",
+    "diagram": "soft_soft_path",
+    "highlight": {
+      "nodes": [
+        "logits",
+        "temp",
+        "softmax_blend",
+        "weighted",
+        "next_in",
+        "preserves"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    }
   },
   "159": {
     "text": "Divide logits by the sampling temperature and apply softmax to control how peaked or spread out the token probabilities are.",
@@ -344,7 +374,14 @@
   },
   "173": {
     "text": "Soft temperature controls how blended the concept token is. Lower T = more peaked (closer to hard). Higher T = more spread (more tokens contribute).",
-    "hash": "aa93a434"
+    "hash": "aa93a434",
+    "diagram": "soft_soft_path",
+    "highlight": [
+      "temp",
+      "softmax_blend",
+      "weighted",
+      "preserves"
+    ]
   },
   "174": {
     "text": "THE key line: <code>softmax(logits/T) @ embedding_table</code>. This creates a weighted average of ALL token embeddings, where the weights are the model's probabilities. The concept token lives in the same embedding space as regular tokens, but encodes the full uncertainty of what the model \"wanted to say.\"",
@@ -398,7 +435,15 @@
   },
   "199": {
     "text": "Forward pass with token IDs (standard training, no soft tokens yet).",
-    "hash": "17df3885"
+    "hash": "17df3885",
+    "diagram": "soft_hard_path",
+    "highlight": [
+      "logits",
+      "temp",
+      "sample",
+      "embed_one",
+      "discards"
+    ]
   },
   "200": {
     "text": "Measure how far the model's predictions are from the correct next tokens at each position.",

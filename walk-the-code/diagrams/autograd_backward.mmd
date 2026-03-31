@@ -1,4 +1,4 @@
 graph TD
-    loss[loss.grad = 1] --> c[c.grad += local_grad * loss.grad]
-    c --> a[a.grad += local_grad * c.grad]
-    c --> b[b.grad += local_grad * c.grad]
+    loss["loss.grad = 1"] --> c["c.grad +=<br/>local_grad * loss.grad"]
+    c --> a["a.grad +=<br/>local_grad * c.grad"]
+    c --> b["b.grad +=<br/>local_grad * c.grad"]

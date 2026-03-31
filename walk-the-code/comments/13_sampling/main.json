@@ -225,7 +225,12 @@
   },
   "120": {
     "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
-    "hash": "1774314d"
+    "hash": "1774314d",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "121": {
     "text": "Apply the custom weight initialization function to every module in the model.",
@@ -261,7 +266,12 @@
   },
   "135": {
     "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
-    "hash": "9ef9adcf"
+    "hash": "9ef9adcf",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "141": {
     "text": "Use CPU for this tiny model since it trains in seconds without a GPU.",
@@ -385,7 +395,13 @@
   },
   "190": {
     "text": "Scale the logits by temperature first to reshape the distribution, then mask everything outside the top k. This order matters because temperature changes which tokens are \"top.\"",
-    "hash": "fc85cf8b"
+    "hash": "fc85cf8b",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "temperature",
+      "topk",
+      "renorm"
+    ]
   },
   "191": {
     "text": "Find the k-th highest logit value.",
@@ -418,7 +434,13 @@
   },
   "201": {
     "text": "Divide logits by temperature and convert to probabilities before sorting. The temperature reshapes the distribution first, which affects which tokens fall inside the nucleus.",
-    "hash": "69bc1894"
+    "hash": "69bc1894",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "temperature",
+      "topp",
+      "renorm"
+    ]
   },
   "202": {
     "text": "Sort tokens by probability, highest first.",
@@ -467,7 +489,13 @@
   },
   "218": {
     "text": "Divide logits by temperature and convert to probabilities. The temperature is applied before min-p filtering to reshape which tokens clear the relative threshold.",
-    "hash": "69bc1894"
+    "hash": "69bc1894",
+    "diagram": "sampling_filter",
+    "highlight": [
+      "temperature",
+      "minp",
+      "renorm"
+    ]
   },
   "219": {
     "text": "Threshold = <code>min_p</code> fraction of the highest probability. A relative cutoff, not absolute.",
@@ -492,7 +520,14 @@
   },
   "230": {
     "text": "Shared generation function: same model, different sampler, that's the whole point of this lab.",
-    "hash": "ac415ba1"
+    "hash": "ac415ba1",
+    "diagram": "sampling_select",
+    "highlight": [
+      "logits",
+      "temperature",
+      "sample",
+      "token"
+    ]
   },
   "232": {
     "text": "Allocate an empty list to collect the generated names. Each strategy fills this list, and we display them side-by-side afterward for easy comparison.",

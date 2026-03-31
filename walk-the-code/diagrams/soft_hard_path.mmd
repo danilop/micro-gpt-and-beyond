@@ -1,4 +1,6 @@
 graph TD
-    logits[Logits] --> sample[Sample 1 token]
+    logits[Logits] --> temp[Apply temperature]
+    temp --> sample[Sample 1 token]
     sample --> embed_one[Look up embedding]
-    embed_one --> discards[Discards alternatives]
+    embed_one --> next_in[Next-step input]
+    next_in --> discards[Discards alternatives]

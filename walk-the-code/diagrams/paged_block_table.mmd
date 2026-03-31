@@ -1,0 +1,10 @@
+graph TD
+    seq[Sequence<br/>+ layer] --> table[Block table]
+    free[Free<br/>blocks] --> table
+    table --> append[Append<br/>token]
+    append --> block[Physical<br/>block]
+    read[Read<br/>history] --> block
+    share[Share<br/>prefix] --> table
+    share -. shared mapping .-> block
+    block --> slot[Slot]
+    slot --> kv[Stored<br/>K,V]

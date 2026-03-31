@@ -1,4 +1,7 @@
 graph TD
-    wte[Token Embed] --> add_emb[Add]
-    wpe[Position Embed] --> add_emb
+    tokens[Token IDs] --> wte[Token Embed]
+    pos[Positions] --> wpe[Position Embed]
+    wte --> add_emb[Add token + position]
+    wpe --> add_emb
     add_emb --> norm_in[RMSNorm]
+    norm_in --> block_in[Enter transformer block]

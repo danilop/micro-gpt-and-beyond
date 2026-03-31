@@ -347,14 +347,25 @@
   },
   "152": {
     "text": "Each layer receives the padding mask.",
-    "hash": "3b78410a"
+    "hash": "3b78410a",
+    "diagram": "transformer_block",
+    "highlight": {
+      "nodes": [
+        "padmask",
+        "attn"
+      ],
+      "links": [
+        2
+      ]
+    }
   },
   "153": {
     "text": "Output logits over the real vocabulary.",
     "hash": "9ef9adcf",
-    "diagram": "transformer_mlp",
+    "diagram": "transformer_logits",
     "highlight": [
-      "fc2"
+      "lm_head",
+      "logits"
     ]
   },
   "159": {

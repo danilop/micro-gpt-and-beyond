@@ -325,7 +325,15 @@
   },
   "132": {
     "text": "Dual-input forward pass: accepts either <code>idx</code> (token IDs for standard training) or <code>inputs_embeds</code> (pre-computed embeddings for soft training). This flexibility is what makes the curriculum possible.",
-    "hash": "5a8ff8fb"
+    "hash": "5a8ff8fb",
+    "diagram": "transformer_soft_input",
+    "highlight": [
+      "hard",
+      "soft",
+      "lookup",
+      "stream",
+      "blocks"
+    ]
   },
   "133": {
     "text": "If token IDs given, look them up; otherwise use the raw embeddings directly. This single branch is the gateway for soft training.",
@@ -357,7 +365,12 @@
   },
   "140": {
     "text": "Map the final hidden states to a score for every vocabulary token, producing the logits for next-token prediction.",
-    "hash": "9ef9adcf"
+    "hash": "9ef9adcf",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "146": {
     "text": "Train for 1000 steps, enough for this small character-level model to converge on basic name patterns.",
@@ -397,7 +410,14 @@
   },
   "159": {
     "text": "Forward pass using embeddings (not token IDs), this allows soft concept tokens as input.",
-    "hash": "3c166ac3"
+    "hash": "3c166ac3",
+    "diagram": "soft_soft_path",
+    "highlight": [
+      "temp",
+      "softmax_blend",
+      "weighted",
+      "next_in"
+    ]
   },
   "161": {
     "text": "Temperature-scaled probabilities for token selection.",
@@ -502,7 +522,13 @@
   },
   "200": {
     "text": "First forward pass (detached): get the model's current predictions without tracking gradients. These predictions become the concept tokens for the second forward pass.",
-    "hash": "d4f61231"
+    "hash": "d4f61231",
+    "diagram": "soft_training",
+    "highlight": [
+      "concept",
+      "mix",
+      "model"
+    ]
   },
   "201": {
     "text": "Standard forward pass on ground-truth inputs.",
@@ -536,9 +562,19 @@
     "text": "Second forward pass: model processes the blended input and produces logits for the loss.",
     "hash": "8312ccb4",
     "diagram": "soft_training",
-    "highlight": [
-      "model"
-    ]
+    "highlight": {
+      "nodes": [
+        "gt",
+        "concept",
+        "mix",
+        "model"
+      ],
+      "links": [
+        0,
+        1,
+        3
+      ]
+    }
   },
   "211": {
     "text": "Standard path: just use token IDs when soft mixing is off.",

@@ -113,7 +113,12 @@
   },
   "71": {
     "text": "The output head weight matrix that maps from embedding space back to vocabulary logits for next-token prediction.",
-    "hash": "bfbdb21f"
+    "hash": "bfbdb21f",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
   },
   "73": {
     "text": "Per-layer weights, same structure as previous labs, just stored in a dict.",
@@ -193,7 +198,26 @@
   },
   "104": {
     "text": "Iterate through each transformer layer. With one layer this runs once, but the code generalizes to deeper stacks.",
-    "hash": "12ede0d6"
+    "hash": "12ede0d6",
+    "diagram": "transformer_block",
+    "highlight": {
+      "nodes": [
+        "attn",
+        "res1",
+        "mlp",
+        "res2"
+      ],
+      "links": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    }
   },
   "105": {
     "text": "Save the current hidden state so we can add it back after attention as a residual connection.",
@@ -319,9 +343,10 @@
   "133": {
     "text": "Final projection to vocabulary logits.",
     "hash": "f1ee3d1b",
-    "diagram": "transformer_mlp",
+    "diagram": "transformer_logits",
     "highlight": [
-      "fc2"
+      "lm_head",
+      "logits"
     ]
   },
   "137": {

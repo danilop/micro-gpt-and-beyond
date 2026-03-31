@@ -263,7 +263,14 @@
   },
   "112": {
     "text": "The complete GPT model. Four components: embeddings, normalization, transformer layers, and the output head.",
-    "hash": "e94c5dc2"
+    "hash": "e94c5dc2",
+    "diagram": "transformer_forward",
+    "highlight": [
+      "wte",
+      "wpe",
+      "blocks",
+      "lm_head"
+    ]
   },
   "115": {
     "text": "<code>nn.Embedding</code> is a lookup table, same as indexing into lab 01's <code>wte</code> list, but with built-in gradient tracking.",
@@ -303,7 +310,26 @@
   },
   "127": {
     "text": "The forward pass. Compare to lab 01: this is the same algorithm, but embedding lookups, matrix multiplies, normalization, and attention are all handled by PyTorch layers.",
-    "hash": "1bc7099c"
+    "hash": "1bc7099c",
+    "diagram": "transformer_forward",
+    "highlight": {
+      "nodes": [
+        "add_emb",
+        "norm_in",
+        "blocks",
+        "norm_out",
+        "lm_head",
+        "logits"
+      ],
+      "links": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    }
   },
   "128": {
     "text": "Unpack batch and sequence dimensions.",
@@ -339,14 +365,34 @@
   },
   "133": {
     "text": "Each layer applies attention + MLP with residual connections.",
-    "hash": "41f1e6d2"
+    "hash": "41f1e6d2",
+    "diagram": "transformer_block",
+    "highlight": {
+      "nodes": [
+        "attn",
+        "res1",
+        "mlp",
+        "res2"
+      ],
+      "links": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    }
   },
   "134": {
     "text": "Project to vocabulary logits, the model's prediction for each position.",
     "hash": "9ef9adcf",
-    "diagram": "transformer_mlp",
+    "diagram": "transformer_logits",
     "highlight": [
-      "fc2"
+      "lm_head",
+      "logits"
     ]
   },
   "140": {
