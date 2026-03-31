@@ -28,8 +28,6 @@ jobs:
         with:
           python-version: '3.13'
 
-      - uses: actions/configure-pages@v5.0.0
-
       - name: Install uv
         uses: astral-sh/setup-uv@v7.1.6
 
