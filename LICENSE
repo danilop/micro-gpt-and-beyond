@@ -19,10 +19,3 @@ EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
----
-
-Note: 01_pure_python/microgpt.py is by Andrej Karpathy (@karpathy), originally
-published at https://karpathy.ai/microgpt.html. It is included here with
-attribution but without an explicit license from the author. All other code in
-this repository (02–06) is original work covered by the MIT license above.
