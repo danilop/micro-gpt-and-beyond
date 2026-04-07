@@ -5,6 +5,12 @@
   "repo_url": "https://github.com/danilop/micro-gpt-and-beyond",
   "code_dir": "../labs",
   "language": "python",
+  "terminology": {
+    "group": "Chapter",
+    "group_plural": "Chapters",
+    "unit": "Lab",
+    "unit_plural": "Labs"
+  },
   "chapters": [
     {
       "id": "foundations",

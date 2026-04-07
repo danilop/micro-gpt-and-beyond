@@ -276,11 +276,11 @@
     "hash": "5e18e1c2"
   },
   "116": {
-    "text": "MLP first layer: expand 16 \u2192 64.",
+    "text": "MLP first layer: expand 16 → 64.",
     "hash": "a11a62f3"
   },
   "117": {
-    "text": "MLP second layer: contract 64 \u2192 16.",
+    "text": "MLP second layer: contract 64 → 16.",
     "hash": "c0a7ce20"
   },
   "118": {
@@ -389,7 +389,7 @@
     "hash": "de11c286"
   },
   "160": {
-    "text": "Pre-allocate full K cache: n_layers \u00d7 max_seq_len \u00d7 dims. All slots allocated even if most stay empty.",
+    "text": "Pre-allocate full K cache: n_layers × max_seq_len × dims. All slots allocated even if most stay empty.",
     "hash": "9e63401f"
   },
   "161": {
@@ -458,7 +458,8 @@
   },
   "183": {
     "text": "Block size for paged allocation: 4 tokens per block. Like a page size in virtual memory, the fundamental unit of allocation.",
-    "hash": "c6a19e40"
+    "hash": "c6a19e40",
+    "important": true
   },
   "186": {
     "text": "PagedKVCache: the core innovation behind vLLM. Instead of pre-allocating max_seq_len per sequence, allocate small fixed-size blocks on demand. A block table maps logical positions to physical block IDs, exactly like OS page tables map virtual addresses to physical frames.",
@@ -489,7 +490,7 @@
     "hash": "67580431"
   },
   "198": {
-    "text": "Physical K storage: one block = block_size_tokens \u00d7 dims. Blocks are the atomic allocation unit.",
+    "text": "Physical K storage: one block = block_size_tokens × dims. Blocks are the atomic allocation unit.",
     "hash": "590c74f0"
   },
   "199": {
@@ -501,8 +502,9 @@
     "hash": "ded6a2b4"
   },
   "201": {
-    "text": "Block tables: maps (seq_id, layer) \u2192 list of physical block IDs. This IS the page table.",
-    "hash": "be8abd3d"
+    "text": "Block tables: maps (seq_id, layer) → list of physical block IDs. This IS the page table.",
+    "hash": "be8abd3d",
+    "important": true
   },
   "202": {
     "text": "Dictionary mapping each active sequence ID to how many tokens it has cached so far, used for slot addressing.",
@@ -582,7 +584,7 @@
     "hash": "93ef6eb5"
   },
   "221": {
-    "text": "Map: logical block \u2192 physical block in the page table.",
+    "text": "Map: logical block → physical block in the page table.",
     "hash": "e3e3fb70"
   },
   "222": {
@@ -650,7 +652,7 @@
     "hash": "8b7027be"
   },
   "237": {
-    "text": "Translate logical \u2192 physical via the page table. This indirection is the price of paging, but it's O(1).",
+    "text": "Translate logical → physical via the page table. This indirection is the price of paging, but it's O(1).",
     "hash": "109411f7"
   },
   "238": {

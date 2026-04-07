@@ -1,7 +1,8 @@
 {
   "20": {
     "text": "The core model stays PyTorch, but the teaching goal changes: move from one-example-at-a-time training to the first version that feels structurally like real practice.",
-    "hash": "de2abade"
+    "hash": "de2abade",
+    "important": true
   },
   "21": {
     "text": "Same dataset again. The new complexity comes from batching variable-length names, not from changing the task.",
@@ -109,7 +110,8 @@
   },
   "75": {
     "text": "Attention module, now with a <code>pad_mask</code> parameter. This is the key addition for batching.",
-    "hash": "c20aaac2"
+    "hash": "c20aaac2",
+    "important": true
   },
   "78": {
     "text": "Same Q, K, V projections as lab 03.",
@@ -370,7 +372,8 @@
   },
   "159": {
     "text": "Batch creation: the infrastructure needed for mini-batch training. This is where you see the engineering overhead of batching.",
-    "hash": "b170f5cb"
+    "hash": "b170f5cb",
+    "important": true
   },
   "162": {
     "text": "Gather <code>batch_size</code> documents, cycling through the dataset.",

@@ -232,7 +232,8 @@
   },
   "131": {
     "text": "The critical change: <code>forward</code> accepts either token IDs OR pre-computed embeddings. This is what enables soft thinking, we can feed in concept tokens (weighted blends) instead of discrete token embeddings.",
-    "hash": "5a8ff8fb"
+    "hash": "5a8ff8fb",
+    "important": true
   },
   "132": {
     "text": "If <code>idx</code> is provided, look up embeddings normally. Otherwise, use the pre-computed <code>inputs_embeds</code> directly.",
@@ -277,7 +278,8 @@
   },
   "149": {
     "text": "The generation function: supports both hard (standard) and soft (concept token) decoding. This is where the magic happens.",
-    "hash": "ae96d1e2"
+    "hash": "ae96d1e2",
+    "important": true
   },
   "151": {
     "text": "Disable dropout and other training-specific behaviors. Not strictly needed here (no dropout), but good practice for generation.",

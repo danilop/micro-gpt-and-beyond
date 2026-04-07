@@ -496,7 +496,8 @@
   },
   "229": {
     "text": "Serialize the state dict, this is what you'd ship to production.",
-    "hash": "18edbed6"
+    "hash": "18edbed6",
+    "important": true
   },
   "230": {
     "text": "File size in MB, INT8 should be roughly 4x smaller.",

@@ -1,7 +1,8 @@
 {
   "20": {
     "text": "This lab keeps the functional JAX style but adds the big batching idea: write the logic once for a single example, then lift it across a batch with transformation rather than manual rewiring.",
-    "hash": "b67c9dde"
+    "hash": "b67c9dde",
+    "important": true
   },
   "21": {
     "text": "Same corpus, so the teaching point is batching by transformation, not a new task.",
@@ -21,7 +22,8 @@
   },
   "26": {
     "text": "<code>vmap</code> is the whole point of this lab: keep the single-example mental model, then let JAX lift that computation across the batch dimension for you.",
-    "hash": "1aba950a"
+    "hash": "1aba950a",
+    "important": true
   },
   "28": {
     "text": "Fix the outer randomness so the benefit of <code>vmap</code> is visible as a code-structure improvement rather than as a different experiment.",
@@ -177,7 +179,8 @@
   },
   "104": {
     "text": "Forward pass for a SINGLE sequence. This is the key insight: you write the simplest possible code for one example, and <code>vmap</code> handles batching. Compare lab 04 where the entire forward pass was rewritten for (B, T, C) shapes.",
-    "hash": "9ac5e756"
+    "hash": "9ac5e756",
+    "important": true
   },
   "111": {
     "text": "Sequence length from the single example.",
@@ -370,7 +373,8 @@
   },
   "157": {
     "text": "THE magic line. <code>vmap(forward_single, in_axes=(None, 0, 0))</code> creates a batched version automatically. <code>None</code> means params are shared (not batched); <code>0</code> means batch along the first axis for inputs and masks. This one line replaces all of lab 04's manual batch reshaping.",
-    "hash": "33d95e5b"
+    "hash": "33d95e5b",
+    "important": true
   },
   "160": {
     "text": "Batched loss function. The forward pass is already batched thanks to <code>vmap</code>.",

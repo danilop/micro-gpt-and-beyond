@@ -13,7 +13,8 @@
   },
   "20": {
     "text": "PyTorch is the first place where the code starts looking like modern deep learning practice: tensors, autograd, modules, and the option of GPU acceleration all arrive together.",
-    "hash": "cf1070d3"
+    "hash": "cf1070d3",
+    "important": true
   },
   "21": {
     "text": "Instead of manually juggling parameter arrays, we now assemble the model from objects that already know how to register, move, and update their own weights.",
@@ -21,7 +22,8 @@
   },
   "22": {
     "text": "The important contrast with the previous lab is that the math stays the same while the amount of code we have to write around it drops sharply.",
-    "hash": "5af419e1"
+    "hash": "5af419e1",
+    "important": true
   },
   "24": {
     "text": "Reproducibility still matters because we want the framework change to feel like a cleaner expression of the same model, not a different experiment.",
@@ -85,7 +87,8 @@
   },
   "55": {
     "text": "RMSNorm as an <code>nn.Module</code>, PyTorch's standard way to define reusable layers. Compare to lab 01's bare function.",
-    "hash": "69fade3d"
+    "hash": "69fade3d",
+    "important": true
   },
   "56": {
     "text": "Constructor takes dimension (unused here since we have no learnable scale) and epsilon.",
@@ -105,7 +108,8 @@
   },
   "64": {
     "text": "Self-attention as a module. Four weight matrices, all managed by PyTorch.",
-    "hash": "c20aaac2"
+    "hash": "c20aaac2",
+    "important": true
   },
   "67": {
     "text": "<code>nn.Linear</code> wraps a weight matrix with proper initialization, gradient tracking, and GPU support. No bias, matching our architecture.",
@@ -223,7 +227,8 @@
   },
   "98": {
     "text": "A transformer block combines attention and MLP with residual connections and normalization.",
-    "hash": "4bcc8ea8"
+    "hash": "4bcc8ea8",
+    "important": true
   },
   "101": {
     "text": "Normalize the input before the attention sub-layer. Pre-norm architecture stabilizes training by keeping activations on a consistent scale.",
@@ -243,7 +248,8 @@
   },
   "106": {
     "text": "The famous two-line transformer block: normalize-attend-add, normalize-MLP-add.",
-    "hash": "a87869a2"
+    "hash": "a87869a2",
+    "important": true
   },
   "107": {
     "text": "Attention with residual connection. Same as lab 01's manual <code>x = [a + b for a, b in zip(x, x_residual)]</code>, but expressed as clean addition.",
@@ -409,7 +415,8 @@
   },
   "144": {
     "text": "PyTorch's built-in Adam optimizer. One line replaces the manual Adam implementation from labs 01-02. Same hyperparameters: lr=0.01, betas=(0.85, 0.99).",
-    "hash": "92d21e78"
+    "hash": "92d21e78",
+    "important": true
   },
   "145": {
     "text": "1000 training steps, same as before.",
@@ -445,7 +452,8 @@
   },
   "156": {
     "text": "<code>cross_entropy</code> combines softmax + negative log likelihood in one numerically stable operation. Replaces lab 01's manual softmax + log + negation.",
-    "hash": "4f1dd754"
+    "hash": "4f1dd754",
+    "important": true
   },
   "158": {
     "text": "Zero gradients from previous step. Same as lab 01's <code>p.grad = 0</code>, but for all parameters at once.",
@@ -453,7 +461,8 @@
   },
   "159": {
     "text": "THE magic line. <code>loss.backward()</code> computes all gradients automatically. This one call replaces lab 01's entire <code>Value.backward()</code> engine AND lab 02's 80+ lines of hand-derived gradients.",
-    "hash": "227fe80d"
+    "hash": "227fe80d",
+    "important": true
   },
   "160": {
     "text": "Linear learning rate decay, same schedule as previous labs.",

@@ -472,7 +472,8 @@
   },
   "209": {
     "text": "Naive generation: re-run the FULL sequence through the model at every step. This is O(n^3) total attention.",
-    "hash": "0f384532"
+    "hash": "0f384532",
+    "important": true
   },
   "211": {
     "text": "Track attention operations to quantify the difference.",
@@ -534,7 +535,8 @@
   },
   "229": {
     "text": "KV-cached generation: only process the NEW token each step. O(n^2) total attention.",
-    "hash": "ff9fc7d9"
+    "hash": "ff9fc7d9",
+    "important": true
   },
   "231": {
     "text": "Count the attention operations (Q times K multiply-adds) at each step so we can precisely measure how much computation the KV cache saves.",
@@ -636,7 +638,8 @@
   },
   "269": {
     "text": "Verify outputs are IDENTICAL, the cache is an optimization, not an approximation. Same model, same weights, same random seed = same output.",
-    "hash": "b0668b1e"
+    "hash": "b0668b1e",
+    "important": true
   },
   "270": {
     "text": "Side-by-side comparison of every generated name.",

@@ -40,7 +40,8 @@
   },
   "9": {
     "text": "PBT is the core algorithm here: train many models in parallel, periodically replacing the worst with mutated copies of the best.",
-    "hash": "3c45bfe4"
+    "hash": "3c45bfe4",
+    "important": true
   },
   "10": {
     "text": "PBT is the direct template: train a population briefly, rank by fitness, then let strong members seed the next generation.",
@@ -176,7 +177,8 @@
   },
   "62": {
     "text": "Holding out 1000 names for validation is critical -- fitness must be measured on unseen data to avoid overfitting.",
-    "hash": "476ca504"
+    "hash": "476ca504",
+    "important": true
   },
   "63": {
     "text": "Vocabulary size is fixed before the search begins; evolution is not allowed to cheat by changing the token set.",
@@ -641,7 +643,7 @@
     "hash": "4b1f0578"
   },
   "283": {
-    "text": "The population container holds each individual\u2019s identity, genome, model weights, and most recent fitness.",
+    "text": "The population container holds each individual’s identity, genome, model weights, and most recent fitness.",
     "hash": "3b6eff6b"
   },
   "287": {
@@ -715,7 +717,8 @@
   },
   "321": {
     "text": "Survivors keep their trained weights -- this is the 'exploit' part of PBT. Good solutions are preserved.",
-    "hash": "b6a8376f"
+    "hash": "b6a8376f",
+    "important": true
   },
   "323": {
     "text": "We need POP_SIZE - TOP_K new children to fill the population back to its original size.",
@@ -746,7 +749,8 @@
   },
   "329": {
     "text": "The top-K slice is the survivor pool. These members are the only ones allowed to pass structure into the next generation.",
-    "hash": "b78d7127"
+    "hash": "b78d7127",
+    "important": true
   },
   "330": {
     "text": "Deep-copy the survivors so their trained weights persist into the next generation instead of being overwritten in place.",
@@ -792,7 +796,8 @@
   },
   "349": {
     "text": "When shape is unchanged, the child inherits learned weights. This is the exploit step that makes PBT more efficient than restarting every trial.",
-    "hash": "91cb0e44"
+    "hash": "91cb0e44",
+    "important": true
   },
   "351": {
     "text": "Each child re-enters the population with a new identity and an unknown fitness, even if it inherited strong weights.",
@@ -828,10 +833,11 @@
   },
   "387": {
     "text": "This is the headline question: did evolutionary search beat a single random configuration on the same task?",
-    "hash": "8292c7d8"
+    "hash": "8292c7d8",
+    "important": true
   },
   "389": {
-    "text": "The baseline-vs-evolved comparison is the answer to the lab\u2019s main question: did population search beat a single random guess?",
+    "text": "The baseline-vs-evolved comparison is the answer to the lab’s main question: did population search beat a single random guess?",
     "hash": "ef2629c5"
   },
   "391": {

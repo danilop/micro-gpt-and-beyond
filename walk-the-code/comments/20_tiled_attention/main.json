@@ -21,11 +21,13 @@
   },
   "31": {
     "text": "The learned model is just there to generate realistic tensors. The real lesson is how the same attention result can cost radically different amounts of memory movement.",
-    "hash": "b802910c"
+    "hash": "b802910c",
+    "important": true
   },
   "32": {
     "text": "Softmax is particularly important here because FlashAttention's big idea is not changing softmax, but reorganizing how it is computed and stored.",
-    "hash": "5af419e1"
+    "hash": "5af419e1",
+    "important": true
   },
   "34": {
     "text": "Fix the run so the algorithm comparison stays clean and reproducible.",
@@ -597,7 +599,8 @@
   },
   "258": {
     "text": "Correction factor: when the max changes, previous exponentials need rescaling. This is the key insight of online softmax, you can update the normalization incrementally.",
-    "hash": "820a3290"
+    "hash": "820a3290",
+    "important": true
   },
   "259": {
     "text": "Rescale the running sum and add the new score's contribution.",
@@ -833,7 +836,8 @@
   },
   "346": {
     "text": "The whole point: same math, different memory access patterns, identical results.",
-    "hash": "73e5aaaf"
+    "hash": "73e5aaaf",
+    "important": true
   },
   "351": {
     "text": "Now compare how many times each algorithm reads/writes slow HBM memory.",

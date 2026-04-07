@@ -93,7 +93,8 @@
   },
   "63": {
     "text": "Precompute the rotation frequencies once, they never change during training or inference.",
-    "hash": "3f1d86fb"
+    "hash": "3f1d86fb",
+    "important": true
   },
   "69": {
     "text": "Pair up dimensions: indices 0,2,4,... Each pair will be rotated together as a 2D vector.",
@@ -125,7 +126,8 @@
   },
   "76": {
     "text": "Apply the rotation to query or key tensors. This is where position information enters the attention computation.",
-    "hash": "65a46054"
+    "hash": "65a46054",
+    "important": true
   },
   "82": {
     "text": "Grab the sequence length to slice the precomputed frequencies.",
@@ -201,7 +203,8 @@
   },
   "108": {
     "text": "Attention module with a flag to switch between learned positional embeddings and RoPE.",
-    "hash": "c20aaac2"
+    "hash": "c20aaac2",
+    "important": true
   },
   "109": {
     "text": "The <code>use_rope</code> flag lets us run a fair A/B comparison with identical architecture otherwise.",
@@ -367,7 +370,8 @@
   },
   "166": {
     "text": "Only create learned positional embeddings when NOT using RoPE, this is the parameter saving.",
-    "hash": "7bfe41c9"
+    "hash": "7bfe41c9",
+    "important": true
   },
   "167": {
     "text": "Learned position embeddings: one vector per position. RoPE eliminates this entire table.",

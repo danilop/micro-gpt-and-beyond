@@ -39,7 +39,8 @@
   },
   "19": {
     "text": "This lab uses two real models at once, because the key production idea is a cheap draft model feeding a more expensive target model.",
-    "hash": "cf1070d3"
+    "hash": "cf1070d3",
+    "important": true
   },
   "20": {
     "text": "Both models share the same basic transformer recipe; the interesting part is not architectural novelty but how they cooperate during decoding.",
@@ -178,7 +179,7 @@
     "hash": "4584ac61"
   },
   "72": {
-    "text": "Project to queries and reshape: (B, T, C) \u2192 (B, n_head, T, head_dim). This splits the embedding into independent heads.",
+    "text": "Project to queries and reshape: (B, T, C) → (B, n_head, T, head_dim). This splits the embedding into independent heads.",
     "hash": "30a1c8b6"
   },
   "73": {
@@ -190,7 +191,7 @@
     "hash": "9931351d"
   },
   "75": {
-    "text": "Scaled dot-product attention: Q\u00b7K^T / sqrt(d). The scaling prevents softmax from saturating in high dimensions.",
+    "text": "Scaled dot-product attention: Q·K^T / sqrt(d). The scaling prevents softmax from saturating in high dimensions.",
     "hash": "636b2645"
   },
   "76": {
@@ -396,7 +397,8 @@
   },
   "140": {
     "text": "Target model: 64-dim embeddings, 4 heads, 2 layers. Better quality, but 4x slower per forward pass. This is the model whose distribution we want.",
-    "hash": "88d76868"
+    "hash": "88d76868",
+    "important": true
   },
   "143": {
     "text": "Shared training function, both models train the same way, just with different architectures.",
@@ -516,7 +518,8 @@
   },
   "187": {
     "text": "Standard autoregressive generation: one token, one forward pass, repeat. This is the baseline we want to beat.",
-    "hash": "a79a3548"
+    "hash": "a79a3548",
+    "important": true
   },
   "189": {
     "text": "Start with just the BOS token.",

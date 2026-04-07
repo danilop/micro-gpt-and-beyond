@@ -13,7 +13,8 @@
   },
   "21": {
     "text": "Here is the big transition from lab 01: NumPy compresses the forward pass into matrix operations, but we still refuse to hide the gradient story behind autograd.",
-    "hash": "6f11581d"
+    "hash": "6f11581d",
+    "important": true
   },
   "23": {
     "text": "Use the same reproducible setup as lab 01 so the new complexity comes from arrays and manual gradients, not from a different run.",
@@ -85,7 +86,8 @@
   },
   "60": {
     "text": "Parameters stored as a flat dict of NumPy arrays. Compare to lab 01's nested lists of <code>Value</code> objects, same data, vastly more efficient storage.",
-    "hash": "c82cc3f0"
+    "hash": "c82cc3f0",
+    "important": true
   },
   "61": {
     "text": "Token embeddings: each row is one token's learned representation.",
@@ -129,7 +131,8 @@
   },
   "74": {
     "text": "Every parameter gets a matching zero-filled gradient array. In lab 01, gradients lived inside each <code>Value</code>. Here, we manage them ourselves.",
-    "hash": "224c70d9"
+    "hash": "224c70d9",
+    "important": true
   },
   "76": {
     "text": "Count total parameters to verify we match lab 01.",
@@ -137,7 +140,8 @@
   },
   "83": {
     "text": "RMSNorm forward, returns both the output AND a cache of intermediate values. The backward pass needs these cached values to compute gradients.",
-    "hash": "87079c9d"
+    "hash": "87079c9d",
+    "important": true
   },
   "85": {
     "text": "Mean of squares across the embedding dimension. NumPy handles this across entire matrices, not one scalar at a time.",
@@ -153,11 +157,13 @@
   },
   "88": {
     "text": "Return the output AND the cache. This is the key pattern: forward stores everything backward will need.",
-    "hash": "b286ffe5"
+    "hash": "b286ffe5",
+    "important": true
   },
   "91": {
     "text": "RMSNorm backward, given the gradient of the output, compute the gradient of the input. This is the manual derivative you'd get from the chain rule on paper.",
-    "hash": "b7be0921"
+    "hash": "b7be0921",
+    "important": true
   },
   "92": {
     "text": "Unpack the cached values from the forward pass.",
@@ -165,7 +171,8 @@
   },
   "94": {
     "text": "The hand-derived RMSNorm gradient. Two terms: direct path through the scale, and indirect path through the normalization. This is what autograd computes automatically.",
-    "hash": "93d5bc52"
+    "hash": "93d5bc52",
+    "important": true
   },
   "98": {
     "text": "Softmax forward, same subtract-max-then-exponentiate trick as lab 01, but vectorized over entire matrices.",
@@ -185,7 +192,8 @@
   },
   "105": {
     "text": "Softmax backward. The Jacobian of softmax is dense (every output depends on every input), but this compact formula handles it.",
-    "hash": "2cead80e"
+    "hash": "2cead80e",
+    "important": true
   },
   "107": {
     "text": "Sum of element-wise product: this captures the coupling between all softmax outputs.",
@@ -217,7 +225,8 @@
   },
   "122": {
     "text": "The forward pass processes an entire sequence at once as a matrix, no more position-by-position loop like lab 01.",
-    "hash": "c4107404"
+    "hash": "c4107404",
+    "important": true
   },
   "127": {
     "text": "How many tokens we're processing. The model will see all of these at once, unlike lab 01 which processed one position at a time.",
@@ -462,7 +471,8 @@
   },
   "210": {
     "text": "The backward pass: 80+ lines of hand-derived gradients. This is what <code>loss.backward()</code> does automatically in PyTorch.",
-    "hash": "d294f4a1"
+    "hash": "d294f4a1",
+    "important": true
   },
   "212": {
     "text": "Unpack the cached forward-pass values.",
@@ -470,7 +480,8 @@
   },
   "215": {
     "text": "Softmax + cross-entropy gradient shortcut: start with the probabilities, subtract 1 from the correct class. This elegant shorthand replaces two separate backward passes.",
-    "hash": "eebbe3dd"
+    "hash": "eebbe3dd",
+    "important": true
   },
   "216": {
     "text": "Subtract 1 at target positions, the combined softmax-CE gradient.",

@@ -580,7 +580,8 @@
   },
   "247": {
     "text": "Time-to-first-token: the key latency metric for user experience.",
-    "hash": "b94923dd"
+    "hash": "b94923dd",
+    "important": true
   },
   "248": {
     "text": "When the request completes entirely.",
@@ -709,7 +710,8 @@
   },
   "300": {
     "text": "Disaggregated serving: SEPARATE prefill and decode workers connected by a queue. Prefill doesn't block decode. The key insight: while one worker prefills a long prompt, the other worker continues decoding in-flight requests.",
-    "hash": "326bca13"
+    "hash": "326bca13",
+    "important": true
   },
   "301": {
     "text": "Thread-safe queue connects prefill worker to decode worker.",

@@ -21,7 +21,8 @@
   },
   "26": {
     "text": "These transformations are the heart of JAX: instead of calling methods on a model object, you transform plain functions into gradient and compiled versions.",
-    "hash": "46463ab9"
+    "hash": "46463ab9",
+    "important": true
   },
   "28": {
     "text": "Keep the data order fixed so the conceptual jump to functional programming does not get muddied by run-to-run noise.",
@@ -81,7 +82,8 @@
   },
   "58": {
     "text": "JAX's PRNG is explicit, you create a key and split it for each random operation. No hidden global state, unlike NumPy/PyTorch.",
-    "hash": "6dcc5096"
+    "hash": "6dcc5096",
+    "important": true
   },
   "61": {
     "text": "Parameter initializer, same N(0, 0.08) distribution, but using JAX's RNG.",
@@ -150,7 +152,8 @@
   },
   "81": {
     "text": "<code>jax.tree.leaves</code> extracts all arrays from the nested dict. JAX treats dicts as \"pytrees\", a core abstraction for working with nested parameter structures.",
-    "hash": "2496c8a8"
+    "hash": "2496c8a8",
+    "important": true
   },
   "88": {
     "text": "RMSNorm as a bare function, no class, no state. JAX style: functions in, functions out.",
@@ -166,7 +169,8 @@
   },
   "93": {
     "text": "The forward pass is a PURE FUNCTION: same inputs always produce the same outputs, no side effects. This is what makes <code>jax.grad</code> and <code>jax.jit</code> work, they need mathematical functions, not stateful objects.",
-    "hash": "e8c5a0ca"
+    "hash": "e8c5a0ca",
+    "important": true
   },
   "99": {
     "text": "Sequence length from the input shape.",
@@ -351,7 +355,8 @@
   },
   "137": {
     "text": "Loss function, also a pure function. Takes params, inputs, and targets; returns a scalar loss. This is exactly what <code>jax.grad</code> expects.",
-    "hash": "c1f6de09"
+    "hash": "c1f6de09",
+    "important": true
   },
   "139": {
     "text": "Run the forward pass inside the loss function. <code>grad</code> will differentiate through this entire computation.",
@@ -391,7 +396,8 @@
   },
   "158": {
     "text": "Adam update as a pure function, takes old state, returns new state. No mutation. This is the functional paradigm: transform data, don't change it.",
-    "hash": "3c7a404e"
+    "hash": "3c7a404e",
+    "important": true
   },
   "159": {
     "text": "Allocate fresh output dictionaries instead of mutating the old ones. In JAX's functional style, immutability makes transformations like jit and grad safe.",

@@ -13,7 +13,8 @@
   },
   "25": {
     "text": "MLX's core runtime is still the differentiator here: batched training now runs through a system designed around Apple hardware and deferred execution.",
-    "hash": "00d25044"
+    "hash": "00d25044",
+    "important": true
   },
   "26": {
     "text": "The layer API is familiar on purpose. That lets the reader focus on how batching interacts with MLX rather than relearning the model definition itself.",

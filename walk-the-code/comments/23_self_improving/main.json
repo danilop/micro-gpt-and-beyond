@@ -39,7 +39,8 @@
   },
   "8": {
     "text": "Filtered self-training is the central mechanism: generate candidates, verify them, then feed only the survivors back into training.",
-    "hash": "31de1048"
+    "hash": "31de1048",
+    "important": true
   },
   "9": {
     "text": "STaR (Self-Taught Reasoner) showed that keeping only verified-correct self-generations prevents the model from amplifying its own mistakes.",
@@ -50,7 +51,7 @@
     "hash": "ccf96277"
   },
   "11": {
-    "text": "Karpathy\u2019s autoresearch is relevant because it uses the same keep-or-discard feedback loop, just over code and hyperparameters instead of text samples.",
+    "text": "Karpathy’s autoresearch is relevant because it uses the same keep-or-discard feedback loop, just over code and hyperparameters instead of text samples.",
     "hash": "03bcdfce"
   },
   "13": {
@@ -162,7 +163,8 @@
   },
   "60": {
     "text": "The verifier is not checking truth, only resemblance to the real data distribution. That limitation matters later when collapse is discussed.",
-    "hash": "9aff33a0"
+    "hash": "9aff33a0",
+    "important": true
   },
   "61": {
     "text": "The verifier answers a narrow question on purpose: does this statistically resemble a real name enough to be worth learning from?",
@@ -242,7 +244,8 @@
   },
   "85": {
     "text": "The scoring function is the heart of the self-improvement loop -- it decides which generated names are 'good enough' to retrain on.",
-    "hash": "6e7a37f7"
+    "hash": "6e7a37f7",
+    "important": true
   },
   "87": {
     "text": "Gracefully handles characters not in the vocabulary with .get() fallback, preventing crashes on unexpected generated characters.",
@@ -281,7 +284,7 @@
     "hash": "81f06a79"
   },
   "96": {
-    "text": "Final score = language-model plausibility plus a soft preference for the dataset\u2019s typical length.",
+    "text": "Final score = language-model plausibility plus a soft preference for the dataset’s typical length.",
     "hash": "c5bc9309"
   },
   "99": {
@@ -289,7 +292,7 @@
     "hash": "d59547c2"
   },
   "101": {
-    "text": "From here on, the code is a plain small GPT. The lab\u2019s novelty is not architecture; it is what happens after generation.",
+    "text": "From here on, the code is a plain small GPT. The lab’s novelty is not architecture; it is what happens after generation.",
     "hash": "5c4688e3"
   },
   "104": {
@@ -541,7 +544,8 @@
   },
   "273": {
     "text": "Keeping only the top 20% is the critical filtering step. This is analogous to STaR keeping only correct rationales -- it prevents the model from learning from its own mistakes.",
-    "hash": "0f3ae8ed"
+    "hash": "0f3ae8ed",
+    "important": true
   },
   "274": {
     "text": "300 retraining steps per round is modest -- enough to nudge the model toward better outputs without catastrophic forgetting of the original data.",
@@ -549,7 +553,8 @@
   },
   "275": {
     "text": "The 85/15 mix ratio is crucial: too much self-generated data causes mode collapse; too little means slow improvement. The real data anchors the model.",
-    "hash": "ca0ae143"
+    "hash": "ca0ae143",
+    "important": true
   },
   "277": {
     "text": "Each round generates 300 candidates. Large enough for selection pressure, still cheap enough to rerun many times.",
@@ -742,10 +747,11 @@
   },
   "371": {
     "text": "The four-step summary: Generate, Score, Filter, Retrain. This is the self-improvement loop in its simplest form.",
-    "hash": "26df4341"
+    "hash": "26df4341",
+    "important": true
   },
   "382": {
-    "text": "This is the lab\u2019s biggest caveat: filtering helps, but a narrow verifier can still reward repetitive safe outputs.",
+    "text": "This is the lab’s biggest caveat: filtering helps, but a narrow verifier can still reward repetitive safe outputs.",
     "diagram": "self_improve_collapse",
     "highlight": [
       "A1",

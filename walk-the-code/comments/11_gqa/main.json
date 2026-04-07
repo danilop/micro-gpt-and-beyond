@@ -89,11 +89,13 @@
   },
   "77": {
     "text": "The star of this lab: one attention class that handles MHA, GQA, and MQA by varying <code>n_kv_head</code>.",
-    "hash": "ba43db0f"
+    "hash": "ba43db0f",
+    "important": true
   },
   "80": {
     "text": "The only parameter that changes between variants: how many KV heads to use.",
-    "hash": "0646abe2"
+    "hash": "0646abe2",
+    "important": true
   },
   "82": {
     "text": "Remember how many KV heads this attention layer uses. This value controls how much K/V sharing happens during the forward pass.",
@@ -101,7 +103,8 @@
   },
   "83": {
     "text": "Query heads must divide evenly into KV groups, each group of query heads shares one KV head.",
-    "hash": "a6ff69d4"
+    "hash": "a6ff69d4",
+    "important": true
   },
   "84": {
     "text": "The repeat factor is the whole sharing ratio: 1 means classic MHA, 2 means grouped-query attention, 4 means multi-query attention.",
@@ -161,7 +164,8 @@
   },
   "103": {
     "text": "If KV heads < query heads, we need to expand KV to match. This is the GQA/MQA trick.",
-    "hash": "11eb7909"
+    "hash": "11eb7909",
+    "important": true
   },
   "104": {
     "text": "Repeat each KV head to serve its group of query heads. Logically shared, but physically copied for the matmul. In practice, this repeat is nearly free, it's a view/broadcast, not a memcpy.",
@@ -455,7 +459,8 @@
   },
   "216": {
     "text": "KV cache memory estimate, the key metric for inference. Fewer KV heads = proportionally less cache memory. At 7B scale with 2048 context, this difference is gigabytes per request.",
-    "hash": "e9058f18"
+    "hash": "e9058f18",
+    "important": true
   },
   "223": {
     "text": "Same optimizer for all variants.",

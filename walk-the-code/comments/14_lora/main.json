@@ -515,7 +515,8 @@
   },
   "254": {
     "text": "The target phonetic style: names using only the soft consonants m, n, r. This makes the fine-tuning subset easy to score and inspect in the generated samples.",
-    "hash": "af67112a"
+    "hash": "af67112a",
+    "important": true
   },
   "255": {
     "text": "Filter the dataset to names whose consonants are all in {m, n, r}. Requires at least one consonant so we exclude vowel-only strings.",

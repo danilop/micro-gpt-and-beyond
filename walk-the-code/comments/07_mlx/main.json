@@ -13,7 +13,8 @@
   },
   "19": {
     "text": "<code>mlx.core</code> looks simple on the surface, but unified memory is the key idea: CPU and GPU see the same physical RAM, so data movement looks very different from PyTorch or JAX.",
-    "hash": "00d25044"
+    "hash": "00d25044",
+    "important": true
   },
   "20": {
     "text": "The layer API feels comfortably familiar, which helps isolate what MLX changes at the runtime and memory level.",
@@ -386,7 +387,8 @@
   },
   "145": {
     "text": "Loss function takes the MODEL as its first argument, this is how MLX's <code>value_and_grad</code> knows which parameters to differentiate.",
-    "hash": "57a973e1"
+    "hash": "57a973e1",
+    "important": true
   },
   "146": {
     "text": "Run the full model on the current input to get next-token prediction logits.",

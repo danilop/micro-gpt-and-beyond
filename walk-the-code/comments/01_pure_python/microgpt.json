@@ -1,7 +1,8 @@
 {
   "17": {
     "text": "This is the irreducible version of the whole project: no tensor library, no autograd framework, just enough Python to expose every moving part of a tiny GPT.",
-    "hash": "de2abade"
+    "hash": "de2abade",
+    "important": true
   },
   "18": {
     "text": "The math toolkit is deliberately tiny. That is part of the lesson: underneath all the framework machinery, a language model is still just arithmetic, exponentials, and the chain rule.",
@@ -53,7 +54,8 @@
   },
   "34": {
     "text": "A special token marking where names begin and end. Its ID is one past the last character, so it never collides with a real letter.",
-    "hash": "476ca504"
+    "hash": "476ca504",
+    "important": true
   },
   "35": {
     "text": "Total vocabulary: 26 letters + 1 BOS/EOS token = 27 symbols. That's the entire language.",
@@ -100,7 +102,7 @@
     ]
   },
   "43": {
-    "text": "Starts at zero because gradients <strong>accumulate</strong>. Consider a simple example: <code>x=2, y=3, z=x*y, loss=z+x</code>. Here <code>x</code> is used twice \u2014 once in the multiply and once in the addition \u2014 so it receives gradient from both paths. That's why we start at zero and use <code>+=</code> later.",
+    "text": "Starts at zero because gradients <strong>accumulate</strong>. Consider a simple example: <code>x=2, y=3, z=x*y, loss=z+x</code>. Here <code>x</code> is used twice — once in the multiply and once in the addition — so it receives gradient from both paths. That's why we start at zero and use <code>+=</code> later.",
     "hash": "84cc424b",
     "diagram": "value_node",
     "highlight": [
@@ -117,7 +119,8 @@
   },
   "45": {
     "text": "Local gradients are the partial derivatives of this node with respect to each child. The chain rule's building blocks.",
-    "hash": "4b713b2e"
+    "hash": "4b713b2e",
+    "important": true
   },
   "47": {
     "text": "Operator overloading is the trick that makes autograd invisible. Writing <code>a + b</code> secretly builds the computation graph.",
@@ -142,8 +145,9 @@
     ]
   },
   "49": {
-    "text": "Addition: result is <code>a + b</code>, and both local gradients are 1 because d(a+b)/da = d(a+b)/db = 1. In our example <code>loss = z + x</code>: loss.grad=1 flows equally to both z and x \u2014 each gets 1*1 = 1.",
-    "hash": "160f0cba"
+    "text": "Addition: result is <code>a + b</code>, and both local gradients are 1 because d(a+b)/da = d(a+b)/db = 1. In our example <code>loss = z + x</code>: loss.grad=1 flows equally to both z and x — each gets 1*1 = 1.",
+    "hash": "160f0cba",
+    "important": true
   },
   "51": {
     "text": "Multiplication builds the graph and stores local gradients. The derivative of <code>a*b</code> w.r.t. <code>a</code> is <code>b</code>, and vice versa.",
@@ -169,7 +173,8 @@
   },
   "53": {
     "text": "Product rule: d(a*b)/da = b and d(a*b)/db = a. In our example <code>z = x*y</code> with x=2, y=3: local_grads are (y=3, x=2). When z.grad=1 arrives from backprop, x gets += 1*3 = 3 and y gets += 1*2 = 2.",
-    "hash": "f8f8fcf2"
+    "hash": "f8f8fcf2",
+    "important": true
   },
   "55": {
     "text": "Power rule as a one-liner: d(x^n)/dx = n*x^(n-1). The exponent must be a plain number, not a Value, which is fine for division and square roots.",
@@ -323,11 +328,13 @@
   },
   "80": {
     "text": "The <code>+=</code> is where multi-path gradients merge. In our example: <code>x</code> gets 1 from the addition path AND 3 from the multiply path, so <code>x.grad = 1 + 3 = 4</code>. Check: d(x*y+x)/dx = y+1 = 3+1 = 4. The chain rule works.",
-    "hash": "23c1e33a"
+    "hash": "23c1e33a",
+    "important": true
   },
   "82": {
     "text": "Just 1 transformer layer. Real GPTs stack 12-96+ layers, but one layer already captures interesting patterns.",
-    "hash": "f07cd00b"
+    "hash": "f07cd00b",
+    "important": true
   },
   "83": {
     "text": "16 dimensions per token embedding. Tiny by modern standards (GPT-3 uses 12,288), but enough to learn name patterns.",
@@ -339,7 +346,8 @@
   },
   "85": {
     "text": "4 attention heads, each seeing a 4-dimensional slice. Multiple heads let the model attend to different types of relationships simultaneously.",
-    "hash": "b617f05a"
+    "hash": "b617f05a",
+    "important": true
   },
   "86": {
     "text": "Each head gets <code>n_embd / n_head = 4</code> dimensions. The heads work in parallel on different subspaces.",
@@ -351,7 +359,8 @@
   },
   "90": {
     "text": "The three core weight matrices: token embeddings (what each character means), position embeddings (where it sits), and the output head (predicting the next character).",
-    "hash": "1a86af79"
+    "hash": "1a86af79",
+    "important": true
   },
   "92": {
     "text": "For each transformer layer, allocate the attention and MLP weight matrices.",
@@ -478,7 +487,8 @@
   },
   "117": {
     "text": "The GPT forward pass. Takes one token and its position, plus KV caches for previous tokens. Returns logits for the next token prediction.",
-    "hash": "cebf6a1e"
+    "hash": "cebf6a1e",
+    "important": true
   },
   "118": {
     "text": "Look up this token's learned embedding, a dense vector capturing what the character \"means\" to the model.",
@@ -518,11 +528,13 @@
   },
   "124": {
     "text": "Save the input for the residual connection. It will be added back after attention, creating a \"skip road\" for gradients.",
-    "hash": "cbdfcbc3"
+    "hash": "cbdfcbc3",
+    "important": true
   },
   "125": {
     "text": "Pre-norm architecture: normalize before attention, not after. This is the modern convention (GPT-2 onward) and helps training stability.",
-    "hash": "83f53f47"
+    "hash": "83f53f47",
+    "important": true
   },
   "126": {
     "text": "Query projection: transforms the normalized input into a \"question\" vector. What is this token looking for?",
@@ -663,7 +675,8 @@
   },
   "153": {
     "text": "Final projection: map from the 16-dim embedding space to the 27-dim vocabulary. Each output is a score (logit) for how likely each character is next.",
-    "hash": "1845b3e4"
+    "hash": "1845b3e4",
+    "important": true
   },
   "154": {
     "text": "Return the raw logits. The training loop converts these to probabilities and computes the loss.",
@@ -671,7 +684,8 @@
   },
   "156": {
     "text": "Adam optimizer hyperparameters. <code>beta1=0.85</code> (momentum) is lower than the default 0.9, meaning less smoothing. <code>beta2=0.99</code> tracks the scale of recent gradients.",
-    "hash": "16ee9036"
+    "hash": "16ee9036",
+    "important": true
   },
   "157": {
     "text": "First moment (mean) estimates, initialized to zero. These smooth out noisy gradients, acting like momentum.",
@@ -687,7 +701,8 @@
   },
   "162": {
     "text": "The main training loop. Each iteration is one gradient descent step on one name.",
-    "hash": "53f56939"
+    "hash": "53f56939",
+    "important": true
   },
   "163": {
     "text": "Cycle through the dataset. After seeing all names, start over from the beginning.",
@@ -695,7 +710,8 @@
   },
   "164": {
     "text": "Tokenize: BOS + character IDs + BOS. The model learns to start generating after BOS and stop by predicting BOS.",
-    "hash": "ae86abd0"
+    "hash": "ae86abd0",
+    "important": true
   },
   "165": {
     "text": "Clip to the maximum context length. Most names are short, so this rarely activates.",
@@ -855,7 +871,8 @@
   },
   "193": {
     "text": "Time to see what the model learned. Everything below is pure inference, no gradients, no updates.",
-    "hash": "1902bf84"
+    "hash": "1902bf84",
+    "important": true
   },
   "195": {
     "text": "Generate 20 new names the model has never seen. These come purely from learned patterns.",

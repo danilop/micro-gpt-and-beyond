@@ -273,7 +273,8 @@
   },
   "117": {
     "text": "The full model, same architecture as Lab 17. The key difference: <code>forward</code> accepts either token IDs or raw embeddings, which is what enables soft training.",
-    "hash": "e94c5dc2"
+    "hash": "e94c5dc2",
+    "important": true
   },
   "118": {
     "text": "No size parameters since both models share the same architecture.",
@@ -461,7 +462,8 @@
   },
   "173": {
     "text": "The concept token: probability-weighted average of ALL token embeddings. Instead of picking one token, this continuous blend carries information about the model's full belief distribution. A soft \"a\" that's 30% \"b\" encodes richer context than a hard \"a\" alone.",
-    "hash": "e1a0c30a"
+    "hash": "e1a0c30a",
+    "important": true
   },
   "175": {
     "text": "Concatenate and sliding-window to respect <code>block_size</code>.",
@@ -551,7 +553,7 @@
     ]
   },
   "207": {
-    "text": "The blending: position 0 (BOS) always stays ground truth. For all other positions, mix between ground truth and the concept token from the previous position's prediction. Early in training (mix\u22480), this is mostly ground truth. Late (mix\u22481), mostly concept tokens, matching what the model will see at inference time.",
+    "text": "The blending: position 0 (BOS) always stays ground truth. For all other positions, mix between ground truth and the concept token from the previous position's prediction. Early in training (mix≈0), this is mostly ground truth. Late (mix≈1), mostly concept tokens, matching what the model will see at inference time.",
     "hash": "a0a4fb84",
     "diagram": "soft_training",
     "highlight": [

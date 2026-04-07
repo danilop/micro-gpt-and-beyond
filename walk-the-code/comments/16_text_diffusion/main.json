@@ -1,11 +1,13 @@
 {
   "1": {
-    "text": "This lab implements a masked diffusion language model \u2014 the text equivalent of image diffusion. Instead of adding Gaussian noise to pixels, we replace characters with MASK tokens.",
-    "hash": "b6d267ef"
+    "text": "This lab implements a masked diffusion language model — the text equivalent of image diffusion. Instead of adding Gaussian noise to pixels, we replace characters with MASK tokens.",
+    "hash": "b6d267ef",
+    "important": true
   },
   "2": {
     "text": "The model name says it all: instead of predicting the next token, this model starts from an all-MASK sequence and iteratively reveals tokens.",
-    "hash": "3ef0c3f9"
+    "hash": "3ef0c3f9",
+    "important": true
   },
   "8": {
     "text": "Two key papers: MDLM (Sahoo et al., 2024) introduced the masked diffusion framework; LLaDA (Nie et al., 2025) scaled it to large language models and showed competitive results.",
@@ -72,7 +74,7 @@
     "hash": "08bb2551"
   },
   "43": {
-    "text": "In autoregressive models we needed BOS to start generation. In diffusion, MASK serves that role \u2014 the model starts from all-MASK and denoises. PAD is still needed for fixed-length batching.",
+    "text": "In autoregressive models we needed BOS to start generation. In diffusion, MASK serves that role — the model starts from all-MASK and denoises. PAD is still needed for fixed-length batching.",
     "hash": "077bf37a"
   },
   "44": {
@@ -81,7 +83,8 @@
   },
   "45": {
     "text": "<code>MASK</code> is the \"noise\" token. In diffusion, we corrupt data by replacing real tokens with MASK, then train the model to reverse that corruption. This replaces the BOS token used in autoregressive models.",
-    "hash": "5e1cce49"
+    "hash": "5e1cce49",
+    "important": true
   },
   "46": {
     "text": "<code>PAD</code> fills unused positions in fixed-length sequences. Diffusion processes every position simultaneously, so all sequences must be the same length.",
@@ -96,8 +99,9 @@
     "hash": "1cb38e2c"
   },
   "51": {
-    "text": "The model section. The transformer architecture is nearly identical to the autoregressive labs \u2014 the key difference is bidirectional attention (no causal mask).",
-    "hash": "2dec5eee"
+    "text": "The model section. The transformer architecture is nearly identical to the autoregressive labs — the key difference is bidirectional attention (no causal mask).",
+    "hash": "2dec5eee",
+    "important": true
   },
   "53": {
     "text": "16-dimensional embeddings, small but enough for character-level patterns.",
@@ -108,7 +112,7 @@
     "hash": "e804f3b9"
   },
   "55": {
-    "text": "2 layers instead of 1 \u2014 diffusion needs more depth because it must gather clues from scattered unmasked positions, unlike autoregressive models that always have full left context.",
+    "text": "2 layers instead of 1 — diffusion needs more depth because it must gather clues from scattered unmasked positions, unlike autoregressive models that always have full left context.",
     "hash": "c7f1f218"
   },
   "56": {
@@ -132,7 +136,7 @@
     "hash": "53678ba7"
   },
   "69": {
-    "text": "The key difference from GPT: <strong>bidirectional</strong> attention. Every position can see every other position \u2014 no causal mask. This lets the model gather clues from all unmasked tokens in any direction to fill in the blanks.",
+    "text": "The key difference from GPT: <strong>bidirectional</strong> attention. Every position can see every other position — no causal mask. This lets the model gather clues from all unmasked tokens in any direction to fill in the blanks.",
     "hash": "9125ee1f",
     "diagram": "bidirectional_attn",
     "highlight": {
@@ -184,8 +188,9 @@
     "hash": "a48e9c7a"
   },
   "86": {
-    "text": "Scaled dot-product attention. No causal mask here \u2014 this is the key difference from GPT. Every position sees every other.",
-    "hash": "308b188d"
+    "text": "Scaled dot-product attention. No causal mask here — this is the key difference from GPT. Every position sees every other.",
+    "hash": "308b188d",
+    "important": true
   },
   "87": {
     "text": "Softmax over all positions gives attention weights. In GPT, future positions would be masked to -inf here.",
@@ -200,7 +205,7 @@
     "hash": "3ad666a1"
   },
   "96": {
-    "text": "Expand to 4x width \u2014 the \"thinking space\" of the MLP.",
+    "text": "Expand to 4x width — the \"thinking space\" of the MLP.",
     "hash": "8e9f0642"
   },
   "97": {
@@ -212,7 +217,7 @@
     "hash": "8aa6bebb"
   },
   "103": {
-    "text": "Transformer block: attention then MLP, each with pre-norm and residual connections. Same architecture as autoregressive labs \u2014 only the attention mask changes.",
+    "text": "Transformer block: attention then MLP, each with pre-norm and residual connections. Same architecture as autoregressive labs — only the attention mask changes.",
     "hash": "4bcc8ea8"
   },
   "106": {
@@ -337,7 +342,7 @@
     "hash": "4c6a851c"
   },
   "149": {
-    "text": "Print the parameter count so you can verify this is a tiny model \u2014 same order of magnitude as the autoregressive labs.",
+    "text": "Print the parameter count so you can verify this is a tiny model — same order of magnitude as the autoregressive labs.",
     "hash": "ea4a5d11"
   },
   "151": {
@@ -349,11 +354,12 @@
     "hash": "88b7b1e1"
   },
   "153": {
-    "text": "Batch size of 32 is critical for diffusion. With batch=1, each gradient is based on a single random masking pattern \u2014 far too noisy for the model to learn. Batching averages over 32 different mask patterns per step, giving stable gradients.",
-    "hash": "6d652f87"
+    "text": "Batch size of 32 is critical for diffusion. With batch=1, each gradient is based on a single random masking pattern — far too noisy for the model to learn. Batching averages over 32 different mask patterns per step, giving stable gradients.",
+    "hash": "6d652f87",
+    "important": true
   },
   "154": {
-    "text": "Print batch size so it's visible in the output \u2014 a reminder that batching is essential for diffusion.",
+    "text": "Print batch size so it's visible in the output — a reminder that batching is essential for diffusion.",
     "hash": "7bc4179a"
   },
   "156": {
@@ -407,15 +413,15 @@
     ]
   },
   "169": {
-    "text": "Sample noise level <code>t</code> from a log-uniform distribution between 0.2 and 1.0. Log-uniform means t \u221d 1/t, which cancels the 1/t factor in the ELBO loss \u2014 a clever importance sampling trick from MDLM.",
+    "text": "Sample noise level <code>t</code> from a log-uniform distribution between 0.2 and 1.0. Log-uniform means t ∝ 1/t, which cancels the 1/t factor in the ELBO loss — a clever importance sampling trick from MDLM.",
     "hash": "6bcbfbcb"
   },
   "170": {
-    "text": "Corrupt the clean sequence: each token is independently replaced with MASK with probability <code>t</code>. High <code>t</code> \u2192 heavy corruption (mostly MASK), low <code>t</code> \u2192 light (mostly clean).",
+    "text": "Corrupt the clean sequence: each token is independently replaced with MASK with probability <code>t</code>. High <code>t</code> → heavy corruption (mostly MASK), low <code>t</code> → light (mostly clean).",
     "hash": "abc2ff93"
   },
   "171": {
-    "text": "Record which positions were masked \u2014 we'll only compute loss on these.",
+    "text": "Record which positions were masked — we'll only compute loss on these.",
     "hash": "072ee72c"
   },
   "173": {
@@ -505,7 +511,7 @@
     "hash": "45bf010c"
   },
   "211": {
-    "text": "Disable gradient tracking during inference \u2014 we're only sampling, not training.",
+    "text": "Disable gradient tracking during inference — we're only sampling, not training.",
     "hash": "d4f61231"
   },
   "212": {
@@ -513,7 +519,7 @@
     "hash": "64d836c5"
   },
   "213": {
-    "text": "Start from pure noise: every position is MASK. The name doesn't exist yet \u2014 it will crystallize through iterative unmasking.",
+    "text": "Start from pure noise: every position is MASK. The name doesn't exist yet — it will crystallize through iterative unmasking.",
     "hash": "b2fbeb8b",
     "diagram": "diffusion_unmasking",
     "highlight": [
@@ -564,7 +570,7 @@
     "hash": "a3acef54"
   },
   "226": {
-    "text": "Only predict for currently masked positions \u2014 unmasked tokens are already decided.",
+    "text": "Only predict for currently masked positions — unmasked tokens are already decided.",
     "hash": "de76ce4d",
     "diagram": "diffusion_unmasking",
     "highlight": [
@@ -588,7 +594,7 @@
     ]
   },
   "231": {
-    "text": "Record the model's confidence (max probability) alongside the position \u2014 high confidence means the model is sure.",
+    "text": "Record the model's confidence (max probability) alongside the position — high confidence means the model is sure.",
     "hash": "105d0152"
   },
   "234": {
@@ -604,11 +610,11 @@
     "hash": "970bee43"
   },
   "236": {
-    "text": "Sort by confidence (ascending) so the least confident predictions are first \u2014 these get re-masked.",
+    "text": "Sort by confidence (ascending) so the least confident predictions are first — these get re-masked.",
     "hash": "90cb2129"
   },
   "238": {
-    "text": "Put MASK back \u2014 this position will get another try in the next denoising step.",
+    "text": "Put MASK back — this position will get another try in the next denoising step.",
     "hash": "bf9d78a0"
   },
   "239": {
@@ -624,7 +630,7 @@
     ]
   },
   "242": {
-    "text": "Print each generated name \u2014 these emerged from pure noise through iterative unmasking, with no left-to-right constraint.",
+    "text": "Print each generated name — these emerged from pure noise through iterative unmasking, with no left-to-right constraint.",
     "hash": "f9d6f741"
   }
 }
