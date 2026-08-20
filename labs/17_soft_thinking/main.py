@@ -140,14 +140,24 @@ class MicroGPT(nn.Module):
 
 
 # ---------------------------------------------------------------------------
-# Shared utilities (also used by Lab 18)
+# Generation — hard (discrete) or soft (concept token) decoding
 # ---------------------------------------------------------------------------
+# Lab 18 duplicates the model and this generation function rather than importing
+# them: each lab is meant to run standalone, from a single file, with no
+# cross-lab imports to trace.
 num_steps = 1000
+
+
+def entropy_of(p):
+    """Shannon entropy in nats of a probability vector."""
+    return -(p * p.clamp(min=1e-10).log()).sum().item()
 
 
 @torch.no_grad()
 def generate(model, mode="hard", soft_temp=1.0, temperature=0.5):
     """Generate a name using hard (discrete) or soft (concept token) decoding."""
+    # No dropout and no batch norm anywhere in this model, so eval() changes
+    # nothing here. Kept because it is the habit you want everywhere else.
     model.eval()
     tokens, entropies = [], []
     embeds = model.wte(torch.tensor([[BOS]], device=device))
@@ -162,20 +172,71 @@ def generate(model, mode="hard", soft_temp=1.0, temperature=0.5):
             break
         tokens.append(token_id)
 
-        # Track entropy: how spread is the distribution?
-        entropies.append(-(probs * probs.clamp(min=1e-10).log()).sum().item())
-
-        # Next input: discrete embedding or concept token
+        # Next input: discrete embedding or concept token.
+        #
+        # The entropy we report is the entropy of the distribution that actually
+        # BUILDS the next input, which is the only one soft thinking changes.
+        # Measuring the sampling distribution softmax(logits/temperature) instead
+        # would be measuring the wrong thing: it is the same for every row of the
+        # table below, so it would read flat no matter what soft_temp does.
         if mode == "hard":
             next_emb = model.wte(torch.tensor([[token_id]], device=device))
+            # Hard decoding feeds exactly one embedding. Its input distribution
+            # is a one-hot delta, so its entropy is exactly 0 — that IS the
+            # information bottleneck, stated as a number.
+            entropies.append(0.0)
         else:
             # Concept token: probability-weighted blend of ALL token embeddings
             soft_probs = F.softmax(logits / soft_temp, dim=-1)
             next_emb = (soft_probs @ model.wte.weight).view(1, 1, -1)
+            entropies.append(entropy_of(soft_probs))
 
         embeds = torch.cat([embeds, next_emb], dim=1)[:, -block_size:]
 
     return tokens, entropies
+
+
+# ---------------------------------------------------------------------------
+# The cost side: is the output still in distribution?
+# ---------------------------------------------------------------------------
+
+
+@torch.no_grad()
+def score_nll(model, names):
+    """Mean per-token NLL (nats) of `names` under the model, with hard inputs.
+
+    This asks "would the model itself have written this?". A string the model
+    considers unlikely on its normal hard path scores badly here, which is what
+    out-of-distribution drift looks like from the outside. Compare any row
+    against the real-names reference at the bottom of the table.
+    """
+    total, count = 0.0, 0
+    for name in names:
+        if not name:
+            continue
+        tokens = [BOS] + [uchars.index(ch) for ch in name] + [BOS]
+        n = min(block_size, len(tokens) - 1)
+        logits = model(torch.tensor([tokens[:n]], device=device))
+        targets = torch.tensor([tokens[1 : n + 1]], device=device)
+        total += F.cross_entropy(logits.view(-1, vocab_size), targets.view(-1), reduction="sum").item()
+        count += n
+    return total / max(count, 1)
+
+
+def dup_rate(names):
+    """Fraction of adjacent character pairs that repeat the same character.
+
+    Real names do this a little (emma, aaron). Soft decoding at high temperature
+    does it constantly, because a diffuse concept token carries almost no
+    information about which token was just emitted, so the model loses track and
+    stutters. One number, and it catches the specific way this technique fails.
+    """
+    pairs = dups = 0
+    for name in names:
+        for i in range(1, len(name)):
+            pairs += 1
+            dups += name[i] == name[i - 1]
+    return dups / max(pairs, 1)
 
 
 # ---------------------------------------------------------------------------
@@ -210,8 +271,9 @@ if __name__ == "__main__":
 
     # Inference — hard vs. soft decoding at different temperatures
     print("\n--- soft thinking comparison ---\n")
-    n_samples = 20
+    n_samples = 50
     max_H = math.log(vocab_size)
+    rows = []
 
     for mode, soft_temp, label in [
         ("hard", 1.0, "hard (standard decoding)"),
@@ -220,20 +282,51 @@ if __name__ == "__main__":
         ("soft", 2.0, "soft T=2.0 (diffuse blend)"),
     ]:
         print(f"{label}:")
-        all_H = []
+        all_H, names = [], []
         for i in range(n_samples):
             toks, ents = generate(model, mode, soft_temp)
             name = "".join(uchars[t] for t in toks)
+            names.append(name)
             avg_H = sum(ents) / len(ents) if ents else 0
             all_H.append(avg_H)
             if i < 10:
-                print(f"  {i + 1:2d}: {name:<15s} entropy {avg_H:.2f}/{max_H:.2f}")
-        print(f"  -> mean entropy: {sum(all_H) / len(all_H):.2f}/{max_H:.2f}\n")
+                print(f"  {i + 1:2d}: {name:<15s} concept-token entropy {avg_H:.3f}/{max_H:.2f}")
+        mean_H = sum(all_H) / len(all_H)
+        print(f"  -> mean concept-token entropy: {mean_H:.3f}/{max_H:.2f}\n")
+        rows.append((label, mean_H, score_nll(model, names), dup_rate(names)))
+
+    # Reference row: names the model never trained on (training walked docs[0:1000]).
+    real = docs[num_steps : num_steps + 500]
+    real_nll, real_dup = score_nll(model, real), dup_rate(real)
+
+    # ---------------------------------------------------------------------
+    # Benefit and cost, side by side
+    # ---------------------------------------------------------------------
+    # Entropy alone only measures the BENEFIT (how much of the distribution
+    # survives into the next step). On its own it would make T=2.0 look best.
+    # The other two columns are the price.
+    print("--- benefit vs. cost ---\n")
+    print(f"  {'mode':<28s} {'concept H':>9s}  {'sample NLL':>10s}  {'dup rate':>8s}")
+    print(f"  {'-' * 28} {'-' * 9}  {'-' * 10}  {'-' * 8}")
+    for label, mean_H, nll, dup in rows:
+        print(f"  {label:<28s} {mean_H:>9.3f}  {nll:>10.4f}  {dup:>7.1%}")
+    print(f"  {'real held-out names (' + str(len(real)) + ')':<28s} {'-':>9s}  {real_nll:>10.4f}  {real_dup:>7.1%}")
+    print(f"""
+  concept H   entropy of the distribution that builds the next input (max {max_H:.2f}).
+              Hard decoding is exactly 0: one token in, everything else discarded.
+  sample NLL  per-token NLL of the generated names under the model itself, hard
+              inputs. Higher means the output has drifted off the manifold the
+              model was trained on. The real-names row is the yardstick.
+  dup rate    adjacent repeated characters — the vowel stutter visible in the
+              T=2.0 block above. Real names do this 4.9% of the time; T=2.0 soft
+              decoding does it four times as often.
+""")
 
     print(f"""--- what's happening ---
 
 Standard (hard) decoding collapses the model's rich output distribution to a
-single token ID at every step. The next step sees only one embedding — all
+single sampled token ID at every step (sampled, not argmax — see the
+torch.multinomial call above). The next step sees only one embedding — all
 information about what the model "almost said" is discarded.
 
 Soft thinking preserves this information:
@@ -249,9 +342,14 @@ Temperature (T) controls the softness:
   T = 1:   standard softmax (moderate blending)
   T -> inf: uniform weights (noise — all tokens equally blended)
 
-The entropy column shows how "spread" each distribution is. Higher entropy
-means more tokens contribute to the concept token — richer information, but
-higher risk of out-of-distribution drift. Max entropy = ln({vocab_size}) = {max_H:.2f}.
+The entropy column shows how "spread" the next-input distribution is. Higher
+entropy means more tokens contribute to the concept token — richer information,
+but higher risk of out-of-distribution drift. Max entropy = ln({vocab_size}) = {max_H:.2f}.
+
+The tradeoff in that sentence is not rhetorical: the table above measures both
+halves of it. Entropy rises monotonically with T, and so does the NLL of what
+comes out. Past some point the concept token is carrying so little information
+about what was just emitted that the model starts stuttering vowels.
 
 This is training-free — no model weights change. The Soft Thinking paper
 (Zhang et al., 2025) shows this improves reasoning in large models by

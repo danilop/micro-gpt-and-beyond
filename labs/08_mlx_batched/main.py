@@ -3,16 +3,18 @@ microGPT — MLX batched edition.
 
 Same architecture as 07_mlx, but with mini-batch training:
   - Batches of 32 sequences per step
-  - Padding + attention masking (same approach as PyTorch batched)
+  - Padding + masking at the data level
   - Scaled-up model (2 layers, 64-dim embeddings, context 16)
   - 1000 training steps
 
-Unlike JAX's vmap, MLX batching works the PyTorch way: reshape your tensors
-to include a batch dimension and write the forward pass to handle (B, T, ...).
-Same idea, same manual padding — unified memory is the difference.
+MLX has mx.vmap, and this lab uses it, so the model code below has no batch
+dimension anywhere: the forward pass is written for one sequence and mx.vmap
+lifts it over the batch, exactly as jax.vmap does in 06_jax_batched. That makes
+labs 04, 06 and 08 a genuine three-way comparison of the same batching problem:
+PyTorch's manual (B, T, ...) reshape, jax.vmap, and mx.vmap.
 
-The batched version adds padding, masking, and mini-batch SGD — standard
-engineering for production training.
+The step is also wrapped in mx.compile (MLX's jax.jit) and the loop prints
+ms/step, so the framework claims here are measured rather than asserted.
 
 Reference: "Attention Is All You Need" (Vaswani et al., 2017),
 https://arxiv.org/abs/1706.03762
@@ -21,6 +23,7 @@ https://arxiv.org/abs/1706.03762
 import math
 import os
 import random
+import time
 
 import mlx.core as mx
 import mlx.nn as nn
@@ -84,23 +87,34 @@ class CausalSelfAttention(nn.Module):
         self.wv = nn.Linear(n_embd, n_embd, bias=False)
         self.wo = nn.Linear(n_embd, n_embd, bias=False)
 
-    def __call__(self, x, pad_mask=None):
-        B, T, C = x.shape
-        q = self.wq(x).reshape(B, T, n_head, head_dim).transpose(0, 2, 1, 3)
-        k = self.wk(x).reshape(B, T, n_head, head_dim).transpose(0, 2, 1, 3)
-        v = self.wv(x).reshape(B, T, n_head, head_dim).transpose(0, 2, 1, 3)
+    def __call__(self, x, pad_mask):
+        # x: (T, C) — one sequence, no batch dimension. mx.vmap adds it later.
+        T, C = x.shape
+        q = self.wq(x).reshape(T, n_head, head_dim).transpose(1, 0, 2)
+        k = self.wk(x).reshape(T, n_head, head_dim).transpose(1, 0, 2)
+        v = self.wv(x).reshape(T, n_head, head_dim).transpose(1, 0, 2)
 
-        att = (q @ k.transpose(0, 1, 3, 2)) / math.sqrt(head_dim)
+        att = (q @ k.transpose(0, 2, 1)) / math.sqrt(head_dim)
         # Causal mask
         causal = mx.triu(mx.ones((T, T)), k=1).astype(mx.bool_)
-        att = mx.where(causal, mx.array(-1e9), att)
-        # Padding mask: don't attend to PAD positions
-        if pad_mask is not None:
-            att = mx.where(pad_mask[:, None, None, :], mx.array(-1e9), att)
+        att = mx.where(causal, -1e9, att)
+        # Padding mask: block attention to PAD keys.
+        #
+        # This one is inert in this configuration, and it is worth knowing why.
+        # Padding is appended at the end of a sequence, never interleaved, and
+        # the causal mask already stops position t from looking past t. So every
+        # key a real query can reach is a real token, and this line only changes
+        # logits at pad query positions, which target_mask multiplies by zero.
+        # It is kept because it becomes load-bearing the moment you left-pad,
+        # use bidirectional attention, or pack several documents into one row.
+        att = mx.where(pad_mask[None, None, :], -1e9, att)
+        # No NaN guard is needed: masking with -1e9 rather than -inf means even a
+        # fully masked row would softmax to a uniform distribution instead of
+        # NaN. And no row can be fully masked — row 0 always keeps position 0,
+        # which is BOS, never PAD.
         att = mx.softmax(att, axis=-1)
-        att = mx.where(mx.isnan(att), mx.array(0.0), att)
 
-        out = (att @ v).transpose(0, 2, 1, 3).reshape(B, T, C)
+        out = (att @ v).transpose(1, 0, 2).reshape(T, C)
         return self.wo(out)
 
 
@@ -122,7 +136,7 @@ class Block(nn.Module):
         self.norm2 = RMSNorm(n_embd)
         self.mlp = MLP()
 
-    def __call__(self, x, pad_mask=None):
+    def __call__(self, x, pad_mask):
         x = x + self.attn(self.norm1(x), pad_mask)
         x = x + self.mlp(self.norm2(x))
         return x
@@ -137,14 +151,32 @@ class MicroGPT(nn.Module):
         self.layers = [Block() for _ in range(n_layer)]
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
 
-    def __call__(self, idx, pad_mask=None):
-        B, T = idx.shape
+    def forward_single(self, idx, pad_mask):
+        """
+        Forward pass for ONE sequence.
+        idx: (T,) int array, pad_mask: (T,) bool array, True where padded.
+        Returns: logits (T, vocab_size). Note the absence of a batch dimension.
+        """
+        T = idx.shape[0]
         tok_emb = self.wte(idx)
         pos_emb = self.wpe(mx.arange(T))
         x = self.norm_in(tok_emb + pos_emb)
         for layer in self.layers:
             x = layer(x, pad_mask)
         return self.lm_head(x)
+
+    def __call__(self, idx, pad_mask=None):
+        """
+        Forward pass for a BATCH: idx (B, T) -> logits (B, T, vocab_size).
+
+        mx.vmap lifts forward_single over axis 0 of both arguments. The model
+        parameters are captured from self and shared across the batch, which is
+        what in_axes=None would say explicitly in jax.vmap. Nothing above this
+        line knows a batch exists.
+        """
+        if pad_mask is None:  # inference: one sequence, nothing padded
+            pad_mask = mx.zeros(idx.shape, dtype=mx.bool_)
+        return mx.vmap(self.forward_single, in_axes=(0, 0))(idx, pad_mask)
 
 
 # ---------------------------------------------------------------------------
@@ -159,11 +191,18 @@ def make_batch(docs, step, batch_size):
         toks = toks[: block_size + 1]
         sequences.append(toks)
 
+    # Padded to the longest sequence in this batch, the same way 04_pytorch_batched
+    # does it. That means the batch shape changes from step to step, and mx.compile
+    # (like jax.jit) traces once per shape — the printed shape count below shows how
+    # many times. 06_jax_batched shows the fix: pad to a fixed length instead.
     max_len = max(len(s) for s in sequences)
     input_ids, target_ids, pad_masks, target_masks = [], [], [], []
     for s in sequences:
-        n = len(s) - 1
+        n = len(s) - 1  # real tokens; padding is appended after them, never interleaved
         inp = s[:n] + [PAD] * (max_len - 1 - n)
+        # The dummy target 0 is a real character ('a'), which is exactly why
+        # target_mask below is not optional: without it the model would be
+        # trained to predict 'a' at every padded position.
         tgt = s[1 : n + 1] + [0] * (max_len - 1 - n)
         pmask = [False] * n + [True] * (max_len - 1 - n)
         tmask = [1.0] * n + [0.0] * (max_len - 1 - n)
@@ -184,9 +223,9 @@ def make_batch(docs, step, batch_size):
 # Training
 # ---------------------------------------------------------------------------
 model = MicroGPT()
-# Match original init: N(0, 0.08) for all weights
-weights = mlx.utils.tree_flatten(model.parameters())
-model.load_weights([(k, mx.random.normal(v.shape) * 0.08) for k, v in weights])
+# Match original init: N(0, 0.08) for all weights. nn.Module.apply maps over
+# every parameter array in place.
+model.apply(lambda w: mx.random.normal(w.shape) * 0.08)
 # Re-zero the padding embedding after init
 model.wte.weight[PAD] = mx.zeros((n_embd,))
 mx.eval(model.parameters())
@@ -210,18 +249,48 @@ def loss_fn(model, input_ids, targets, pad_mask, target_mask):
 loss_and_grad = nn.value_and_grad(model, loss_fn)
 optimizer = optim.Adam(learning_rate=learning_rate, betas=[beta1, beta2], eps=eps_adam)
 
+# mx.compile is MLX's counterpart to jax.jit. `inputs`/`outputs` declare the
+# state the step reads and writes without taking as arguments. Set use_compile
+# to False and compare the printed ms/step.
+use_compile = True
+state = [model.state, optimizer.state]
+
+
+def train_step(input_ids, targets, pad_mask, target_mask):
+    loss_val, grads = loss_and_grad(model, input_ids, targets, pad_mask, target_mask)
+    optimizer.update(model, grads)
+    return loss_val
+
+
+if use_compile:
+    train_step = mx.compile(train_step, inputs=state, outputs=state)
+
+seen_shapes = set()  # one trace per distinct batch shape
+first_shape_ms, cached_shape_ms = [], []
+
 for step in range(num_steps):
     input_ids, targets, pad_mask, target_mask = make_batch(docs, step, batch_size)
 
-    loss_val, grads = loss_and_grad(model, input_ids, targets, pad_mask, target_mask)
+    is_new_shape = input_ids.shape not in seen_shapes
+    seen_shapes.add(input_ids.shape)
 
-    lr_t = learning_rate * (1 - step / num_steps)
-    optimizer.learning_rate = mx.array(lr_t)
-    optimizer.update(model, grads)
-    mx.eval(model.parameters(), optimizer.state)
+    optimizer.learning_rate = mx.array(learning_rate * (1 - step / num_steps))
+
+    t0 = time.perf_counter()
+    loss_val = train_step(input_ids, targets, pad_mask, target_mask)
+    # MLX is lazy: the update above is only a graph until something evaluates it.
+    # loss_val.item() would force the loss but not the parameters or the optimizer
+    # moments, so without this the pending graph would grow for the whole run.
+    mx.eval(state)
+    dt = (time.perf_counter() - t0) * 1000
+    (first_shape_ms if is_new_shape else cached_shape_ms).append(dt)
 
     if (step + 1) % 10 == 0 or step == 0:
-        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val.item():.4f}")
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val.item():.4f} | {dt:7.2f} ms")
+
+print(f"\ndistinct batch shapes seen: {len(seen_shapes)} (compile = {use_compile})")
+print(f"  first-time-shape steps: {sum(first_shape_ms) / len(first_shape_ms):8.2f} ms mean")
+print(f"  repeated-shape steps:   {sum(cached_shape_ms) / len(cached_shape_ms):8.2f} ms mean")
 
 # ---------------------------------------------------------------------------
 # Inference

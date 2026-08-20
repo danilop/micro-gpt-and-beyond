@@ -6,10 +6,10 @@ Same architecture as version 03 (PyTorch), but learned positional embeddings are
 
 Learned positional embeddings (like `wpe` in version 03) have two problems:
 
-1. **They don't generalize.** A model trained with `block_size=16` has no embedding for position 17. At inference time, you cannot process longer sequences than you trained on.
+1. **They have a hard ceiling.** A model trained with `block_size=16` has 16 rows in its position table, so position 16 does not exist. Feed it a longer sequence and it raises `IndexError` — the lab does exactly that and prints the exception.
 2. **They lose relative information.** The model has to *learn* that position 5 and position 7 are two apart. This relationship is not built into the representation, so the model must discover it from data.
 
-RoPE solves both problems by encoding position through rotation rather than addition. Every modern large language model (LLaMA, Mistral, GPT-NeoX, Gemma) uses RoPE.
+RoPE removes the ceiling outright and builds relative position into the representation. Every modern large language model (LLaMA, Mistral, GPT-NeoX, Gemma) uses it.
 
 ## What makes it interesting
 
@@ -27,6 +27,8 @@ def precompute_freqs(dim, max_len):
     angles = torch.outer(positions, theta)       # (max_len, dim//2)
     return torch.cos(angles), torch.sin(angles)
 ```
+
+Note that `max_len` here is `4 * block_size`, not `block_size`. There is no table to size, only a formula, so precomputing positions the model never trains on costs nothing — and it is what makes the length test below possible.
 
 ### Applying the rotation
 
@@ -56,17 +58,31 @@ The dot product depends only on `(m-n)`, the relative distance, not on the absol
 
 ### No learned parameters
 
-Unlike `wpe`, RoPE adds zero trainable parameters. The rotation frequencies are fixed by the formula. This means:
+Unlike `wpe`, RoPE adds zero trainable parameters. The rotation frequencies are fixed by the formula. Measured: 4192 parameters for the baseline against 3936 for RoPE, a difference of exactly the 16x16 `wpe` table.
 
-- Fewer parameters to train
-- No risk of overfitting positional patterns
-- Position information is injected via geometry, not learning
+### Length generalization, split into the two claims it actually contains
+
+"RoPE generalizes to longer sequences" is usually stated as one fact. It is two, and they are not equally true. The lab evaluates 64 BOS-separated concatenations of names, 48 tokens each, three times the trained `block_size`.
+
+**Claim one: it runs.** True, and demonstrated rather than asserted. The baseline raises `IndexError` on the 48-token input because `wpe` has 16 rows. The RoPE model, same weights it trained with, processes all 48 positions and reports a loss.
+
+**Claim two: it stays accurate.** This lab cannot settle it, and says so. Comparing chunks at their true positions against the same chunks re-based to positions 0–15 isolates the position effect from the content effect, and the answer comes out at roughly -0.0004 nats: noise. That is not evidence that RoPE extrapolates. A 1-layer, 16-dimension model on a corpus of independent names has almost no long-range structure to lose — the lab measures the total value of all cross-chunk context at 0.0002 nats, so a test at this scale has nothing at stake and cannot fail. At real scale fixed-base RoPE does degrade past its trained span, which is why length extension is its own research area: YaRN rescales the base frequency, and NTK-aware interpolation or fine-tuning at the target length are the other standard answers.
+
+The per-chunk table is also a small lesson in controls. Raw loss rises monotonically down the chunks (2.6428, 2.7545, 2.8516), which looks like extrapolation damage and is not — chunk 0 starts on a name boundary and the others start mid-name. Only the difference against the re-based column means anything, and chunk 0 must read exactly +0.0000 for the method to be trustworthy.
+
+### The comparison is set up so the two models really do start equal
+
+Re-seeding before each constructor looks sufficient and is not. `apply(_init_weights)` walks modules in registration order, and the baseline registers `wpe` second, so it draws 256 random numbers the RoPE model never draws; from there the two streams are offset and every remaining weight differs. The lab therefore builds both models and then copies across all 8 shared weight tensors, leaving exactly one difference between them: how position enters.
+
+Even so, the training-loss gap (2.2769 vs 2.2981) is a tie at this scale, and the lab says so rather than reading a winner into it. Both figures are trailing averages over the last 100 steps, because a single last-step loss at batch size 1 is noise.
 
 ## What you learn here
 
 - Why every modern LLM (LLaMA, Mistral, GPT-NeoX, Gemma) uses RoPE instead of learned positional embeddings
 - How rotation in 2D encodes position without any learned parameters
 - Why the dot product of rotated vectors naturally captures relative position
+- What "generalizes to longer sequences" does and does not buy you, measured both ways
+- Why a fair A/B between two model variants needs shared weights and a trailing average, not a re-seed and a final loss
 - The practical implementation: ~15 lines of code replace an entire embedding table
 
 ## Run
@@ -75,4 +91,4 @@ Unlike `wpe`, RoPE adds zero trainable parameters. The rotation frequencies are 
 uv run python main.py
 ```
 
-Trains both the baseline (learned positions) and the RoPE variant for 1000 steps each, then compares final losses and generated names.
+Trains both the baseline (learned positions) and the RoPE variant for 1000 steps each from identical shared weights, compares trailing-average losses, evaluates both on sequences 3x longer than the trained context, and generates names from each.

@@ -42,14 +42,32 @@ The prefill worker processes prompts and ships the KV caches to the decode worke
 | Prefill | Compute | High: T tokens processed in parallel, O(T^2) attention | More ALUs, FP8 support, tensor cores |
 | Decode | Memory BW | Low: 1 token, reads all weights each step | Higher memory bandwidth (HBM3e), more memory capacity |
 
+Be careful with "O(T^2)". Attention is quadratic, but the projections and the
+MLP are linear and they dominate until T gets large. In this model attention is
+**4% of prefill FLOPs at T=8** and **82% at T=1024**. The lab prints both
+columns, total and attention-only, because a table that counts attention alone
+understates prefill by about 16x at short prompts and reports the wrong scaling
+exponent.
+
 This means you can use different GPU types: compute-dense GPUs for prefill, bandwidth-optimized GPUs for decode. Or even different numbers, since one prefill GPU can feed several decode GPUs.
 
 ### What this lab measures
 
-1. **Compute profiles**: Wall-clock time and FLOPs for prefill vs decode at different prompt lengths, showing the different scaling behavior
+1. **Compute profiles**: Wall-clock time and FLOPs for prefill vs decode at prompt lengths of 8, 64, 256 and 1024. Measured at 2-12 tokens the wall clock is flat (about 0.5 ms regardless of length) because it is all dispatch overhead; the scaling only appears at real prompt lengths, so that is where the lab measures it.
 2. **Head-of-line blocking**: With colocated serving, later requests wait behind earlier ones' full prefill+decode cycles
-3. **TTFT improvement**: Time-to-first-token drops significantly with disaggregation because decode requests start immediately after their prefill completes
+3. **TTFT improvement**: Average time-to-first-token drops from roughly 215-230 ms to roughly 155-170 ms (1.3-1.5x across runs) because decode requests start immediately after their prefill completes
 4. **Throughput**: Total time to serve all requests is lower when the phases don't block each other
+5. **The cost of the handoff**: the KV transfer is charged per prompt token, and the lab prints the per-token cost that would erase the TTFT gain entirely
+
+### What the comparison is not
+
+The colocated arm is **one** worker; the disaggregated arm is **two**. Part of
+the gain is simply twice the hardware. The colocated arm also runs strict FIFO
+with no continuous batching, which is the weakest reasonable baseline: a
+production colocated server interleaves decode steps across requests and would
+close much of the gap. The lab prints these caveats next to the speedup, and
+both arms produce byte-identical text (each request samples from its own
+`torch.Generator`), so the only thing that differs is latency.
 
 ### The KV cache transfer
 
@@ -57,13 +75,25 @@ The key engineering challenge is transferring KV caches from prefill to decode w
 
 - Llama 3 70B, 8K context: ~1 GB KV cache per request
 - NVLink bandwidth: 900 GB/s, so ~1.1 ms transfer time
-- This is negligible compared to prefill time (50-500ms)
+- Small compared to prefill time (50-500 ms), but not free, and it is a cost colocated serving never pays
 
-In this lab we simulate the transfer with a thread-safe queue.
+In this lab the handoff is a thread-safe queue carrying the same tensors, so it
+would otherwise be free. `KV_TRANSFER_COST_MS` charges 0.5 ms per prompt token
+inside the handoff, which lands in the disaggregated TTFT (23 ms total across
+the 12 requests). Raise it and the advantage shrinks; the lab prints the value
+that would erase it completely, around 12-16 ms per token on this workload.
+
+The simulated phase costs (5 ms per prompt token for prefill, 3 ms per decode
+step, 0.5 ms per token for the transfer) are larger than they look like they
+should be. That is deliberate: `time.sleep` overshoots by about a millisecond
+on a loaded host, so a simulation built on 0.3 ms sleeps would be measuring OS
+scheduling noise instead of its own cost model. Only the ratios matter.
 
 ## What you learn here
 
-- Why prefill and decode have different compute profiles (compute-bound vs memory-bound)
+- Why prefill and decode have different compute profiles (compute-bound vs memory-bound), and at what prompt length that difference becomes measurable
+- Why a two-worker result should never be compared against a one-worker baseline without saying so
+- Why a simulation has to charge for the thing it is simulating (the KV transfer), or it will prove whatever you hoped
 - How head-of-line blocking degrades decode latency in colocated serving
 - How disaggregation eliminates interference between phases
 - The TTFT vs throughput tradeoffs in serving system design
@@ -87,10 +117,10 @@ uv run python main.py
 ```
 
 Trains for 1000 steps, then:
-1. Measures prefill vs decode compute profiles at different prompt lengths
-2. Serves 12 mixed requests with colocated serving (single worker)
-3. Serves the same requests with disaggregated serving (prefill + decode workers)
-4. Compares TTFT, completion time, and generated output
+1. Measures prefill vs decode compute profiles at prompt lengths of 8 to 1024, with FLOPs counted properly (projections and MLP included, attention broken out)
+2. Serves 12 mixed requests with colocated serving (single worker, FIFO)
+3. Serves the same requests with disaggregated serving (prefill + decode workers, with a KV transfer cost)
+4. Compares TTFT and completion time, checks that the generated text is identical, and prints the caveats and the break-even transfer cost
 
 ## Why serving architecture matters
 

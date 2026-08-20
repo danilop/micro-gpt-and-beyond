@@ -173,15 +173,21 @@
     "text": "Set future positions to negative infinity so the model cannot cheat by looking ahead.",
     "hash": "5a67aa28"
   },
-  "94": {
-    "text": "Padding mask: if provided, also prevent attending to PAD positions.",
+  "105": {
+    "text": "The padding mask is here for shape, not for effect. Padding is always appended, never interleaved, and the causal mask already stops a query at position <em>t</em> from seeing any key beyond <em>t</em> — so every key a real query can reach is a real token.",
     "hash": "6e5b0338"
   },
-  "96": {
-    "text": "Expand pad_mask to (B, 1, 1, T) and fill PAD positions with -inf. Without this, the model would learn spurious patterns from padding tokens.",
+  "107": {
+    "text": "Fill PAD keys with <code>-inf</code>. The only logits this changes belong to <em>pad queries</em>, whose targets are <code>-100</code> and dropped from the loss anyway; run a batch with and without it and the loss agrees to the last decimal. It stops being a no-op the moment you left-pad, switch to bidirectional attention, or pack several documents into one row, which is why the line stays.",
+    "important": true,
+    "diagram": "transformer_attn",
+    "highlight": [
+      "mask",
+      "softmax"
+    ],
     "hash": "b971d9db"
   },
-  "97": {
+  "108": {
     "text": "Turn raw attention scores into a probability distribution so weights sum to one across keys.",
     "hash": "62dc999a",
     "diagram": "transformer_attn",
@@ -189,11 +195,11 @@
       "softmax"
     ]
   },
-  "98": {
-    "text": "Safety net: when ALL keys are masked (a fully-padded row), softmax produces NaN. Replace with 0 so the model ignores those positions entirely.",
-    "hash": "a3a0ffe9"
+  "111": {
+    "text": "Defensive, and in this configuration unreachable. Softmax over an all-<code>-inf</code> row does return NaN, but no row here can be fully masked: row 0 always keeps position 0, which is BOS and never PAD.",
+    "hash": "2df339b7"
   },
-  "100": {
+  "113": {
     "text": "Weighted value sum and reshape.",
     "hash": "a1aef68f",
     "diagram": "transformer_attn",
@@ -201,7 +207,7 @@
       "attn_out"
     ]
   },
-  "101": {
+  "114": {
     "text": "Project the concatenated multi-head attention output back into the embedding space.",
     "hash": "36f2db67",
     "diagram": "transformer_out",
@@ -209,23 +215,23 @@
       "wo"
     ]
   },
-  "104": {
+  "117": {
     "text": "MLP, identical to lab 03.",
     "hash": "3ad666a1"
   },
-  "107": {
+  "120": {
     "text": "Widen the representation to 4x the embedding dimension for richer nonlinear transformations.",
     "hash": "8e9f0642"
   },
-  "108": {
+  "121": {
     "text": "Compress the expanded hidden state back to the original embedding dimension.",
     "hash": "62c4768b"
   },
-  "110": {
+  "123": {
     "text": "Apply ReLU activation between two linear layers, forming the feed-forward sub-network.",
     "hash": "a87869a2"
   },
-  "111": {
+  "124": {
     "text": "The entire MLP compresses into a single chained expression in PyTorch.",
     "hash": "8aa6bebb",
     "diagram": "transformer_mlp",
@@ -235,39 +241,39 @@
       "fc2"
     ]
   },
-  "114": {
+  "127": {
     "text": "Transformer block, now passes <code>pad_mask</code> through to attention.",
     "hash": "4bcc8ea8"
   },
-  "117": {
+  "130": {
     "text": "Normalize the input before passing it to the attention sub-layer for stable training.",
     "hash": "e92b587d"
   },
-  "118": {
+  "131": {
     "text": "The attention sub-layer now receives the padding mask so it knows which positions hold real tokens versus filler.",
     "hash": "95b016d9"
   },
-  "119": {
+  "132": {
     "text": "Normalize the input before the MLP sub-layer, following the pre-norm transformer pattern.",
     "hash": "f58a7657"
   },
-  "120": {
+  "133": {
     "text": "The feed-forward network that processes each position independently after attention mixing.",
     "hash": "17fdd551"
   },
-  "122": {
+  "135": {
     "text": "Forward propagates the padding mask.",
     "hash": "75cf002b"
   },
-  "123": {
-    "text": "Attention receives the mask so it can ignore padded positions.",
-    "hash": "5c9f1363",
+  "136": {
+    "text": "Attention is the only sub-layer that mixes information across positions, so it is the only one that could ever care about the mask. The MLP on the next line sees each position on its own.",
     "diagram": "transformer_out",
     "highlight": [
       "res1"
-    ]
+    ],
+    "hash": "5c9f1363"
   },
-  "124": {
+  "137": {
     "text": "MLP doesn't need the mask, it operates position-independently.",
     "hash": "50e2183f",
     "diagram": "transformer_mlp",
@@ -275,51 +281,55 @@
       "fc2"
     ]
   },
-  "128": {
+  "141": {
     "text": "Complete model, embedding table is now larger to accommodate the PAD token.",
     "hash": "e94c5dc2"
   },
-  "131": {
+  "144": {
     "text": "<code>padding_idx=PAD</code> tells the embedding to output zeros for PAD tokens and exclude them from gradient updates. A clean way to handle variable-length sequences.",
     "hash": "cd8245f7"
   },
-  "132": {
+  "145": {
     "text": "Position embeddings, same as lab 03.",
     "hash": "5338449e"
   },
-  "133": {
+  "146": {
     "text": "Normalize embeddings before entering the transformer stack. This initial normalization keeps activations stable from the start.",
     "hash": "5caa073e"
   },
-  "134": {
+  "147": {
     "text": "Register all transformer layers so PyTorch can discover and optimize their parameters.",
     "hash": "d10311df"
   },
-  "135": {
+  "148": {
     "text": "Output head maps to real vocab only (27 tokens, not 28). PAD is never a valid prediction.",
     "hash": "f0a5c171"
   },
-  "136": {
+  "149": {
     "text": "Walk through every sub-module and apply N(0, 0.08) initialization, ensuring consistent starting conditions across all labs.",
     "hash": "e4941829"
   },
-  "143": {
+  "152": {
+    "text": "Re-zero the PAD row that <code>_init_weights</code> just overwrote. <code>padding_idx</code> keeps gradients away from this row, but it does not undo an initializer that has already written to it.",
+    "hash": "fcf6c0c7"
+  },
+  "156": {
     "text": "N(0, 0.08) for all weights.",
     "hash": "e2ce6cde"
   },
-  "144": {
+  "157": {
     "text": "Same init as previous labs.",
     "hash": "9677d3fd"
   },
-  "146": {
+  "159": {
     "text": "Forward pass accepts padding mask.",
     "hash": "dda20803"
   },
-  "147": {
+  "160": {
     "text": "Unpack batch size B and sequence length T from the input shape. These dimensions drive all the downstream tensor operations.",
     "hash": "47cad82b"
   },
-  "148": {
+  "161": {
     "text": "Token embeddings, PAD tokens get zero vectors thanks to <code>padding_idx</code>.",
     "hash": "8d137e9c",
     "diagram": "transformer_embed",
@@ -327,7 +337,7 @@
       "wte"
     ]
   },
-  "149": {
+  "162": {
     "text": "Position embeddings broadcast across the batch.",
     "hash": "2b319b15",
     "diagram": "transformer_embed",
@@ -335,7 +345,7 @@
       "wpe"
     ]
   },
-  "150": {
+  "163": {
     "text": "Combine token and position embeddings and normalize before entering the transformer stack.",
     "hash": "b88a95ea",
     "diagram": "transformer_embed",
@@ -343,13 +353,12 @@
       "norm_in"
     ]
   },
-  "151": {
+  "164": {
     "text": "Pass the representation through each transformer layer in sequence. With two layers now, the model builds progressively richer representations.",
     "hash": "359aba32"
   },
-  "152": {
-    "text": "Each layer receives the padding mask.",
-    "hash": "3b78410a",
+  "165": {
+    "text": "The mask travels down to every layer's attention. Worth keeping in mind while reading it: the mask that actually shapes this lab's loss is <code>ignore_index</code> in the loss call, not this one.",
     "diagram": "transformer_block",
     "highlight": {
       "nodes": [
@@ -359,9 +368,10 @@
       "links": [
         2
       ]
-    }
+    },
+    "hash": "3b78410a"
   },
-  "153": {
+  "166": {
     "text": "Output logits over the real vocabulary.",
     "hash": "9ef9adcf",
     "diagram": "transformer_logits",
@@ -370,12 +380,12 @@
       "logits"
     ]
   },
-  "159": {
+  "172": {
     "text": "Batch creation: the infrastructure needed for mini-batch training. This is where you see the engineering overhead of batching.",
     "hash": "b170f5cb",
     "important": true
   },
-  "162": {
+  "175": {
     "text": "Gather <code>batch_size</code> documents, cycling through the dataset.",
     "hash": "d3659370",
     "diagram": "batch_prep",
@@ -384,19 +394,19 @@
       "tokenize"
     ]
   },
-  "163": {
+  "176": {
     "text": "Select the document for this batch position.",
     "hash": "89d04b1c"
   },
-  "164": {
+  "177": {
     "text": "Tokenize: BOS + chars + BOS.",
     "hash": "9fe8ad12"
   },
-  "165": {
+  "181": {
     "text": "Truncate to max context length.",
-    "hash": "e83818cf"
+    "hash": "fd45d40a"
   },
-  "168": {
+  "184": {
     "text": "Find the longest sequence in this batch, everything gets padded to this length.",
     "hash": "d5c54ef8",
     "diagram": "batch_prep",
@@ -404,89 +414,91 @@
       "pad"
     ]
   },
-  "169": {
+  "185": {
     "text": "Allocate lists that will hold the padded input tokens, shifted targets, and boolean masks for every sequence in the batch.",
     "hash": "9216c322"
   },
-  "172": {
+  "188": {
     "text": "For each sequence, create aligned input, target, and mask.",
     "hash": "c24635f4"
   },
-  "173": {
+  "189": {
     "text": "Actual sequence length (minus 1 for the target shift).",
     "hash": "52424931"
   },
-  "174": {
+  "190": {
     "text": "Input: real tokens + PAD fill.",
     "hash": "9de6a4a2",
     "diagram": "batch_prep",
     "highlight": []
   },
-  "175": {
+  "193": {
     "text": "Targets: shifted tokens + -100 fill. PyTorch's <code>cross_entropy</code> ignores positions marked -100.",
-    "hash": "6a3ff1e8",
+    "hash": "306f542d",
     "diagram": "batch_prep",
     "highlight": []
   },
-  "176": {
-    "text": "Boolean mask: False for real tokens, True for padding.",
-    "hash": "a7b7aa1c",
+  "194": {
+    "text": "Boolean mask, False for real tokens and True for padding. It feeds attention, while the <code>-100</code> targets on the line above are what genuinely keep padding out of the loss and the gradient.",
     "diagram": "batch_prep",
-    "highlight": []
+    "highlight": [
+      "mask"
+    ],
+    "hash": "a7b7aa1c"
   },
-  "181": {
+  "199": {
     "text": "Pack into tensors and return.",
     "hash": "fc4c1868"
   },
-  "182": {
+  "200": {
     "text": "The input tensor of shape (B, max_T) containing token IDs, with PAD filling shorter sequences to the batch's maximum length.",
     "hash": "bf49bc9e"
   },
-  "183": {
+  "201": {
     "text": "The target tensor of shape (B, max_T) with shifted tokens as labels. Padded positions use -100 so cross-entropy ignores them.",
     "hash": "0d2d7111"
   },
-  "184": {
+  "202": {
     "text": "A boolean mask of shape (B, max_T) marking which positions are real tokens (False) and which are padding (True).",
     "hash": "cf765975"
   },
-  "191": {
+  "209": {
     "text": "Run training on CPU, which is sufficient for this small model and dataset size.",
     "hash": "b39e14b0"
   },
-  "192": {
+  "210": {
     "text": "Create the model with the scaled-up architecture: 64-dim embeddings, 4 heads, and 2 transformer layers.",
     "hash": "40b7fcd9"
   },
-  "193": {
+  "211": {
     "text": "Parameter count, much larger than lab 03 due to bigger dimensions and 2 layers.",
     "hash": "ea4a5d11"
   },
-  "195": {
+  "213": {
     "text": "Same Adam optimizer configuration as all previous labs: lr=0.01, betas=(0.85, 0.99). Only the model size and batch size changed.",
     "hash": "92d21e78"
   },
-  "197": {
+  "215": {
     "text": "Iterate over training steps, processing a batch of 32 names at each step.",
     "hash": "53f56939"
   },
-  "198": {
+  "216": {
     "text": "Assemble a padded batch of 32 tokenized names, aligning them to the same length with PAD tokens and building the corresponding masks.",
     "hash": "515454ec"
   },
-  "199": {
+  "217": {
     "text": "Transfer input token IDs to the compute device. On CPU this is a no-op, but the pattern generalizes to GPU training.",
     "hash": "0e8f4dc2"
   },
-  "200": {
+  "218": {
     "text": "Transfer target labels to the compute device, matching where the model's output tensors will live.",
     "hash": "ea9a8f17"
   },
-  "201": {
+  "219": {
     "text": "Transfer the padding mask to the same device so it can be applied directly to the attention score matrix.",
     "hash": "ce326d81"
   },
-  "203": {
+  "221": {
     "text": "Forward pass with padding mask, the model knows which positions to ignore.",
     "hash": "f95b7eef",
     "diagram": "batch_train",
@@ -495,7 +507,7 @@
       "logits"
     ]
   },
-  "204": {
+  "222": {
     "text": "<code>ignore_index=-100</code> means the loss is only computed on real tokens, not padding. This is crucial, otherwise shorter sequences would be penalized differently than longer ones.",
     "hash": "96f390f4",
     "diagram": "batch_train",
@@ -503,91 +515,91 @@
       "loss"
     ]
   },
-  "206": {
+  "224": {
     "text": "Clear accumulated gradients from the previous step before computing new ones.",
     "hash": "fbede2b3"
   },
-  "207": {
+  "225": {
     "text": "Backward pass, autograd computes gradients for all parameters through the batched forward pass.",
     "hash": "227fe80d"
   },
-  "208": {
+  "226": {
     "text": "Linearly reduce the learning rate toward zero over the course of training.",
     "hash": "60602e3a"
   },
-  "209": {
+  "227": {
     "text": "Update learning rate for all parameter groups.",
     "hash": "9f6d3592"
   },
-  "210": {
+  "228": {
     "text": "Write the decayed learning rate into the optimizer's parameter group.",
     "hash": "3030870a"
   },
-  "211": {
+  "229": {
     "text": "Use the Adam optimizer to update all model weights based on the computed gradients.",
     "hash": "d9e59d7e"
   },
-  "213": {
+  "231": {
     "text": "Print the loss periodically so we can monitor whether the model is learning.",
     "hash": "cf37956f"
   },
-  "219": {
+  "237": {
     "text": "Temperature 0.5 makes generation more conservative: the model favors high-confidence predictions, producing more typical-sounding names.",
     "hash": "7eca5b76"
   },
-  "221": {
+  "239": {
     "text": "Switch the model to evaluation mode, which disables training-specific behaviors like dropout.",
     "hash": "45bf010c"
   },
-  "222": {
+  "240": {
     "text": "No gradient tracking for inference.",
     "hash": "d4f61231"
   },
-  "223": {
+  "241": {
     "text": "Generate 20 brand-new names by sampling from the model's learned distribution.",
     "hash": "64d836c5"
   },
-  "224": {
+  "242": {
     "text": "Begin each generated name with the beginning-of-sequence token as the initial prompt.",
     "hash": "5c52ddc4"
   },
-  "225": {
+  "243": {
     "text": "Generate up to <code>block_size</code> characters.",
     "hash": "ab05dc73"
   },
-  "226": {
+  "244": {
     "text": "Feed generated sequence as a batch of 1. No padding needed for single-sequence inference.",
     "hash": "ce311cc5"
   },
-  "227": {
+  "245": {
     "text": "Forward pass, no pad_mask needed for single sequences.",
     "hash": "7d28f274"
   },
-  "228": {
+  "246": {
     "text": "Grab the logits from the last generated position and divide by temperature. Lower temperature sharpens the distribution toward the top predictions.",
     "hash": "e1a1328f"
   },
-  "229": {
+  "247": {
     "text": "Convert the temperature-scaled logits into a proper probability distribution that sums to one, ready for sampling.",
     "hash": "93ed4206"
   },
-  "230": {
+  "248": {
     "text": "Draw one token from the probability distribution to continue generating the name.",
     "hash": "5b83becd"
   },
-  "231": {
+  "249": {
     "text": "When the model outputs the BOS token during generation, it signals the name is complete and we stop adding characters.",
     "hash": "41a35c11"
   },
-  "233": {
+  "251": {
     "text": "Append the newly sampled token to the growing sequence so it becomes context for predicting the next character.",
     "hash": "a1ca669a"
   },
-  "234": {
+  "252": {
     "text": "Map each token ID back to its character. Skip the leading BOS to get just the generated name text.",
     "hash": "b4368128"
   },
-  "235": {
+  "253": {
     "text": "Display the completed generated name after all characters have been sampled.",
     "hash": "f9d6f741"
   }

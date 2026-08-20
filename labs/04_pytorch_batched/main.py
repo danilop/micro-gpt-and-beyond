@@ -90,12 +90,25 @@ class CausalSelfAttention(nn.Module):
         # Causal mask
         causal = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
         att = att.masked_fill(causal, float("-inf"))
-        # Padding mask: don't attend to PAD positions
+        # Padding mask: don't attend to PAD keys.
+        #
+        # Be honest about what this does *here*: nothing. Padding is always a suffix
+        # (right-padding), and the causal mask already stops a query at position t from
+        # seeing any key > t. Every key a real query can reach is therefore real, so the
+        # only logits this line changes belong to *pad* queries — whose targets are -100
+        # and dropped by cross_entropy. Run a batch with and without pad_mask and the
+        # loss agrees to the last decimal.
+        #
+        # The line stays because it stops being a no-op the moment you left-pad, use
+        # bidirectional attention, or pack several documents into one row, and because
+        # this is the shape of the code you will meet in real training scripts.
         if pad_mask is not None:
             # pad_mask: (B, T), True where padded
             att = att.masked_fill(pad_mask[:, None, None, :], float("-inf"))
         att = F.softmax(att, dim=-1)
-        att = torch.nan_to_num(att)  # handle all-masked rows
+        # Defensive only. Softmax over an all--inf row returns NaN, but no row here can
+        # be fully masked: row 0 always keeps position 0, which is BOS, never PAD.
+        att = torch.nan_to_num(att)
 
         out = (att @ v).transpose(1, 2).reshape(B, T, C)
         return self.wo(out)
@@ -162,7 +175,10 @@ def make_batch(docs, step, batch_size):
     for i in range(batch_size):
         doc = docs[(step * batch_size + i) % len(docs)]
         toks = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
-        toks = toks[: block_size + 1]  # truncate to max length
+        # Safety bound, not a real truncation: the longest name in the corpus is 15
+        # characters, so BOS + name + EOS is at most 17 tokens = block_size + 1.
+        # Nothing in this dataset is ever cut. Swap in a corpus of sentences and it will be.
+        toks = toks[: block_size + 1]
         sequences.append(toks)
 
     max_len = max(len(s) for s in sequences)
@@ -172,7 +188,9 @@ def make_batch(docs, step, batch_size):
     for s in sequences:
         n = len(s) - 1
         inp = s[:n] + [PAD] * (max_len - 1 - n)
-        tgt = s[1 : n + 1] + [-100] * (max_len - 1 - n)  # -100 = ignore in cross_entropy
+        # -100 is the mask that actually does the work: cross_entropy's ignore_index
+        # drops these positions from the loss and from the gradient entirely.
+        tgt = s[1 : n + 1] + [-100] * (max_len - 1 - n)
         mask = [False] * n + [True] * (max_len - 1 - n)
         input_ids.append(inp)
         target_ids.append(tgt)

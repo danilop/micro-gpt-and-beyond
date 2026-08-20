@@ -1,6 +1,6 @@
 # Understanding LLMs by Building One: Paged KV Cache (PagedAttention)
 
-Same architecture as the pure-Python version (01), but with two KV cache implementations for inference: contiguous (wasteful pre-allocation) and paged (on-demand block allocation). PagedAttention is the core innovation in vLLM. It applies the operating system's virtual memory paging concept to KV caches, reducing memory waste from 60-80% to near zero.
+Same architecture as the pure-Python version (01), but with two KV cache implementations for inference: contiguous (wasteful pre-allocation) and paged (on-demand block allocation). PagedAttention is the core innovation in vLLM. It applies the operating system's virtual memory paging concept to KV caches, replacing unbounded over-allocation with waste bounded by one partially-filled block per sequence.
 
 Zero dependencies. Pure Python. The algorithms are pure data structures.
 
@@ -15,12 +15,12 @@ When serving LLMs to many users simultaneously, the KV cache, not model weights,
 During autoregressive generation, the model caches the key and value vectors from all previous tokens to avoid recomputing them. For each new token, only the new K/V pair is computed, and attention uses the full cached history.
 
 For a model like Llama 3 70B serving 100 concurrent requests:
-- KV cache per token: ~1 MB (80 layers × 8 KV heads × 128 dim × 2 (K+V) × 2 bytes)
+- KV cache per token: 80 layers × 8 KV heads × 128 head dim × 2 (K+V) × 2 bytes (fp16) = **320 KiB**
 - Max context length: 8,192 tokens
-- **Per request (contiguous)**: 8,192 × 1 MB = **8 GB**
-- **100 requests**: 800 GB, far beyond any GPU
+- **Per request (contiguous)**: 8,192 × 320 KiB = **2.5 GiB**
+- **100 requests**: **250 GiB**, far beyond any single GPU
 
-But most requests use far less than max context. Average length might be 500 tokens, meaning 94% of pre-allocated memory is wasted.
+But most requests use far less than max context. If the average length is 500 tokens, 94% of that pre-allocated memory is never written, and paging the same workload needs 100 × 500 × 320 KiB = **~15 GiB**. `main.py` prints the same arithmetic at the end of the prefix-sharing section, so the two agree.
 
 ### Virtual memory for KV caches
 
@@ -39,33 +39,73 @@ PagedAttention applies the same solution that operating systems use for process 
 
 The block table maps logical positions to physical memory:
 
-```
-Sequence "req_0", Layer 0:
-  Logical block 0 → Physical block 7   (tokens 0-3)
-  Logical block 1 → Physical block 12  (tokens 4-7)
+`main.py` prints the real thing. Two sequences allocating at the same time,
+7 and 9 tokens, block size 4:
 
-Sequence "req_1", Layer 0:
-  Logical block 0 → Physical block 3   (tokens 0-3)
-  Logical block 1 → Physical block 19  (tokens 4-7)
-  Logical block 2 → Physical block 5   (tokens 8-11)
+```
+allocation events, in the order they happened:
+  seq A, layer 0, logical block 0 -> physical block 7
+  seq B, layer 0, logical block 0 -> physical block 6
+  seq A, layer 0, logical block 1 -> physical block 5
+  seq B, layer 0, logical block 1 -> physical block 4
+  seq B, layer 0, logical block 2 -> physical block 3
+
+block tables:
+  seq 'A', layer 0: 7 tokens in 2 block(s)
+    logical block 0 -> physical block  7  (tokens 0-3, refcount 1)
+    logical block 1 -> physical block  5  (tokens 4-6, refcount 1, 1 unused slot(s))
+  seq 'B', layer 0: 9 tokens in 3 block(s)
+    logical block 0 -> physical block  6  (tokens 0-3, refcount 1)
+    logical block 1 -> physical block  4  (tokens 4-7, refcount 1)
+    logical block 2 -> physical block  3  (tokens 8-8, refcount 1, 3 unused slot(s))
 ```
 
-Physical blocks can be anywhere in memory and don't need to be contiguous. The attention computation gathers K/V vectors by following the block table (scattered reads).
+A's logical blocks 0 and 1 live in physical blocks 7 and 5, with B's block
+sitting between them. Physical blocks can be anywhere in memory and don't need
+to be contiguous. The attention computation gathers K/V vectors by following
+the block table (scattered reads).
+
+Free A and its physical blocks go straight back on the free list, where the
+next sequence picks them up regardless of how long that sequence is:
+
+```
+free 'A' (its physical blocks were [5, 7]): free list [0, 1, 2] -> [0, 1, 2, 5, 7]
+allocate 'C' (5 tokens):
+  seq C, layer 0, logical block 0 -> physical block 5
+  seq C, layer 0, logical block 1 -> physical block 7
+```
+
+That is the whole fragmentation story: with contiguous allocation, a freed
+region is only reusable by a request that fits it.
 
 ### Prefix sharing (copy-on-write)
 
 When multiple requests share a common prefix (e.g., a system prompt), their block tables can point to the **same physical blocks** for the shared portion:
 
-```
-"prefix" (system prompt):
-  Block 0 → Physical 2, Block 1 → Physical 4
+No data is copied; only block IDs are shared. When a sequence needs to modify a
+shared block (diverges from the prefix), a new physical block is allocated and
+the data is copied (copy-on-write). This is exactly how `fork()` works in Unix.
 
-"req_0": [Physical 2, Physical 4, Physical 8]  ← shares prefix blocks
-"req_1": [Physical 2, Physical 4, Physical 11] ← shares prefix blocks
-"req_2": [Physical 2, Physical 4, Physical 15] ← shares prefix blocks
+The lab makes that branch actually execute, and prints the refcounts on both
+sides of it. A 3-token prefix shared by three requests, then `req_0` generates
+one more token into the shared block:
+
+```
+physical block 63 is now referenced by 4 sequences:
+  prefix->[63], req_0->[63], req_1->[63], req_2->[63]
+
+before write:  req_0 layer 0 block table [63]
+               refcount of physical block 63: 4
+after write:   req_0 layer 0 block table [62]  <- cloned
+               refcount of physical block 63: 3 (was 4)
+               refcount of physical block 62: 1 (req_0's private copy)
+               blocks allocated by the write: 1
+req_1 and req_2 still share block 63: [63]
 ```
 
-No data is copied; only block IDs are shared. When a sequence needs to modify a shared block (diverges from the prefix), a new physical block is allocated and the data is copied (copy-on-write). This is exactly how `fork()` works in Unix.
+Only the writer allocated. Without that write, the copy-on-write branch in
+`append()` never runs, which is exactly what used to happen: the mechanism was
+implemented, advertised, and never exercised.
 
 ### Memory utilization comparison
 
@@ -73,7 +113,12 @@ The lab demonstrates the efficiency difference:
 - **Contiguous**: allocates `max_seq_len` slots per sequence, wastes unused space
 - **Paged**: allocates blocks on demand, only wastes space in the last partially-filled block
 
-For short sequences (which are common in practice), paged allocation uses a fraction of the memory.
+Measured in the run, with `BLOCK_SIZE_TOKENS = 4`:
+- one 5-token sequence in 2 blocks: **62.5% utilization**, so 37.5% waste
+- a 7-token and a 9-token sequence allocating at the same time: **80.0% utilization**, so 20.0% waste (4 of 20 slots)
+- the same 5-token sequence with contiguous pre-allocation of 16 slots: **31% utilization**
+
+"Near zero" would be wrong at this scale. Paging does not eliminate internal fragmentation, it *bounds* it: at most `block_size - 1` tokens per sequence per layer, no matter how long the sequence gets or how wrong your length guess was. With `block_size = 4` and 5-token names that bound is loose. With vLLM's default of 16 tokens per block and requests of hundreds of tokens, the same bound is a rounding error, which is where "near zero" comes from.
 
 ## What you learn here
 
@@ -101,7 +146,12 @@ For short sequences (which are common in practice), paged allocation uses a frac
 python main.py
 ```
 
-Trains for 1000 steps (pure Python, ~2 min), then demonstrates contiguous vs. paged KV cache with memory utilization comparison, multiple concurrent sequences, and prefix sharing. Generates 20 sample names using the paged KV cache.
+Trains for 1000 steps (pure Python, a few minutes), then:
+1. Compares contiguous and paged KV caches on the same sequence, asserting identical output
+2. Prints the allocation events and the full block table for two interleaved sequences
+3. Frees one sequence and shows its physical blocks being recycled by the next one
+4. Shares a prefix across three requests, then diverges one of them so copy-on-write fires, printing refcounts before and after
+5. Generates 20 sample names using the paged KV cache, freeing each sequence
 
 ## Why memory management matters
 

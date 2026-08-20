@@ -99,7 +99,13 @@ class FlexAttention(nn.Module):
         k = self.wk(x).view(B, T, self.n_kv_head, head_dim).transpose(1, 2)  # (B, n_kv_head, T, hd)
         v = self.wv(x).view(B, T, self.n_kv_head, head_dim).transpose(1, 2)  # (B, n_kv_head, T, hd)
 
-        # Expand KV heads to match Q heads by repeating
+        # Expand KV heads to match Q heads by repeating. This is the clearest way
+        # to write it and the worst way to run it: the expansion materialises
+        # `repeats` identical copies of K and V, throwing away the memory saving
+        # for the duration of the forward pass. Production kernels never do this
+        # — PyTorch's scaled_dot_product_attention with enable_gqa=True, and
+        # FlashAttention's GQA support, index the shared KV head directly from
+        # each query head instead. Same maths, no copies.
         if self.repeats > 1:
             k = k.repeat_interleave(self.repeats, dim=1)  # (B, n_head, T, hd)
             v = v.repeat_interleave(self.repeats, dim=1)  # (B, n_head, T, hd)
@@ -198,6 +204,7 @@ def generate(model, label, num_samples=10):
 
 
 docs_snapshot = list(docs)
+results = []  # (label, n_kv_head, params, kv_cache_bytes, trailing avg loss)
 
 for variant_name, n_kv_head in variants:
     print(f"\n{'=' * 60}")
@@ -213,15 +220,19 @@ for variant_name, n_kv_head in variants:
     num_params = sum(p.numel() for p in model.parameters())
     print(f"num params: {num_params}")
 
-    # KV cache memory estimate (fp16): n_kv_head * head_dim * seq_len * 2(K+V) * 2(bytes) * n_layer
+    # KV cache size. This is arithmetic, not a measurement: there is no KV cache
+    # in this lab at all (that is lab 12). It is the size the cache *would* have
+    # at fp16, batch 1, a full block_size context — which is the number that
+    # matters in production, where the cache is what fills the GPU.
     kv_cache_bytes = n_kv_head * head_dim * block_size * 2 * 2 * n_layer
     print(
-        f"KV cache memory (fp16): {kv_cache_bytes} bytes "
+        f"KV cache size if cached (fp16, batch 1, analytic): {kv_cache_bytes} bytes "
         f"({n_kv_head} kv_heads x {head_dim} head_dim x {block_size} seq_len x 2 tensors x 2 bytes x {n_layer} layers)"
     )
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, betas=(0.85, 0.99), eps=1e-8)
 
+    losses = []
     for step in range(num_steps):
         doc = docs[step % len(docs)]
         tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
@@ -239,11 +250,20 @@ for variant_name, n_kv_head in variants:
         for pg in optimizer.param_groups:
             pg["lr"] = lr_t
         optimizer.step()
+        losses.append(loss.item())
 
         if (step + 1) % 200 == 0 or step == 0:
             print(f"  step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
 
-    print(f"\n  {variant_name} final loss: {loss.item():.4f}")
+    # Report a trailing average, never the last step's loss. Batch size is one
+    # name, so a single step's loss is dominated by which name it happened to
+    # land on: a short name and a long one differ by more than these three
+    # variants do. Averaging the tail is still not a quality ranking (see the
+    # note at the end), but at least it is not pure sampling noise.
+    avg_window = 100
+    avg_loss = sum(losses[-avg_window:]) / avg_window
+    print(f"\n  {variant_name} trailing avg loss (last {avg_window} steps): {avg_loss:.4f}")
+    results.append((variant_name, n_kv_head, num_params, kv_cache_bytes, avg_loss))
     generate(model, variant_name)
 
 # ---------------------------------------------------------------------------
@@ -252,13 +272,25 @@ for variant_name, n_kv_head in variants:
 print(f"\n{'=' * 60}")
 print("  Summary: KV head sharing vs parameter count")
 print(f"{'=' * 60}")
-for variant_name, n_kv_head in variants:
+mha_cache = n_head * head_dim * block_size * 2 * n_layer * 2  # MHA is the reference point
+print(f"  {'':3s} {'kv_heads':>8} {'KV proj':>8} {'total':>7} {'cache B':>8} {'vs MHA':>7} {'avg loss':>9}")
+for variant_name, n_kv_head, num_params, kv_cache, avg_loss in results:
     kv_params = 2 * n_kv_head * head_dim * n_embd * n_layer  # wk + wv params
-    kv_cache = n_kv_head * head_dim * block_size * 2 * n_layer * 2
     print(
-        f"  {variant_name:3s} (n_kv_head={n_kv_head}): "
-        f"KV proj params={kv_params:4d}, "
-        f"KV cache (fp16)={kv_cache:4d} bytes"
+        f"  {variant_name:3s} {n_kv_head:>8} {kv_params:>8} {num_params:>7} "
+        f"{kv_cache:>8} {kv_cache / mha_cache:>6.2f}x {avg_loss:>9.4f}"
     )
-print("\n  At production scale, GQA is often the expected sweet spot: fewer KV params than MHA,")
-print("  more capacity than MQA. This tiny run mainly demonstrates the KV-cache tradeoff, not a decisive quality ranking.")
+print("""
+  The cache ratio is the transferable number. Raw bytes here are absurd — this
+  model is 16-dimensional — but 1.00x / 0.50x / 0.25x is exactly what you get at
+  any scale, because the cache is linear in n_kv_head. LLaMA 2 70B runs 8 KV
+  heads against 64 query heads: 0.125x. And note this is arithmetic, not a
+  measurement: nothing in this lab actually caches anything (that is lab 12).
+
+  What this lab does NOT show is quality. Three 1-layer, 16-dim models trained
+  for 1000 single-name steps produce losses separated by less than the run-to-run
+  noise, and whichever variant happens to come out lowest, that is not evidence.
+  Read the loss column as "all three still learn to spell names", nothing more.
+  The claim that GQA holds quality while cutting the cache is real, and it comes
+  from Ainslie et al. (2023) uptraining 64-head checkpoints on real corpora —
+  not from anything printed above.""")

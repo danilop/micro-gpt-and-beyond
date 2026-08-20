@@ -4,8 +4,12 @@ microGPT — PagedAttention edition.
 Same architecture as the pure-Python version (01), but demonstrating two
 KV cache strategies for inference: contiguous (wasteful) and paged (efficient).
 PagedAttention is the core innovation in vLLM -- it applies the operating
-system's virtual memory paging concept to KV caches, achieving near-perfect
-memory utilization.
+system's virtual memory paging concept to KV caches. It does not eliminate
+waste; it BOUNDS it. Internal fragmentation drops to at most block_size - 1
+tokens per sequence per layer, however wrong your length guess was. With this
+lab's block_size of 4 tokens and 5-token names, that bound is measured at 37.5%
+waste for a single sequence and around 20% for two. With vLLM's 16-token blocks
+and requests of hundreds of tokens, the same bound is a rounding error.
 
 Zero dependencies. Pure Python. The algorithms are pure data structures.
 
@@ -18,6 +22,14 @@ management side of PagedAttention (block tables, on-demand allocation,
 copy-on-write prefix sharing) -- not the fused PagedAttention CUDA attention
 kernel itself. The pure-Python scalar implementation makes the data structure
 logic fully transparent.
+
+Every data structure in here is printed at runtime rather than described: the
+allocation events in the order they happen, the full logical -> physical block
+table for two sequences allocating at the same time, the free list before and
+after a sequence is released, and the refcounts before and after a shared
+prefix is written to (which is the only way to see copy-on-write actually
+fire). There is no speed claim anywhere about this Python implementation --
+it is scalar interpreted code, not a kernel. Every claim here is about memory.
 """
 
 import math
@@ -406,6 +418,86 @@ assert name_c == name_p, f"Outputs differ: {name_c} vs {name_p}"
 print("  -> identical output, paged allocates only what's needed")
 
 # ---------------------------------------------------------------------------
+# The block table — the whole point of paging, so print it
+# ---------------------------------------------------------------------------
+# One sequence in isolation cannot show fragmentation: its blocks come out of
+# the free list in order and look contiguous. Two sequences allocating in
+# lockstep (which is what a real server does, decoding many requests at once)
+# is where the block table earns its existence.
+print("\n--- block table: two interleaved sequences ---\n")
+
+
+def dump_block_tables(cache):
+    """Print the logical -> physical mapping for every sequence in the cache."""
+    for seq_id, layers in cache.block_tables.items():
+        length = cache.seq_lengths[seq_id]
+        for layer, blocks in layers.items():
+            print(f"  seq {seq_id!r}, layer {layer}: {length} tokens in {len(blocks)} block(s)")
+            for logical, phys in enumerate(blocks):
+                first = logical * cache.block_size
+                last = min(first + cache.block_size, length) - 1
+                slack = (len(blocks) * cache.block_size - length) if logical == len(blocks) - 1 else 0
+                note = f", {slack} unused slot(s)" if slack else ""
+                print(
+                    f"    logical block {logical} -> physical block {phys:2d}  "
+                    f"(tokens {first}-{last}, refcount {cache.refcounts[phys]}{note})"
+                )
+
+
+def waste(cache):
+    """Internal fragmentation: allocated slots the sequences do not use."""
+    allocated = sum(len(b) for layers in cache.block_tables.values() for b in layers.values()) * cache.block_size
+    used = sum(cache.seq_lengths[s] * cache.n_layers for s in cache.block_tables)
+    return allocated, used, (allocated - used) / allocated if allocated else 0.0
+
+
+demo = PagedKVCache(total_blocks=8, n_layers=n_layer, dims=n_embd)
+toks_a = [BOS] + [uchars.index(ch) for ch in "miabel"]  # 7 tokens -> 2 blocks
+toks_b = [BOS] + [uchars.index(ch) for ch in "santiago"]  # 9 tokens -> 3 blocks
+demo.new_sequence("A")
+demo.new_sequence("B")
+# Feed one token of A, then one token of B, then repeat. The two sequences grow
+# at the same time, so their allocations interleave in the free list.
+for step in range(max(len(toks_a), len(toks_b))):
+    if step < len(toks_a):
+        gpt(toks_a[step], step, demo, seq_id="A", W=W)
+    if step < len(toks_b):
+        gpt(toks_b[step], step, demo, seq_id="B", W=W)
+
+print("allocation events, in the order they happened:")
+for event in demo.alloc_events:
+    print(event)
+
+print("\nblock tables:")
+dump_block_tables(demo)
+
+alloc_slots, used_slots, waste_frac = waste(demo)
+print(f"\nphysical blocks in use: {demo.total_blocks - len(demo.free_blocks)} of {demo.total_blocks}")
+print(f"free list: {sorted(demo.free_blocks)}  (blocks are handed out from the end, so IDs descend)")
+print(f"slot utilization: {demo.utilization():.1%}")
+print(f"internal fragmentation: {alloc_slots - used_slots} of {alloc_slots} slots unused ({waste_frac:.1%})")
+print(f"  -> bounded by block_size - 1 = {demo.block_size - 1} tokens per sequence per layer, never worse")
+
+# Free a sequence and watch its physical blocks come back for reuse. This is
+# the fragmentation story: a freed block is usable by ANY future sequence,
+# whatever length it needs, because nothing has to be contiguous.
+a_blocks = sorted({b for layer_blocks in demo.block_tables["A"].values() for b in layer_blocks})
+freed_before = sorted(demo.free_blocks)
+demo.free_sequence("A")
+print(f"\nfree 'A' (its physical blocks were {a_blocks}): free list {freed_before} -> {sorted(demo.free_blocks)}")
+toks_c = [BOS] + [uchars.index(ch) for ch in "leon"]  # 5 tokens -> 2 blocks
+demo.alloc_events.clear()
+demo.new_sequence("C")
+for step, tok in enumerate(toks_c):
+    gpt(tok, step, demo, seq_id="C", W=W)
+print(f"allocate 'C' ({len(toks_c)} tokens):")
+for event in demo.alloc_events:
+    print(event)
+c_blocks = sorted({b for layer_blocks in demo.block_tables["C"].values() for b in layer_blocks})
+print(f"  -> 'C' got physical blocks {c_blocks}; recycled from 'A': {sorted(set(c_blocks) & set(a_blocks))}")
+print(f"free list now: {sorted(demo.free_blocks)}")
+
+# ---------------------------------------------------------------------------
 # Prefix sharing — shared system prompt
 # ---------------------------------------------------------------------------
 print("\n--- prefix sharing (shared system prompt) ---\n")
@@ -427,10 +519,46 @@ for i in range(n_shared):
 print(f"blocks: {used_blk} total — sharing adds zero new allocations")
 print(f"without sharing: {used_blk * (1 + n_shared)} blocks ({used_blk} x {1 + n_shared})")
 
+shared_phys = prefix_cache.block_tables["prefix"][0][0]
+print(f"\nphysical block {shared_phys} is now referenced by {prefix_cache.refcounts[shared_phys]} sequences:")
+print("  " + ", ".join(f"{sid}->{prefix_cache.block_tables[sid][0]}" for sid in ["prefix", "req_0", "req_1", "req_2"]))
+
+# ---------------------------------------------------------------------------
+# Copy-on-write, actually firing
+# ---------------------------------------------------------------------------
+# Sharing is only half the mechanism. The other half is what happens when a
+# sharer writes. req_0 now generates one more token, which lands in the SAME
+# logical block it is sharing with three other sequences. The write cannot
+# happen in place, so append() clones the block first (refcount > 1), points
+# req_0's block table at the copy, and drops the original's refcount. Exactly
+# fork() in Unix.
+print("\n--- copy-on-write (req_0 diverges from the shared prefix) ---\n")
+print(f"before write:  req_0 layer 0 block table {prefix_cache.block_tables['req_0'][0]}")
+print(f"               refcount of physical block {shared_phys}: {prefix_cache.refcounts[shared_phys]}")
+free_before_cow = len(prefix_cache.free_blocks)
+divergent_token = uchars.index("d")
+gpt(divergent_token, prefix_len, prefix_cache, seq_id="req_0", W=W)
+new_phys = prefix_cache.block_tables["req_0"][0][0]
+print(f"after write:   req_0 layer 0 block table {prefix_cache.block_tables['req_0'][0]}  <- cloned")
+print(f"               refcount of physical block {shared_phys}: {prefix_cache.refcounts[shared_phys]} (was {n_shared + 1})")
+print(f"               refcount of physical block {new_phys}: {prefix_cache.refcounts[new_phys]} (req_0's private copy)")
+print(f"               blocks allocated by the write: {free_before_cow - len(prefix_cache.free_blocks)}")
+print(f"req_1 and req_2 still share block {shared_phys}: {prefix_cache.block_tables['req_1'][0]}")
+assert new_phys != shared_phys, "copy-on-write did not fire"
+assert prefix_cache.refcounts[shared_phys] == n_shared, "refcount not decremented on clone"
+print("  -> the sharers that did not write paid nothing; only the writer allocated")
+
 print("""
-At production scale (Llama 3 70B, 8K context, 100 requests):
-contiguous needs ~200 GB, paged needs ~30-60 GB, prefix sharing saves
-another 30-50%. This is why vLLM achieves 2-4x higher throughput.
+At production scale (Llama 3 70B: 80 layers, 8 KV heads, 128 head dim, fp16):
+
+  KV cache per token = 80 x 8 x 128 x 2 (K and V) x 2 bytes = 320 KiB
+  8K context, pre-allocated contiguously = 8,192 x 320 KiB = 2.5 GiB per request
+  100 concurrent requests = 250 GiB, far beyond any single GPU
+
+If the average request really uses 500 tokens, paging allocates 100 x 500 x
+320 KiB = ~15 GiB, plus at most block_size - 1 tokens of slack per sequence.
+Prefix sharing removes the duplicated system prompt on top of that. Those are
+the memory numbers; vLLM reports 2-4x higher serving throughput as a result.
 """)
 
 # ---------------------------------------------------------------------------

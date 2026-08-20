@@ -12,18 +12,25 @@ https://mlsys.org/Conferences/doc/2018/146.pdf.
 Key differences from the PyTorch version:
   - All parameters are explicit pytrees (no hidden state)
   - Forward pass is a pure function (no side effects)
-  - Gradients via jax.grad (automatic, like PyTorch, but functional)
-  - JIT compilation for speed
-  - Explicit PRNG key threading
+  - Gradients via jax.value_and_grad (automatic, like PyTorch, but functional)
+  - The whole training step — loss, gradients, Adam — is one jitted function
+  - Explicit PRNG key threading, with modern typed keys (jax.random.key)
+
+The training loop also reports where XLA compiles: jit specializes on input
+shapes, and one name per step means a new sequence length every so often. The
+corpus allows 14 lengths and a 1000-step run hits 12 of them, so the same
+function is traced a dozen times, scattered through training. That is the JAX
+gotcha this lab makes visible instead of hiding.
 """
 
 import math
 import os
 import random
+import time
 
 import jax
 import jax.numpy as jnp
-from jax import grad, jit
+from jax import jit, value_and_grad
 
 random.seed(42)
 
@@ -55,14 +62,19 @@ n_layer = 1  # number of layers
 block_size = 16  # maximum sequence length
 head_dim = n_embd // n_head  # dimension of each head
 
-key = jax.random.PRNGKey(42)
+# jax.random.key is the modern typed-key constructor; jax.random.PRNGKey is the
+# legacy uint32-pair form. Same algorithm, but a typed key carries its
+# implementation in its dtype, which is what current JAX expects everywhere.
+key = jax.random.key(42)
 
 
 def init_param(key, shape, std=0.08):
     return jax.random.normal(key, shape) * std
 
 
-keys = jax.random.split(key, 20)
+# One key per parameter tensor: wte, wpe, lm_head, plus six per layer.
+num_param_tensors = 3 + 6 * n_layer
+keys = jax.random.split(key, num_param_tensors)
 ki = iter(keys)
 
 params = {
@@ -135,17 +147,13 @@ def forward(params, input_ids):
 
 
 def loss_fn(params, input_ids, targets):
-    """Cross-entropy loss, pure function suitable for jax.grad."""
+    """Cross-entropy loss, pure function suitable for jax.value_and_grad."""
     logits = forward(params, input_ids)
     log_probs = jax.nn.log_softmax(logits, axis=-1)
     n = input_ids.shape[0]
     loss = -jnp.mean(log_probs[jnp.arange(n), targets])
     return loss
 
-
-# JIT-compile the gradient function
-grad_fn = jit(grad(loss_fn))
-loss_fn_jit = jit(loss_fn)
 
 # ---------------------------------------------------------------------------
 # Adam optimizer (functional — no hidden state mutation)
@@ -155,23 +163,43 @@ m_state = jax.tree.map(jnp.zeros_like, params)
 v_state = jax.tree.map(jnp.zeros_like, params)
 
 
-def adam_update(params, grads, m_state, v_state, step, lr):
-    new_params = {}
-    new_m = {}
-    new_v = {}
-    for k in params:
-        new_m[k] = beta1 * m_state[k] + (1 - beta1) * grads[k]
-        new_v[k] = beta2 * v_state[k] + (1 - beta2) * grads[k] ** 2
-        m_hat = new_m[k] / (1 - beta1 ** (step + 1))
-        v_hat = new_v[k] / (1 - beta2 ** (step + 1))
-        new_params[k] = params[k] - lr * m_hat / (jnp.sqrt(v_hat) + eps_adam)
-    return new_params, new_m, new_v
+# ---------------------------------------------------------------------------
+# One jitted training step: loss + gradients + Adam
+# ---------------------------------------------------------------------------
+# Two things worth noticing here.
+#
+# 1. value_and_grad, not grad. jax.grad alone returns only the gradients, so
+#    printing the loss as well would mean running the forward pass twice. The
+#    backward pass already computes the loss on its way through, so
+#    value_and_grad hands it back for free.
+#
+# 2. The optimizer is expressed with jax.tree.map instead of a Python loop over
+#    dict keys. Same arithmetic, but now the whole step — forward, backward and
+#    update — is a single pure function that jit can compile as one XLA program,
+#    instead of a compiled gradient call surrounded by interpreted Python.
+@jit
+def train_step(params, m_state, v_state, input_ids, targets, step, lr):
+    loss, grads = value_and_grad(loss_fn)(params, input_ids, targets)
+    new_m = jax.tree.map(lambda m, g: beta1 * m + (1 - beta1) * g, m_state, grads)
+    new_v = jax.tree.map(lambda v, g: beta2 * v + (1 - beta2) * g**2, v_state, grads)
+    bias1 = 1 - beta1 ** (step + 1)
+    bias2 = 1 - beta2 ** (step + 1)
+    new_params = jax.tree.map(
+        lambda p, m, v: p - lr * (m / bias1) / (jnp.sqrt(v / bias2) + eps_adam),
+        params,
+        new_m,
+        new_v,
+    )
+    return loss, new_params, new_m, new_v
 
 
 # ---------------------------------------------------------------------------
 # Training loop
 # ---------------------------------------------------------------------------
 num_steps = 1000
+seen_lengths = set()  # every new sequence length costs one XLA compilation
+compile_ms, cached_ms = [], []
+
 for step in range(num_steps):
     doc = docs[step % len(docs)]
     tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
@@ -180,21 +208,40 @@ for step in range(num_steps):
     input_ids = jnp.array(tokens[:n])
     targets = jnp.array(tokens[1 : n + 1])
 
-    loss_val = loss_fn_jit(params, input_ids, targets)
-    grads = grad_fn(params, input_ids, targets)
+    is_new_shape = n not in seen_lengths
+    seen_lengths.add(n)
 
-    lr_t = learning_rate * (1 - step / num_steps)
-    params, m_state, v_state = adam_update(params, grads, m_state, v_state, step, lr_t)
+    t0 = time.perf_counter()
+    loss_val, params, m_state, v_state = train_step(
+        params, m_state, v_state, input_ids, targets, step, learning_rate * (1 - step / num_steps)
+    )
+    # JAX dispatch is asynchronous: without blocking, we would be timing the
+    # enqueue and not the work.
+    jax.block_until_ready((loss_val, params))
+    dt = (time.perf_counter() - t0) * 1000
+
+    if is_new_shape:
+        compile_ms.append(dt)
+        print(f"step {step + 1:4d} | new sequence length n={n:2d} -> XLA trace #{len(seen_lengths)} | {dt:7.1f} ms")
+    else:
+        cached_ms.append(dt)
 
     if (step + 1) % 10 == 0 or step == 0:
-        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val:.4f}")
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val:.4f} | {dt:6.2f} ms")
+
+# The point of the two numbers below: jit is not "slow once, then fast". It is
+# "slow once per input shape", and the shapes here keep arriving throughout
+# training because names have 14 different lengths.
+print(f"\ndistinct sequence lengths: {len(seen_lengths)} -> {len(compile_ms)} traces of the same train_step")
+print(f"  first-time-shape steps: {sum(compile_ms) / len(compile_ms):8.1f} ms mean (compilation included)")
+print(f"  cached-shape steps:     {sum(cached_ms) / len(cached_ms):8.2f} ms mean")
 
 # ---------------------------------------------------------------------------
 # Inference
 # ---------------------------------------------------------------------------
 temperature = 0.5  # in (0, 1], control the "creativity" of generated text, low to high
 print("\n--- inference (new, hallucinated names) ---")
-rng_key = jax.random.PRNGKey(0)
+rng_key = jax.random.key(0)
 for sample_idx in range(20):
     tokens = [BOS]
     for _ in range(block_size):

@@ -162,12 +162,12 @@
     "text": "Values: same reduced shape as keys.",
     "hash": "c5f1b741"
   },
-  "103": {
+  "109": {
     "text": "If KV heads < query heads, we need to expand KV to match. This is the GQA/MQA trick.",
     "hash": "11eb7909",
     "important": true
   },
-  "104": {
+  "110": {
     "text": "Repeat each KV head to serve its group of query heads. Logically shared, but physically copied for the matmul. In practice, this repeat is nearly free, it's a view/broadcast, not a memcpy.",
     "hash": "8e93f815",
     "diagram": "gqa_compare",
@@ -175,7 +175,7 @@
       "q_gqa"
     ]
   },
-  "105": {
+  "111": {
     "text": "Values get the same expansion as keys so that each query head has a matching value vector to retrieve content from.",
     "hash": "a5bf0970",
     "diagram": "gqa_compare",
@@ -183,107 +183,107 @@
       "q_gqa"
     ]
   },
-  "108": {
+  "114": {
     "text": "Standard scaled dot-product attention, identical for all three variants after KV expansion.",
     "hash": "308b188d"
   },
-  "109": {
+  "115": {
     "text": "Causal mask: no peeking at future tokens.",
     "hash": "14eeec63"
   },
-  "110": {
+  "116": {
     "text": "Mask out future positions with -infinity.",
     "hash": "a2e76efa"
   },
-  "111": {
+  "117": {
     "text": "Softmax over the key dimension.",
     "hash": "62dc999a"
   },
-  "113": {
+  "119": {
     "text": "Weighted sum of values, reshape back to (B, T, C).",
     "hash": "a1aef68f"
   },
-  "114": {
+  "120": {
     "text": "Project the concatenated multi-head output back to the model dimension through a linear layer.",
     "hash": "36f2db67"
   },
-  "117": {
+  "123": {
     "text": "Standard MLP, unchanged across variants.",
     "hash": "3ad666a1"
   },
-  "120": {
+  "126": {
     "text": "Project each token's embedding into a 4x wider hidden space to give the network more room to compute.",
     "hash": "8e9f0642"
   },
-  "121": {
+  "127": {
     "text": "Compress the expanded 4x-wide hidden representation back down to the original embedding dimension.",
     "hash": "62c4768b"
   },
-  "123": {
+  "129": {
     "text": "Run the input through the two-layer feed-forward network with ReLU activation in between.",
     "hash": "a87869a2"
   },
-  "124": {
+  "130": {
     "text": "Two-layer MLP with ReLU activation.",
     "hash": "8aa6bebb"
   },
-  "127": {
+  "133": {
     "text": "Transformer block parameterized by KV head count.",
     "hash": "4bcc8ea8"
   },
-  "128": {
+  "134": {
     "text": "Thread the KV head count down to the attention layer so it knows how many key-value heads to allocate and how much sharing to apply.",
     "hash": "0646abe2"
   },
-  "130": {
+  "136": {
     "text": "Normalize activations before the attention sublayer. Pre-norm keeps gradients well-behaved and is the standard in modern transformers like LLaMA.",
     "hash": "e92b587d"
   },
-  "131": {
+  "137": {
     "text": "Attention with configurable KV sharing.",
     "hash": "cd033512"
   },
-  "132": {
+  "138": {
     "text": "Normalize activations before the feed-forward network. Like the pre-attention norm, this stabilizes training by keeping activations on a consistent scale.",
     "hash": "f58a7657"
   },
-  "135": {
+  "141": {
     "text": "Forward: residual connections around attention and MLP.",
     "hash": "a87869a2"
   },
-  "136": {
+  "142": {
     "text": "Add the attention output back to the input via a residual connection. This lets the layer refine the representation without risk of destroying useful information.",
     "hash": "5133b743"
   },
-  "137": {
+  "143": {
     "text": "Add the MLP output to the residual stream so the model can refine representations incrementally.",
     "hash": "50e2183f"
   },
-  "141": {
+  "147": {
     "text": "Full model, takes <code>n_kv_head</code> to configure the attention variant.",
     "hash": "e94c5dc2"
   },
-  "142": {
+  "148": {
     "text": "KV head count flows from model to block to attention.",
     "hash": "0646abe2"
   },
-  "144": {
+  "150": {
     "text": "Look up a learned 16-dimensional vector for each input token to represent its identity.",
     "hash": "2a2b79bb"
   },
-  "145": {
+  "151": {
     "text": "A learned vector for each position in the sequence. Added to token embeddings so the model can distinguish token order, since attention alone is permutation-invariant.",
     "hash": "5338449e"
   },
-  "146": {
+  "152": {
     "text": "Normalize the combined token-plus-position embedding before feeding it into the transformer layers.",
     "hash": "5caa073e"
   },
-  "147": {
+  "153": {
     "text": "Stack of transformer blocks, all with the same KV head configuration.",
     "hash": "0eef0b77"
   },
-  "148": {
+  "154": {
     "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
     "hash": "1774314d",
     "diagram": "transformer_logits",
@@ -292,43 +292,43 @@
       "logits"
     ]
   },
-  "149": {
+  "155": {
     "text": "Apply the custom weight initialization function to every module in the model.",
     "hash": "e4941829"
   },
-  "152": {
+  "158": {
     "text": "Static method that initializes all Linear and Embedding weights with a small Gaussian distribution.",
     "hash": "2e476132"
   },
-  "154": {
+  "160": {
     "text": "Draw initial weights from a narrow Gaussian so activations stay reasonably scaled at the start of training.",
     "hash": "9677d3fd"
   },
-  "156": {
+  "162": {
     "text": "Run the full model on the input sequence to produce next-token logits for every position.",
     "hash": "1bc7099c"
   },
-  "157": {
+  "163": {
     "text": "Extract the batch size and sequence length from the input tensor shape.",
     "hash": "47cad82b"
   },
-  "158": {
+  "164": {
     "text": "Look up a learned embedding vector for each input token to represent its identity.",
     "hash": "8d137e9c"
   },
-  "159": {
+  "165": {
     "text": "Create a position embedding for each slot in the sequence so the model knows token ordering.",
     "hash": "2b319b15"
   },
-  "160": {
+  "166": {
     "text": "Sum the token and position embeddings, then normalize. This combined representation is what enters the transformer blocks.",
     "hash": "b88a95ea"
   },
-  "161": {
+  "167": {
     "text": "Send the combined embeddings through each transformer block in sequence. Each block applies attention (with KV sharing) followed by the MLP.",
     "hash": "359aba32"
   },
-  "163": {
+  "169": {
     "text": "Map the final hidden state at each position to a 27-dimensional vector of logits, one per vocabulary token, for next-token prediction.",
     "hash": "9ef9adcf",
     "diagram": "transformer_logits",
@@ -337,23 +337,23 @@
       "logits"
     ]
   },
-  "169": {
+  "175": {
     "text": "Use the CPU since this tiny 16-dimensional model trains in seconds. At this scale, GPU transfer overhead would actually slow things down.",
     "hash": "b39e14b0"
   },
-  "170": {
+  "176": {
     "text": "1000 training steps for each variant.",
     "hash": "f105aa30"
   },
-  "171": {
+  "177": {
     "text": "Temperature 0.5 for generation, moderately creative.",
     "hash": "7eca5b76"
   },
-  "173": {
+  "179": {
     "text": "Three variants to compare, all using the same model class with different <code>n_kv_head</code> values.",
     "hash": "826c0643"
   },
-  "174": {
+  "180": {
     "text": "MHA is the no-sharing baseline: four query heads, four KV heads, and therefore the largest KV cache. It gives maximum per-head freedom, but also maximum memory cost.",
     "hash": "46cb8003",
     "diagram": "gqa_compare",
@@ -361,7 +361,7 @@
       "q_mha"
     ]
   },
-  "175": {
+  "181": {
     "text": "GQA is the compromise: the four query heads are still there, but they now flow through just two shared KV groups. That cuts cache size in half without collapsing all heads onto one shared memory.",
     "hash": "73e4025f",
     "diagram": "gqa_compare",
@@ -369,7 +369,7 @@
       "q_gqa"
     ]
   },
-  "176": {
+  "182": {
     "text": "MQA pushes sharing to the limit: all four query heads read from the same single KV head. It is the cheapest in memory, but also the most aggressive loss of KV diversity.",
     "hash": "eeea829c",
     "diagram": "gqa_compare",
@@ -377,161 +377,207 @@
       "q_mqa"
     ]
   },
-  "180": {
+  "186": {
     "text": "Shared generation function for all variants.",
     "hash": "9f2a2f34"
   },
-  "181": {
+  "187": {
     "text": "Disable dropout and other training-only behavior so the model produces deterministic outputs.",
     "hash": "7b319c2c"
   },
-  "183": {
+  "189": {
     "text": "No gradients needed during generation.",
     "hash": "0ef4c54b"
   },
-  "184": {
+  "190": {
     "text": "Generate 10 sample names from this variant so we can visually compare output quality across MHA, GQA, and MQA configurations.",
     "hash": "d4f61231"
   },
-  "185": {
+  "191": {
     "text": "Begin each generated name with the beginning-of-sequence token so the model knows it is starting fresh.",
     "hash": "bb36d13f"
   },
-  "186": {
+  "192": {
     "text": "Generate up to <code>block_size</code> tokens.",
     "hash": "5c52ddc4"
   },
-  "187": {
+  "193": {
     "text": "Feed current sequence through the model.",
     "hash": "ab05dc73"
   },
-  "188": {
+  "194": {
     "text": "Take the model's prediction for the very last position, which contains the logits for what token should come next in the sequence.",
     "hash": "ce311cc5"
   },
-  "189": {
+  "195": {
     "text": "Divide the logits by the temperature before softmax to control how peaked or flat the distribution is.",
     "hash": "7d28f274"
   },
-  "190": {
+  "196": {
     "text": "Convert the temperature-scaled logits into a proper probability distribution that sums to one.",
     "hash": "e1a1328f"
   },
-  "191": {
+  "197": {
     "text": "Randomly draw one token from the probability distribution to introduce controlled diversity.",
     "hash": "93ed4206"
   },
-  "192": {
+  "198": {
     "text": "Stop if BOS is generated (end of name).",
     "hash": "5b83becd"
   },
-  "194": {
+  "200": {
     "text": "Add the newly sampled token to the growing sequence and continue generating the next one.",
     "hash": "14ebe56a"
   },
-  "195": {
+  "201": {
     "text": "Convert the list of generated token IDs back into characters and join them into a readable name string.",
     "hash": "a1ca669a"
   },
-  "202": {
+  "209": {
     "text": "Train each variant in sequence with identical data and seeds.",
     "hash": "8725aa67"
   },
-  "207": {
+  "214": {
     "text": "Reset seeds before each variant for a fair comparison, same random init and data order.",
     "hash": "070a7dcd"
   },
-  "208": {
+  "215": {
     "text": "Reset the PyTorch random seed so each variant starts from exactly the same weight initialization.",
     "hash": "f0726c6e"
   },
-  "209": {
+  "216": {
     "text": "Re-shuffle to the same order.",
     "hash": "7e7dcf46"
   },
-  "212": {
-    "text": "Count total parameters, fewer KV heads = fewer KV projection parameters.",
+  "219": {
+    "text": "Instantiate the model with this variant's KV head count. One class covers all three architectures, so nothing else about the model changes between rows.",
     "hash": "a668b5fa"
   },
-  "213": {
-    "text": "Instantiate the model with this variant's specific number of KV heads. The same class handles MHA, GQA, and MQA through this one parameter.",
+  "220": {
+    "text": "Count total parameters. Fewer KV heads means smaller <code>wk</code> and <code>wv</code>, which is a real but modest saving — the interesting number is the cache, not this one.",
     "hash": "3ba34a25"
   },
-  "216": {
-    "text": "KV cache memory estimate, the key metric for inference. Fewer KV heads = proportionally less cache memory. At 7B scale with 2048 context, this difference is gigabytes per request.",
-    "hash": "e9058f18",
-    "important": true
+  "227": {
+    "text": "Arithmetic, not a measurement: nothing in this lab caches anything, that is lab 12. It is the size the cache <em>would</em> have at fp16, batch 1, a full <code>block_size</code> context — which is the figure that matters in production, where the KV cache is what fills the GPU.",
+    "important": true,
+    "diagram": "gqa_compare",
+    "highlight": [
+      "q_mha",
+      "q_gqa",
+      "q_mqa"
+    ],
+    "hash": "e1d9a6c7"
   },
-  "223": {
+  "229": {
+    "text": "The print spells out every factor so the reader can rebuild the number instead of trusting it, and labels it 'if cached' and 'analytic' so it cannot be mistaken for a benchmark.",
+    "hash": "03df718f"
+  },
+  "233": {
     "text": "Same optimizer for all variants.",
     "hash": "92d21e78"
   },
-  "225": {
+  "236": {
     "text": "Pick the next name from the shuffled list, wrapping around when we reach the end. This cycling ensures continuous training across all steps.",
     "hash": "53f56939"
   },
-  "226": {
+  "237": {
     "text": "Tokenize: BOS + chars + BOS.",
     "hash": "47ec0e2c"
   },
-  "227": {
+  "238": {
     "text": "Limit the sequence length to block_size so it fits the model's positional embedding table.",
     "hash": "ae86abd0"
   },
-  "228": {
+  "239": {
     "text": "The standard training loop: pick a name, tokenize it, run a forward pass, compute loss, backpropagate, and update weights for 1000 steps.",
     "hash": "3d9da8cd"
   },
-  "230": {
+  "241": {
     "text": "Target tokens (shifted by one).",
     "hash": "968a3346"
   },
-  "231": {
+  "242": {
     "text": "Convert the first n token IDs into a tensor the model can consume as input.",
     "hash": "1b63fd95"
   },
-  "233": {
+  "244": {
     "text": "Measure how far the model's predictions are from the true next tokens using cross-entropy loss.",
     "hash": "17df3885"
   },
-  "234": {
+  "245": {
     "text": "Run the full model on the current input batch to get next-token predictions.",
     "hash": "4f1dd754"
   },
-  "236": {
+  "247": {
     "text": "Compute gradients for every parameter by propagating the loss backward through the computation graph.",
     "hash": "fbede2b3"
   },
-  "237": {
+  "248": {
     "text": "Linearly reduce the learning rate from its initial value down to zero over the course of training.",
     "hash": "227fe80d"
   },
-  "238": {
+  "249": {
     "text": "Write the decayed learning rate into every parameter group so the optimizer uses it on the next step.",
     "hash": "60602e3a"
   },
-  "239": {
+  "250": {
     "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
     "hash": "9f6d3592"
   },
-  "240": {
+  "251": {
     "text": "Apply the optimizer step, adjusting every parameter in the direction that reduces the loss.",
     "hash": "3030870a"
   },
-  "246": {
-    "text": "Generate sample names from this variant.",
-    "hash": "26396fa0"
+  "263": {
+    "text": "One hundred steps, the same window for every variant, fixed before the numbers were looked at. Averaging the tail does not turn this into a quality ranking, but it does stop it being pure noise.",
+    "hash": "db630cad"
   },
-  "254": {
+  "264": {
+    "text": "The trailing average, not the final step's loss. At batch size one the last step mostly reports which name it happened to land on, and reading that single value used to hand the win to MQA — a ranking produced by sampling noise rather than by architecture.",
+    "important": true,
+    "hash": "1f5a2547"
+  },
+  "265": {
+    "text": "Print the averaged loss per variant. On this run MHA, GQA, and MQA land within about a hundredth of a nat of each other, which is the result: three tiny models that all still learn to spell names.",
+    "hash": "bcc788f2"
+  },
+  "267": {
+    "text": "Generate sample names from this variant so the loss column has something qualitative beside it. All three produce name-shaped output, which is again the point — sharing KV heads did not break anything.",
+    "hash": "3da05715"
+  },
+  "274": {
     "text": "Summary table: show how KV sharing affects parameter count and cache size.",
     "hash": "54a209e4"
   },
-  "255": {
-    "text": "Calculate KV projection parameters (wk + wv weights) for each variant.",
-    "hash": "8725aa67"
+  "275": {
+    "text": "MHA is the reference point for the ratio column. Expressing cache size relative to full multi-head attention is what makes the figure portable: the absolute bytes belong to this 16-dimensional toy, the ratio belongs to every model.",
+    "hash": "99f1d42d"
   },
-  "256": {
-    "text": "Calculate KV cache memory in bytes (fp16 inference).",
+  "278": {
+    "text": "KV projection parameters for this variant — the <code>wk</code> and <code>wv</code> weight matrices. Distinct from the cache estimate above: this is what the model stores on disk, the cache is what inference allocates per request.",
     "hash": "0c2c323d"
+  },
+  "281": {
+    "text": "The cache column printed as a ratio to MHA. <code>1.00x</code> / <code>0.50x</code> / <code>0.25x</code> is exactly what you get at any scale, because the cache is linear in <code>n_kv_head</code> — LLaMA 2 70B runs 8 KV heads against 64 query heads for 0.125x.",
+    "important": true,
+    "diagram": "gqa_compare",
+    "highlight": {
+      "nodes": [
+        "heads",
+        "q_mha",
+        "q_gqa",
+        "q_mqa"
+      ],
+      "links": [
+        0,
+        1,
+        2
+      ]
+    },
+    "hash": "f3de0665"
+  },
+  "290": {
+    "text": "The paragraph the loss column needs. Three 1-layer, 16-dimensional models trained for 1000 single-name steps cannot separate these architectures on quality, so the lab declines to try and points at Ainslie et al. instead.",
+    "hash": "dffac76a"
   }
 }

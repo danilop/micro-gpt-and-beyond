@@ -1,6 +1,6 @@
 # Understanding LLMs by Building One: Soft Thinking
 
-Same architecture as the PyTorch version (03), but with soft decoding at inference time. Instead of collapsing to a single token (argmax) at each step, soft thinking passes a "concept token," a probability-weighted blend of all token embeddings, to the next step. The full probability distribution flows forward, preserving information that hard decoding discards.
+Same architecture as the PyTorch version (03), but with soft decoding at inference time. Instead of collapsing to a single sampled token at each step, soft thinking passes a "concept token," a probability-weighted blend of all token embeddings, to the next step. The full probability distribution flows forward, preserving information that hard decoding discards.
 
 ## Why this version exists
 
@@ -13,7 +13,7 @@ Standard autoregressive decoding forces the model's rich internal state through 
 At each decoding step, the model outputs logits over the full vocabulary, a rich signal encoding probabilities for every possible next token. Standard decoding discards almost all of this:
 
 ```
-Standard (hard):   logits -> argmax -> token_id -> embed(token_id)   -> next input
+Standard (hard):   logits -> sample -> token_id -> embed(token_id)   -> next input
                    [27 values]        [1 integer]  [16-dim vector]
 
 Soft thinking:     logits -> softmax(logits/T) @ embed_table         -> next input
@@ -21,6 +21,8 @@ Soft thinking:     logits -> softmax(logits/T) @ embed_table         -> next inp
 ```
 
 The hard path compresses 27 logits into 1 integer. The soft path preserves the full distribution by computing a weighted average of all token embeddings, a "concept token" that encodes the model's uncertainty.
+
+Note that "hard" here means **sampling**, not argmax. The code calls `torch.multinomial` on `softmax(logits / 0.5)`, so hard decoding is still stochastic; what makes it hard is that only the sampled token's embedding survives into the next step. Argmax would be a further restriction on top.
 
 ### Concept tokens live in embedding space
 
@@ -45,7 +47,25 @@ The soft temperature T determines how much information flows through:
 | T = 2.0 | Flattened distribution | Many tokens contribute |
 | T -> inf | Uniform distribution | Mean of all embeddings (noise) |
 
-The lab generates names at each temperature, reporting the Shannon entropy of the distribution at each step. Higher entropy means more tokens contribute to the concept token.
+The lab generates names at each temperature, reporting the Shannon entropy of **the distribution that builds the next input** — `softmax(logits / soft_temp)`, the one soft temperature actually controls. Measuring the sampling distribution instead would be measuring a quantity that is identical in every row of the table, and would read flat no matter what soft temperature does.
+
+For hard decoding that input distribution is a one-hot delta, so its entropy is exactly 0. That is the information bottleneck expressed as a number, and it is the reason hard decoding is the baseline rather than a competitor in the entropy column.
+
+### Benefit and cost, measured together
+
+Entropy only measures the benefit — how much of the distribution survives into the next step. On its own it would make the highest temperature look best. So the lab prints two cost columns next to it. Measured over 50 samples per row:
+
+| Mode | Concept H (max 3.30) | Sample NLL | Adjacent-dup rate |
+|---|---|---|---|
+| Hard (standard decoding) | 0.000 | 1.8667 | 1.9% |
+| Soft T=0.5 (mild blend) | 1.706 | 2.0875 | 11.0% |
+| Soft T=1.0 (moderate blend) | 2.509 | 2.1113 | 12.6% |
+| Soft T=2.0 (diffuse blend) | 2.995 | 2.2805 | 20.8% |
+| Real held-out names (500) | — | 2.4001 | 4.9% |
+
+"Sample NLL" is the per-token negative log-likelihood of each row's generated names, scored under the same model on the ordinary hard path. It answers "would the model itself have written this?". Higher means the output has drifted away from what the model was trained on. "Adjacent-dup rate" is the fraction of neighbouring character pairs that repeat the same character, which is the specific way this technique degrades: at T=2.0 the output is full of stuttered vowels (`aayay`, `maaea`, `aall`).
+
+Read the table left to right and the tradeoff is not rhetorical any more. Entropy rises monotonically with soft temperature, exactly as the theory says. So does NLL, and so does the stutter rate — from 1.9% at hard decoding to 20.8% at T=2.0, which is four times the 4.9% you see in real names. Richer information in, more drift out.
 
 ### The out-of-distribution challenge
 
@@ -56,9 +76,9 @@ There's a fundamental tension: the model was **trained** on discrete token embed
 - The information bottleneck in autoregressive decoding (collapsing distributions to integers)
 - How concept tokens preserve uncertainty by blending all token embeddings
 - The role of temperature in controlling the hard-to-soft spectrum
-- Shannon entropy as a measure of distribution "spread"
+- Shannon entropy as a measure of distribution "spread", and the discipline of measuring the distribution you actually care about rather than the nearest one to hand
 - Why this is training-free, since only the decoding loop changes, not the model
-- The out-of-distribution challenge when feeding soft inputs to a hard-trained model
+- The out-of-distribution challenge when feeding soft inputs to a hard-trained model, quantified: sample NLL and adjacent-duplicate rate both climb with soft temperature
 
 ## What's not covered (but exists in practice)
 
@@ -75,7 +95,9 @@ There's a fundamental tension: the model was **trained** on discrete token embed
 uv run python main.py
 ```
 
-Trains for 1000 steps (identical to Lab 03), then generates 20 names using hard decoding and soft decoding at three temperatures (T=0.5, 1.0, 2.0). Reports the Shannon entropy of each step's distribution.
+Trains for 1000 steps (identical to Lab 03), then generates 50 names using hard decoding and soft decoding at three temperatures (T=0.5, 1.0, 2.0). For each it reports the Shannon entropy of the concept-token distribution, the per-token NLL of the generated names under the model, and the adjacent-duplicate-character rate, with a row of 500 real unseen names as the reference.
+
+This lab is self-contained. Lab 18 duplicates the model and the generation function rather than importing them, because each lab is meant to be readable end to end from a single file.
 
 ## Why soft thinking matters
 

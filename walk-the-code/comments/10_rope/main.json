@@ -181,80 +181,100 @@
       "output"
     ]
   },
-  "93": {
-    "text": "Compute once at startup. These frequency tables are shared by all layers and all forward passes.",
-    "hash": "25836b0d"
+  "98": {
+    "text": "Precompute four times <code>block_size</code>, not <code>block_size</code>. RoPE has no position table to size, only a formula, so nothing stops us tabulating positions the model never trains on — and that is what makes the length test at the bottom of this file possible at all.",
+    "important": true,
+    "diagram": "rope_freq",
+    "highlight": {
+      "nodes": [
+        "pos",
+        "angles"
+      ],
+      "links": [
+        1
+      ]
+    },
+    "hash": "12047ba6"
   },
   "99": {
+    "text": "Computed once at import and shared by every layer and both training and inference: the angles depend only on position and dimension, never on the weights. The learned-position baseline has no equivalent option — its <code>wpe</code> table has exactly <code>block_size</code> rows and row 16 does not exist.",
+    "diagram": "rope_freq",
+    "highlight": [
+      "angles",
+      "cs"
+    ],
+    "hash": "0c5800a9"
+  },
+  "105": {
     "text": "RMSNorm instead of LayerNorm, simpler (no mean subtraction), works just as well. Used by LLaMA and most modern LLMs.",
     "hash": "69fade3d"
   },
-  "100": {
+  "106": {
     "text": "Dimension parameter stored for documentation; RMSNorm doesn't actually need it.",
     "hash": "d1f0a37b"
   },
-  "102": {
+  "108": {
     "text": "A tiny epsilon (1e-5) added inside the square root to prevent division by zero when activations happen to be near-zero.",
     "hash": "7cedf2b6"
   },
-  "105": {
+  "111": {
     "text": "Normalize by root-mean-square of activations. No learned scale parameter in this minimal version.",
     "hash": "53678ba7"
   },
-  "108": {
+  "114": {
     "text": "Attention module with a flag to switch between learned positional embeddings and RoPE.",
     "hash": "c20aaac2",
     "important": true
   },
-  "109": {
+  "115": {
     "text": "The <code>use_rope</code> flag lets us run a fair A/B comparison with identical architecture otherwise.",
     "hash": "e114ba12"
   },
-  "111": {
+  "117": {
     "text": "Store the flag so <code>forward</code> knows which position strategy to use.",
     "hash": "e2ebce76"
   },
-  "112": {
+  "118": {
     "text": "Query projection, same for both variants.",
     "hash": "433b771f"
   },
-  "113": {
+  "119": {
     "text": "Key projection, same weights, but RoPE will rotate these before the dot product.",
     "hash": "bf2475c8"
   },
-  "114": {
+  "120": {
     "text": "Value projection, notably, RoPE does NOT touch values.",
     "hash": "d1a077cb"
   },
-  "115": {
+  "121": {
     "text": "Output projection merges heads back together.",
     "hash": "887b9875"
   },
-  "117": {
+  "123": {
     "text": "The attention forward pass takes a full input tensor and produces contextualized output. RoPE rotation happens internally before the dot product.",
     "hash": "a87869a2"
   },
-  "118": {
+  "124": {
     "text": "Unpack batch size, sequence length, and embedding dimension.",
     "hash": "4584ac61"
   },
-  "119": {
+  "125": {
     "text": "Project to queries, reshape into heads: (B, T, C) -> (B, n_head, T, head_dim).",
     "hash": "d0c33c49"
   },
-  "120": {
+  "126": {
     "text": "Keys get the same per-head reshape as queries. Each head's keys will only be compared against that same head's queries.",
     "hash": "a48e9c7a"
   },
-  "121": {
+  "127": {
     "text": "Same for values, but values won't be rotated even with RoPE.",
     "hash": "7fcca8ac"
   },
-  "123": {
+  "129": {
     "text": "Branch: if RoPE is enabled, rotate Q and K by position-dependent angles.",
     "hash": "eda59c90"
   },
-  "124": {
+  "130": {
     "text": "Rotate queries, each position gets a unique rotation angle.",
     "hash": "2068575f",
     "diagram": "rope_apply",
@@ -263,7 +283,7 @@
       "output"
     ]
   },
-  "125": {
+  "131": {
     "text": "Rotate keys, when Q and K are dot-producted, the rotation angles subtract to give relative position.",
     "hash": "1d1abe19",
     "diagram": "rope_apply",
@@ -272,136 +292,136 @@
       "output"
     ]
   },
-  "128": {
+  "134": {
     "text": "Scaled dot-product attention: <code>softmax(QK^T / sqrt(d))</code>.",
     "hash": "308b188d"
   },
-  "129": {
-    "text": "Upper-triangular mask: each position can only attend to itself and earlier positions (causal/autoregressive).",
-    "hash": "14eeec63"
+  "135": {
+    "text": "Upper-triangular mask so each position attends only to itself and earlier ones. Built as <code>bool</code> directly rather than as floats cast later, which is what <code>masked_fill</code> wants anyway.",
+    "hash": "2f6b201a"
   },
-  "130": {
+  "136": {
     "text": "Set future positions to -infinity so softmax gives them zero weight.",
     "hash": "a2e76efa"
   },
-  "131": {
+  "137": {
     "text": "Normalize attention scores to probabilities.",
     "hash": "62dc999a"
   },
-  "133": {
+  "139": {
     "text": "Weighted sum of values, reshape back from heads to embedding dimension.",
     "hash": "a1aef68f"
   },
-  "134": {
+  "140": {
     "text": "Output projection, mix information across heads.",
     "hash": "36f2db67"
   },
-  "137": {
+  "143": {
     "text": "Feed-forward network: expand to 4x, apply nonlinearity, project back.",
     "hash": "3ad666a1"
   },
-  "140": {
+  "146": {
     "text": "Expand to 4x the embedding dimension, the \"hidden\" layer of the MLP.",
     "hash": "8e9f0642"
   },
-  "141": {
+  "147": {
     "text": "Project back down to embedding dimension.",
     "hash": "62c4768b"
   },
-  "143": {
+  "149": {
     "text": "ReLU activation between the two linear layers.",
     "hash": "a87869a2"
   },
-  "144": {
+  "150": {
     "text": "Two-layer MLP with ReLU: the pattern-matching complement to attention's pattern-finding.",
     "hash": "8aa6bebb"
   },
-  "147": {
+  "153": {
     "text": "Transformer block: attention + MLP, each with pre-norm and residual connection.",
     "hash": "4bcc8ea8"
   },
-  "148": {
+  "154": {
     "text": "Thread the RoPE flag down to the attention layer so it knows whether to apply rotary position encoding or rely on the learned position embeddings.",
     "hash": "e114ba12"
   },
-  "150": {
+  "156": {
     "text": "Pre-norm before attention (LLaMA-style, more stable than post-norm).",
     "hash": "e92b587d"
   },
-  "151": {
+  "157": {
     "text": "Attention layer, configured for either learned positions or RoPE.",
     "hash": "1600b853"
   },
-  "152": {
+  "158": {
     "text": "Normalize activations before the feed-forward network. Like the pre-attention norm, this stabilizes training by keeping activations on a consistent scale.",
     "hash": "f58a7657"
   },
-  "153": {
+  "159": {
     "text": "The position-independent feed-forward network. After attention has mixed information across positions, the MLP transforms each position's representation individually.",
     "hash": "17fdd551"
   },
-  "155": {
+  "161": {
     "text": "Forward: residual connections let gradients flow straight through.",
     "hash": "a87869a2"
   },
-  "156": {
+  "162": {
     "text": "Attention with residual: <code>x = x + attn(norm(x))</code>.",
     "hash": "5133b743"
   },
-  "157": {
+  "163": {
     "text": "MLP with residual: same pattern.",
     "hash": "50e2183f"
   },
-  "161": {
+  "167": {
     "text": "The full model, identical architecture for both variants, differing only in positional encoding.",
     "hash": "e94c5dc2"
   },
-  "162": {
+  "168": {
     "text": "Constructor takes <code>use_rope</code> to choose the position strategy.",
     "hash": "e114ba12"
   },
-  "164": {
+  "170": {
     "text": "Remember whether this model uses RoPE so the forward pass knows whether to add learned position embeddings or skip them entirely.",
     "hash": "e2ebce76"
   },
-  "165": {
+  "171": {
     "text": "Token embedding table: maps each of 27 token ids to a 16-dimensional vector.",
     "hash": "2a2b79bb"
   },
-  "166": {
+  "172": {
     "text": "Only create learned positional embeddings when NOT using RoPE, this is the parameter saving.",
     "hash": "7bfe41c9",
     "important": true
   },
-  "167": {
+  "173": {
     "text": "Learned position embeddings: one vector per position. RoPE eliminates this entire table.",
     "hash": "5338449e"
   },
-  "168": {
+  "174": {
     "text": "Pre-norm before the transformer blocks.",
     "hash": "5caa073e"
   },
-  "169": {
+  "175": {
     "text": "Stack transformer blocks, each configured with the same position strategy.",
     "hash": "9f2f0fbd"
   },
-  "170": {
+  "176": {
     "text": "Output projection: from embedding space back to vocabulary logits.",
     "hash": "1774314d"
   },
-  "171": {
+  "177": {
     "text": "Walk through every submodule and apply the custom weight initializer. This ensures consistent starting conditions whether the module is a linear layer or an embedding.",
     "hash": "e4941829"
   },
-  "174": {
+  "180": {
     "text": "Small random initialization (std=0.08) for all linear and embedding weights.",
     "hash": "2e476132"
   },
-  "176": {
+  "182": {
     "text": "Normal distribution init, not too large (exploding), not too small (vanishing).",
     "hash": "9677d3fd"
   },
-  "178": {
+  "184": {
     "text": "Forward pass: embed, add positions (if learned), normalize, transform, project to logits.",
     "hash": "1bc7099c",
     "diagram": "transformer_forward",
@@ -426,31 +446,31 @@
       ]
     }
   },
-  "179": {
+  "185": {
     "text": "Unpack batch and sequence dimensions.",
     "hash": "47cad82b"
   },
-  "180": {
+  "186": {
     "text": "Convert each input token ID into a dense 16-dimensional vector. These embeddings are the model's learned representation of each character.",
     "hash": "f03e810b"
   },
-  "181": {
+  "187": {
     "text": "Only add learned positional embeddings for the baseline variant.",
     "hash": "50929a06"
   },
-  "182": {
+  "188": {
     "text": "Add position vectors to token embeddings, the learned-position approach from labs 01-08.",
     "hash": "a0ae034f"
   },
-  "183": {
+  "189": {
     "text": "Normalize before the transformer blocks.",
     "hash": "a3bfcdd6"
   },
-  "184": {
+  "190": {
     "text": "Send the representation through each transformer block in sequence. Each block first applies attention (with or without RoPE) then the MLP.",
     "hash": "359aba32"
   },
-  "186": {
+  "192": {
     "text": "Project to vocabulary-sized logits for next-token prediction.",
     "hash": "9ef9adcf",
     "diagram": "transformer_logits",
@@ -459,183 +479,290 @@
       "logits"
     ]
   },
-  "192": {
+  "198": {
     "text": "Shared training function, both models train with identical hyperparameters for a fair comparison.",
     "hash": "c493cb95"
   },
-  "194": {
+  "200": {
     "text": "Adam optimizer with slightly aggressive betas for small-model training.",
     "hash": "92d21e78"
   },
-  "196": {
+  "202": {
     "text": "Train for 1000 steps, cycling through the shuffled dataset.",
     "hash": "53f56939"
   },
-  "197": {
+  "203": {
     "text": "Cycle through names. With 32K names and 1000 steps, we see ~3% of the data.",
     "hash": "47ec0e2c"
   },
-  "198": {
+  "204": {
     "text": "Tokenize: BOS + character ids + BOS.",
     "hash": "ae86abd0"
   },
-  "199": {
+  "205": {
     "text": "Clip to block_size to handle names longer than 16 characters.",
     "hash": "3d9da8cd"
   },
-  "201": {
+  "207": {
     "text": "Input: all tokens except the last.",
     "hash": "c99ff416"
   },
-  "202": {
+  "208": {
     "text": "Target: all tokens shifted by one, the next-token prediction task.",
     "hash": "cee86f76"
   },
-  "204": {
+  "210": {
     "text": "Forward pass through the model.",
     "hash": "17df3885"
   },
-  "205": {
+  "211": {
     "text": "Cross-entropy loss: how surprised is the model by the correct next token?",
     "hash": "4f1dd754"
   },
-  "207": {
+  "213": {
     "text": "Zero out gradients from the previous step.",
     "hash": "fbede2b3"
   },
-  "208": {
+  "214": {
     "text": "Backpropagate the loss through the entire computation graph.",
     "hash": "227fe80d"
   },
-  "209": {
+  "215": {
     "text": "Linear learning rate warmdown: start at 1e-2, linearly decay to 0.",
     "hash": "60602e3a"
   },
-  "210": {
+  "216": {
     "text": "Write the decayed learning rate into every optimizer parameter group so the next weight update takes a smaller step as training progresses.",
     "hash": "9f6d3592"
   },
-  "212": {
+  "218": {
     "text": "Update weights based on gradients.",
     "hash": "d9e59d7e"
   },
-  "213": {
+  "219": {
     "text": "Track loss history for comparison.",
     "hash": "01d5e9eb"
   },
-  "221": {
+  "227": {
     "text": "Generate names autoregressively, one token at a time, feeding each back as input.",
     "hash": "b749c7d2"
   },
-  "223": {
+  "229": {
     "text": "Switch to eval mode (disables dropout, etc.).",
     "hash": "45bf010c"
   },
-  "225": {
+  "231": {
     "text": "No gradient computation needed during generation.",
     "hash": "d4f61231"
   },
-  "227": {
+  "233": {
     "text": "Start with just the BOS token.",
     "hash": "5c52ddc4"
   },
-  "228": {
+  "234": {
     "text": "Generate up to <code>block_size</code> tokens.",
     "hash": "ab05dc73"
   },
-  "229": {
+  "235": {
     "text": "Feed the current sequence (up to block_size) through the model.",
     "hash": "e05597da"
   },
-  "230": {
+  "236": {
     "text": "Get logits for the last position, the model's prediction for the next token.",
     "hash": "7d28f274"
   },
-  "231": {
+  "237": {
     "text": "Divide by temperature: lower = more confident/repetitive, higher = more random/creative.",
     "hash": "e1a1328f"
   },
-  "232": {
+  "238": {
     "text": "Turn raw logits into a proper probability distribution via softmax. Sampling from these probabilities gives us the next token.",
     "hash": "93ed4206"
   },
-  "233": {
+  "239": {
     "text": "Sample from the distribution, stochastic generation.",
     "hash": "5b83becd"
   },
-  "234": {
+  "240": {
     "text": "If we sampled BOS, the name is complete.",
     "hash": "41a35c11"
   },
-  "236": {
+  "242": {
     "text": "Add the sampled token and continue generating.",
     "hash": "a1ca669a"
   },
-  "237": {
+  "243": {
     "text": "Decode token ids back to characters.",
     "hash": "b4368128"
   },
-  "243": {
+  "248": {
+    "text": "The honest way to give two different architectures the same starting point: build both, then copy across every tensor they have in common. Everything except <code>wpe</code> matches by name and shape, so exactly one difference survives — how position enters the model.",
+    "important": true,
+    "hash": "b4668ca7"
+  },
+  "253": {
+    "text": "Iterate over the destination's parameters, so a tensor the RoPE model does not have simply never comes up. No name lists to keep in sync when the architecture changes.",
+    "hash": "8e6f233f"
+  },
+  "254": {
+    "text": "Match on name <em>and</em> shape. The shape check is what stops a silently mismatched tensor from being copied, which would be a harder bug to find than the one this function exists to fix.",
+    "hash": "3f445419"
+  },
+  "255": {
+    "text": "<code>copy_</code> under <code>no_grad</code> writes into the parameter that already exists, rather than rebinding the attribute — the optimizer built later still sees the same tensors.",
+    "hash": "00671a5f"
+  },
+  "270": {
     "text": "Train the baseline first: standard learned positional embeddings, same as labs 01-08.",
     "hash": "59ab3c7e"
   },
-  "244": {
-    "text": "Reset seed so both models start from the same random initialization.",
+  "271": {
+    "text": "Re-seeding here looks like it should give both models identical weights, and it does not. <code>apply(_init_weights)</code> walks modules in registration order and the baseline registers <code>wpe</code> second, so it draws 256 numbers the RoPE model never draws; from that point the two streams are offset and every remaining weight differs.",
     "hash": "7e7dcf46"
   },
-  "245": {
+  "272": {
     "text": "Baseline model with learned position embeddings.",
     "hash": "911fb52c"
   },
-  "246": {
+  "273": {
     "text": "Count parameters, the baseline has extra parameters for the position embedding table.",
     "hash": "aab27446"
   },
-  "248": {
-    "text": "Train the baseline and capture loss history.",
-    "hash": "903fae2d"
-  },
-  "250": {
-    "text": "Now train the RoPE variant with the same seed and data order.",
-    "hash": "6abac42d"
-  },
-  "251": {
-    "text": "Same random init for a fair comparison.",
+  "276": {
+    "text": "Same seed, but by itself that only guarantees the two models start at the same point in the RNG stream, not that they consume it the same way. The explicit copy below is what actually makes the initializations equal.",
+    "important": true,
     "hash": "7e7dcf46"
   },
-  "252": {
+  "277": {
     "text": "RoPE model, no learned position embeddings, positions encoded through rotation.",
     "hash": "9bc1d033"
   },
-  "253": {
+  "278": {
+    "text": "Overwrite the RoPE model's freshly initialized weights with the baseline's. Without this the loss comparison further down measures initialization luck as much as it measures positional encoding, and at 16 dimensions that is not a small term.",
+    "hash": "0e1d532b"
+  },
+  "279": {
+    "text": "Print the count so the reader can check it: eight shared tensors copied, one (<code>wpe</code>) that has no counterpart. If a later refactor adds a parameter the copy misses, this number moves.",
+    "hash": "6c03d266"
+  },
+  "281": {
+    "text": "Train the baseline and capture loss history.",
+    "hash": "903fae2d"
+  },
+  "283": {
+    "text": "Now train the RoPE variant with the same seed and data order.",
+    "hash": "6abac42d"
+  },
+  "284": {
     "text": "Count parameters, fewer than baseline because there's no <code>wpe</code> embedding table.",
     "hash": "9472de0f"
   },
-  "254": {
+  "285": {
     "text": "Show the parameter saving: RoPE encodes position for free (no learned parameters).",
     "hash": "d69ff5bd"
   },
-  "255": {
+  "286": {
     "text": "Train RoPE variant with identical hyperparameters.",
     "hash": "43f445e0"
   },
-  "259": {
-    "text": "Moving average of recent losses smooths out step-to-step noise.",
-    "hash": "768dec2b"
+  "291": {
+    "text": "Average the tail rather than reading the final step. Batch size is one name, so the last step's loss mostly reports which name it landed on — a short name and a long one differ by more than these two variants do.",
+    "hash": "db630cad"
   },
-  "260": {
-    "text": "Average the last 50 losses for each model.",
+  "292": {
+    "text": "Trailing average over the last 100 steps for the baseline. Same window for both models, chosen before looking at the numbers.",
     "hash": "834c28c4"
   },
-  "261": {
+  "293": {
     "text": "Same window for the RoPE model.",
     "hash": "c53527db"
   },
-  "265": {
+  "296": {
+    "text": "Print the caveat next to the result. Two runs of one 16-dimensional, 1-layer model separated by hundredths of a nat is a tie, and the lab says so instead of letting the reader award a winner.",
+    "hash": "6a32f63a"
+  },
+  "320": {
+    "text": "Evaluate at three times the trained context. Names never reach 16 characters on their own, so the only way to get a genuinely long sequence out of this corpus is to keep the stream going past position 15.",
+    "hash": "bd63aaee"
+  },
+  "323": {
+    "text": "Concatenate names separated by BOS. The token stream is exactly the kind the model trained on — same characters, same delimiter — it just does not stop at position 15, so nothing but position is unfamiliar.",
+    "hash": "a7401672"
+  },
+  "348": {
+    "text": "The most careful measurement in the lab: the same token chunks scored twice, once at their true absolute positions and once re-based into the trained range. Content is held constant, so whatever is left is the position encoding behaving differently at distances it never saw.",
+    "important": true,
+    "hash": "63e20ade"
+  },
+  "371": {
+    "text": "Chunk <code>c</code> read out of one long forward pass, so it sits at absolute positions starting at <code>c*window</code>. Only chunk 0 is inside the range the model was trained on.",
+    "hash": "981b9821"
+  },
+  "372": {
+    "text": "The control: feed the very same tokens in as their own short sequence, so they land at positions 0..15 where the model is at home. Everything else about the input is identical, which is the entire point.",
+    "important": true,
+    "hash": "89357590"
+  },
+  "378": {
+    "text": "What a hard position limit forces you to do: chop the stream into <code>block_size</code> windows and throw away context at every boundary. This is the fair thing to compare RoPE's single long pass against, rather than comparing it to nothing.",
+    "hash": "49cefe8e"
+  },
+  "401": {
+    "text": "Evaluating the baseline over 48 positions is wrapped in <code>try</code> because it is expected to raise. This is the one claim about length the lab can actually prove, so it is demonstrated as an exception rather than asserted in prose.",
+    "important": true,
+    "hash": "ea284d34"
+  },
+  "403": {
+    "text": "A real <code>IndexError</code> from <code>wpe</code>, not a printed warning. The learned-position model has 16 embedding rows and position 16 does not exist — no amount of extra compute or fine-tuning gets you past that.",
+    "hash": "6238b4ea"
+  },
+  "408": {
+    "text": "RoPE evaluated the windowed way too, so the two numbers below differ in exactly one respect: whether cross-chunk context was available.",
+    "hash": "b6d27179"
+  },
+  "413": {
+    "text": "The full pass and the windowed pass differ by about 0.0002 nats on this run, which is a rounding error. That is the honest measure of how much cross-chunk context is worth on a corpus of independent names — and it is why the length test below needs the re-based control to say anything at all.",
+    "hash": "4aa7dd00"
+  },
+  "419": {
+    "text": "Run the controlled comparison and print both columns. The interesting figure is the difference between them, not either one alone.",
+    "important": true,
+    "hash": "d0fe7d23"
+  },
+  "423": {
+    "text": "The last column is the whole result: loss at the true position minus loss at the re-based position, for identical tokens. Anything that is a property of the text cancels here.",
+    "hash": "5f252eaa"
+  },
+  "425": {
+    "text": "Average the position cost over chunks 1 and up. Chunk 0 is excluded because it is the method check, not a data point — its two passes use the same positions, so it contributes a structural zero.",
+    "hash": "59d37a6e"
+  },
+  "428": {
+    "text": "The warning the reader needs before reading the table. The 'at true position' column rises steadily down the rows, which looks exactly like extrapolation damage and is not: later chunks start mid-name and are simply harder text.",
+    "hash": "2ece94bf"
+  },
+  "432": {
+    "text": "Chunk 0 must read <code>+0.0000</code> — same tokens, same positions, both ways. A control that cannot fail is useless, but a control that would visibly break if the harness were wrong is worth printing.",
+    "hash": "4f37dcf1"
+  },
+  "438": {
+    "text": "Branch on the size of the measured cost rather than announcing a conclusion. On this run it comes out at a few ten-thousandths of a nat, so the lab takes the 'this is noise' path and refuses to claim a win.",
+    "hash": "f94fb75b"
+  },
+  "441": {
+    "text": "The line that keeps the lab honest: a null result here is not evidence that RoPE extrapolates. A 1-layer, 16-dimensional model on independent names has almost nothing at stake past position 15, and a test with nothing at stake cannot fail.",
+    "hash": "4550ce8e"
+  },
+  "448": {
+    "text": "'RoPE generalizes to longer sequences' is two claims wearing one sentence. The mechanical one is settled above by an exception; the accuracy one is why YaRN, NTK-aware interpolation, and fine-tuning at the target length exist at all.",
+    "important": true,
+    "hash": "90fedbb7"
+  },
+  "455": {
     "text": "Generate names from the learned-position model.",
     "hash": "8354355a"
   },
-  "266": {
+  "456": {
     "text": "Generate names from the RoPE model, quality should be comparable despite fewer parameters.",
     "hash": "f6552e4d"
   }

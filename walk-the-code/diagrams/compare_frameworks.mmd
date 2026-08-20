@@ -1,8 +1,4 @@
 graph TD
-    A[Same transformer]
-    A --> B[PyTorch<br/>nn.Module<br/>backward]
-    B --> C[Batching<br/>reshape + mask]
-    C --> D[JAX<br/>pure fn<br/>grad + jit]
-    D --> E[Batching<br/>vmap]
-    E --> F[MLX<br/>lazy eval<br/>unified memory]
-    F --> G[Batching<br/>reshape on Apple GPU]
+    A[Same transformer, same data] --> B["PyTorch<br/>nn.Module, loss.backward()<br/>batching: manual reshape"]
+    A --> C["JAX<br/>pure functions, grad + jit<br/>batching: vmap"]
+    A --> D["MLX<br/>lazy evaluation, unified memory<br/>batching: vmap"]

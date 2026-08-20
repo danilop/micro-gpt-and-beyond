@@ -1,3 +1,5 @@
-graph TD
-    freqs[Precompute Frequencies]
-    freqs --> cos_sin[cos/sin per position]
+graph LR
+    dims["dimension pairs i = 0, 2, 4, ..."] --> freqs["theta_i = 1 / 10000^(i/dim)"]
+    pos["positions m = 0 .. T-1"] --> angles["angle = m * theta_i"]
+    freqs --> angles
+    angles --> cs[cos and sin tables]

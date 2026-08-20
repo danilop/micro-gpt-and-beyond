@@ -1,5 +1,4 @@
 graph TD
-    model[Forward Pass]
-    model --> logits[Logits]
-    logits --> loss[Cross-Entropy]
-    loss --> update[Gradient + Adam]
+    model["Forward pass on a (B, T) batch"] --> logits["Logits (B, T, V)"]
+    logits --> loss[Cross-entropy, averaged<br/>over real tokens only]
+    loss --> update[One backward pass and one<br/>Adam step for the whole batch]
