@@ -1,7 +1,7 @@
 graph TD
-    req[New logical token]
-    req --> lookup[Block-table lookup]
-    lookup --> alloc_p{Mapped block?}
-    alloc_p -->|No| write[Allocate block<br/>and write K,V]
+    req[New logical token] --> lookup[Block-table lookup]
+    lookup --> alloc_p{Logical block<br/>already mapped?}
+    alloc_p -->|No| alloc_new[Take a free block,<br/>add block-table entry]
+    alloc_new --> write[Write K,V into<br/>the mapped slot]
     alloc_p -->|Yes| write
     write -. shared prefix .-> share[Two sequences can<br/>share prefix blocks]
