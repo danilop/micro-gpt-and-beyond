@@ -502,9 +502,8 @@
     "hash": "ded6a2b4"
   },
   "201": {
-    "text": "Block tables: maps (seq_id, layer) → list of physical block IDs. This IS the page table.",
-    "hash": "be8abd3d",
-    "important": true
+    "text": "Reference count per physical block. A block shared by two sequences has refcount 2, and that is what makes copy-on-write possible: a block is only cloned before a write if someone else still points at it.",
+    "hash": "7f85323e"
   },
   "202": {
     "text": "Dictionary mapping each active sequence ID to how many tokens it has cached so far, used for slot addressing.",

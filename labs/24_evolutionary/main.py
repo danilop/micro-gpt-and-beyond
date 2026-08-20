@@ -384,23 +384,23 @@ for s in generation_stats:
         f"embd={c['n_embd']}, heads={c['n_head']}, layers={c['n_layer']}, lr={c['lr']:.4f}"
     )
 
-print(f"\n--- comparison ---")
+print("\n--- comparison ---")
 print(f"random baseline:   val_loss={baseline_val_loss:.4f} (config: {baseline_cfg})")
 print(f"evolved best:      val_loss={evolved_val_loss:.4f} (config: {best_evolved['cfg']})")
 improvement = baseline_val_loss - evolved_val_loss
 print(f"improvement:       {improvement:+.4f} ({'better' if improvement > 0 else 'worse'})")
 
 # Generate from both
-print(f"\n--- random baseline samples ---")
+print("\n--- random baseline samples ---")
 for i, name in enumerate(generate_names(baseline_model, 10)):
     print(f"  {i + 1:2d}: {name}")
 
-print(f"\n--- evolved best samples ---")
+print("\n--- evolved best samples ---")
 for i, name in enumerate(generate_names(best_evolved["model"], 10)):
     print(f"  {i + 1:2d}: {name}")
 
 # Show the evolutionary tree
-print(f"\n--- population diversity (final generation) ---")
+print("\n--- population diversity (final generation) ---")
 for i, member in enumerate(population):
     c = member["cfg"]
     n_p = sum(p.numel() for p in member["model"].parameters())

@@ -21,6 +21,7 @@ which is simpler than the learned judges in Self-Rewarding LMs or the
 distribution-matching in SPIN. No external LLM is needed.
 """
 
+import itertools
 import math
 import os
 import random
@@ -66,7 +67,7 @@ def build_bigram_scorer(names):
     counts = {}
     for name in names:
         seq = [BOS] + [char_to_id[ch] for ch in name] + [BOS]
-        for a, b in zip(seq, seq[1:]):
+        for a, b in itertools.pairwise(seq):
             counts[(a, b)] = counts.get((a, b), 0) + 1
     # Add-1 (Laplace) smoothing: P(b|a) = (count(a,b) + 1) / (count(a) + V)
     total_per_context = {}
@@ -88,7 +89,7 @@ def score_name(name, log_probs, default_lp_ctx, default_lp_unk):
         return -10.0  # reject too-short or too-long names
     seq = [BOS] + [char_to_id.get(ch, 0) for ch in name if ch in char_to_id] + [BOS]
     total = 0.0
-    for a, b in zip(seq, seq[1:]):
+    for a, b in itertools.pairwise(seq):
         total += log_probs.get((a, b), default_lp_ctx.get(a, default_lp_unk))
     avg_lp = total / len(seq)
     # Penalize names far from the typical length (mean ~6 chars in the dataset)
@@ -353,7 +354,7 @@ print(f"final quality:     {final_quality:.4f}")
 print(f"total improvement: {'+' if total_improvement >= 0 else ''}{total_improvement:.4f}")
 
 # Show final generated names
-print(f"\n--- baseline names (before self-improvement) ---")
+print("\n--- baseline names (before self-improvement) ---")
 for i, name in enumerate(baseline_names[:10]):
     s = score_name(name, bigram_lp, default_lp_ctx, default_lp_unk)
     print(f"  {i + 1:2d}: {name:<15s} (score {s:.3f})")

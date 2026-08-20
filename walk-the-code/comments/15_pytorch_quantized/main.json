@@ -532,14 +532,15 @@
     "hash": "3f78e613"
   },
   "255": {
-    "text": "Reset the random seed before sampling each model, then print the label. This makes the sample comparison reproducible and directly comparable.",
-    "hash": "e9cae3c1"
+    "text": "Reset the RNG before sampling each model so FP32 and INT8 draw the same random numbers — otherwise the two sample lists would differ for reasons unrelated to quantization.",
+    "hash": "7e7dcf46",
+    "important": true
   },
-  "256": {
+  "257": {
     "text": "Generate 10 samples from the current model under that fixed seed.",
     "hash": "828817a8"
   },
-  "257": {
+  "258": {
     "text": "Decode and print each generated name.",
     "hash": "2a0d1a6c"
   }

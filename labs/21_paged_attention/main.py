@@ -198,7 +198,7 @@ class PagedKVCache:
         self.k_blocks = [[[0.0] * dims for _ in range(block_size_tokens)] for _ in range(total_blocks)]
         self.v_blocks = [[[0.0] * dims for _ in range(block_size_tokens)] for _ in range(total_blocks)]
         self.free_blocks = list(range(total_blocks))
-        self.refcounts = {i: 0 for i in range(total_blocks)}
+        self.refcounts = dict.fromkeys(range(total_blocks), 0)
         self.block_tables = {}
         self.seq_lengths = {}
         self.alloc_events = []

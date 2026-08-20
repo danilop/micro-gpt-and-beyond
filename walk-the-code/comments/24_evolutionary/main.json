@@ -832,9 +832,8 @@
     "hash": "ebe6826a"
   },
   "387": {
-    "text": "This is the headline question: did evolutionary search beat a single random configuration on the same task?",
-    "hash": "8292c7d8",
-    "important": true
+    "text": "The headline question: did evolutionary search beat a single random configuration trained once?",
+    "hash": "1dfbb440"
   },
   "389": {
     "text": "The baseline-vs-evolved comparison is the answer to the lab’s main question: did population search beat a single random guess?",
@@ -849,12 +848,12 @@
     "hash": "a493ba9e"
   },
   "398": {
-    "text": "Sample from the evolved winner to make the improvement visible beyond the validation metric.",
-    "hash": "e32506cd"
+    "text": "Sample from the evolved winner so the improvement is visible in the output, not just in the loss number.",
+    "hash": "106a3ba3"
   },
   "403": {
-    "text": "Listing the whole final population shows whether multiple genome families survived or one configuration dominated everything.",
-    "hash": "c279cfd0"
+    "text": "Listing the whole final population shows whether several genome families survived, or whether selection collapsed everything onto one configuration.",
+    "hash": "8a7a9763"
   },
   "405": {
     "text": "Printing the whole final population exposes diversity, showing whether evolution converged tightly or kept multiple viable regions alive.",
