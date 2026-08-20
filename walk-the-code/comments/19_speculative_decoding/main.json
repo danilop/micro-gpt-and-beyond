@@ -676,7 +676,7 @@
     "text": "Track how many consecutive drafts get accepted in this round.",
     "hash": "f092ada8"
   },
-  "257": {
+  "261": {
     "text": "Verify each drafted token against the target model's distribution.",
     "hash": "1385998e",
     "diagram": "spec_verify",
@@ -686,31 +686,27 @@
       "reject"
     ]
   },
-  "260": {
-    "text": "Map draft position to target's output position.",
-    "hash": "e0e1822c"
-  },
-  "261": {
+  "265": {
     "text": "Make sure the draft position maps to a valid index in the target's output tensor.",
     "hash": "f492de16"
   },
-  "262": {
+  "266": {
     "text": "The position is beyond what the target model computed, so exit the verification loop.",
     "hash": "14ebe56a"
   },
-  "263": {
+  "267": {
     "text": "Get the target model's probability p(x) for the exact token the draft proposed.",
     "hash": "5ca7363f"
   },
-  "266": {
+  "270": {
     "text": "Zero draft probability means the draft model would never have picked this token, reject.",
     "hash": "bcfac76e"
   },
-  "267": {
+  "271": {
     "text": "Can't compute the ratio, stop.",
     "hash": "14ebe56a"
   },
-  "268": {
+  "272": {
     "text": "The acceptance probability: min(1, p(x)/q(x)). If the target likes this token at least as much as the draft, always accept. If the target likes it less, accept proportionally. This ratio is what guarantees the output distribution matches the target exactly.",
     "hash": "60a6d497",
     "diagram": "spec_verify",
@@ -718,7 +714,7 @@
       "check"
     ]
   },
-  "270": {
+  "274": {
     "text": "Coin flip: accept with the computed probability.",
     "hash": "cb62d5aa",
     "diagram": "spec_verify",
@@ -726,75 +722,75 @@
       "accept"
     ]
   },
-  "272": {
+  "276": {
     "text": "Token accepted, add to the final sequence.",
     "hash": "16ea5fe1"
   },
-  "273": {
+  "277": {
     "text": "Bump the accepted token counter. We'll compare accepted vs. drafted to compute the acceptance rate.",
     "hash": "e613048a"
   },
-  "274": {
+  "278": {
     "text": "Special case: accepted token is BOS (end of sequence).",
     "hash": "f0c84d0e"
   },
-  "275": {
+  "279": {
     "text": "Remove BOS from the output and stop generating.",
     "hash": "08b8f3af"
   },
-  "276": {
+  "280": {
     "text": "Update stats (don't count BOS as accepted).",
     "hash": "5a85493f"
   },
-  "277": {
+  "281": {
     "text": "Bundle the final token sequence with the draft/target statistics so the caller can analyze both quality and efficiency.",
     "hash": "372ace73"
   },
-  "280": {
+  "284": {
     "text": "Retrieve the target model's full probability distribution at the rejected position, needed for the correction sampling step.",
     "hash": "a7495bf8"
   },
-  "281": {
+  "285": {
     "text": "Reconstruct the draft context up to the rejected position.",
     "hash": "befbaf29"
   },
-  "282": {
+  "286": {
     "text": "Sum the corrected distribution to check if it has positive mass. If it's all zeros, we'll fall back to the raw target distribution.",
     "hash": "36838d92"
   },
-  "283": {
+  "287": {
     "text": "If there's positive mass in the adjusted distribution...",
     "hash": "87db8376"
   },
-  "284": {
+  "288": {
     "text": "Normalize to a proper probability distribution.",
     "hash": "8c9b1e0e"
   },
-  "286": {
+  "290": {
     "text": "Fallback: if adjustment zeroes everything out, use the target's raw distribution.",
     "hash": "87d5e833"
   },
-  "287": {
+  "291": {
     "text": "Sample from the corrected distribution.",
     "hash": "bd17f113"
   },
-  "288": {
+  "292": {
     "text": "If the sampled token is BOS (end-of-sequence marker), the name is done and we should stop generating further tokens.",
     "hash": "41a35c11"
   },
-  "289": {
+  "293": {
     "text": "Record the final counts and return early since the name ended with the corrected token.",
     "hash": "1bda14d8"
   },
-  "290": {
+  "294": {
     "text": "Package the completed sequence and return it to the caller along with the generation statistics.",
     "hash": "372ace73"
   },
-  "291": {
+  "295": {
     "text": "Add the corrected token to the output sequence. This token was sampled from the adjusted distribution to match the target's behavior.",
     "hash": "a1ca669a"
   },
-  "292": {
+  "296": {
     "text": "After rejection, restart the draft loop from the new position. Don't try to reuse remaining drafts.",
     "hash": "cfc086b1",
     "diagram": "spec_verify",
@@ -802,11 +798,11 @@
       "reject"
     ]
   },
-  "294": {
+  "298": {
     "text": "Python for-else: this runs if the loop completed without <code>break</code>, meaning ALL K tokens were accepted.",
     "hash": "675c27cf"
   },
-  "296": {
+  "300": {
     "text": "When all K drafts are accepted, we get a bonus: the target already computed the probability distribution for the position after the last draft.",
     "hash": "a2b946dd",
     "diagram": "spec_verify",
@@ -815,15 +811,15 @@
       "bonus"
     ]
   },
-  "297": {
+  "301": {
     "text": "Bounds check on the bonus position.",
     "hash": "155d652c"
   },
-  "298": {
+  "302": {
     "text": "Look up what the target model would predict at the bonus position, which we get for free since the target already computed it.",
     "hash": "dc58e240"
   },
-  "299": {
+  "303": {
     "text": "Sample a bonus token, a free extra token from the target with no additional cost.",
     "hash": "6a6b2052",
     "diagram": "spec_verify",
@@ -831,192 +827,201 @@
       "bonus"
     ]
   },
-  "300": {
+  "304": {
     "text": "Don't append BOS (that ends the sequence).",
     "hash": "68d99af9"
   },
-  "301": {
+  "305": {
     "text": "Add this free bonus token to the sequence. It cost zero extra forward passes since it came from the target's existing computation.",
     "hash": "a1ca669a"
   },
-  "303": {
+  "307": {
     "text": "Update accepted count at end of round.",
     "hash": "1bda14d8"
   },
-  "305": {
+  "309": {
     "text": "Package the completed token sequence together with the acceptance statistics for the final benchmark comparison.",
     "hash": "372ace73"
   },
-  "311": {
+  "315": {
     "text": "Section header for the comparison.",
     "hash": "da1b818f"
   },
-  "313": {
+  "317": {
     "text": "Switch draft model to evaluation mode (disables dropout if any).",
     "hash": "a69e26c9"
   },
-  "314": {
+  "318": {
     "text": "Switch target model to evaluation mode.",
     "hash": "2f69986e"
   },
-  "315": {
+  "319": {
     "text": "50 samples gives stable timing statistics.",
     "hash": "c16f0427"
   },
-  "318": {
+  "322": {
     "text": "Utility: time a generation function over <code>n_samples</code> runs.",
     "hash": "9333c84d"
   },
-  "319": {
+  "323": {
     "text": "Print a label identifying which generation method is about to be timed, so the benchmark output is easy to read.",
     "hash": "1cdb4b94"
   },
-  "320": {
+  "324": {
     "text": "Record the wall-clock start time so we can measure total generation duration.",
     "hash": "25ba4727"
   },
-  "321": {
+  "325": {
     "text": "Run the generation function for all samples, collecting both the outputs and the total wall-clock time.",
     "hash": "6f1ccdfe"
   },
-  "322": {
+  "326": {
     "text": "Record the end time so we can compute the total elapsed duration and per-sample average.",
     "hash": "d80dc743"
   },
-  "323": {
+  "327": {
     "text": "Print total and per-sample timing.",
     "hash": "aa62e7b4"
   },
-  "324": {
+  "328": {
     "text": "Bundle the generated samples together with the elapsed time so the caller can analyze both output quality and speed.",
     "hash": "a21709a1"
   },
-  "327": {
+  "331": {
     "text": "Benchmark 1: standard autoregressive decoding with the target model (the baseline).",
     "hash": "62ef3537"
   },
-  "328": {
+  "332": {
     "text": "One forward pass per token, the slowest approach.",
     "hash": "42a3ce54"
   },
-  "332": {
+  "336": {
     "text": "Zero out the counters for drafted tokens, accepted tokens, and forward passes before aggregating across all samples.",
     "hash": "6849487d"
   },
-  "333": {
+  "337": {
     "text": "List to collect results with stats.",
     "hash": "da0ad394"
   },
-  "335": {
+  "339": {
     "text": "Benchmark 2: speculative decoding (draft proposes, target verifies).",
     "hash": "fed6e54e"
   },
-  "336": {
+  "340": {
     "text": "K=4: draft guesses 4 tokens per round.",
     "hash": "23650bad"
   },
-  "337": {
+  "341": {
     "text": "Lambda collects both the tokens and the acceptance statistics from each generation.",
     "hash": "1ec7317b"
   },
-  "339": {
+  "343": {
     "text": "Aggregate statistics across all samples.",
     "hash": "83007b46"
   },
-  "340": {
+  "344": {
     "text": "Add up each statistic category (drafted, accepted, target passes, draft passes) across all generated samples.",
     "hash": "1a9652bb"
   },
-  "341": {
+  "345": {
     "text": "Add this sample's individual stat values into the running totals for the final summary.",
     "hash": "ef0d7ac5"
   },
-  "343": {
+  "347": {
     "text": "Benchmark 3: draft-only autoregressive (for reference, fast but lower quality).",
     "hash": "d294c37a"
   },
-  "344": {
+  "348": {
     "text": "Uses the small draft model alone.",
     "hash": "06166649"
   },
-  "350": {
+  "354": {
     "text": "Acceptance rate: what fraction of draft tokens the target model approved. Higher means the draft model closely matches the target.",
     "hash": "2544a55d"
   },
-  "351": {
+  "355": {
     "text": "Average target forward passes per sample, should be much less than the average token count.",
     "hash": "4259692d"
   },
-  "352": {
+  "356": {
     "text": "Average draft forward passes per sample.",
     "hash": "761a49f5"
   },
-  "353": {
+  "357": {
     "text": "Average tokens generated autoregressively (for comparison).",
     "hash": "011f967c"
   },
-  "354": {
+  "358": {
     "text": "Average tokens generated speculatively (should match autoregressive closely).",
     "hash": "0610655c"
   },
-  "356": {
+  "360": {
     "text": "Print the statistics section header before showing acceptance rates and forward pass counts.",
     "hash": "8a6ef687"
   },
-  "357": {
+  "361": {
     "text": "Display what fraction of the draft model's proposed tokens the target model accepted, showing how well the models agree.",
     "hash": "c1a71ee9"
   },
-  "358": {
+  "362": {
     "text": "Compare forward pass counts, this is the efficiency win.",
     "hash": "8e8be9a8"
   },
-  "359": {
+  "363": {
     "text": "Draft forward passes (cheap, small model).",
     "hash": "0fac71bb"
   },
-  "360": {
+  "364": {
     "text": "Wall-clock speedup ratio: how much faster speculative is.",
     "hash": "27db6f53"
   },
-  "361": {
+  "365": {
     "text": "Token counts should be similar, the distribution is mathematically identical.",
     "hash": "a4d7def5"
   },
-  "386": {
+  "390": {
     "text": "Show actual generated names from each method.",
     "hash": "a3e3e588"
   },
-  "387": {
+  "391": {
     "text": "Iterate over all three approaches.",
     "hash": "8ed9bbcc"
   },
-  "388": {
+  "392": {
     "text": "The names generated by standard autoregressive decoding with the full target model, our quality baseline.",
     "hash": "a0559c23"
   },
-  "389": {
+  "393": {
     "text": "The names generated by speculative decoding, which should match the target's distribution exactly despite being faster.",
     "hash": "5f7b3a2f"
   },
-  "390": {
+  "394": {
     "text": "Names from the small draft model alone. Faster but lower quality, included to show the quality gap that speculative decoding bridges.",
     "hash": "ddc013ad"
   },
-  "392": {
+  "396": {
     "text": "Print which generation method produced the following names so we can compare quality across approaches.",
     "hash": "a3b8d2cf"
   },
-  "393": {
+  "397": {
     "text": "Show the first 10 samples from each method.",
     "hash": "5da4a4c3"
   },
-  "394": {
+  "398": {
     "text": "Decode token IDs back to characters and print.",
     "hash": "2a0d1a6c"
   },
-  "395": {
+  "399": {
     "text": "Visual separator between the three methods' output blocks for cleaner readability in the terminal.",
     "hash": "525d5133"
+  },
+  "260": {
+    "text": "Snapshot the prefix length <em>before</em> the accept loop. <code>tokens</code> grows every time we accept, so reading <code>len(tokens)</code> inside the loop would drift by <code>+i</code> and verify each drafted token against the wrong row of the target's output.",
+    "hash": "064357e5",
+    "important": true
+  },
+  "264": {
+    "text": "Map draft position <code>i</code> to the target's output row. The target scored the whole drafted sequence in one pass, so row <code>base_len - 1 + i</code> holds the distribution the target would have used to predict the i-th drafted token.",
+    "hash": "2cda2602"
   }
 }

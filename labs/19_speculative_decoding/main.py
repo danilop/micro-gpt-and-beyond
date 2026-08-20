@@ -254,10 +254,14 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
 
             # Step 3: Accept/reject each drafted token
             n_accepted = 0
+            # Snapshot the prefix length BEFORE the loop: `tokens` grows as we
+            # accept, so reading len(tokens) inside the loop would drift by +i
+            # and verify token i against the wrong target row.
+            base_len = len(tokens)
             for i, (drafted_token, q_x, draft_dist) in enumerate(draft_probs_list):
                 # Target model's probability for the drafted token
                 # Position in target_probs: tokens before draft + i
-                pos = len(tokens) - 1 + i
+                pos = base_len - 1 + i
                 if pos >= target_probs.shape[0]:
                     break
                 p_x = target_probs[pos, drafted_token].item()
