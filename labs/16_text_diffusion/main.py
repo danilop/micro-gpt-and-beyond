@@ -204,39 +204,66 @@ for step in range(num_steps):
 # ---------------------------------------------------------------------------
 # Inference — iterative denoising from all-MASK to clean names
 # ---------------------------------------------------------------------------
-num_denoise_steps = 64
-print("\n--- inference (new, hallucinated names) ---")
+# The step count is a dial, not a constant, and it is the whole reason to care
+# about diffusion: with fewer steps than tokens, several positions commit in the
+# same forward pass. Left-to-right decoding has no such dial — it always costs
+# one forward pass per token.
+
+
+def denoise(num_denoise_steps):
+    """Generate one name by iterative unmasking. Returns (name, forward_passes)."""
+    seq = [MASK] * block_size  # start from pure noise
+    passes = 0
+
+    for step_i in range(num_denoise_steps, 0, -1):
+        # Cosine schedule: `t` is the fraction of positions masked going into
+        # this step, `s` the fraction the schedule wants masked after it.
+        t = math.cos(math.pi / 2 * (1 - step_i / num_denoise_steps))
+        s = math.cos(math.pi / 2 * (1 - (step_i - 1) / num_denoise_steps))
+        temperature = 0.3 + 0.5 * t  # explore early, commit late
+
+        logits = model(torch.tensor([seq], device=device))[0]  # (block_size, vocab_size)
+        passes += 1
+
+        predicted = list(seq)
+        confidences = []
+        for i in range(block_size):
+            if seq[i] == MASK:
+                logits_i = logits[i].clone()
+                logits_i[MASK] = logits_i[MASK] - 1e6  # never predict MASK
+                probs = F.softmax(logits_i / temperature, dim=-1)
+                predicted[i] = torch.multinomial(probs, 1).item()
+                confidences.append((probs.max().item(), i))
+
+        # Commit the most confident predictions and re-mask the rest, so the
+        # number left masked is what the schedule asked for. Anchoring on
+        # block_size — not on how many happen to be masked right now — is what
+        # lets the schedule actually drive the process; the `- 1` floor
+        # guarantees every step commits at least one position.
+        if confidences:
+            n_to_remask = min(int(block_size * s), len(confidences) - 1)
+            confidences.sort()
+            for _, i in confidences[:n_to_remask]:
+                predicted[i] = MASK
+        seq = predicted
+
+    return "".join(uchars[c] for c in seq if c < len(uchars)), passes
+
 
 model.eval()
 with torch.no_grad():
-    for sample_idx in range(20):
-        seq = [MASK] * block_size  # start from pure noise
+    for num_steps_denoise in (16, 8, 4):
+        torch.manual_seed(1234)  # same noise every time, so only the schedule differs
+        print(f"\n--- inference: {num_steps_denoise} denoising steps ---")
+        total_passes = 0
+        for sample_idx in range(10):
+            name, passes = denoise(num_steps_denoise)
+            total_passes += passes
+            print(f"sample {sample_idx + 1:2d}: {name}")
+        print(f"  {total_passes / 10:.1f} forward passes per name (left-to-right needs up to {block_size})")
 
-        for step_i in range(num_denoise_steps, 0, -1):
-            t = math.cos(math.pi / 2 * (1 - step_i / num_denoise_steps))
-            s = math.cos(math.pi / 2 * (1 - (step_i - 1) / num_denoise_steps))
-            temperature = 0.3 + 0.5 * t  # explore early, commit late
-
-            input_ids = torch.tensor([seq], device=device)
-            logits = model(input_ids)[0]  # (block_size, vocab_size)
-
-            predicted = list(seq)
-            confidences = []
-            for i in range(block_size):
-                if seq[i] == MASK:
-                    logits_i = logits[i].clone()
-                    logits_i[MASK] = logits_i[MASK] - 1e6  # never predict MASK
-                    probs = F.softmax(logits_i / temperature, dim=-1)
-                    predicted[i] = torch.multinomial(probs, 1).item()
-                    confidences.append((probs.max().item(), i))
-
-            # Remask least confident predictions (unless final step)
-            if s > 0 and confidences:
-                n_to_remask = int(len(confidences) * s / t)
-                confidences.sort()
-                for _, i in confidences[:n_to_remask]:
-                    predicted[i] = MASK
-            seq = predicted
-
-        name = "".join(uchars[c] for c in seq if c < len(uchars))
-        print(f"sample {sample_idx + 1:2d}: {name}")
+print(
+    "\nFewer steps means more positions committed per pass, so generation gets cheaper"
+    "\nand — at this scale — visibly worse. How few steps you can get away with is the"
+    "\ncentral question in diffusion language models."
+)

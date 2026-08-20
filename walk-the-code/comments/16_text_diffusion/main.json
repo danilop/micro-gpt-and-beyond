@@ -304,8 +304,7 @@
         3,
         4,
         5,
-        6,
-        7
+        6
       ]
     }
   },
@@ -498,35 +497,16 @@
       "clean"
     ]
   },
-  "207": {
-    "text": "64 denoising steps: each step unmasks a few more positions, gradually revealing the name from pure noise.",
-    "hash": "658186c1"
-  },
-  "208": {
-    "text": "Print a header to separate training output from generated samples.",
-    "hash": "1902bf84"
-  },
-  "210": {
-    "text": "Switch to eval mode and disable gradient tracking for inference.",
-    "hash": "45bf010c"
-  },
-  "211": {
-    "text": "Disable gradient tracking during inference — we're only sampling, not training.",
-    "hash": "d4f61231"
-  },
-  "212": {
-    "text": "Generate 20 sample names, each starting from pure noise and iteratively crystallizing through confidence-based unmasking.",
-    "hash": "64d836c5"
-  },
   "213": {
-    "text": "Start from pure noise: every position is MASK. The name doesn't exist yet — it will crystallize through iterative unmasking.",
-    "hash": "b2fbeb8b",
-    "diagram": "diffusion_unmasking",
-    "highlight": [
-      "noise"
-    ]
+    "text": "Generation is now a function of the step count, because the step count is the interesting variable. Fewer steps means more positions committed per forward pass.",
+    "hash": "b4fe8ce5",
+    "important": true
   },
   "215": {
+    "text": "Start from pure noise: every position is <code>[MASK]</code>. Unlike a GPT, there is no prefix to condition on and no left-to-right order — the whole sequence is refined at once.",
+    "hash": "b2fbeb8b"
+  },
+  "218": {
     "text": "Count down from full noise to clean. Each step reduces the noise level.",
     "hash": "26934eb7",
     "diagram": "diffusion_unmasking",
@@ -535,41 +515,32 @@
       "remask1"
     ]
   },
-  "216": {
-    "text": "Cosine noise schedule: more time is spent at intermediate noise levels where the interesting decisions happen.",
+  "221": {
+    "text": "The cosine schedule. <code>t</code> is the fraction of positions masked going into this step, running from 1.0 (all masked) down toward 0. A cosine spends more of its steps in the middle of the range, where most of the commitment decisions actually happen.",
     "hash": "7ed82316"
   },
-  "217": {
-    "text": "Next noise level (one step less noisy). The gap between <code>t</code> and <code>s</code> determines how many tokens to unmask this step.",
+  "222": {
+    "text": "<code>s</code> is the same curve one step further along: the fraction the schedule wants still masked <em>after</em> this step. The gap between <code>t</code> and <code>s</code> is how many positions get committed here.",
     "hash": "228390fe"
   },
-  "218": {
-    "text": "Temperature annealing: explore broadly early on (0.8) when the model is uncertain, commit to specific choices later (0.3) as the name takes shape.",
+  "223": {
+    "text": "Temperature is tied to the noise level: near 0.8 while most positions are still masked and the model is exploring, falling toward 0.3 as the sequence fills in and choices have to be consistent with what is already committed.",
     "hash": "ccf08d68"
   },
-  "220": {
-    "text": "Wrap the current sequence as a batch-of-one tensor for the model forward pass.",
-    "hash": "1da2d9c7"
+  "226": {
+    "text": "Count forward passes, because this is the number that matters. One pass can commit several positions here, whereas left-to-right decoding needs one pass per token no matter what.",
+    "hash": "5ba9f3c5",
+    "important": true
   },
-  "221": {
-    "text": "Get the model's predictions for all positions in one bidirectional forward pass.",
-    "hash": "b60f0c74",
-    "diagram": "diffusion_unmasking",
-    "highlight": [
-      "step1",
-      "sample",
-      "rank"
-    ]
-  },
-  "223": {
+  "228": {
     "text": "Copy the current sequence. Masked positions will be overwritten with model predictions; unmasked positions stay as-is.",
     "hash": "0abe4783"
   },
-  "224": {
+  "229": {
     "text": "Track how confident the model is at each masked position. After predicting, the least-confident positions get re-masked for another try.",
     "hash": "a3acef54"
   },
-  "226": {
+  "231": {
     "text": "Only predict for currently masked positions — unmasked tokens are already decided.",
     "hash": "de76ce4d",
     "diagram": "diffusion_unmasking",
@@ -577,15 +548,15 @@
       "step1"
     ]
   },
-  "228": {
-    "text": "Suppress MASK in predictions, same trick as training.",
+  "233": {
+    "text": "Suppress the <code>[MASK]</code> logit so the model can never predict the mask token itself. This is MDLM's substitution parameterisation: the model only ever proposes real content.",
     "hash": "45e76408"
   },
-  "229": {
+  "234": {
     "text": "Apply temperature scaling before sampling. Low temperature sharpens the distribution, high temperature flattens it.",
     "hash": "db5170aa"
   },
-  "230": {
+  "235": {
     "text": "Sample a token from the probability distribution. Unlike argmax, this preserves diversity.",
     "hash": "347a4cdc",
     "diagram": "diffusion_unmasking",
@@ -593,43 +564,45 @@
       "step1"
     ]
   },
-  "231": {
-    "text": "Record the model's confidence (max probability) alongside the position — high confidence means the model is sure.",
+  "236": {
+    "text": "Record how confident the model is at this position. Confidence is what decides which predictions get to stay — the model commits where it is sure and defers where it is not.",
     "hash": "105d0152"
   },
-  "234": {
-    "text": "If we haven't reached the final step, re-mask the least confident predictions to give them another chance.",
-    "hash": "4f35a3ca",
-    "diagram": "diffusion_unmasking",
-    "highlight": [
-      "remask1"
-    ]
+  "244": {
+    "text": "The heart of the schedule. Keep <code>block_size * s</code> positions masked, so the cosine curve — not the number that happen to be masked right now — sets the pace. The <code>- 1</code> floor guarantees at least one position commits per step, so no forward pass is wasted.",
+    "hash": "20b9e202",
+    "important": true
   },
-  "235": {
-    "text": "How many to re-mask: proportional to remaining noise ratio s/t. As noise decreases, fewer tokens get re-masked.",
-    "hash": "970bee43"
-  },
-  "236": {
-    "text": "Sort by confidence (ascending) so the least confident predictions are first — these get re-masked.",
+  "245": {
+    "text": "Sort ascending by confidence, so the least confident predictions are first and are the ones re-masked. The confident ones survive into the next step.",
     "hash": "90cb2129"
   },
-  "238": {
+  "247": {
     "text": "Put MASK back — this position will get another try in the next denoising step.",
     "hash": "bf9d78a0"
   },
-  "239": {
+  "248": {
     "text": "Update the sequence with the (partially re-masked) predictions for the next iteration.",
     "hash": "1feca68f"
   },
-  "241": {
-    "text": "Decode: convert token IDs back to characters, skipping any PAD tokens.",
-    "hash": "937e768c",
-    "diagram": "diffusion_unmasking",
-    "highlight": [
-      "clean"
-    ]
+  "253": {
+    "text": "Switch to eval mode and disable gradient tracking for inference.",
+    "hash": "45bf010c"
   },
-  "242": {
+  "254": {
+    "text": "Disable gradient tracking during inference — we're only sampling, not training.",
+    "hash": "d4f61231"
+  },
+  "255": {
+    "text": "Run the same trained model at three step counts. This is the experiment: 16 steps costs 16 forward passes and produces clean names; 4 steps costs 4 and produces mush. The quality-for-compute trade is the central question in diffusion language models.",
+    "hash": "8e0d6277",
+    "important": true
+  },
+  "256": {
+    "text": "Reset the RNG before each setting so all three runs start from the same random draws. Any difference in the output is then down to the schedule alone, not to luck.",
+    "hash": "bc6d08ac"
+  },
+  "262": {
     "text": "Print each generated name — these emerged from pure noise through iterative unmasking, with no left-to-right constraint.",
     "hash": "f9d6f741"
   }

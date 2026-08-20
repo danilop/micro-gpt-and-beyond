@@ -22,7 +22,7 @@ sample  5: jalya
 ...
 ```
 
-The names aren't memorized. They emerge from a diffusion process that has learned the statistical patterns of how characters combine. Unlike the autoregressive GPT, which writes names left-to-right, this model fills in all positions at once, refining its guesses over 64 denoising steps.
+The names aren't memorized. They emerge from a diffusion process that has learned the statistical patterns of how characters combine. Unlike the autoregressive GPT, which writes names left-to-right, this model fills in all positions at once, refining its guesses over a handful of denoising steps. The lab runs the same trained model at 16, 8 and 4 steps so you can see what the step count buys you.
 
 ## The Algorithm, Step by Step
 
@@ -98,9 +98,9 @@ for step_i in range(num_denoise_steps, 0, -1):
     logits = model(input_ids)[0]
     # ... predict tokens, track confidence ...
 
-    # Remask the least confident predictions
-    if s > 0 and confidences:
-        n_to_remask = int(len(confidences) * s / t)
+    # Keep the number of positions the schedule wants masked; commit the rest
+    if confidences:
+        n_to_remask = min(int(block_size * s), len(confidences) - 1)
         confidences.sort()  # lowest confidence first
         for _, i in confidences[:n_to_remask]:
             predicted[i] = MASK
@@ -110,15 +110,19 @@ Three techniques improve generation quality:
 
 - **Confidence-based remasking**: instead of randomly re-corrupting predictions, the model keeps the tokens it's most sure about and reconsiders the rest. This is the same `low_confidence` strategy used in [LLaDA's inference code](https://github.com/ML-GSAI/LLaDA/blob/main/generate.py) and originally introduced by [MaskGIT](https://arxiv.org/abs/2202.04200).
 - **Temperature annealing** (0.8 to 0.3): high temperature early on encourages exploration when everything is uncertain; low temperature at the end sharpens the final choices.
-- **Cosine schedule**: instead of linearly decreasing the noise level, a cosine curve spends more time in the critical middle range where the name's structure is being decided.
+- **Cosine schedule**: instead of linearly decreasing the noise level, a cosine curve spends more of its steps in the middle range where the name's structure is being decided. Note that the target is `block_size * s` — a fraction of the *whole sequence*, not of whatever is masked right now. Anchoring it on the sequence is what lets the schedule set the pace; anchor it on the current mask count and it collapses to one token per step regardless of the curve.
+
+At 8 steps over a 16-position sequence, the schedule commits 1, 1, 1, 2, 3, 2, 3, 3
+positions — slow while everything is uncertain, several at a time once the structure
+is settled. Illustrated on the first 8 positions:
 
 ```
-Step 64 (t=1.00, temp=0.80): [M]  [M]  [M]  [M]  [M]  [M]  [M]  [M]  ...
-Step 48 (t=0.71, temp=0.65): [M]   a   [M]  [M]   a   [M]  [M]  [PAD] ...
-Step 32 (t=0.38, temp=0.49):  m    a   [M]   i    a   [M]  [PAD] [PAD] ...
-Step 16 (t=0.10, temp=0.35):  m    a    r    i    a   [M]  [PAD] [PAD] ...
-Step  1 (t=0.00, temp=0.30):  m    a    r    i    a   [PAD] [PAD] [PAD] ...
-Result:                        maria
+Step 8 (t=1.00, temp=0.80): [M]  [M]  [M]  [M]  [M]  [M]  [M]  [M]   16 masked
+Step 6 (t=0.92, temp=0.76): [M]   a   [M]  [M]  [M]  [M]  [M]  [PAD] 14 masked
+Step 4 (t=0.71, temp=0.65):  m    a   [M]   i   [M]  [M]  [PAD][PAD]  11 masked
+Step 2 (t=0.38, temp=0.49):  m    a    r    i    a   [M]  [PAD][PAD]   6 masked
+Step 1 (t=0.20, temp=0.40):  m    a    r    i    a   [PAD][PAD][PAD]   0 masked
+Result:                       maria
 ```
 
 ## Why These Choices
@@ -155,7 +159,7 @@ The input embeddings (`wte`) and output projection (`lm_head`) share the same ma
 | Layers | 1 | 2 (diffusion needs depth for message-passing) |
 | Loss masking | All positions | Only masked positions (MASK logit suppressed) |
 | Noise schedule | — | Log-uniform (importance sampling) |
-| Inference passes | ~8 (average name length) | 64 (denoising steps, cosine schedule) |
+| Inference passes | ~8 (average name length) | 16 / 8 / 4 (a dial, not a constant) |
 | Inference strategy | Sampling with temperature | Confidence remasking + temperature annealing |
 | Weight tying | No | Yes (wte = lm_head) |
 
@@ -163,19 +167,21 @@ The input embeddings (`wte`) and output projection (`lm_head`) share the same ma
 
 ```bash
 # From the project root:
-python run_lab.py 15
+python run_lab.py 16
 
 # Or directly:
 cd 16_text_diffusion && uv run python main.py
 ```
 
-Trains for 3000 steps with batch size 32 and generates 20 names. Takes a few seconds on a laptop thanks to PyTorch.
+Trains for 3000 steps with batch size 32, then generates 10 names at each of three step counts (16, 8, 4). Takes a few seconds on a laptop thanks to PyTorch.
 
 ## Why This Matters
 
 Autoregressive generation is the dominant paradigm for language models. GPT, LLaMA, and Claude all generate left-to-right, one token at a time. Masked diffusion is a fundamentally different approach: generate everything at once, then refine. It's the same shift that happened in image generation, where diffusion models (DALL-E 2, Stable Diffusion) overtook autoregressive ones (DALL-E 1).
 
-For text, diffusion is still catching up. But it has structural advantages: parallel generation (fill in all blanks at once, not one by one), bidirectional context (no "reversal curse" because the model sees the whole sequence), and natural support for editing (re-mask and re-generate any part).
+For text, diffusion is still catching up. But it has structural advantages: parallel generation (several positions per forward pass, not one), bidirectional context (no "reversal curse" because the model sees the whole sequence), and natural support for editing (re-mask and re-generate any part).
+
+The step-count sweep at the end of the run is where that advantage becomes concrete, and where its price shows up too. At 16 steps the names are clean (`rina`, `saria`, `kalan`, `jaria`, `jamie`); at 8 they start to fray; at 4 they are mostly mush. Fewer steps means more positions committed per pass with less information about their neighbours — and a 6.8K-parameter model has very little slack. How few steps you can get away with is exactly the question production diffusion LMs are trying to answer.
 
 ### Why the generated names aren't as good as lab 03's
 
