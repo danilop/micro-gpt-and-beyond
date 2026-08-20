@@ -5,6 +5,6 @@ description = "Self-improving model via iterative self-training"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "numpy>=2.4.3",
-    "torch>=2.10.0",
+    "numpy>=2.5.2",
+    "torch>=2.13.0",
 ]
