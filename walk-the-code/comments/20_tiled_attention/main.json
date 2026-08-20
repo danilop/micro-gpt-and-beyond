@@ -230,7 +230,6 @@
         "add_emb",
         "norm_in",
         "blocks",
-        "norm_out",
         "lm_head",
         "logits"
       ],
@@ -239,8 +238,7 @@
         3,
         4,
         5,
-        6,
-        7
+        6
       ]
     }
   },

@@ -7,6 +7,5 @@ graph TD
     cache_in[Past KV cache] --> blocks[Transformer blocks with cache]
     norm_in --> blocks
     blocks --> cache_out["Append new K,V"]
-    blocks --> norm_out[Final RMSNorm]
-    norm_out --> lm_head["Output projection<br/>(lm_head)"]
+    blocks --> lm_head["Output projection<br/>(lm_head)"]
     lm_head --> logits[Vocabulary logits]
