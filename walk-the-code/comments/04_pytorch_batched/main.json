@@ -1,48 +1,48 @@
 {
-  "20": {
+  "19": {
     "text": "The core model stays PyTorch, but the teaching goal changes: move from one-example-at-a-time training to the first version that feels structurally like real practice.",
-    "hash": "de2abade",
+    "hash": "b67c9dde",
     "important": true
   },
-  "21": {
+  "20": {
     "text": "Same dataset again. The new complexity comes from batching variable-length names, not from changing the task.",
+    "hash": "de2abade"
+  },
+  "21": {
+    "text": "Random ordering is still ordinary. The real novelty is that once examples travel in groups, padding and masking become part of the model story.",
     "hash": "7e18ed42"
   },
   "23": {
-    "text": "Random ordering is still ordinary. The real novelty is that once examples travel in groups, padding and masking become part of the model story.",
+    "text": "Same PyTorch foundation as lab 03. The interesting shift is from a toy single-example loop to a mini-batch training pipeline.",
     "hash": "cf1070d3"
   },
   "24": {
-    "text": "Same PyTorch foundation as lab 03. The interesting shift is from a toy single-example loop to a mini-batch training pipeline.",
+    "text": "The layer stack is familiar, which is useful because batching should feel like an operational upgrade, not a whole new model.",
     "hash": "b802910c"
   },
   "25": {
-    "text": "The layer stack is familiar, which is useful because batching should feel like an operational upgrade, not a whole new model.",
+    "text": "The extra conceptual load in this lab is not new math, but how batch structure changes masking, loss computation, and input preparation.",
     "hash": "5af419e1"
   },
   "27": {
-    "text": "The extra conceptual load in this lab is not new math, but how batch structure changes masking, loss computation, and input preparation.",
+    "text": "Lock both RNGs so the new behavior you notice comes from batching and padding rather than from a different run.",
     "hash": "f0726c6e"
   },
   "28": {
-    "text": "Lock both RNGs so the new behavior you notice comes from batching and padding rather than from a different run.",
+    "text": "PyTorch's own RNG still needs to match because the batched and unbatched versions should be comparable as implementations of the same idea.",
     "hash": "7e7dcf46"
   },
-  "30": {
-    "text": "PyTorch's own RNG still needs to match because the batched and unbatched versions should be comparable as implementations of the same idea.",
-    "hash": "5c4688e3"
+  "33": {
+    "text": "Dataset path, shared across all labs.",
+    "hash": "5ac9686d"
   },
   "34": {
-    "text": "Dataset path, shared across all labs.",
+    "text": "If the names dataset is not already on disk, download it automatically so the tutorial is self-contained.",
     "hash": "9667c968"
   },
-  "35": {
-    "text": "If the names dataset is not already on disk, download it automatically so the tutorial is self-contained.",
-    "hash": "84cdb92b"
-  },
-  "38": {
+  "37": {
     "text": "URL pointing to the raw names dataset hosted in Karpathy's GitHub repository.",
-    "hash": "25ec775b"
+    "hash": "5e579f27"
   },
   "40": {
     "text": "Read the text file and split it into individual name strings. Each line becomes one training document.",
@@ -299,9 +299,9 @@
     "text": "Output head maps to real vocab only (27 tokens, not 28). PAD is never a valid prediction.",
     "hash": "f0a5c171"
   },
-  "139": {
+  "136": {
     "text": "Walk through every sub-module and apply N(0, 0.08) initialization, ensuring consistent starting conditions across all labs.",
-    "hash": "fcf6c0c7"
+    "hash": "e4941829"
   },
   "143": {
     "text": "N(0, 0.08) for all weights.",
