@@ -343,7 +343,7 @@
     "hash": "181cb2ed"
   },
   "169": {
-    "text": "Record this merge in the table. During encoding, merges are replayed in this exact order.",
+    "text": "Header row for the training log: the merge index, the pair of token ids being merged, a readable rendering of that pair, how often it occurred, and the vocabulary size after the merge.",
     "hash": "51c59c36"
   },
   "170": {
@@ -356,28 +356,15 @@
   },
   "173": {
     "text": "Count all adjacent pairs in the current (possibly already-merged) corpus.",
+    "diagram": "bpe_merge",
+    "highlight": [
+      "count"
+    ],
     "hash": "899c0879"
   },
   "174": {
     "text": "Safety check: if no pairs remain (all sequences are length 0 or 1), stop early.",
     "hash": "8606ce29"
-  },
-  "175": {
-    "text": "Apply the merge to the entire corpus, every occurrence of the pair becomes one token.",
-    "hash": "5de7c4c5",
-    "diagram": "bpe_merge",
-    "highlight": [
-      "count",
-      "merge"
-    ]
-  },
-  "176": {
-    "text": "Vocabulary grows by one with each merge.",
-    "hash": "14ebe56a",
-    "diagram": "bpe_merge",
-    "highlight": [
-      "merge"
-    ]
   },
   "178": {
     "text": "Greedy selection: always merge the globally most frequent pair. Not optimal, but close — and fast.",
@@ -426,6 +413,10 @@
   },
   "189": {
     "text": "Increment the vocabulary size. Every merge adds exactly one new token.",
+    "diagram": "bpe_merge",
+    "highlight": [
+      "merge"
+    ],
     "hash": "4a635626"
   },
   "191": {
@@ -436,12 +427,8 @@
     "text": "BPE decoding just expands every token id back into its character sequence and drops the BOS markers.",
     "hash": "a06edd78"
   },
-  "195": {
-    "text": "Replay merges in training order. Earlier merges are higher priority (more frequent patterns).",
-    "hash": "006090d0"
-  },
   "196": {
-    "text": "Apply each merge to the token sequence. After all merges, common subwords are single tokens.",
+    "text": "Decoding is a join over per-token lookups, with no special case for BOS because <code>token_text[BPE_BOS]</code> is the empty string. Merged tokens expand to several characters each, so the length of the result tells you nothing about the number of tokens that produced it.",
     "hash": "dd62dc6f"
   },
   "199": {
@@ -493,22 +480,6 @@
     "text": "The next section switches from tokenizer construction to evaluation: how much shorter are sequences, and what does the new vocabulary look like?",
     "hash": "5c4688e3"
   },
-  "218": {
-    "text": "For each example, encode with both tokenizers and show the compression ratio.",
-    "hash": "5c4688e3"
-  },
-  "219": {
-    "text": "Character encoding: always len(name) + 2 tokens (one per char plus two BOS markers).",
-    "hash": "0f3ae8ed"
-  },
-  "220": {
-    "text": "BPE encoding: fewer tokens because common patterns like \"an\", \"er\" are now single tokens.",
-    "hash": "a53af72d"
-  },
-  "221": {
-    "text": "Compression ratio, how many character tokens each BPE token replaces on average.",
-    "hash": "54a209e4"
-  },
   "222": {
     "text": "A mix of hand-picked and random names to show how BPE compression varies: short common names compress heavily, long unusual ones less so.",
     "hash": "0906fd5b"
@@ -530,7 +501,7 @@
     "hash": "60db4701"
   },
   "236": {
-    "text": "Sum up character tokens across the entire corpus.",
+    "text": "BPE encoding: fewer tokens because common patterns like \"an\", \"er\" are now single tokens.",
     "hash": "c167ae46"
   },
   "237": {
@@ -543,16 +514,24 @@
     "hash": "c3816d35"
   },
   "239": {
-    "text": "Average tokens per name with character encoding.",
+    "text": "Build the readable rendering of each token for the table. <code>bpe_display_token</code> is used rather than <code>bpe_decode_token</code> so the two BOS delimiters stay visible as <code>|</code>, even though they are excluded from every count in the row.",
     "hash": "1b8aa371"
   },
+  "240": {
+    "text": "The Chars column doubles as the character tokenizer's count: character encoding always produces one token per character plus two BOS markers, and the delimiters are excluded here, so characters and char-level content tokens are the same number. That is what makes the ratio column read as characters per BPE token.",
+    "hash": "7b671bda"
+  },
   "252": {
-    "text": "Train the character-level bigram on the full corpus. With only 27 tokens, each bigram step covers one character — short-range patterns only.",
+    "text": "Encode the entire corpus with the character tokenizer for bigram training.",
     "hash": "189582bb"
   },
   "253": {
-    "text": "Train the BPE bigram on the same corpus. With 227 tokens, each step covers a subword — so a single bigram transition can capture multi-character patterns like 'an' → 'na'.",
+    "text": "Encode the same corpus with BPE. Both bigram models below then see identical text, one at character granularity and one at subword granularity, which is what makes the comparison downstream a statement about tokenization alone.",
     "hash": "e883bcc2"
+  },
+  "256": {
+    "text": "Sum up character tokens across the entire corpus.",
+    "hash": "f2f2a635"
   },
   "260": {
     "text": "Character-level content tokens equal the character count by definition, which is exactly why this is the right baseline: it makes the char-level compression figure read 1.00x and gives BPE something honest to beat.",
@@ -612,30 +591,6 @@
     "text": "Comment: the bigram model is P(next_token | current_token), just a lookup table of transition counts.",
     "hash": "24593aab"
   },
-  "304": {
-    "text": "2D count matrix: <code>counts[a][b]</code> = how often token b follows token a.",
-    "hash": "ec85898b"
-  },
-  "305": {
-    "text": "Scan through all tokenized sequences.",
-    "hash": "334359b9"
-  },
-  "306": {
-    "text": "Count every adjacent token pair.",
-    "hash": "f851a4c1"
-  },
-  "312": {
-    "text": "Convert raw counts to probabilities.",
-    "hash": "0f3ae8ed"
-  },
-  "313": {
-    "text": "Process each row (each \"current token\").",
-    "hash": "ad27f110"
-  },
-  "314": {
-    "text": "Add-1 (Laplace) smoothing prevents zero probabilities for unseen pairs.",
-    "hash": "54a209e4"
-  },
   "317": {
     "text": "The final section treats each tokenizer as a modeling choice: train a bigram model on both and compare likelihood plus samples.",
     "hash": "ff9b9bb6"
@@ -645,7 +600,7 @@
     "hash": "57ccc043"
   },
   "319": {
-    "text": "Generate a name by sampling one token at a time from the bigram distribution.",
+    "text": "2D count matrix: <code>counts[a][b]</code> = how often token b follows token a.",
     "hash": "e7486923"
   },
   "320": {
@@ -653,11 +608,11 @@
     "hash": "91e77239"
   },
   "321": {
-    "text": "Start with BOS, the model will sample what typically follows the start marker.",
+    "text": "Scan through all tokenized sequences.",
     "hash": "c14640a6"
   },
   "322": {
-    "text": "Generate up to <code>max_len</code> tokens.",
+    "text": "Count every adjacent token pair.",
     "hash": "7e9f9b8b"
   },
   "323": {
@@ -665,11 +620,11 @@
     "hash": "c1f41e14"
   },
   "324": {
-    "text": "Look up the probability distribution for the current (last) token.",
+    "text": "Convert raw counts to probabilities.",
     "hash": "98ad1f05"
   },
   "325": {
-    "text": "Sample from the cumulative distribution using a uniform random number.",
+    "text": "Start the probability table empty and fill it one row at a time, one row per context token.",
     "hash": "092aa860"
   },
   "326": {
@@ -677,7 +632,7 @@
     "hash": "2775d48d"
   },
   "327": {
-    "text": "Walk through tokens by probability until we pass the random threshold.",
+    "text": "Add-1 (Laplace) smoothing prevents zero probabilities for unseen pairs.",
     "hash": "8bd81af7"
   },
   "328": {
@@ -685,7 +640,7 @@
     "hash": "d9e1822b"
   },
   "329": {
-    "text": "This token was selected, the cumulative probability exceeded our random draw.",
+    "text": "Return the smoothed transition table, a full <code>v_size</code> x <code>v_size</code> matrix. That shape is why the BPE model is at a disadvantage on data: a 227 x 227 table estimated from the same 32K names is far sparser per cell than a 27 x 27 one.",
     "hash": "1cfb186a"
   },
   "332": {
@@ -700,8 +655,12 @@
     "text": "Start the generated sequence with BOS — the model will sample what typically follows the start marker.",
     "hash": "1e9ca6eb"
   },
+  "335": {
+    "text": "Generate up to <code>max_len</code> tokens.",
+    "hash": "75241adf"
+  },
   "337": {
-    "text": "Average log-likelihood per token measures how well the model predicts the training data.",
+    "text": "Look up the probability distribution for the current (last) token.",
     "hash": "6633d6d8"
   },
   "338": {
@@ -709,7 +668,7 @@
     "hash": "10590257"
   },
   "339": {
-    "text": "Accumulate total log-likelihood across all tokens.",
+    "text": "The running total the sampler compares its random draw against. This loop is inverse-transform sampling written out by hand, which is all a bigram sampler needs and keeps the lab dependency-free.",
     "hash": "6695ffb4"
   },
   "340": {
@@ -717,23 +676,15 @@
     "hash": "006385b9"
   },
   "342": {
-    "text": "For each adjacent pair in each sequence, look up its probability.",
+    "text": "This token was selected, the cumulative probability exceeded our random draw.",
     "hash": "aa16dcb3"
   },
-  "343": {
-    "text": "The probability assigned to this actual transition, higher is better.",
-    "hash": "34265501"
-  },
   "345": {
-    "text": "Log probability, the fundamental unit of information theory. Sums are easier than products.",
+    "text": "Terminate when the sampler emits a standalone BOS. The <code>len(tokens) &gt; 1</code> guard is what stops this check firing on the seed token itself, which is the only thing in the list before the first draw.",
     "hash": "312975d1"
   },
-  "346": {
-    "text": "Return the generated sequence once it terminates.",
-    "hash": "14ebe56a"
-  },
   "347": {
-    "text": "Average over all tokens gives a per-token measure, comparable across different vocab sizes.",
+    "text": "Return the generated sequence once it terminates.",
     "hash": "fe8eb2c5"
   },
   "365": {
@@ -754,11 +705,11 @@
     "hash": "3ab2a558"
   },
   "376": {
-    "text": "Encode the entire corpus with the character tokenizer for bigram training.",
+    "text": "Accumulate total log-likelihood across all tokens.",
     "hash": "d9d9b2af"
   },
   "377": {
-    "text": "Train the character-level bigram, just counting transitions in a 27x27 table.",
+    "text": "The token counter that becomes the denominator of the average. That denominator is the whole problem with this metric: the same corpus contains far fewer BPE tokens than character tokens, so dividing by it asks a different question of each model.",
     "hash": "624fe39d"
   },
   "378": {
@@ -768,6 +719,10 @@
   "379": {
     "text": "For each adjacent pair in each sequence, look up the probability the model assigns to that transition.",
     "hash": "7e9f9b8b"
+  },
+  "380": {
+    "text": "Log probability, the fundamental unit of information theory. Sums are easier than products.",
+    "hash": "7fb1680f"
   },
   "382": {
     "text": "Return the average: total log-likelihood divided by number of tokens. This per-token measure is comparable across different vocab sizes.",
@@ -780,10 +735,6 @@
   "389": {
     "text": "Evaluate the character bigram: compute average log-likelihood on the training data.",
     "hash": "e18c37fc"
-  },
-  "390": {
-    "text": "Then fit the BPE bigram on the compressed sequences. The vocabulary is larger, but each step covers more text.",
-    "hash": "c62ea1cf"
   },
   "391": {
     "text": "Character-level bits per character: <code>4.1196</code> on this run. This is the figure to compare against BPE's.",
@@ -800,10 +751,6 @@
   "398": {
     "text": "Evaluate the BPE bigram on the BPE-encoded corpus.",
     "hash": "c7618f8e"
-  },
-  "399": {
-    "text": "Sample a complete name by repeatedly drawing from the transition table.",
-    "hash": "7cd2ba18"
   },
   "400": {
     "text": "BPE reaches <code>3.7490</code> bits per character against character-level's <code>4.1196</code>: one step of BPE history spans 1.84 characters, so a one-step model effectively looks further back, and that outweighs its much sparser transition table.",
@@ -828,10 +775,6 @@
   "411": {
     "text": "The BPE sampler draws from a <code>227x227</code> transition table estimated from the same 32K names, so it is far sparser than the character model's <code>27x27</code>. Add-1 smoothing is carrying more weight here than it is for the baseline.",
     "hash": "5c4688e3"
-  },
-  "412": {
-    "text": "Decode BPE tokens back to a string, merged tokens expand to multiple characters.",
-    "hash": "0f3ae8ed"
   },
   "419": {
     "text": "Both samplers stop when they emit a standalone BOS, and that only works because BOS was kept out of the merges. Absorb the end-of-name marker into letter pairs and it almost never survives encoding, so every sample runs to <code>max_len</code>.",

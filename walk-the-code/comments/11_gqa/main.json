@@ -168,12 +168,12 @@
     "important": true
   },
   "110": {
-    "text": "Repeat each KV head to serve its group of query heads. Logically shared, but physically copied for the matmul. In practice, this repeat is nearly free, it's a view/broadcast, not a memcpy.",
-    "hash": "8e93f815",
+    "text": "Repeat each KV head so every query head in its group has a key to match against. This is the clearest way to write the expansion and the worst way to run it: <code>repeat_interleave</code> allocates, materializing <code>repeats</code> identical copies of K and V and handing back the memory saving for the duration of the forward pass. Production kernels never do this — <code>scaled_dot_product_attention</code> with <code>enable_gqa=True</code>, and FlashAttention's GQA support, index the shared KV head straight from each query head instead, so the cache saving survives and this per-pass copy disappears.",
     "diagram": "gqa_compare",
     "highlight": [
       "q_gqa"
-    ]
+    ],
+    "hash": "8e93f815"
   },
   "111": {
     "text": "Values get the same expansion as keys so that each query head has a matching value vector to retrieve content from.",
@@ -381,73 +381,73 @@
     "text": "Shared generation function for all variants.",
     "hash": "9f2a2f34"
   },
-  "187": {
+  "188": {
     "text": "Disable dropout and other training-only behavior so the model produces deterministic outputs.",
-    "hash": "7b319c2c"
-  },
-  "189": {
-    "text": "No gradients needed during generation.",
-    "hash": "0ef4c54b"
+    "hash": "45bf010c"
   },
   "190": {
-    "text": "Generate 10 sample names from this variant so we can visually compare output quality across MHA, GQA, and MQA configurations.",
+    "text": "No gradients needed during generation.",
     "hash": "d4f61231"
   },
   "191": {
-    "text": "Begin each generated name with the beginning-of-sequence token so the model knows it is starting fresh.",
+    "text": "Generate 10 sample names from this variant so we can visually compare output quality across MHA, GQA, and MQA configurations.",
     "hash": "bb36d13f"
   },
   "192": {
-    "text": "Generate up to <code>block_size</code> tokens.",
+    "text": "Begin each generated name with the beginning-of-sequence token so the model knows it is starting fresh.",
     "hash": "5c52ddc4"
   },
   "193": {
-    "text": "Feed current sequence through the model.",
+    "text": "Generate up to <code>block_size</code> tokens.",
     "hash": "ab05dc73"
   },
   "194": {
-    "text": "Take the model's prediction for the very last position, which contains the logits for what token should come next in the sequence.",
+    "text": "Feed current sequence through the model.",
     "hash": "ce311cc5"
   },
   "195": {
-    "text": "Divide the logits by the temperature before softmax to control how peaked or flat the distribution is.",
+    "text": "Take the model's prediction for the very last position, which contains the logits for what token should come next in the sequence.",
     "hash": "7d28f274"
   },
   "196": {
-    "text": "Convert the temperature-scaled logits into a proper probability distribution that sums to one.",
+    "text": "Divide the logits by the temperature before softmax to control how peaked or flat the distribution is.",
     "hash": "e1a1328f"
   },
   "197": {
-    "text": "Randomly draw one token from the probability distribution to introduce controlled diversity.",
+    "text": "Convert the temperature-scaled logits into a proper probability distribution that sums to one.",
     "hash": "93ed4206"
   },
   "198": {
-    "text": "Stop if BOS is generated (end of name).",
+    "text": "Randomly draw one token from the probability distribution to introduce controlled diversity.",
     "hash": "5b83becd"
   },
-  "200": {
-    "text": "Add the newly sampled token to the growing sequence and continue generating the next one.",
-    "hash": "14ebe56a"
+  "199": {
+    "text": "Stop if BOS is generated (end of name).",
+    "hash": "41a35c11"
   },
   "201": {
-    "text": "Convert the list of generated token IDs back into characters and join them into a readable name string.",
+    "text": "Add the newly sampled token to the growing sequence and continue generating the next one.",
     "hash": "a1ca669a"
+  },
+  "202": {
+    "text": "Convert the list of generated token IDs back into characters and join them into a readable name string.",
+    "hash": "b4368128"
   },
   "209": {
     "text": "Train each variant in sequence with identical data and seeds.",
     "hash": "8725aa67"
   },
-  "214": {
-    "text": "Reset seeds before each variant for a fair comparison, same random init and data order.",
-    "hash": "070a7dcd"
-  },
   "215": {
-    "text": "Reset the PyTorch random seed so each variant starts from exactly the same weight initialization.",
+    "text": "Reset seeds before each variant for a fair comparison, same random init and data order.",
     "hash": "f0726c6e"
   },
   "216": {
-    "text": "Re-shuffle to the same order.",
+    "text": "Reset the PyTorch random seed so each variant starts from exactly the same weight initialization.",
     "hash": "7e7dcf46"
+  },
+  "217": {
+    "text": "Re-shuffle to the same order.",
+    "hash": "562e0fd5"
   },
   "219": {
     "text": "Instantiate the model with this variant's KV head count. One class covers all three architectures, so nothing else about the model changes between rows.",
@@ -477,56 +477,56 @@
     "hash": "92d21e78"
   },
   "236": {
-    "text": "Pick the next name from the shuffled list, wrapping around when we reach the end. This cycling ensures continuous training across all steps.",
+    "text": "The standard training loop: pick a name, tokenize it, run a forward pass, compute loss, backpropagate, and update weights for 1000 steps.",
     "hash": "53f56939"
   },
   "237": {
-    "text": "Tokenize: BOS + chars + BOS.",
+    "text": "Pick the next name from the shuffled list, wrapping around when we reach the end. This cycling ensures continuous training across all steps.",
     "hash": "47ec0e2c"
   },
   "238": {
-    "text": "Limit the sequence length to block_size so it fits the model's positional embedding table.",
+    "text": "Tokenize: BOS + chars + BOS.",
     "hash": "ae86abd0"
   },
   "239": {
-    "text": "The standard training loop: pick a name, tokenize it, run a forward pass, compute loss, backpropagate, and update weights for 1000 steps.",
+    "text": "Limit the sequence length to block_size so it fits the model's positional embedding table.",
     "hash": "3d9da8cd"
   },
   "241": {
-    "text": "Target tokens (shifted by one).",
+    "text": "Convert the first n token IDs into a tensor the model can consume as input.",
     "hash": "968a3346"
   },
   "242": {
-    "text": "Convert the first n token IDs into a tensor the model can consume as input.",
+    "text": "Target tokens (shifted by one).",
     "hash": "1b63fd95"
   },
   "244": {
-    "text": "Measure how far the model's predictions are from the true next tokens using cross-entropy loss.",
+    "text": "Run the full model on the current input batch to get next-token predictions.",
     "hash": "17df3885"
   },
   "245": {
-    "text": "Run the full model on the current input batch to get next-token predictions.",
+    "text": "Measure how far the model's predictions are from the true next tokens using cross-entropy loss.",
     "hash": "4f1dd754"
   },
   "247": {
-    "text": "Compute gradients for every parameter by propagating the loss backward through the computation graph.",
+    "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
     "hash": "fbede2b3"
   },
   "248": {
-    "text": "Linearly reduce the learning rate from its initial value down to zero over the course of training.",
+    "text": "Compute gradients for every parameter by propagating the loss backward through the computation graph.",
     "hash": "227fe80d"
   },
   "249": {
-    "text": "Write the decayed learning rate into every parameter group so the optimizer uses it on the next step.",
+    "text": "Linearly reduce the learning rate from its initial value down to zero over the course of training.",
     "hash": "60602e3a"
   },
   "250": {
-    "text": "Clear out any leftover gradients from the previous step so they do not accumulate.",
+    "text": "Write the decayed learning rate into every parameter group so the optimizer uses it on the next step.",
     "hash": "9f6d3592"
   },
-  "251": {
+  "252": {
     "text": "Apply the optimizer step, adjusting every parameter in the direction that reduces the loss.",
-    "hash": "3030870a"
+    "hash": "d9e59d7e"
   },
   "263": {
     "text": "One hundred steps, the same window for every variant, fixed before the numbers were looked at. Averaging the tail does not turn this into a quality ranking, but it does stop it being pure noise.",

@@ -54,13 +54,9 @@
     "text": "Karpathy’s autoresearch is relevant because it uses the same keep-or-discard feedback loop, just over code and hyperparameters instead of text samples.",
     "hash": "03bcdfce"
   },
-  "13": {
+  "14": {
     "text": "Self-Rewarding LMs extend the idea: the model itself acts as both generator and judge, creating a self-reinforcing improvement cycle.",
-    "hash": "756ef07c"
-  },
-  "16": {
-    "text": "Karpathy's autoresearch applies the same pattern to code: modify hyperparameters, train, check if loss improved, keep or discard the change.",
-    "hash": "7168d9ae"
+    "hash": "ebabe838"
   },
   "19": {
     "text": "The verifier is handcrafted rather than learned, which keeps the self-improvement loop transparent enough to inspect line by line.",
@@ -135,7 +131,7 @@
     "hash": "2f367d0b"
   },
   "60": {
-    "text": "Each line in the dataset becomes one 'document' (a name). The model will learn to generate similar names character by character.",
+    "text": "Shuffle before the split, not after. The held-out slice is taken off the front of this list, so an unshuffled corpus would hand the verifier an alphabetical prefix and the model everything else.",
     "hash": "c8f1cb86"
   },
   "63": {
@@ -277,11 +273,12 @@
     "important": true
   },
   "121": {
-    "text": "Gracefully handles characters not in the vocabulary with .get() fallback, preventing crashes on unexpected generated characters.",
+    "text": "The one hard constraint in the scorer. Everything else here is a smooth preference, but a name outside 3 to 15 characters is rejected outright rather than scored, which is why a degenerate one-character string cannot win on a flattering per-bigram average.",
+    "important": true,
     "hash": "2c0efb4b"
   },
   "122": {
-    "text": "Sum of bigram log-probabilities measures how well the generated name matches the statistical patterns of real names.",
+    "text": "A fixed floor, far below anything the bigram term produces for a plausible name, so a rejected candidate sorts to the bottom and the top-fraction filter can never select it. The same value is the fallback in <code>evaluate_quality</code> when a batch is empty.",
     "hash": "77392b0a"
   },
   "123": {
@@ -297,7 +294,7 @@
     "hash": "7c99e098"
   },
   "126": {
-    "text": "The final score combines statistical plausibility (bigram log-prob) with a structural prior (length). Higher is better.",
+    "text": "Sum of bigram log-probabilities measures how well the generated name matches the statistical patterns of real names.",
     "hash": "d987c7de"
   },
   "130": {
@@ -427,16 +424,16 @@
     "hash": "2b319b15"
   },
   "230": {
-    "text": "This helper trains the model on any list of strings -- real data, self-generated data, or a mix. The flexibility is key for the self-improvement loop.",
+    "text": "Everything runs on CPU. The model is small enough that the cost of this lab is the number of generate-score-retrain rounds, not the arithmetic inside any one of them.",
     "hash": "b39e14b0"
   },
   "231": {
     "text": "Temperature 0.5 for every generation call in the loop. It stays fixed across arms and rounds, so any change in output diversity is the model's doing rather than the sampler's.",
     "hash": "24fb7806"
   },
-  "235": {
-    "text": "Cycling through the training docs with modulo ensures every sample gets used even if num_steps exceeds the dataset size.",
-    "hash": "83a7033e"
+  "234": {
+    "text": "This helper trains the model on any list of strings -- real data, self-generated data, or a mix. The flexibility is key for the self-improvement loop.",
+    "hash": "1caa18ad"
   },
   "236": {
     "text": "Each retraining phase creates a fresh optimizer, so self-improvement is happening through new data exposure rather than optimizer-state carryover.",
@@ -446,12 +443,16 @@
     "text": "Track average loss over the mini-run so each phase can report a comparable training signal.",
     "hash": "554a65df"
   },
+  "239": {
+    "text": "Cycling through the training docs with modulo ensures every sample gets used even if num_steps exceeds the dataset size.",
+    "hash": "2a008ba5"
+  },
   "240": {
     "text": "Teacher forcing stays unchanged. The self-improvement idea lives entirely in how the training examples are chosen, not in a different objective.",
     "hash": "f5526170"
   },
   "241": {
-    "text": "Standard cross-entropy loss: the model learns to predict the next character given all previous characters in the name.",
+    "text": "Clip the example to the context window, leaving one token over for the shifted target. Names are short so this rarely bites, but it is what stops a long name indexing past the position embedding table.",
     "hash": "3d9da8cd"
   },
   "242": {
@@ -459,7 +460,7 @@
     "hash": "968a3346"
   },
   "244": {
-    "text": "Linear learning rate decay to zero. This is especially important during retraining rounds to avoid catastrophically overwriting what the model already learned.",
+    "text": "One forward pass produces next-token logits at every position at once. That is what makes teacher forcing cheap: a name of n tokens yields n training signals from a single pass.",
     "hash": "17df3885"
   },
   "245": {
@@ -471,15 +472,19 @@
     "hash": "68079a2b"
   },
   "249": {
-    "text": "Returning average loss lets us track whether the model is actually learning from the mixed data in each self-improvement round.",
+    "text": "Write the decayed rate into every parameter group so the optimizer picks it up on this step.",
     "hash": "9f6d3592"
   },
   "254": {
     "text": "Periodic loss prints let you see whether each retraining phase is still learning from the mixed data rather than destabilizing.",
     "hash": "8fe57775"
   },
+  "255": {
+    "text": "Returning average loss lets us track whether the model is actually learning from the mixed data in each self-improvement round.",
+    "hash": "00070e67"
+  },
   "258": {
-    "text": "Each name starts from the BOS token, just like during training. The model then predicts characters one at a time.",
+    "text": "No gradients anywhere in generation. Candidates are treated as data, not as a differentiable path back into the model, which is exactly what separates this loop from ordinary training.",
     "hash": "eec96875"
   },
   "259": {
@@ -491,12 +496,8 @@
     ],
     "hash": "e427dff6"
   },
-  "262": {
-    "text": "Temperature scaling controls randomness: dividing logits by temperature < 1 sharpens the distribution, making high-probability characters more likely.",
-    "hash": "90f82cfa"
-  },
   "264": {
-    "text": "Multinomial sampling from the softmax distribution gives stochastic generation -- the same model produces different names each time.",
+    "text": "Each name starts from the BOS token, just like during training. The model then predicts characters one at a time.",
     "hash": "5c52ddc4"
   },
   "265": {
@@ -508,24 +509,32 @@
     "hash": "ce311cc5"
   },
   "268": {
-    "text": "Convert token IDs back to characters, skipping the initial BOS. This is the raw generated name that will be scored.",
+    "text": "Temperature scaling controls randomness: dividing logits by temperature < 1 sharpens the distribution, making high-probability characters more likely.",
     "hash": "e1a1328f"
   },
   "270": {
     "text": "Sampling rather than argmax keeps candidate diversity high enough for filtering to matter.",
     "hash": "5b83becd"
   },
+  "274": {
+    "text": "Convert token IDs back to characters, skipping the initial BOS. This is the raw generated name that will be scored.",
+    "hash": "b4368128"
+  },
   "275": {
-    "text": "This evaluation helper wraps the scorer to produce a single quality metric for a batch of names -- used to track improvement across rounds.",
+    "text": "Drop empty strings. A sample whose very first token is BOS decodes to nothing, and letting those through would pad the candidate pool with names that score the rejection floor by definition.",
     "hash": "7af89b17"
   },
   "277": {
-    "text": "Average score across all names gives one number to compare: baseline quality vs. post-self-improvement quality.",
+    "text": "Put the model back in training mode before returning, since the same object goes straight into <code>train_on_data</code> for the next round.",
     "hash": "a89ce3c7"
   },
   "281": {
     "text": "Aggregate quality is the loop-level metric. The lab judges improvement by whether batches of sampled names look more like the real corpus over time.",
     "hash": "ea4a6239"
+  },
+  "284": {
+    "text": "Average score across all names gives one number to compare: baseline quality vs. post-self-improvement quality.",
+    "hash": "11fc0464"
   },
   "298": {
     "text": "Diversity, in three lines. Average quality is a per-name statistic and cannot see repetition at all, so the unique fraction and the most-repeated name are printed alongside it every round.",
@@ -551,14 +560,6 @@
     "text": "One line, using the training-set membership check built earlier. Cheap enough that there is no excuse for not printing it every round.",
     "hash": "db5eb01d"
   },
-  "315": {
-    "text": "Creating the initial model. This is the 'seed' that will bootstrap its own improvement through the generate-evaluate-retrain loop.",
-    "hash": "1b989317"
-  },
-  "319": {
-    "text": "Phase 1 trains on real data only. This gives the model a reasonable starting point before self-improvement begins.",
-    "hash": "ca0ae143"
-  },
   "321": {
     "text": "Train one ordinary supervised model first. Self-improvement should start from a competent baseline, not random noise.",
     "diagram": "self_improve_loop",
@@ -568,20 +569,20 @@
     "hash": "40b7fcd9"
   },
   "324": {
-    "text": "Baseline quality is the number to beat. If self-improvement works, post-loop quality should be measurably higher than this.",
+    "text": "The initial fit, longer than any single retraining round below. Every arm starts from the weights this produces, so the loop is only ever asked to improve a model that already works.",
     "hash": "e3402687"
+  },
+  "325": {
+    "text": "Phase 1 trains on real data only. This gives the model a reasonable starting point before self-improvement begins.",
+    "hash": "3e6e0540"
   },
   "335": {
     "text": "A baseline sample taken before any self-improvement, so every later round has something to be compared against on all three metrics — quality, diversity and novelty — not just the first.",
     "hash": "d96428ee"
   },
-  "345": {
-    "text": "6 rounds of self-improvement. Each round generates, scores, filters, and retrains. More rounds can help but risk overfitting to the scorer.",
-    "hash": "b30ef9f9"
-  },
-  "346": {
-    "text": "300 candidates per round gives enough samples for the top-20% filter to select ~60 high-quality names for retraining.",
-    "hash": "35a57e98"
+  "336": {
+    "text": "Baseline quality is the number to beat. If self-improvement works, post-loop quality should be measurably higher than this.",
+    "hash": "5cb4ba0b"
   },
   "348": {
     "text": "Phase 2 is the actual experiment: three arms from identical weights and identical seeds, differing only in what data they retrain on. The point is not to show the loop working; it is to show what the quality metric hides while it rises.",
@@ -798,10 +799,6 @@
   "471": {
     "text": "One row per round. Read left to right: the quality columns improve while the unique column falls and one name's count climbs.",
     "hash": "6d9733f3"
-  },
-  "479": {
-    "text": "A positive total improvement validates the self-improvement approach. The plus sign makes it visually obvious whether the model improved or regressed.",
-    "hash": "ba5ec51d"
   },
   "481": {
     "text": "The last round's score as the headline, since the question is where the loop <em>ended up</em>, not how good its best round looked.",
