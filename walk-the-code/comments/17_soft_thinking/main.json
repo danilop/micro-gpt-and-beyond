@@ -268,36 +268,44 @@
       "logits"
     ]
   },
-  "145": {
+  "148": {
     "text": "1000 training steps, shared with Lab 18.",
     "hash": "f105aa30"
   },
-  "148": {
+  "151": {
+    "text": "Shannon entropy in nats, factored out because it is called from two places and the choice of <em>which</em> distribution to hand it is the whole subtlety of this lab.",
+    "hash": "de577107"
+  },
+  "153": {
+    "text": "<code>clamp</code> before the log keeps a zero probability from producing <code>-inf</code>. At 1e-10 the clamp contributes nothing measurable to the sum, it just stops one unlucky token poisoning the whole figure.",
+    "hash": "5c53e78a"
+  },
+  "156": {
     "text": "No gradients during generation, pure inference.",
     "hash": "eec96875"
   },
-  "149": {
+  "157": {
     "text": "The generation function: supports both hard (standard) and soft (concept token) decoding. This is where the magic happens.",
     "hash": "ae96d1e2",
     "important": true
   },
-  "151": {
+  "161": {
     "text": "Disable dropout and other training-specific behaviors. Not strictly needed here (no dropout), but good practice for generation.",
     "hash": "45bf010c"
   },
-  "152": {
+  "162": {
     "text": "Track generated tokens and per-step entropy (measures how uncertain the model is).",
     "hash": "72b2c0dd"
   },
-  "153": {
+  "163": {
     "text": "Start with the BOS token embedding, same for both modes.",
     "hash": "16371ae3"
   },
-  "155": {
+  "165": {
     "text": "Generate up to <code>block_size</code> tokens.",
     "hash": "ab05dc73"
   },
-  "156": {
+  "166": {
     "text": "Forward pass using embeddings (not token IDs), this is how concept tokens flow through the model.",
     "hash": "3c166ac3",
     "diagram": "soft_soft_path",
@@ -319,7 +327,7 @@
       ]
     }
   },
-  "159": {
+  "169": {
     "text": "Divide logits by the sampling temperature and apply softmax to control how peaked or spread out the token probabilities are.",
     "hash": "42c9b900",
     "diagram": "soft_hard_path",
@@ -327,7 +335,7 @@
       "logits"
     ]
   },
-  "160": {
+  "170": {
     "text": "Sample a discrete token, needed for output text and stopping condition, regardless of mode.",
     "hash": "5b83becd",
     "diagram": "soft_hard_path",
@@ -336,19 +344,15 @@
       "sample"
     ]
   },
-  "161": {
+  "171": {
     "text": "BOS doubles as end-of-sequence. When sampled, it means the name is complete and generation should stop.",
     "hash": "41a35c11"
   },
-  "163": {
+  "173": {
     "text": "Append the chosen token to the output list, building up the generated name one character at a time.",
     "hash": "a1ca669a"
   },
-  "166": {
-    "text": "Shannon entropy of the distribution: measures how spread out the model's beliefs are. Low entropy = confident, high entropy = uncertain. We'll compare this across decoding modes.",
-    "hash": "4aa43c79"
-  },
-  "169": {
+  "182": {
     "text": "Hard decoding: collapse to a single token, throw away the distribution. Standard approach.",
     "hash": "0e27bbb0",
     "diagram": "soft_hard_path",
@@ -357,7 +361,7 @@
       "embed_one"
     ]
   },
-  "170": {
+  "183": {
     "text": "Look up the single selected token's embedding, all information about alternatives is lost.",
     "hash": "e0217c97",
     "diagram": "soft_hard_path",
@@ -366,7 +370,17 @@
       "discards"
     ]
   },
-  "172": {
+  "187": {
+    "text": "Hard decoding feeds exactly one embedding, so the distribution building the next input is a one-hot delta and its entropy is exactly zero. That is the information bottleneck the technique exists to remove, stated as a number rather than as prose.",
+    "important": true,
+    "diagram": "soft_hard_path",
+    "highlight": [
+      "embed_one",
+      "discards"
+    ],
+    "hash": "baa87587"
+  },
+  "189": {
     "text": "Soft decoding: preserve the full distribution as a \"concept token.\"",
     "hash": "b3811453",
     "diagram": "soft_soft_path",
@@ -374,7 +388,7 @@
       "softmax_blend"
     ]
   },
-  "173": {
+  "190": {
     "text": "Soft temperature controls how blended the concept token is. Lower T = more peaked (closer to hard). Higher T = more spread (more tokens contribute).",
     "hash": "aa93a434",
     "diagram": "soft_soft_path",
@@ -385,7 +399,7 @@
       "preserves"
     ]
   },
-  "174": {
+  "191": {
     "text": "THE key line: <code>softmax(logits/T) @ embedding_table</code>. This creates a weighted average of ALL token embeddings, where the weights are the model's probabilities. The concept token lives in the same embedding space as regular tokens, but encodes the full uncertainty of what the model \"wanted to say.\"",
     "hash": "e1a0c30a",
     "diagram": "soft_soft_path",
@@ -395,47 +409,76 @@
       "preserves"
     ]
   },
-  "176": {
+  "192": {
+    "text": "Measure the entropy of <code>soft_probs</code> — the distribution that actually builds the next input — not of the sampling distribution. Scoring <code>softmax(logits/temperature)</code> instead was the old bug: that distribution is identical in every row of the table below, so the column read flat and discriminated nothing.",
+    "important": true,
+    "diagram": "soft_soft_path",
+    "highlight": [
+      "softmax_blend",
+      "weighted",
+      "preserves"
+    ],
+    "hash": "a81a5bfc"
+  },
+  "194": {
     "text": "Append the new embedding (hard or soft) and truncate to context window. The model now sees concept tokens as part of its history.",
     "hash": "6e2e1538"
   },
-  "184": {
-    "text": "Only run training and inference when executed directly, Lab 18 imports from this file.",
+  "205": {
+    "text": "Entropy only measures the benefit. This is half the price: the per-token NLL of the generated names under the model itself, which asks 'would the model have written this?' and answers in nats.",
+    "important": true,
+    "hash": "2cc9aa04"
+  },
+  "219": {
+    "text": "Score with hard inputs, always, whatever mode produced the string. The question is whether the output sits on the manifold the model was trained on, and that is a question about the model's normal path, not about the decoder.",
+    "hash": "2b8d6481"
+  },
+  "226": {
+    "text": "The other half of the price, and the one you can hear: what fraction of adjacent character pairs repeat. A single number that catches the specific way this technique fails rather than a general-purpose quality score.",
+    "important": true,
+    "hash": "d8ce363d"
+  },
+  "232": {
+    "text": "A diffuse concept token carries almost no information about which token was just emitted, so the model loses track of what it wrote and stutters. Real names do repeat characters a little — <code>emma</code>, <code>aaron</code> — which is why the reference row matters more than the raw rate.",
+    "hash": "3016cb52"
+  },
+  "245": {
+    "text": "Guard the training run so the module can be imported without side effects. Lab 18 does not import it — it duplicates the model and the generation loop, because every lab in this series is meant to run standalone from a single file.",
     "hash": "3412809c"
   },
-  "185": {
+  "246": {
     "text": "Create the model, move it to the device, and print its parameter count for verification.",
     "hash": "40b7fcd9"
   },
-  "189": {
+  "250": {
     "text": "Adam optimizer, same settings as Lab 03.",
     "hash": "92d21e78"
   },
-  "191": {
+  "252": {
     "text": "Standard next-token prediction training: the model sees ground-truth tokens as input and learns to predict each next one.",
     "hash": "53f56939"
   },
-  "192": {
+  "253": {
     "text": "Pick one training example per step, cycling through the shuffled dataset.",
     "hash": "47ec0e2c"
   },
-  "193": {
+  "254": {
     "text": "Encode: BOS + characters + BOS.",
     "hash": "ae86abd0"
   },
-  "194": {
+  "255": {
     "text": "Truncate the token sequence to fit within the model's positional embedding table and context window.",
     "hash": "3d9da8cd"
   },
-  "196": {
+  "257": {
     "text": "Prepare the input tensor containing all tokens except the last one in the sequence.",
     "hash": "968a3346"
   },
-  "197": {
+  "258": {
     "text": "Target sequence (shifted right by one).",
     "hash": "1b63fd95"
   },
-  "199": {
+  "260": {
     "text": "Forward pass with token IDs (standard training, no soft tokens yet).",
     "hash": "17df3885",
     "diagram": "soft_hard_path",
@@ -447,80 +490,119 @@
       "discards"
     ]
   },
-  "200": {
+  "261": {
     "text": "Measure how far the model's predictions are from the correct next tokens at each position.",
     "hash": "4f1dd754"
   },
-  "202": {
+  "263": {
     "text": "Reset all parameter gradients to zero before computing the new backward pass.",
     "hash": "fbede2b3"
   },
-  "203": {
+  "264": {
     "text": "Compute gradients of the loss with respect to every model parameter via backpropagation.",
     "hash": "227fe80d"
   },
-  "204": {
+  "265": {
     "text": "Scale the learning rate down linearly toward zero as training progresses, for smoother convergence near the end.",
     "hash": "60602e3a"
   },
-  "205": {
+  "266": {
     "text": "Write the decayed learning rate into the optimizer so the next parameter update uses the reduced step size.",
     "hash": "9f6d3592"
   },
-  "207": {
+  "268": {
     "text": "Apply the computed gradients to update all model weights one step toward lower loss.",
     "hash": "d9e59d7e"
   },
-  "212": {
+  "273": {
     "text": "Compare hard vs. soft decoding at different soft temperatures.",
     "hash": "f6903af1"
   },
-  "213": {
-    "text": "Generate 20 names for each configuration, enough samples to see meaningful differences in behavior between decoding modes.",
-    "hash": "ba8d14e2"
+  "274": {
+    "text": "Fifty samples per configuration. Ten get printed for inspection, but the mean entropy, the NLL, and the duplicate rate are all computed over all fifty — three-per-row statistics need more than the handful you can eyeball.",
+    "hash": "c16f0427"
   },
-  "214": {
+  "275": {
     "text": "Maximum possible entropy: ln(vocab_size). This is the \"uniform distribution\" ceiling.",
     "hash": "430f12d4"
   },
-  "216": {
+  "278": {
     "text": "Test four configurations: hard baseline plus three soft temperatures.",
     "hash": "869e4f57"
   },
-  "217": {
+  "279": {
     "text": "Hard decoding (standard), mild soft, moderate soft, and very diffuse soft.",
     "hash": "ce9bdb11"
   },
-  "222": {
+  "284": {
     "text": "Print which configuration is being tested (hard vs. soft, and at what temperature) so the output is easy to interpret.",
     "hash": "a3b8d2cf"
   },
-  "224": {
+  "286": {
     "text": "Generate samples for this configuration.",
     "hash": "567e2f37"
   },
-  "225": {
+  "287": {
     "text": "Generate one name, collecting entropy at each step.",
     "hash": "c6a33d5a"
   },
-  "226": {
+  "288": {
     "text": "Decode token IDs to characters.",
     "hash": "9e3829cc"
   },
-  "227": {
+  "290": {
     "text": "Average entropy across generation steps, how uncertain was the model on average?",
     "hash": "8eb7b603"
   },
-  "229": {
+  "292": {
     "text": "Show first 10 names with their entropy.",
     "hash": "5416cee6"
   },
-  "230": {
-    "text": "Display name and entropy relative to maximum. Higher entropy in soft mode shows the distribution is spreading, the concept tokens carry more information forward.",
-    "hash": "a88cbba7"
+  "293": {
+    "text": "Print each name with the entropy of its concept tokens against the <code>ln(27)</code> ceiling. Hard rows read exactly <code>0.000</code> by construction, so this column is a measure of how much distribution survives into the next step, not a quality score.",
+    "hash": "ea51a505"
   },
-  "231": {
-    "text": "Average entropy across all samples, the summary statistic.",
-    "hash": "1abb3755"
+  "295": {
+    "text": "The per-configuration mean, which now moves with <code>soft_temp</code> as it should: <code>0.000</code> for hard, then roughly 1.7, 2.5, and 3.0 nats as the blend widens. Under the old metric hard scored highest, which was the clue that the wrong distribution was being measured.",
+    "important": true,
+    "hash": "417f3ebe"
+  },
+  "296": {
+    "text": "Store the benefit and both costs together so the table can show them side by side. Reporting entropy alone would crown T=2.0, and T=2.0 is the row that stutters.",
+    "hash": "55b10d4d"
+  },
+  "299": {
+    "text": "Real names the model never trained on, as the yardstick for the cost columns. Without a reference, an NLL of 2.1 or a duplicate rate of 12% is a number with no scale attached.",
+    "important": true,
+    "hash": "2a5ffe8e"
+  },
+  "308": {
+    "text": "Benefit and cost printed in one table, because the interesting fact is that they move together. Entropy rises monotonically with the soft temperature, and so do the sample NLL and the stutter rate.",
+    "important": true,
+    "hash": "3702f44c"
+  },
+  "313": {
+    "text": "The reference row, printed last with no entropy of its own — real names were not generated, so there is no concept token to measure. Their duplicate rate of <code>4.9%</code> is what the T=2.0 row's should be compared against.",
+    "hash": "03bc051e"
+  },
+  "315": {
+    "text": "The legend spells out which distribution the entropy column measures, because the natural assumption is the wrong one and getting it wrong is exactly how the column ended up flat before.",
+    "hash": "e899f9ae"
+  },
+  "317": {
+    "text": "The NLL column climbs with T. Note that hard decoding scores well below the real-names row rather than matching it: temperature-0.5 sampling deliberately favors high-probability strings, so the direction of travel matters here more than the absolute level.",
+    "hash": "bc2f49aa"
+  },
+  "320": {
+    "text": "The duplicate rate is the concrete symptom of the drift, and at T=2.0 it runs about four times the rate of real names. This is what 'out of distribution' sounds like when you read the samples out loud.",
+    "hash": "0629b3fe"
+  },
+  "345": {
+    "text": "Higher entropy means more tokens contribute to the concept token — richer information carried forward, and more room to drift off the manifold. Both halves of that sentence are now numbers in the table above rather than an assertion.",
+    "hash": "f875b77b"
+  },
+  "349": {
+    "text": "The tradeoff is measured, not rhetorical: entropy rises with T and so does the NLL of what comes out. Past some point the concept token says so little about what was just emitted that the model starts stuttering vowels.",
+    "hash": "53fe9bf5"
   }
 }

@@ -1,40 +1,84 @@
 # Understanding LLMs by Building One: MLX Batched
 
-Same architecture as `07_mlx`, scaled up with mini-batch training on Apple Silicon. This version follows the same batching approach as `04_pytorch_batched` (padding, masking, and explicit `(B, T, ...)` tensor shapes) because MLX's API is intentionally PyTorch-like.
+Same architecture as `07_mlx`, scaled up with mini-batch training on Apple Silicon. Batching is done with `mx.vmap`, so the model code stays single-example, the way `06_jax_batched` does it with `jax.vmap`.
 
 ## Why this version exists
 
-After seeing JAX's `vmap` approach in `06_jax_batched`, this version shows the contrast: MLX doesn't have a `vmap` equivalent. Batching in MLX means the same manual work as PyTorch: reshape your model to handle a batch dimension, pad sequences, thread masks through attention. The difference is where it runs: unified memory on Apple Silicon, with lazy evaluation.
+Labs 04, 06 and 08 solve the same problem — turn a one-sequence model into a batched one — with the three tools the three frameworks give you:
+
+| | how the batch dimension appears |
+|---|---|
+| `04_pytorch_batched` | by hand: the model is rewritten for `(B, T, ...)` tensors |
+| `06_jax_batched` | `jax.vmap` over a single-example function |
+| `08_mlx_batched` | `mx.vmap` over a single-example function |
+
+MLX has `mx.vmap`, and it composes with `nn.value_and_grad` and `mx.compile`, so there is no reason to hand-write the batch dimension here. What is genuinely different about MLX is the runtime underneath: unified memory and lazy evaluation.
 
 ## What makes it interesting
 
-### Same pattern as PyTorch, different runtime
+### mx.vmap: no batch dimension in the model
 
-The forward pass looks almost identical to `04_pytorch_batched`. Compare the attention:
+`forward_single` handles one sequence. `__call__` lifts it over the batch:
 
 ```python
-def __call__(self, x, pad_mask=None):
-    B, T, C = x.shape
-    q = self.wq(x).reshape(B, T, n_head, head_dim).transpose(0, 2, 1, 3)
-    k = self.wk(x).reshape(B, T, n_head, head_dim).transpose(0, 2, 1, 3)
+def forward_single(self, idx, pad_mask):
+    # idx: (T,), pad_mask: (T,) — no batch dimension anywhere below this point
+    T = idx.shape[0]
+    tok_emb = self.wte(idx)
     ...
-    if pad_mask is not None:
-        att = mx.where(pad_mask[:, None, None, :], mx.array(-1e9), att)
+
+def __call__(self, idx, pad_mask=None):
+    # idx: (B, T) -> logits (B, T, vocab_size)
+    return mx.vmap(self.forward_single, in_axes=(0, 0))(idx, pad_mask)
 ```
 
-The shapes, the masking, the reshapes are all the same. What's different is that this runs on the Apple GPU through unified memory, with no explicit device transfers.
+`in_axes=(0, 0)` maps over axis 0 of `idx` and of `pad_mask`. The parameters come from `self`, are captured by the closure, and are shared across the batch — that is what `in_axes=None` states explicitly in the JAX version.
 
-### Lazy evaluation with batches
-
-With batches, lazy evaluation matters more. MLX builds up a larger computation graph per step (32 sequences worth), then executes it all at once:
+Attention therefore keeps the `(nh, T, T)` shapes from `07_mlx` instead of growing to `(B, nh, T, T)`:
 
 ```python
-loss_val, grads = loss_and_grad(model, input_ids, targets, pad_mask, target_mask)
-optimizer.update(model, grads)
-mx.eval(model.parameters(), optimizer.state)  # one big eval for the whole batch
+att = (q @ k.transpose(0, 2, 1)) / math.sqrt(head_dim)
+causal = mx.triu(mx.ones((T, T)), k=1).astype(mx.bool_)
+att = mx.where(causal, -1e9, att)
+att = mx.where(pad_mask[None, None, :], -1e9, att)
 ```
 
-The `mx.eval` call triggers the entire forward + backward + optimizer update in one fused execution on the GPU.
+On the machine this was measured on, the `vmap` version ran at the same speed as the hand-reshaped `(B, T, ...)` version (93 vs 101 ms/step), so this is a readability win, not a trade.
+
+### Lazy evaluation and mx.compile
+
+MLX doesn't compute anything until asked. With batches the pending graph per step is larger (32 sequences worth of forward, backward and Adam), and `mx.compile` is what fuses it, the same role `jax.jit` plays:
+
+```python
+state = [model.state, optimizer.state]
+
+def train_step(input_ids, targets, pad_mask, target_mask):
+    loss_val, grads = loss_and_grad(model, input_ids, targets, pad_mask, target_mask)
+    optimizer.update(model, grads)
+    return loss_val
+
+train_step = mx.compile(train_step, inputs=state, outputs=state)
+```
+
+Then, once per step:
+
+```python
+mx.eval(state)
+```
+
+That call is not there to fetch the loss — `loss_val.item()` already forces the loss, since you cannot read a Python float out of an unevaluated graph. It is there because nothing downstream reads the *parameters* or the optimizer moments, so without it the graph of pending updates would keep growing for the whole run. `mx.eval` bounds it at one step.
+
+Because `mx.compile` specialises on input shapes, and `make_batch` pads to the longest sequence in each batch, the shape changes from step to step. The loop counts it:
+
+```
+distinct batch shapes seen: 9 (compile = True)
+  first-time-shape steps:   128.74 ms mean
+  repeated-shape steps:      98.51 ms mean
+```
+
+Nine shapes, nine traces, and the tracing itself is cheap: a first-time shape costs about 30 ms more than a repeat. `06_jax_batched` shows the fix anyway — pad to a fixed length and there is only one shape to compile.
+
+Set `use_compile = False` and compare. On the CPU-only build these numbers came from, uncompiled steps averaged 102.88 ms against 98.51 ms compiled: close to a wash at this batch size, because the per-operation dispatch overhead that compilation removes is small next to 32 sequences worth of matmuls. `07_mlx`, whose steps are tiny, gets roughly 3x from the same call. Measure it on your own hardware rather than believing either number.
 
 ### Scaled up
 
@@ -46,9 +90,9 @@ The `mx.eval` call triggers the entire forward + backward + optimizer update in 
 | Batch size | 1 | 32 |
 | Training steps | 1000 | 1000 |
 
-### Padding and masking, the same work as PyTorch
+### Padding still happens at the data level
 
-The `make_batch` function pads sequences and builds masks, just like `04_pytorch_batched`. The only difference is `mx.array` instead of `torch.tensor`:
+`vmap` removes the batch dimension from the model, not from the data. Sequences still have to be padded to a common length before they can be stacked:
 
 ```python
 def make_batch(docs, step, batch_size):
@@ -62,14 +106,22 @@ def make_batch(docs, step, batch_size):
     return mx.array(input_ids), mx.array(target_ids), mx.array(pad_masks), mx.array(target_masks)
 ```
 
-This is the manual work that JAX's `vmap` avoids, and the reason the 06 vs 08 comparison is instructive.
+Padding is always appended, never interleaved with real tokens. Two masks come out of this, and they are not equally important.
+
+**`target_mask` is essential.** The dummy target at padded positions is `0`, and `0` is a real character (`'a'`). Multiply the per-position log-probabilities by `target_mask` and those positions contribute nothing; forget to, and the model is explicitly trained to predict `'a'` after the end of every short name. There is no `ignore_index` here to save you, so the mask is the whole mechanism.
+
+**`pad_mask` is inert.** The key-side mask inside attention changes nothing measurable in this configuration: padding is a suffix, and the causal mask already prevents a query at position `t` from reading anything after `t`, so no real query can reach a pad key. The only logits it touches belong to pad queries, and `target_mask` has already zeroed those. It is kept because it becomes load-bearing the moment you left-pad, use bidirectional attention, or pack several documents into one row.
+
+That contrast is the useful lesson: two lines that look like the same defensive measure, one carrying all the weight and one carrying none.
+
+There is also no `nan_to_num`-style guard after the softmax, and none is needed. The mask value is `-1e9`, not `-inf`, so even a fully masked row would come out uniform rather than NaN — and no row can be fully masked anyway, since row 0 always keeps position 0, which is `BOS`.
 
 ## What you learn here
 
-- MLX batching follows the PyTorch pattern with no `vmap` shortcut
-- How padding and masking work with MLX's array API
-- Lazy evaluation becomes more impactful with larger computation graphs
-- The practical tradeoff: MLX's API familiarity vs JAX's functional transformations
+- `mx.vmap`, and that MLX has the same "write for one, run for many" transform JAX does
+- How padding and masking work with MLX's array API, and which of the two masks actually does anything
+- `mx.eval` as a bound on the pending graph, and `mx.compile` as MLX's `jit`, per-shape specialisation included
+- The practical tradeoff: MLX's API familiarity plus functional transforms, on Apple hardware
 - When to choose MLX: if you're deploying on Apple devices, MLX's unified memory and lazy evaluation can simplify your pipeline compared to PyTorch with MPS backend
 
 ## Run
@@ -81,3 +133,5 @@ uv run python main.py
 ```
 
 Trains for 1000 steps (prints every 10) and generates 20 names. Runs on the Apple GPU automatically.
+
+Every tenth step prints its wall-clock time, and the run ends with the per-shape averages above. Those numbers came from a CPU-only MLX build in a Linux container, so read them as ratios, not as what to expect on your Mac.

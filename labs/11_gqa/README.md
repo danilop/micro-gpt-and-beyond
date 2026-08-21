@@ -1,6 +1,8 @@
 # Understanding LLMs by Building One: Grouped-Query Attention (GQA/MQA)
 
-This lab shows the progression from Multi-Head Attention (MHA) to Multi-Query Attention (MQA) to Grouped-Query Attention (GQA), demonstrating how sharing KV heads reduces memory during inference while preserving quality.
+This lab shows the progression from Multi-Head Attention (MHA) to Multi-Query Attention (MQA) to Grouped-Query Attention (GQA), and measures what sharing KV heads costs in parameters and saves in KV cache memory.
+
+One thing up front, because it is the easiest claim to overstate: this lab does not demonstrate that GQA preserves quality. It cannot. Three 1-layer, 16-dimension models trained for 1000 single-name steps produce losses separated by less than the run-to-run noise, and `main.py` says so where it prints them. The quality result is real and it comes from Ainslie et al. (2023), who uptrained 64-head checkpoints on real corpora. What you can see here is the mechanism and the memory arithmetic.
 
 ## Why GQA exists
 
@@ -21,7 +23,7 @@ N query heads, N KV heads. Every query head gets its own dedicated key and value
 N query heads, **1** KV head. All query heads share a single key and a single value projection. Proposed by Noam Shazeer (2019).
 
 - Aggressive sharing: KV cache shrinks by N times.
-- Can hurt quality on complex tasks because all queries see identical keys/values.
+- Reported to hurt quality on complex tasks because all queries see identical keys/values. Not something this lab is large enough to reproduce.
 
 ### GQA, Grouped-Query Attention
 
@@ -29,6 +31,21 @@ N query heads, **G** KV head groups (1 < G < N). Each group of N/G query heads s
 
 - Sweet spot: significantly smaller KV cache than MHA, more capacity than MQA.
 - LLaMA 2 70B uses GQA with 8 KV heads for 64 query heads, an 8x reduction in KV cache memory.
+
+## What the lab measures
+
+Parameter counts and cache sizes, both exact:
+
+```
+      kv_heads  KV proj   total  cache B  vs MHA  avg loss
+  MHA        4      512    4192     1024   1.00x    2.2769
+  GQA        2      256    3936      512   0.50x    2.2875
+  MQA        1      128    3808      256   0.25x    2.2843
+```
+
+The **ratio** column is the part that transfers. Raw byte counts from a 16-dimension model are meaningless on their own, but 1.00x / 0.50x / 0.25x holds at any scale, because the cache is linear in `n_kv_head`. LLaMA 2 70B's 8-of-64 configuration is 0.125x by the same arithmetic.
+
+Two caveats on that cache column. It is an analytic figure — fp16, batch 1, a full `block_size` context — not an observed one, because nothing in this lab actually caches anything. Building a real KV cache is lab 12. And the `avg loss` column is a trailing average over the last 100 steps rather than a final-step loss, since at batch size 1 a single step's loss depends mostly on which name it landed on. Even averaged, the three numbers are a tie; read them as "all three still learn to spell names".
 
 ## The key implementation trick
 
@@ -59,14 +76,17 @@ class FlexAttention(nn.Module):
         # ... standard scaled dot-product attention from here
 ```
 
-When `n_kv_head == n_head`, `repeats == 1` and nothing is repeated, giving you standard MHA. When `n_kv_head == 1`, every KV vector is broadcast to all query heads, which is MQA. Anything in between is GQA.
+When `n_kv_head == n_head`, `repeats == 1` and nothing is repeated, giving you standard MHA. When `n_kv_head == 1`, every KV vector is broadcast to all query heads, which is MQA. Anything in between is GQA. `repeat_interleave` maps KV head `j` onto query heads `j*r` through `(j+1)*r-1`, so the groups are contiguous.
+
+That `repeat_interleave` is the clearest way to write the expansion and the worst way to run it: it materialises `repeats` identical copies of K and V, giving back the memory saving for the duration of the forward pass. Production kernels avoid it — PyTorch's `scaled_dot_product_attention` with `enable_gqa=True`, and FlashAttention's GQA support, index the shared KV head directly from each query head. Same maths, no copies.
 
 ## What you learn here
 
 - Why the KV cache is the memory bottleneck in LLM serving, not model weights or compute
 - How `repeat_interleave` enables KV head sharing with zero changes to the attention math
-- The parameter count and memory tradeoff between MHA, GQA, and MQA
+- The parameter count and memory tradeoff between MHA, GQA, and MQA, as a ratio rather than raw bytes
 - Why GQA has become the default for large models (LLaMA 2 70B, Mistral, Gemma)
+- Where a toy-scale lab can prove something (the mechanism, the arithmetic) and where it can only cite a paper (the quality result)
 
 ## Run
 
@@ -74,4 +94,4 @@ When `n_kv_head == n_head`, `repeats == 1` and nothing is repeated, giving you s
 uv run python main.py
 ```
 
-Trains all three variants (MHA, GQA, MQA) for 1000 steps each on the same data. Compares parameter counts, final loss, KV cache memory, and generates 10 names per variant.
+Trains all three variants (MHA, GQA, MQA) for 1000 steps each on the same data and from the same seed. Compares parameter counts, trailing-average loss, and KV cache size both in bytes and as a ratio to MHA, then generates 10 names per variant.

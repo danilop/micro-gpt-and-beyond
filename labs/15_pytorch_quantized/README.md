@@ -1,10 +1,14 @@
 # Understanding LLMs by Building One: PyTorch Quantized
 
-Same architecture as the batched versions (04/06/08), but with inference-only quantization. This version shows how to compress a trained model from 32-bit floats (FP32) to 8-bit integers (INT8), the technique used to deploy models on phones, edge devices, and production servers.
+Inference-only quantization: compress a trained model from 32-bit floats (FP32) to 8-bit integers (INT8), the technique used to deploy models on phones, edge devices, and production servers.
+
+The dimensions come from version 04 (64-dim embeddings, 4 heads, 2 layers, 102,784 parameters), but the training loop here is the unbatched one from version 03: one name per step, no padding and no attention mask over padded positions. If you are looking for the batched trainer, that is 04/06/08, not this lab.
 
 ## Why this version exists
 
-After training a model in PyTorch (version 03), you often want to deploy it somewhere with limited memory or compute. Quantization reduces model size by ~4× and speeds up inference by converting weights from FP32 to INT8. This is how real-world models run efficiently.
+After training a model in PyTorch (version 03), you often want to deploy it somewhere with limited memory or compute. Quantization shrinks the weights by storing them as INT8 plus a scale factor instead of FP32.
+
+Be clear about what this lab does and does not show. It measures a real size reduction: 0.397 MB down to 0.114 MB, 3.48x smaller. It does **not** show a speedup, and it is not supposed to: the forward pass here dequantizes INT8 back to FP32 and then runs an ordinary FP32 matmul, so INT8 comes out **25-30% slower** than FP32 on this machine. Speed requires INT8 GEMM kernels that do the arithmetic in integers, which this lab deliberately does not implement. Size savings are the honest result; the speed claim belongs to TensorRT and friends.
 
 ## What makes it interesting
 
@@ -37,29 +41,53 @@ This is symmetric quantization:
 - Store weights as INT8 + a single scale factor per layer
 - Dequantize on the fly during forward pass
 
-**Tradeoff**: Dequantizing on every forward pass adds overhead, but keeps memory usage low. Production systems use specialized INT8 matrix multiplication kernels that operate directly on INT8 without dequantization, achieving both memory savings and speed improvements.
+**Tradeoff**: Dequantizing on every forward pass adds overhead, but keeps memory usage low. This is measured, not hypothetical: INT8 runs 25-30% slower than FP32 in this lab. Production systems use specialized INT8 matrix multiplication kernels that operate directly on INT8 without dequantization, achieving both memory savings and speed improvements.
 
 ### Model size comparison
 
-The script measures model size and inference speed with a unified `benchmark()` function that saves the state dict, measures file size, and times sample generation.
+The script measures model size and inference speed with a unified `benchmark()` function that saves the state dict, measures file size, and times sample generation. Both timing runs reseed the sampler immediately before generating, so FP32 and INT8 draw the same sampling decisions and therefore run the same number of forward passes on the same-length sequences. Without that, the "comparison" would be comparing two different workloads.
 
-For this model (~30,000 parameters), the results show:
-- FP32: ~0.4 MB
-- INT8: ~0.12 MB (~29% of original)
+For this model (102,784 parameters), the measured results:
+- FP32: 0.397 MB
+- INT8: 0.114 MB (28.7% of original, 3.48x smaller)
 
 The reduction approaches 25% (4× compression) as the proportion of Linear layer parameters increases. Embeddings aren't quantized in this implementation, which is why it's not exactly 25%.
 
 For a 7B parameter model, that's 28 GB to 7 GB, the difference between fitting in VRAM or not.
 
+### Quantization error
+
+Rounding weights onto a 256-value grid is lossy, so the lab measures how lossy. For each quantized layer it prints `max|W - dequant(W)|` next to the layer's scale:
+
+```
+  layer                     max|W|      scale max abs err  as % of max|W|
+  layers.0.attn.wq         0.64917   5.11e-03    2.56e-03          0.394%
+  ...
+  lm_head                  0.81480   6.42e-03    3.20e-03          0.393%
+```
+
+Every layer lands at 0.394% of its own largest weight, and that is not a coincidence. Symmetric per-tensor quantization maps `[-max|W|, +max|W|]` onto `[-127, +127]`, so the grid step is `scale = max|W|/127` and rounding can be off by at most `scale/2 = max|W|/254`, which is 0.394%. The measurement confirms the bound rather than discovering something new, which is exactly what you want from an error check.
+
+The reason to state it as a percentage of `max|W|` is that this is per-tensor quantization's weakness: one outlier weight stretches the grid for every other weight in the same tensor. Per-channel quantization exists because of this, and LLM.int8() exists because at transformer scale the outliers are much worse than they are here.
+
+Weight error only matters if it reaches the output, so the lab also measures per-token cross-entropy on 2,000 names the model never trained on:
+
+```
+    FP32: 2.4003
+    INT8: 2.4004  (+0.0001, +0.006%)
+```
+
+A 0.006% loss increase for a 3.48x size reduction is the whole argument for quantization in one line.
+
 ### Inference speed comparison
 
-**Important**: This simple implementation may not show speed improvements because it dequantizes weights on every forward pass. The main benefit here is **memory savings** (~4× smaller).
+**Important**: this implementation does not just fail to speed up, it measurably slows down. Dequantizing on every forward pass costs more than the FP32 baseline: around 7.6 ms/sample FP32 against 9.6-9.8 ms/sample INT8 across runs, so **+25-30%**. Absolute times move with machine load; the sign and rough size of the gap do not. The benefit here is entirely **memory**: 3.48x smaller.
 
 Production quantization systems (TensorRT, ONNX Runtime, PyTorch native) use specialized INT8 kernels that operate directly on INT8 data, achieving both memory savings and 2-4× speed improvements on large models.
 
 ### Output quality
 
-The script generates 10 samples from both FP32 and INT8 models. The outputs should be nearly identical, as quantization introduces small numerical differences, but the model's behavior is preserved.
+The script generates 10 samples from both FP32 and INT8 models with the same seed. On this model they come out byte-identical. That is a pleasant result, but read it carefully: identical samples do not mean zero error. The weights really did move — up to 3.2e-3 in absolute terms, 0.39% of the layer's largest weight — and the logits really did shift; the shift is just too small to flip any of these `torch.multinomial` draws. The held-out loss delta above is the number that actually quantifies the damage.
 
 If outputs diverge significantly, it means the model is sensitive to precision. For production, you'd use more sophisticated quantization schemes:
 - **Per-channel quantization**: Different scale factors per output channel (better accuracy)
@@ -71,8 +99,9 @@ If outputs diverge significantly, it means the model is sensitive to precision. 
 - The difference between training precision (FP32) and inference precision (INT8)
 - How symmetric quantization works: mapping FP32 weights to INT8 with a scale factor
 - Why model size matters for deployment (memory, bandwidth, storage)
-- The tradeoff between compression and accuracy
-- How to measure model size and inference speed in PyTorch
+- How to quantify quantization error, both on the weights (`max|W - dequant(W)|`, and why it equals `max|W|/254`) and on the model's output (held-out loss)
+- Why dequantize-to-FP32 quantization saves memory but costs speed, and what a real INT8 kernel would change
+- How to set up a controlled timing comparison (same seed, same workload for both models)
 - How to implement quantization manually without framework-specific APIs
 
 ## What's not covered (but exists in practice)
@@ -92,10 +121,12 @@ This version focuses on the core idea: FP32 to INT8 weight compression for memor
 uv run python main.py
 ```
 
-Trains for 1000 steps, quantizes the model, compares size and speed, and generates 10 samples from each version. The output shows:
-- Model size reduction (FP32 to INT8)
-- Inference time comparison
-- Sample quality comparison
+Trains for 1000 steps, quantizes the model, then reports:
+- Model size reduction: 0.397 MB to 0.114 MB, 3.48x
+- Inference time, seeded identically for both models: INT8 is 25-30% slower
+- Per-layer quantization error, `max|W - dequant(W)|`, ~0.394% of `max|W|` everywhere
+- Held-out per-token loss on 2,000 unseen names: 2.4003 (FP32) vs 2.4004 (INT8)
+- 10 samples from each version, which come out identical
 
 ## Why quantization matters
 

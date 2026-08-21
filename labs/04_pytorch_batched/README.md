@@ -27,7 +27,8 @@ Names have different lengths, but tensors need uniform dimensions. The `make_bat
 ```python
 def make_batch(docs, step, batch_size):
     sequences = []
-    for doc in batch_docs:
+    for i in range(batch_size):
+        doc = docs[(step * batch_size + i) % len(docs)]
         toks = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
         toks = toks[:block_size + 1]
         sequences.append(toks)
@@ -40,11 +41,17 @@ def make_batch(docs, step, batch_size):
         mask = [False] * n + [True] * (max_len - 1 - n)
 ```
 
-The `-100` target value is PyTorch's convention for `ignore_index` in `F.cross_entropy`, so padded positions don't contribute to the loss.
+Padding always goes on the end: real tokens first, `PAD` afterwards. That detail matters more than it looks, as the next section shows.
 
-### Attention mask stacking
+The `toks[:block_size + 1]` slice is a safety bound rather than a working truncation. The longest name in the corpus is 15 characters, so `BOS + name + EOS` is at most 17 tokens, which is exactly `block_size + 1`. Nothing in this dataset is ever cut; point the same code at a corpus of sentences and it will be.
 
-The attention layer now combines two masks: the causal mask (can't look ahead) and the padding mask (can't attend to PAD tokens):
+### The mask that does the work: `ignore_index`
+
+The `-100` target value is PyTorch's convention for `ignore_index` in `F.cross_entropy`. Positions marked that way contribute nothing to the loss and nothing to the gradient. This is the mask that keeps padding from corrupting training, and it is doing essentially all of the real work in this lab.
+
+### Two masks in attention, and only one of them changes the loss
+
+The attention layer stacks the causal mask (can't look ahead) on top of the padding mask (can't attend to `PAD` keys):
 
 ```python
 def forward(self, x, pad_mask=None):
@@ -54,10 +61,20 @@ def forward(self, x, pad_mask=None):
     if pad_mask is not None:
         att = att.masked_fill(pad_mask[:, None, None, :], float('-inf'))
     att = F.softmax(att, dim=-1)
-    att = torch.nan_to_num(att)  # handle all-masked rows
+    att = torch.nan_to_num(att)
 ```
 
-The `nan_to_num` call handles edge cases where a row is entirely masked (all `-inf` causes softmax to produce NaN). This is a practical detail that doesn't come up in single-sequence training.
+With this particular setup, the padding mask is a no-op. Padding is a suffix, and the causal mask already prevents a query at position `t` from attending to any key after `t`, so every key a real query can reach is a real token. The only logits `pad_mask` alters belong to *pad queries*, and their targets are `-100`, so `cross_entropy` throws those rows away. Run a batch through the model with and without `pad_mask` and the loss matches to ten decimal places.
+
+So why keep it? Because the redundancy is a property of *this* configuration, not of padding masks in general. The key-side mask starts to matter as soon as you:
+
+- left-pad (common at inference time, when you want all sequences to end at the same column), which puts pads *before* real tokens where causality no longer hides them
+- use bidirectional or prefix attention, where a query can look right
+- pack several documents into one row, where one document must not attend to another
+
+Learning where the mask is load-bearing and where it is inherited boilerplate is more useful than learning to type it.
+
+The `nan_to_num` call is defensive, not something you can trigger here. Softmax over a row that is entirely `-inf` returns NaN, but no row in this lab can be fully masked: row 0 always keeps position 0, and position 0 is `BOS`, never `PAD`.
 
 ### Separate embedding for PAD
 
@@ -72,8 +89,8 @@ But the output head only projects to `vocab_size`, so the model can never predic
 ## What you learn here
 
 - How variable-length sequences are batched with padding
-- The interplay between causal masks and padding masks in attention
-- Why `ignore_index=-100` exists in cross-entropy loss
+- Why `ignore_index=-100` exists, and why it, not the attention mask, is what protects the loss here
+- How to reason about whether a mask is actually doing anything: padding side and attention pattern decide it
 - The practical engineering that sits between "model works on one example" and "model trains efficiently"
 
 ## Run

@@ -5,6 +5,5 @@ graph TD
     wpe --> add_emb
     add_emb --> norm_in[Input RMSNorm]
     norm_in --> blocks[Transformer blocks]
-    blocks --> norm_out[Final RMSNorm]
-    norm_out --> lm_head["Output projection<br/>(lm_head)"]
+    blocks --> lm_head["Output projection<br/>(lm_head)"]
     lm_head --> logits[Vocabulary logits]

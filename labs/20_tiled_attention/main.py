@@ -210,19 +210,27 @@ def standard_attention(Q, K, V, seq_len):
     """
     Classic attention: compute the full attention matrix, write it to memory.
     On a real GPU this writes the NxN matrix to HBM (slow main memory).
+
+    Shapes are read off Q (n_head, seq_len, head_dim) rather than the module
+    globals, so the same function can be called at the model's tiny dimensions
+    and at production dimensions in the scaling sweep further down.
     """
+    nh, _, d = Q.shape
     stats = {"hbm_reads": 0, "hbm_writes": 0}
-    stats["hbm_reads"] += 2 * n_head * seq_len * head_dim
-    att = Q @ K.transpose(0, 2, 1) / math.sqrt(head_dim)
-    stats["hbm_writes"] += n_head * seq_len * seq_len
+    stats["hbm_reads"] += 2 * nh * seq_len * d
+    att = Q @ K.transpose(0, 2, 1) / math.sqrt(d)
+    stats["hbm_writes"] += nh * seq_len * seq_len
     causal = np.triu(np.ones((seq_len, seq_len)), k=1).astype(bool)
     att = np.where(causal, -1e9, att)
-    stats["hbm_reads"] += n_head * seq_len * seq_len
+    stats["hbm_reads"] += nh * seq_len * seq_len
     att_probs = softmax_np(att)
-    stats["hbm_writes"] += n_head * seq_len * seq_len
-    stats["hbm_reads"] += n_head * seq_len * seq_len + n_head * seq_len * head_dim
+    stats["hbm_writes"] += nh * seq_len * seq_len
+    stats["hbm_reads"] += nh * seq_len * seq_len + nh * seq_len * d
     out = att_probs @ V
-    stats["hbm_writes"] += n_head * seq_len * head_dim
+    stats["hbm_writes"] += nh * seq_len * d
+    # Largest single intermediate that has to be allocated: the NxN score
+    # matrix, for every head. This is the array FlashAttention refuses to build.
+    stats["max_intermediate"] = att.nbytes
     return out, stats
 
 
@@ -234,35 +242,50 @@ def online_softmax_attention(Q, K, V, seq_len):
     Online softmax (Milakov & Gimelshein, 2018): compute attention row by row
     without ever materializing the full NxN attention matrix.
 
-    This is the algorithmic foundation of FlashAttention.
+    This is the algorithmic *stepping stone* to FlashAttention, not an optimum.
+    It fixes the memory footprint (no NxN array anywhere), but it pays for that
+    by re-reading all of K and V once per query row: O(N^2 * d) element reads
+    instead of standard attention's O(N^2 + N*d). At the tiny head_dim of this
+    model that trade looks free; at head_dim=128 it is dramatically worse than
+    standard attention. The scaling sweep below measures exactly that.
+
+    Tiling (next function) is what turns this idea into a win: same running
+    softmax, but K/V are read once per *block* of queries instead of once per
+    query row.
     """
+    nh, _, d = Q.shape
     stats = {"hbm_reads": 0, "hbm_writes": 0}
     out = np.zeros_like(Q)
 
-    for h in range(n_head):
+    for h in range(nh):
         for i in range(seq_len):
             q_i = Q[h, i]
-            stats["hbm_reads"] += head_dim
+            stats["hbm_reads"] += d
 
             running_max = -np.inf
             running_sum = 0.0
-            running_out = np.zeros(head_dim)
+            running_out = np.zeros(d)
 
             for j in range(i + 1):  # causal: only attend to positions <= i
                 k_j = K[h, j]
                 v_j = V[h, j]
-                stats["hbm_reads"] += 2 * head_dim
+                stats["hbm_reads"] += 2 * d
 
-                score = np.dot(q_i, k_j) / math.sqrt(head_dim)
+                score = np.dot(q_i, k_j) / math.sqrt(d)
                 new_max = max(running_max, score)
-                correction = math.exp(running_max - new_max) if running_max != -np.inf else 0.0
+                # On the first key running_max is -inf, so this is exp(-inf) = 0
+                # and the accumulators start from scratch. No special case needed.
+                correction = math.exp(running_max - new_max)
                 running_sum = running_sum * correction + math.exp(score - new_max)
                 running_out = running_out * correction + math.exp(score - new_max) * v_j
                 running_max = new_max
 
             out[h, i] = running_out / running_sum
-            stats["hbm_writes"] += head_dim
+            stats["hbm_writes"] += d
 
+    # Largest intermediate: a single head_dim accumulator. Nothing NxN, and
+    # nothing that grows with N at all — that is the one thing this buys us.
+    stats["max_intermediate"] = d * Q.itemsize
     return out, stats
 
 
@@ -277,21 +300,22 @@ def tiled_attention(Q, K, V, seq_len, block_size_tile=4):
     matrix (standard), process BLOCKS of keys at once. Each block fits in
     fast on-chip memory (SRAM).
     """
-    stats = {"hbm_reads": 0, "hbm_writes": 0}
+    nh, _, d = Q.shape
+    stats = {"hbm_reads": 0, "hbm_writes": 0, "max_intermediate": 0}
     Bc = block_size_tile
     Br = block_size_tile
     out = np.zeros_like(Q)
 
-    for h in range(n_head):
+    for h in range(nh):
         for i_start in range(0, seq_len, Br):
             i_end = min(i_start + Br, seq_len)
             Qi = Q[h, i_start:i_end]
             block_rows = i_end - i_start
-            stats["hbm_reads"] += block_rows * head_dim
+            stats["hbm_reads"] += block_rows * d
 
             row_max = np.full(block_rows, -np.inf)
             row_sum = np.zeros(block_rows)
-            row_out = np.zeros((block_rows, head_dim))
+            row_out = np.zeros((block_rows, d))
 
             max_j = i_end  # causal: only attend up to current position
             for j_start in range(0, max_j, Bc):
@@ -299,9 +323,13 @@ def tiled_attention(Q, K, V, seq_len, block_size_tile=4):
                 Kj = K[h, j_start:j_end]
                 Vj = V[h, j_start:j_end]
                 block_cols = j_end - j_start
-                stats["hbm_reads"] += 2 * block_cols * head_dim
+                stats["hbm_reads"] += 2 * block_cols * d
 
-                scores = Qi @ Kj.T / math.sqrt(head_dim)
+                scores = Qi @ Kj.T / math.sqrt(d)
+                # Biggest thing this algorithm ever allocates: one Br x Bc score
+                # tile (plus the Br x d output accumulator). Both are chosen to
+                # fit in SRAM, and neither depends on N.
+                stats["max_intermediate"] = max(stats["max_intermediate"], scores.nbytes + row_out.nbytes)
 
                 # Apply causal mask within this block
                 for bi in range(block_rows):
@@ -320,7 +348,7 @@ def tiled_attention(Q, K, V, seq_len, block_size_tile=4):
                 row_max = new_max
 
             out[h, i_start:i_end] = row_out / row_sum[:, None]
-            stats["hbm_writes"] += block_rows * head_dim
+            stats["hbm_writes"] += block_rows * d
 
     return out, stats
 
@@ -352,23 +380,99 @@ print("--- memory operation counts (HBM reads + writes) ---\n")
 
 for name, stats, note in [
     ("Standard attention", stats_std, "writes N*N attention matrix to HBM, reads it back for softmax"),
-    ("Online softmax", stats_online, "never stores N*N matrix (processes one key at a time)"),
+    ("Online softmax", stats_online, "never stores N*N matrix, but re-reads all of K/V for every query row"),
     (
         "Tiled (FlashAttention, block_size=4)",
         stats_tiled,
-        "reads K/V in blocks (amortizes HBM access), vectorized compute",
+        "reads K/V once per block of queries, so the K/V traffic is amortized by Bc",
     ),
 ]:
     r, w = stats["hbm_reads"], stats["hbm_writes"]
     print(f"{name}:\n  HBM reads: {r:>6d}  writes: {w:>6d}  total: {r + w:>6d}")
+    print(f"  largest intermediate array: {stats['max_intermediate']:>6d} bytes")
     print(f"  Key insight: {note}\n")
 
-N, d, nh = seq_len, head_dim, n_head
 print(
-    f"Summary:\n"
-    f"  Across all heads, standard writes {2 * nh * N * N:>5d} score/probability elements (O(n_head*N^2))\n"
-    f"  Across all heads, tiled and online write only {nh * N * d:>5d} output elements (O(n_head*N*d))\n"
-    f"  Per head at N=2048, d=128: 2*N^2 = {2 * 2048 * 2048 / 1e6:.1f}M vs N*d = {2048 * 128 / 1024:.0f}K elements"
+    f"Careful: this ranking is an artefact of head_dim={head_dim}. Online softmax looks\n"
+    f"cheap here only because head_dim is tiny, so re-reading K/V costs almost nothing.\n"
+    f"The sweep below shows what happens at a realistic head_dim.\n"
+)
+
+# ---------------------------------------------------------------------------
+# Scaling sweep — the quadratic-vs-linear story needs more than 7 tokens
+# ---------------------------------------------------------------------------
+# The comparison above runs on one short name (seq_len=7) at head_dim=4. That is
+# far too small to show anything about scaling: at head_dim=4 the N*N score
+# matrix is barely larger than the N*d inputs. Sweep N on synthetic Q/K/V at a
+# realistic head_dim so the crossover is actually visible.
+sweep_d = 64  # a realistic per-head dimension (the model above uses 4)
+sweep_tile = 64  # a realistic FlashAttention block size (the demo above uses 4)
+print(f"--- scaling sweep: synthetic Q/K/V, n_head=1, head_dim={sweep_d}, tile={sweep_tile} ---\n")
+
+
+def hbm_total(stats):
+    return stats["hbm_reads"] + stats["hbm_writes"]
+
+
+hdr = f"  {'N':>4}  {'standard':>10}  {'online':>10}  {'tiled':>10}  {'tiled/std':>9}  {'online/std':>10}"
+print(hdr)
+print("  " + "-" * (len(hdr) - 2))
+for N_sweep in (64, 128, 256, 512):
+    Qs, Ks, Vs = (rng.standard_normal((1, N_sweep, sweep_d)) for _ in range(3))
+    o_std, s_std = standard_attention(Qs, Ks, Vs, N_sweep)
+    o_on, s_on = online_softmax_attention(Qs, Ks, Vs, N_sweep)
+    o_ti, s_ti = tiled_attention(Qs, Ks, Vs, N_sweep, block_size_tile=sweep_tile)
+    # Same algebra at a real head_dim: all three still agree to float64 precision.
+    assert np.max(np.abs(o_std - o_on)) < 1e-12, "online softmax diverged in sweep"
+    assert np.max(np.abs(o_std - o_ti)) < 1e-12, "tiled diverged in sweep"
+    t_std, t_on, t_ti = hbm_total(s_std), hbm_total(s_on), hbm_total(s_ti)
+    print(
+        f"  {N_sweep:>4}  {t_std:>10d}  {t_on:>10d}  {t_ti:>10d}"
+        f"  {t_ti / t_std:>8.2f}x  {t_on / t_std:>9.2f}x"
+    )
+
+# The counters above are proxies for traffic. This is the thing you can actually
+# run out of: the largest single array each algorithm has to hold at once.
+print(f"\n  largest intermediate array actually allocated, N=512, head_dim={sweep_d}:")
+Qs, Ks, Vs = (rng.standard_normal((1, 512, sweep_d)) for _ in range(3))
+for label, stats in [
+    ("standard: the N x N score matrix", standard_attention(Qs, Ks, Vs, 512)[1]),
+    ("online:   one head_dim accumulator", online_softmax_attention(Qs, Ks, Vs, 512)[1]),
+    (f"tiled:    one {sweep_tile}x{sweep_tile} tile + output block", tiled_attention(Qs, Ks, Vs, 512, sweep_tile)[1]),
+]:
+    print(f"    {label:<40s} {stats['max_intermediate']:>9,d} bytes")
+print(
+    "  Standard grows as N^2. The other two are set by head_dim and tile size and do\n"
+    "  not grow with N at all — that is why FlashAttention can run context lengths\n"
+    "  that standard attention cannot fit in memory, whatever the traffic counts say.\n"
+)
+
+# ---------------------------------------------------------------------------
+# Projection to a production shape (same counting formulas, closed form)
+# ---------------------------------------------------------------------------
+# These are the closed forms of the counters above, not new measurements, so the
+# numbers are directly comparable with the sweep.
+N, d = 2048, 128
+std_ops = 4 * N * N + 4 * N * d
+online_ops = 2 * N * d + d * N * (N + 1)
+
+
+def tiled_ops(n, dim, tile):
+    n_blocks = n // tile
+    return n_blocks * 2 * tile * dim + dim * tile * n_blocks * (n_blocks + 1)
+
+
+print(f"--- same counters projected to N={N}, d={d}, one head ---\n")
+print(f"  standard          {std_ops:>12,d}")
+print(f"  online softmax    {online_ops:>12,d}   {online_ops / std_ops:>6.1f}x MORE than standard")
+for tile in (64, 256, 512):
+    ops = tiled_ops(N, d, tile)
+    print(f"  tiled, Bc={tile:<4d}    {ops:>12,d}   {std_ops / ops:>6.2f}x fewer than standard")
+print(
+    "\n  Two things to read off this table. First, online softmax is a memory-footprint\n"
+    "  fix, not a memory-traffic fix: it is 30x WORSE than standard on total HBM ops at\n"
+    "  d=128, because it streams all of K and V once per query row. Second, tiling's\n"
+    "  advantage is tile-size dependent — there is no single 'Nx fewer' number.\n"
 )
 
 # ---------------------------------------------------------------------------
@@ -386,7 +490,10 @@ print("""
 
 Standard attention writes the full N*N attention matrix to HBM — 10x slower
 memory. FlashAttention tiles the computation so it stays in SRAM, never
-materializing the full matrix. Same math, ~2-4x faster on real hardware.""")
+materializing the full matrix. Same math, same forward-pass FLOPs, ~2-4x faster
+on real hardware. (The often-quoted "FlashAttention does extra FLOPs" applies to
+the BACKWARD pass, which recomputes the score tiles instead of storing them.
+The forward pass implemented above does not do any extra arithmetic.)""")
 
 # ---------------------------------------------------------------------------
 # Inference — generate names using tiled attention

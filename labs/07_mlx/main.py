@@ -10,11 +10,16 @@ silicon" (Hannun et al., 2023), https://github.com/ml-explore/mlx.
 MLX has a NumPy-like API with automatic differentiation and lazy evaluation.
 Arrays live in unified memory, so Apple Silicon's unified memory architecture
 eliminates CPU-GPU transfer overhead entirely.
+
+The training step is wrapped in mx.compile, MLX's analogue of jax.jit, and the
+loop prints ms/step. Set use_compile = False below to see what the compiler is
+worth on your machine instead of reading a claim about it.
 """
 
 import math
 import os
 import random
+import time
 
 import mlx.core as mx
 import mlx.nn as nn
@@ -79,7 +84,7 @@ class CausalSelfAttention(nn.Module):
 
         att = (q @ k.transpose(0, 2, 1)) / math.sqrt(head_dim)
         mask = mx.triu(mx.ones((n, n)), k=1).astype(mx.bool_)
-        att = mx.where(mask, mx.array(-1e9), att)
+        att = mx.where(mask, -1e9, att)
         att = mx.softmax(att, axis=-1)
 
         out = (att @ v).transpose(1, 0, 2).reshape(n, n_embd)
@@ -133,9 +138,10 @@ class MicroGPT(nn.Module):
 # Training
 # ---------------------------------------------------------------------------
 model = MicroGPT()
-# Match original init: N(0, 0.08) for all weights
-weights = mlx.utils.tree_flatten(model.parameters())
-model.load_weights([(k, mx.random.normal(v.shape) * 0.08) for k, v in weights])
+# Match original init: N(0, 0.08) for all weights.
+# nn.Module.apply maps a function over every parameter array in place, which is
+# the idiomatic way to re-initialise (or cast, or quantise) a whole model.
+model.apply(lambda w: mx.random.normal(w.shape) * 0.08)
 num_params = sum(p.size for _, p in mlx.utils.tree_flatten(model.parameters()))
 print(f"num params: {num_params}")
 
@@ -154,7 +160,34 @@ def loss_fn(model, input_ids, targets):
 loss_and_grad = nn.value_and_grad(model, loss_fn)
 optimizer = optim.Adam(learning_rate=learning_rate, betas=[beta1, beta2], eps=eps_adam)
 
+# ---------------------------------------------------------------------------
+# The training step, optionally compiled
+# ---------------------------------------------------------------------------
+# mx.compile is MLX's counterpart to jax.jit: it traces the function once and
+# hands XLA-style fused kernels to the device instead of dispatching operation by
+# operation. Like jit, it specialises on input shapes, so a new sequence length
+# means another trace (see the two averages printed after training).
+#
+# `inputs`/`outputs` tell the compiler that the model parameters and the
+# optimizer state are read and written by the step, since they are not passed as
+# arguments. Flip use_compile to False and compare the printed ms/step.
+use_compile = True
+state = [model.state, optimizer.state]
+
+
+def train_step(input_ids, targets):
+    loss_val, grads = loss_and_grad(model, input_ids, targets)
+    optimizer.update(model, grads)
+    return loss_val
+
+
+if use_compile:
+    train_step = mx.compile(train_step, inputs=state, outputs=state)
+
 num_steps = 1000
+seen_lengths = set()  # each new sequence length costs one more trace
+first_shape_ms, cached_shape_ms = [], []
+
 for step in range(num_steps):
     doc = docs[step % len(docs)]
     tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
@@ -163,16 +196,30 @@ for step in range(num_steps):
     input_ids = mx.array(tokens[:n])
     targets = mx.array(tokens[1 : n + 1])
 
-    loss_val, grads = loss_and_grad(model, input_ids, targets)
+    is_new_shape = n not in seen_lengths
+    seen_lengths.add(n)
 
-    # Linear LR decay
-    lr_t = learning_rate * (1 - step / num_steps)
-    optimizer.learning_rate = mx.array(lr_t)
-    optimizer.update(model, grads)
-    mx.eval(model.parameters(), optimizer.state)
+    # Linear LR decay. The learning rate lives in the optimizer state, which the
+    # compiled step captures, so changing it here is picked up without recompiling.
+    optimizer.learning_rate = mx.array(learning_rate * (1 - step / num_steps))
+
+    t0 = time.perf_counter()
+    loss_val = train_step(input_ids, targets)
+    # Why this line exists: MLX is lazy, so the update above is only a graph.
+    # loss_val.item() further down would force the loss, but not the parameters
+    # or the optimizer moments. Without an explicit eval, the pending graph would
+    # keep growing step after step until scheduling and memory dominate. This is
+    # a bound on the graph, not a way to "get the number".
+    mx.eval(state)
+    dt = (time.perf_counter() - t0) * 1000
+    (first_shape_ms if is_new_shape else cached_shape_ms).append(dt)
 
     if (step + 1) % 10 == 0 or step == 0:
-        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val.item():.4f}")
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss_val.item():.4f} | {dt:7.2f} ms")
+
+print(f"\ndistinct sequence lengths seen: {len(seen_lengths)} (compile = {use_compile})")
+print(f"  first-time-shape steps: {sum(first_shape_ms) / len(first_shape_ms):8.2f} ms mean")
+print(f"  repeated-shape steps:   {sum(cached_shape_ms) / len(cached_shape_ms):8.2f} ms mean")
 
 # ---------------------------------------------------------------------------
 # Inference

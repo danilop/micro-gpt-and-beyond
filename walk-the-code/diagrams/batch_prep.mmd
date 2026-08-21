@@ -1,4 +1,5 @@
 graph TD
-    docs[Batch of B docs]
-    docs --> tokenize[Tokenize each]
-    tokenize --> pad[Pad + Mask + Targets]
+    docs["B docs, different lengths"] --> tokenize[Tokenize and bound to block_size]
+    tokenize --> pad["Pad inputs to a fixed width<br/>(PAD appended at the end)"]
+    pad --> tgt["Targets: shift by one,<br/>ignore_index at pad positions"]
+    pad --> mask["Attention pad mask<br/>(redundant under causal masking)"]

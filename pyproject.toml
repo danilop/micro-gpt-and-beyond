@@ -33,6 +33,7 @@ ignore = [
     "SIM108",       # ternary operator (readability preference)
     "RUF001",       # ambiguous unicode (box-drawing chars in output)
     "RUF002",       # ambiguous unicode in docstring
+    "RUF003",       # ambiguous unicode in comment — × and → are intentional in explanatory comments
     "RUF059",       # unused unpacked variables — `B, T = x.shape` is idiomatic PyTorch readability
     "B905",         # zip() without strict= — educational code matches Karpathy's patterns
     "S603",         # subprocess call with hardcoded commands in run.py

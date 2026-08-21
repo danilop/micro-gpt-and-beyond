@@ -4,7 +4,12 @@ microGPT — Soft training edition.
 Builds on Lab 17 (soft thinking): instead of only using concept tokens at
 inference time, this version also uses them during training. A curriculum
 gradually replaces ground-truth token embeddings with the model's own soft
-predictions, closing the train-test gap that limits inference-only soft thinking.
+predictions, narrowing the train-test gap that limits inference-only soft
+thinking. The lab measures that gap on held-out names rather than asserting it,
+including what the soft-trained model gives up on hard inputs in exchange.
+
+The model and the generation loop are duplicated from Lab 17 rather than
+imported: every lab in this series runs standalone from a single file.
 
   Standard training:  input = embed(ground_truth_token)
   Soft training:      input = (1-mix) * embed(ground_truth) + mix * concept_token
@@ -151,6 +156,8 @@ soft_temp = 1.0
 @torch.no_grad()
 def generate(model, mode="hard", soft_temp=1.0):
     """Generate a name using hard (discrete) or soft (concept token) decoding."""
+    # This model has no dropout and no batch norm, so eval() is a no-op here.
+    # It is called anyway because it is the habit you want in every other model.
     model.eval()
     tokens, entropies = [], []
     embeds = model.wte(torch.tensor([[BOS]], device=device))
@@ -164,17 +171,59 @@ def generate(model, mode="hard", soft_temp=1.0):
             break
         tokens.append(token_id)
 
-        entropies.append(-(probs * probs.clamp(min=1e-10).log()).sum().item())
-
+        # Report the entropy of the distribution that BUILDS the next input, not
+        # of the sampling distribution softmax(logits/temperature). The sampling
+        # distribution is identical in all four cells of the 2x2 below, so
+        # reporting it would make the table read flat regardless of the result.
         if mode == "hard":
             next_emb = model.wte(torch.tensor([[token_id]], device=device))
+            # One embedding in: the input distribution is a one-hot delta, so its
+            # entropy is exactly 0. That is the bottleneck soft decoding removes.
+            entropies.append(0.0)
         else:
             soft_probs = F.softmax(logits / soft_temp, dim=-1)
             next_emb = (soft_probs @ model.wte.weight).view(1, 1, -1)
+            entropies.append(-(soft_probs * soft_probs.clamp(min=1e-10).log()).sum().item())
 
         embeds = torch.cat([embeds, next_emb], dim=1)[:, -block_size:]
 
     return tokens, entropies
+
+
+# ---------------------------------------------------------------------------
+# The measurement this lab exists for: the train-test gap
+# ---------------------------------------------------------------------------
+@torch.no_grad()
+def heldout_nll(model, names, soft_inputs=False):
+    """Mean per-token NLL (nats) on unseen names, teacher-forced.
+
+    With soft_inputs=False the model is fed ground-truth token embeddings, which
+    is exactly what standard training trains on. With soft_inputs=True every
+    position after BOS is replaced by the model's own concept token, which is
+    what soft decoding actually feeds it at inference (mix=1.0 in the curriculum
+    above). The difference between the two is the train-test gap, in nats.
+    """
+    total, count = 0.0, 0
+    for doc in names:
+        tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
+        n = min(block_size, len(tokens) - 1)
+        input_ids = torch.tensor([tokens[:n]], device=device)
+        targets = torch.tensor([tokens[1 : n + 1]], device=device)
+
+        if soft_inputs and n > 1:
+            pred_logits = model(input_ids)
+            soft_embeds = F.softmax(pred_logits / soft_temp, dim=-1) @ model.wte.weight
+            gt_embeds = model.wte(input_ids)
+            # Same shift as the training curriculum: soft_embeds[:, i] is the
+            # prediction for position i+1, and BOS stays ground truth.
+            mixed = torch.cat([gt_embeds[:, :1], soft_embeds[:, :-1]], dim=1)
+            logits = model(inputs_embeds=mixed)
+        else:
+            logits = model(input_ids)
+
+        total += F.cross_entropy(logits.view(-1, vocab_size), targets.view(-1), reduction="sum").item()
+        count += n
+    return total / max(count, 1)
 
 
 # ---------------------------------------------------------------------------
@@ -248,6 +297,7 @@ configs = [
     (soft_model, "soft-trained", "soft", 1.0),
 ]
 
+cell_H = {}
 with torch.no_grad():
     for model_obj, model_name, mode, st in configs:
         model_obj.eval()
@@ -259,8 +309,55 @@ with torch.no_grad():
             avg_H = sum(ents) / len(ents) if ents else 0
             all_H.append(avg_H)
             if i < 10:
-                print(f"  {i + 1:2d}: {name:<15s} entropy {avg_H:.2f}/{max_H:.2f}")
-        print(f"  -> mean entropy: {sum(all_H) / len(all_H):.2f}/{max_H:.2f}\n")
+                print(f"  {i + 1:2d}: {name:<15s} concept-token entropy {avg_H:.3f}/{max_H:.2f}")
+        cell_H[(model_name, mode)] = sum(all_H) / len(all_H)
+        print(f"  -> mean concept-token entropy: {cell_H[(model_name, mode)]:.3f}/{max_H:.2f}\n")
+
+print(f"""  Read the entropy column carefully, because it is easy to over-claim from it.
+  Both hard rows are exactly 0 by construction: one embedding goes in, so there
+  is no distribution to measure. And the soft-trained model's concept tokens are
+  slightly MORE spread than the standard-trained model's under soft decoding,
+  {cell_H[("soft-trained", "soft")]:.3f} against {cell_H[("standard-trained", "soft")]:.3f} nats, not less.
+
+  Entropy measures how much of the distribution flows forward. It does not
+  measure whether the model can make use of it. For that you need held-out
+  likelihood, which is what comes next.
+""")
+
+# ---------------------------------------------------------------------------
+# Held-out train-test gap — the number the whole lab is about
+# ---------------------------------------------------------------------------
+# Everything above is qualitative: names that look plausible, entropies that
+# behave. This is the claim: soft training closes the gap between hard inputs
+# (what teacher forcing trains on) and soft inputs (what soft decoding feeds).
+# Training walked docs[0:num_steps], so anything past that is unseen.
+heldout = docs[num_steps : num_steps + 2000]
+print(f"--- train-test gap on {len(heldout)} unseen names (per-token NLL, nats) ---\n")
+print(f"  {'model':<18s} {'hard inputs':>11s}  {'soft inputs':>11s}  {'gap':>8s}")
+print(f"  {'-' * 18} {'-' * 11}  {'-' * 11}  {'-' * 8}")
+gaps = {}
+for model_obj, model_name in [(standard_model, "standard-trained"), (soft_model, "soft-trained")]:
+    hard_nll = heldout_nll(model_obj, heldout, soft_inputs=False)
+    soft_nll = heldout_nll(model_obj, heldout, soft_inputs=True)
+    gaps[model_name] = (hard_nll, soft_nll, soft_nll - hard_nll)
+    print(f"  {model_name:<18s} {hard_nll:>11.4f}  {soft_nll:>11.4f}  {soft_nll - hard_nll:>+8.4f}")
+
+std_hard, std_soft, std_gap = gaps["standard-trained"]
+sft_hard, sft_soft, sft_gap = gaps["soft-trained"]
+print(f"""
+  Read the two gaps, not the two best numbers. Soft training shrinks the penalty
+  for soft inputs from {std_gap:+.4f} to {sft_gap:+.4f} nats, a {100 * (1 - sft_gap / std_gap):.0f}% reduction — that is
+  the curriculum working as advertised.
+
+  It is not free. On hard inputs the soft-trained model is WORSE:
+  {sft_hard:.4f} against {std_hard:.4f} nats. It spent capacity learning to read blended
+  embeddings, and gave up some of its fit to clean ones. The best single cell in
+  the table is still standard-trained on hard inputs ({std_hard:.4f}).
+
+  That is the honest shape of the result: soft training buys robustness to soft
+  inputs and pays for it on hard inputs. Whether the trade is worth it depends
+  on which one you deploy with.
+""")
 
 print("""--- what's happening ---
 

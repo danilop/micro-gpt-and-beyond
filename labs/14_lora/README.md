@@ -22,10 +22,10 @@ The forward pass becomes:
 
 ```python
 def forward(self, x):
-    return self.base(x) + (x @ self.lora_A.T) @ self.lora_B.T
+    return self.base(x) + (x @ self.lora_A.T) @ self.lora_B.T * self.scaling
 ```
 
-The base weight is frozen. Only A and B are trainable.
+The base weight is frozen. Only A and B are trainable. `scaling` is `alpha / rank`, the magnitude knob from Hu et al. Section 4.1; it is 1.0 unless you pass an explicit `alpha`.
 
 ## Why B is zero-initialized
 
@@ -41,57 +41,101 @@ This means we're not losing expressiveness by constraining the update to low ran
 
 ## What this lab demonstrates
 
-The code runs in six phases:
+The centrepiece is a **rank ablation**: how small can the adapter get before it stops working?
 
-1. **Pre-train** a standard microGPT on all names (1000 steps)
-2. **Filter** the dataset to names starting with "m"
-3. **Inject LoRA** adapters into all Linear layers in attention and MLP, then print total vs trainable parameter counts
-4. **Fine-tune** with LoRA for 500 steps on the filtered subset, training only the adapter parameters
-5. **Compare** generation from the base model vs the LoRA-adapted model, where the distribution shift is visible
-6. **Merge** LoRA weights back into the base model and verify identical output
+The lab pre-trains a 4,192-parameter microGPT on all 32,033 names, then fine-tunes it towards a phonetic style — names whose consonants all come from `{m, n, r}`, so `emmerie`, `amena`, `normani`, `manami`. That filter leaves 1,092 of the 32,033 names. The style is easy to check by eye and easy to score automatically, which is what makes an ablation possible at all.
 
-### LoRA injection
+It then fine-tunes four different adapter configurations for 500 steps each, plus a full fine-tuning control, and scores each one on the fraction of 200 generated names that match the target style. Measured:
 
-Every `nn.Linear` in the transformer blocks gets wrapped:
+| Config | Trainable | % of model | scaling | Soft names | Merge |
+|---|---|---|---|---|---|
+| base (no fine-tuning) | 0 | 0.0% | — | 34/200, 17% | — |
+| **rank 1** | **64** | **1.5%** | 1.00 | **170/200, 85%** | ok |
+| rank 2 | 128 | 3.0% | 1.00 | 176/200, 88% | ok |
+| rank 4 | 256 | 5.8% | 1.00 | 181/200, 90% | ok |
+| rank 4, alpha 16 | 256 | 5.8% | 4.00 | 185/200, 92% | ok |
+| full fine-tuning | 512 | 12.2% | — | 160/200, 80% | n/a |
+
+**Rank 1 already gets you there.** Sixty-four trainable parameters — one vector pair per adapted matrix, 1.5% of the model — take the style rate from 17% to 85%. Rank 2 and rank 4 add a few points for two and four times the adapter. Most of the distance is covered at r=1.
+
+That is the LoRA paper's central empirical claim, reproduced small enough to read in one screen: the useful part of a fine-tuning update has low intrinsic rank, so a very small r goes a long way.
+
+The last row is the control that makes the rest of the table mean something. Full fine-tuning of the same two matrices, same 500 steps, same learning rate, 512 trainable parameters and no low-rank constraint, reaches 80%. At 200 samples an 85% rate carries roughly ±2.5 points of sampling error, so the honest reading is "rank 1 is at least as good as full fine-tuning here", not "LoRA wins". Either way, "LoRA matches full fine-tuning" stops being a slogan and becomes something the lab checks.
+
+### Where the adapters go
+
+Not everywhere. The lab targets the query and value projections only:
+
+```python
+def inject_lora(module, rank, alpha=None, targets=("wq", "wv")):
+    for name, child in module.named_children():
+        if isinstance(child, nn.Linear) and name in targets:
+            setattr(module, name, LoRALinear(child, rank=rank, alpha=alpha))
+        else:
+            inject_lora(child, rank=rank, alpha=alpha, targets=targets)
+```
+
+`wk`, `wo`, and both MLP matrices keep their plain `nn.Linear` and stay frozen. This follows Hu et al., who found `wq` + `wv` sufficient for most tasks — and it is why the rank-1 adapter is 64 parameters rather than the 288 it would take to wrap every `nn.Linear` in the block.
+
+The wrapper itself:
 
 ```python
 class LoRALinear(nn.Module):
-    def __init__(self, base_linear, rank=4):
+    def __init__(self, base_linear, rank=4, alpha=None):
         super().__init__()
         self.base = base_linear
         self.base.weight.requires_grad_(False)
         d_out, d_in = base_linear.weight.shape
         self.lora_A = nn.Parameter(torch.randn(rank, d_in) * 0.01)
         self.lora_B = nn.Parameter(torch.zeros(d_out, rank))
+        self.scaling = (alpha if alpha is not None else rank) / rank
+
+    def forward(self, x):
+        return self.base(x) + (x @ self.lora_A.T) @ self.lora_B.T * self.scaling
 ```
 
-The optimizer only sees LoRA parameters:
+`scaling` is `alpha / rank`. When `alpha` is left at `None` it defaults to `rank`, so scaling is exactly 1.0 and the term does nothing — which is the case for three of the four adapter rows. The `rank 4, alpha 16` row exists so the factor is actually exercised: scaling becomes 4.0, the adapter's contribution is multiplied by four, and the result moves. Without that row the docstring would be advertising a mechanism the lab never runs.
+
+The freeze is not taken on trust either. Every configuration asserts it:
+
+```python
+assert frozen == base_total, f"freeze error: {frozen} != {base_total}"
+```
+
+If a single base weight were still trainable, the count would not match and the run would stop.
+
+### The optimizer only sees the adapters
 
 ```python
 lora_params = [p for p in model.parameters() if p.requires_grad]
 optimizer = torch.optim.Adam(lora_params, ...)
 ```
 
+Because B is zero-initialized, step 0 of fine-tuning produces byte-identical output to the frozen base model. The adaptation grows from an exact no-op.
+
 ### Merging at deployment
 
-After fine-tuning, the adapter can be folded back into the base weight:
+After fine-tuning, the adapter folds back into the base weight:
 
 ```python
-merged.weight = nn.Parameter(child.base.weight + child.lora_B @ child.lora_A)
+with torch.no_grad():
+    merged.weight.copy_(child.base.weight + child.scaling * child.lora_B @ child.lora_A)
 ```
 
-The merged model is structurally identical to the original: same size, same architecture, no extra layers. There is zero runtime overhead. This is one of LoRA's key advantages over other adapter methods.
+The merged model is structurally identical to the original: same size, same architecture, no extra layers, zero runtime overhead. The lab verifies this rather than asserting it — it regenerates from the merged model with the same seed and checks the names come out character-identical. Every row of the table above reports `ok`.
 
 ## Multiple adapters
 
-Because LoRA adapters are small and the base model stays frozen, you can train separate adapters for different tasks and swap them at serving time. One base model, many behaviors, where each adapter is just a pair of small matrices per layer.
+Because LoRA adapters are small and the base model stays frozen, you can train separate adapters for different tasks and swap them at serving time. One base model, many behaviors, where each adapter is just a pair of small matrices per layer. At rank 1 in this lab an adapter is 64 numbers, so you could keep hundreds of them next to one 4,192-parameter base model.
 
 ## What you learn here
 
-- How to freeze a model and inject trainable adapters without changing the architecture
-- Why low-rank updates are sufficient for fine-tuning (empirical finding, not just a trick)
+- How to freeze a model and inject trainable adapters without changing the architecture, and how to assert the freeze actually held
+- Why low-rank updates are sufficient for fine-tuning: rank 1 gets 85% of the way where full fine-tuning gets 80%, at one eighth the trainable parameters
+- How to run a rank ablation, and how to read one without over-reading sampling noise
+- What the alpha/rank scaling factor does, by seeing a row where it is not 1.0
 - The role of zero initialization in keeping training stable
-- How to merge adapters back for deployment with no overhead
+- How to merge adapters back for deployment with no overhead, and how to verify the merge is exact
 - That you can shift a model's behavior by training a tiny fraction of its parameters
 
 ## Run
@@ -100,4 +144,4 @@ Because LoRA adapters are small and the base model stays frozen, you can train s
 uv run python main.py
 ```
 
-Pre-trains for 1000 steps, fine-tunes with LoRA for 500 steps, then compares outputs.
+Pre-trains for 1000 steps on all 32,033 names, then runs five 500-step fine-tunes on the 1,092-name filtered subset: LoRA at rank 1, 2 and 4, LoRA at rank 4 with alpha 16, and a full fine-tuning control on the same two matrices. Each one prints its adapter dimensions and parameter counts, 20 sample names, the style-match rate over 200 samples, and a merge check. The run ends with the ablation summary table.

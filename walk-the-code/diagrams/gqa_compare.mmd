@@ -1,5 +1,4 @@
 graph LR
-    q_mha[MHA<br/>4Q -> 4KV<br/>cache 4x]
-    q_gqa[GQA<br/>4Q -> 2KV<br/>cache 2x]
-    q_mqa[MQA<br/>4Q -> 1KV<br/>cache 1x]
-    q_mha --> q_gqa --> q_mqa
+    heads[4 query heads] --> q_mha["MHA: 4 KV heads<br/>cache 1.00x"]
+    heads --> q_gqa["GQA: 2 KV heads<br/>cache 0.50x"]
+    heads --> q_mqa["MQA: 1 KV head<br/>cache 0.25x"]

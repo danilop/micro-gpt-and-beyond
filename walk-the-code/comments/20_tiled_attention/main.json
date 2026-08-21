@@ -230,7 +230,6 @@
         "add_emb",
         "norm_in",
         "blocks",
-        "norm_out",
         "lm_head",
         "logits"
       ],
@@ -239,8 +238,7 @@
         3,
         4,
         5,
-        6,
-        7
+        6
       ]
     }
   },
@@ -450,63 +448,82 @@
       "s_out"
     ]
   },
-  "214": {
+  "218": {
+    "text": "Read the shapes off <code>Q</code> rather than the module globals. That one change is what lets the same three functions be called at the model's toy dimensions <em>and</em> at production dimensions in the scaling sweep below, with the counters staying comparable.",
+    "hash": "bb946e7c"
+  },
+  "219": {
     "text": "Count every read/write to \"HBM\" (slow memory) to make the cost explicit.",
     "hash": "16491a95"
   },
-  "215": {
-    "text": "Read all Q and K vectors from HBM to compute scores.",
-    "hash": "94708a45"
+  "220": {
+    "text": "Read all of Q and K from HBM to compute the scores. Linear in N, and the cheapest part of what follows.",
+    "hash": "0f0e8152"
   },
-  "216": {
-    "text": "The O(N^2) matrix: every query attends to every key. This is the expensive part to store.",
-    "hash": "fd98a5af"
-  },
-  "217": {
-    "text": "Write the full N*N score matrix to HBM, this is the waste FlashAttention avoids.",
-    "hash": "dc26b82c",
+  "221": {
+    "text": "The O(N^2) matrix: every query against every key. This is the array the whole lab is about, and the only reason it fits here is that N is 7.",
     "diagram": "tiled_standard",
-    "highlight": [
-      "s_write"
-    ]
+    "highlight": {
+      "nodes": [
+        "s_att"
+      ],
+      "links": [
+        0
+      ]
+    },
+    "hash": "9eb6fbeb"
   },
-  "218": {
+  "222": {
+    "text": "Write the full N x N score matrix out to HBM. This is the waste FlashAttention refuses to pay.",
+    "diagram": "tiled_standard",
+    "highlight": {
+      "nodes": [
+        "s_write"
+      ],
+      "links": [
+        1
+      ]
+    },
+    "hash": "3b2aa8c7"
+  },
+  "223": {
     "text": "Build the causal mask: upper triangle blocks future positions.",
     "hash": "d0c77488"
   },
-  "219": {
+  "224": {
     "text": "Replace future-position scores with negative infinity. After softmax, these become zero, enforcing the causal left-to-right constraint.",
     "hash": "09479d5c"
   },
-  "220": {
-    "text": "Read the N*N matrix back from HBM for softmax, a full round-trip through slow memory.",
-    "hash": "8951186e"
+  "225": {
+    "text": "Read the N x N matrix back in for the softmax — a full round trip through slow memory for data that was just written.",
+    "hash": "0ad6f977"
   },
-  "221": {
+  "226": {
     "text": "Row-wise softmax to get attention weights.",
     "hash": "63a6f60c"
   },
-  "222": {
-    "text": "Write the N*N attention weights back to HBM.",
-    "hash": "dc26b82c",
-    "diagram": "tiled_standard",
-    "highlight": [
-      "s_softmax"
-    ]
+  "227": {
+    "text": "Write the N x N attention weights back out again. Second N^2 write of the forward pass.",
+    "hash": "3b2aa8c7"
   },
-  "223": {
-    "text": "Read back the weights AND values to compute the final weighted sum.",
-    "hash": "f6eb034e"
+  "228": {
+    "text": "Read the weights back one more time, plus all of V, to form the weighted sum. Three N^2 traversals so far, for an output that is only N x d.",
+    "hash": "9c80d475"
   },
-  "224": {
+  "229": {
     "text": "Matrix multiply: attention weights * values = output.",
     "hash": "e9c8f0d4"
   },
-  "225": {
-    "text": "Write the output back to HBM. Total: 2 round-trips of the N*N matrix through slow memory.",
-    "hash": "2b4e87a3"
+  "230": {
+    "text": "Finally write the N x d output. Standard attention has now moved roughly 4 N^2 elements to produce it.",
+    "hash": "ddc9b4ee"
   },
-  "232": {
+  "233": {
+    "text": "The largest single array this algorithm has to hold: the N x N score matrix, per head. Traffic counters are a proxy, but <em>this</em> is the number that decides whether a context length fits in memory at all.",
+    "important": true,
+    "hash": "0d336af4"
+  },
+  "240": {
     "text": "Algorithm 2: Online softmax. Processes one key at a time, never materializing the N*N matrix. The foundation of FlashAttention, same output, far less memory traffic.",
     "hash": "bb2bf2ef",
     "diagram": "tiled_online",
@@ -529,23 +546,27 @@
       ]
     }
   },
-  "239": {
+  "256": {
+    "text": "Same trick as in standard attention: shapes come from the tensor, so this runs unchanged at head_dim=4 and head_dim=64.",
+    "hash": "bb946e7c"
+  },
+  "257": {
     "text": "Track HBM operations, this algorithm has zero N*N writes.",
     "hash": "16491a95"
   },
-  "240": {
+  "258": {
     "text": "Allocate output buffer, same shape as Q.",
     "hash": "5b845601"
   },
-  "242": {
-    "text": "Iterate over each attention head independently, since heads share no state and can be processed in any order.",
-    "hash": "0eac1d8b"
+  "260": {
+    "text": "Heads are fully independent — no term in attention mixes them — so the outer loop is just bookkeeping.",
+    "hash": "c3c4d5b6"
   },
-  "243": {
+  "261": {
     "text": "For each query position i...",
     "hash": "33c601d1"
   },
-  "244": {
+  "262": {
     "text": "Online softmax begins by loading one query row at a time. That is why memory use stays linear instead of materializing the whole attention matrix.",
     "diagram": "tiled_online",
     "highlight": [
@@ -553,23 +574,23 @@
     ],
     "hash": "f6e5cf98"
   },
-  "245": {
-    "text": "Count the HBM read for this query.",
-    "hash": "f21bc8a0"
+  "263": {
+    "text": "One query row read from HBM. Cheap; the expensive part is what this loop does to K and V.",
+    "hash": "6292a28d"
   },
-  "247": {
+  "265": {
     "text": "The online softmax trick: maintain a running max, sum, and weighted output. No need to store all scores first.",
     "hash": "143f993d"
   },
-  "248": {
+  "266": {
     "text": "Running sum of exp(scores) for softmax denominator.",
     "hash": "6c2de1f1"
   },
-  "249": {
-    "text": "Running weighted sum of values, the attention output, accumulated incrementally.",
-    "hash": "922ccbf3"
+  "267": {
+    "text": "The running weighted sum of values, accumulated incrementally. This <code>head_dim</code> vector is the entire working set of the algorithm — nothing here grows with N.",
+    "hash": "753b325b"
   },
-  "251": {
+  "269": {
     "text": "The inner loop streams over past keys and values only, matching the causal structure without ever storing an NxN score table.",
     "diagram": "tiled_online",
     "highlight": [
@@ -577,19 +598,19 @@
     ],
     "hash": "9580a58e"
   },
-  "252": {
+  "270": {
     "text": "Read one K and one V vector from HBM.",
     "hash": "fa203e4d"
   },
-  "254": {
-    "text": "Record the HBM read cost for loading this key and value vector pair.",
-    "hash": "69ffed9f"
+  "272": {
+    "text": "One K and one V vector, read from HBM. This is the line that costs: it re-reads all of K and V once per query row, which is the O(N^2 * d) traffic that makes online softmax a footprint fix rather than a traffic fix.",
+    "hash": "918ef1d3"
   },
-  "256": {
-    "text": "Dot the query vector with this key vector, scaled by sqrt(head_dim) to prevent softmax saturation in high dimensions.",
-    "hash": "55eca396"
+  "274": {
+    "text": "The dot product, scaled by sqrt(head_dim) so the softmax does not saturate as head width grows.",
+    "hash": "1672ca74"
   },
-  "257": {
+  "275": {
     "text": "Track the running maximum so softmax can be updated stably as more keys arrive instead of needing the full row upfront.",
     "diagram": "tiled_online",
     "highlight": [
@@ -597,16 +618,15 @@
     ],
     "hash": "b7e6abcd"
   },
-  "258": {
-    "text": "Correction factor: when the max changes, previous exponentials need rescaling. This is the key insight of online softmax, you can update the normalization incrementally.",
-    "hash": "820a3290",
-    "important": true
+  "278": {
+    "text": "Correction factor for when a new key raises the running max: everything accumulated so far was exponentiated against the old max and has to be rescaled. On the very first key <code>running_max</code> is -inf, so this is exp(-inf) = 0 and the accumulators start from scratch — no special case needed, which is why the old <code>if</code> is gone.",
+    "hash": "2f6fca55"
   },
-  "259": {
+  "279": {
     "text": "Rescale the running sum and add the new score's contribution.",
     "hash": "9c6536c3"
   },
-  "260": {
+  "280": {
     "text": "Accumulate the weighted output incrementally alongside the running normalization terms. This is the core online-softmax trick.",
     "diagram": "tiled_online",
     "highlight": [
@@ -614,11 +634,11 @@
     ],
     "hash": "3d2fdc9f"
   },
-  "261": {
+  "281": {
     "text": "Update the running max for the next iteration.",
     "hash": "a1fbcf2f"
   },
-  "263": {
+  "283": {
     "text": "Only the final normalized output row is written back. The intermediate attention probabilities never hit main memory.",
     "diagram": "tiled_online",
     "highlight": [
@@ -626,11 +646,15 @@
     ],
     "hash": "4f996065"
   },
-  "264": {
-    "text": "Write only the final output to HBM, no N*N matrix ever touches slow memory.",
-    "hash": "2e778884"
+  "284": {
+    "text": "Only the final normalized output row is written. No N x N array was ever allocated, let alone written to HBM.",
+    "hash": "8982cbdd"
   },
-  "272": {
+  "288": {
+    "text": "The largest intermediate is one <code>head_dim</code> accumulator. It does not depend on N at all, and that independence is the one thing this algorithm buys.",
+    "hash": "168eb07e"
+  },
+  "295": {
     "text": "Algorithm 3: Tiled attention (FlashAttention). The best of both worlds: processes BLOCKS of keys at once (vectorized like standard) but never writes the N*N matrix (memory-efficient like online). This is what runs on real GPUs.",
     "hash": "72bab530",
     "diagram": "tiled_flash",
@@ -638,35 +662,39 @@
       "t_load"
     ]
   },
-  "280": {
-    "text": "Track HBM operations, expect fewer reads than online softmax (due to blocking) and same writes.",
-    "hash": "16491a95"
+  "303": {
+    "text": "Same shape-from-tensor convention, so the tile size and the head dimension can both be swept.",
+    "hash": "bb946e7c"
   },
-  "281": {
+  "304": {
+    "text": "Track HBM traffic and, separately, the peak allocation. Tiling wins on both, but for different reasons, so they are counted separately.",
+    "hash": "1f96d027"
+  },
+  "305": {
     "text": "Column block size: how many keys to process at once.",
     "hash": "18aa066a"
   },
-  "282": {
+  "306": {
     "text": "Row block size: how many queries to process at once.",
     "hash": "019f15ec"
   },
-  "283": {
+  "307": {
     "text": "Allocate the output array with the same shape as Q to store attention results.",
     "hash": "5b845601"
   },
-  "285": {
-    "text": "Iterate over each attention head independently, since heads do not interact during attention.",
-    "hash": "0eac1d8b"
+  "309": {
+    "text": "Heads are independent here too. In the real fused kernel this loop is the grid, not a loop.",
+    "hash": "c3c4d5b6"
   },
-  "286": {
+  "310": {
     "text": "Tile the query dimension into blocks of size <code>Br</code>.",
     "hash": "5ca027e5"
   },
-  "287": {
+  "311": {
     "text": "Handle the last block which may be smaller.",
     "hash": "e560d471"
   },
-  "288": {
+  "312": {
     "text": "Read a block of query vectors from slow HBM memory into fast on-chip SRAM, where all the compute for this tile happens.",
     "hash": "ec251d77",
     "diagram": "tiled_flash",
@@ -674,39 +702,39 @@
       "t_load"
     ]
   },
-  "289": {
+  "313": {
     "text": "How many rows in this query block.",
     "hash": "8be21b07"
   },
-  "290": {
-    "text": "Count the HBM read, one block of queries, not one at a time.",
-    "hash": "21be4db7"
+  "314": {
+    "text": "Read a whole block of query rows at once, not one row. Everything downstream amortizes over <code>Br</code> queries.",
+    "hash": "11c880cd"
   },
-  "292": {
+  "316": {
     "text": "Per-row running max for online softmax within this query block.",
     "hash": "fd02d3aa"
   },
-  "293": {
+  "317": {
     "text": "Running sum of exponentiated scores for each query row, used as the softmax denominator. Updated incrementally as new key blocks arrive.",
     "hash": "3a118bc0"
   },
-  "294": {
-    "text": "Running weighted output for each query row, accumulated block by block. After all key blocks, dividing by the sum completes softmax.",
-    "hash": "ad25a17d"
+  "318": {
+    "text": "One running output block, <code>Br x d</code>. Together with the score tile this is the algorithm's entire working set, sized to fit SRAM and independent of N.",
+    "hash": "7366b9cd"
   },
-  "296": {
+  "320": {
     "text": "Causal boundary: only attend to keys at or before the query positions.",
     "hash": "ed527cc3"
   },
-  "297": {
+  "321": {
     "text": "Tile the key dimension into blocks of size <code>Bc</code>.",
     "hash": "dc6aa56b"
   },
-  "298": {
+  "322": {
     "text": "Handle the last key block.",
     "hash": "5270b46b"
   },
-  "299": {
+  "323": {
     "text": "Read a block of key vectors from HBM into SRAM. Processing keys in blocks amortizes the memory transfer cost over many queries.",
     "hash": "85488dd8",
     "diagram": "tiled_flash",
@@ -714,59 +742,77 @@
       "t_kv"
     ]
   },
-  "300": {
+  "324": {
     "text": "Read the corresponding block of value vectors alongside the keys, since both are needed to update the running output.",
     "hash": "dd1b2824"
   },
-  "301": {
+  "325": {
     "text": "How many columns in this key block.",
     "hash": "fdf3d0bc"
   },
-  "302": {
-    "text": "Count the K+V block read, amortized over <code>block_cols</code> positions.",
-    "hash": "fb303e8b"
+  "326": {
+    "text": "The K/V block read, amortized over <code>block_cols</code> positions <em>and</em> over every query row in the current block. This is the single difference from online softmax, and it is where the traffic win comes from.",
+    "important": true,
+    "hash": "c0158003"
   },
-  "304": {
-    "text": "Block matrix multiply: all queries against all keys in this block. This is where the parallelism comes from, much better than one-at-a-time.",
-    "hash": "c69c6e13",
+  "328": {
+    "text": "One block matrix multiply: all queries in the tile against all keys in the tile. Same arithmetic as standard attention, arranged so the result never has to leave fast memory.",
     "diagram": "tiled_flash",
-    "highlight": [
-      "t_compute"
-    ]
+    "highlight": {
+      "nodes": [
+        "t_scores"
+      ],
+      "links": [
+        2
+      ]
+    },
+    "hash": "490217a2"
   },
-  "307": {
+  "332": {
+    "text": "The biggest thing tiling ever allocates: one <code>Br x Bc</code> score tile plus the output accumulator. Both are chosen to fit in SRAM, and neither depends on N — which is why FlashAttention can run context lengths standard attention cannot fit.",
+    "important": true,
+    "diagram": "tiled_flash",
+    "highlight": {
+      "nodes": [
+        "t_scores",
+        "t_accum"
+      ]
+    },
+    "hash": "c34b98d0"
+  },
+  "335": {
     "text": "Apply causal mask within this tile. Only positions where key <= query should contribute.",
     "hash": "db4efe33"
   },
-  "308": {
+  "336": {
     "text": "Walk through every query-key pair in the current tile to apply the causal mask where keys come after queries.",
     "hash": "832acf29"
   },
-  "309": {
+  "337": {
     "text": "If the key position is after the query position, mask it out.",
     "hash": "8204a219"
   },
-  "310": {
+  "338": {
     "text": "Replace causally invalid scores with a large negative value so softmax gives them zero weight, matching the standard attention mask.",
     "hash": "be85fe39"
   },
-  "313": {
+  "341": {
     "text": "Online softmax update across blocks, same math as Algorithm 2, but operating on entire blocks at once.",
     "hash": "775db51b"
   },
-  "314": {
+  "342": {
     "text": "New running max: element-wise maximum of old max and this block's max.",
     "hash": "af18c2f0"
   },
-  "315": {
+  "343": {
     "text": "Correction factor for previous blocks when the max increases.",
     "hash": "7b5e5072"
   },
-  "316": {
+  "344": {
     "text": "Exponentiate scores relative to the new max.",
     "hash": "b018f5c8"
   },
-  "318": {
+  "346": {
     "text": "Update running sum: rescale old sum, add new block's contribution.",
     "hash": "e1e7a363",
     "diagram": "tiled_flash",
@@ -774,140 +820,265 @@
       "t_accum"
     ]
   },
-  "319": {
+  "347": {
     "text": "Update running output: rescale old output, add new weighted values. This is the block version of the online softmax accumulation.",
     "hash": "a79838b7"
   },
-  "320": {
+  "348": {
     "text": "Update the running max for the next block.",
     "hash": "b41a24c0"
   },
-  "322": {
+  "350": {
     "text": "Normalize by the final sum, completes the softmax computation for this query block.",
     "hash": "ab31a78d"
   },
-  "323": {
-    "text": "Write only the final output block to HBM, the N*N matrix never existed in slow memory.",
-    "hash": "37334550",
+  "351": {
+    "text": "Write out the finished output block. The N x N matrix never existed, so there is nothing else to flush.",
     "diagram": "tiled_flash",
-    "highlight": [
-      "t_accum"
-    ]
+    "highlight": {
+      "nodes": [
+        "t_write"
+      ],
+      "links": [
+        7
+      ]
+    },
+    "hash": "06d56e09"
   },
-  "331": {
+  "353": {
+    "text": "Hand back the output and the counters together, so the caller can compare algorithms without re-deriving the cost model.",
+    "hash": "021a7434"
+  },
+  "359": {
     "text": "Pick one name from the dataset as test input.",
     "hash": "d481a945"
   },
-  "332": {
+  "360": {
     "text": "How long is our test sequence.",
     "hash": "c5bbcb71"
   },
-  "334": {
+  "362": {
     "text": "Feed the same test input through standard, online, and tiled attention to verify all three produce identical results.",
     "hash": "0c1db075"
   },
-  "335": {
+  "363": {
     "text": "Online softmax should produce identical results, it's mathematically exact.",
     "hash": "8ef426ca"
   },
-  "336": {
+  "364": {
     "text": "Tiled attention uses block-level operations, tiny floating-point differences possible.",
     "hash": "1d541837"
   },
-  "338": {
+  "366": {
     "text": "Compare outputs to verify correctness.",
     "hash": "7a8df4e9"
   },
-  "339": {
+  "367": {
     "text": "Online softmax should match to machine precision (1e-10).",
     "hash": "5d3182ed"
   },
-  "340": {
+  "368": {
     "text": "Tiled allows slightly more tolerance due to different summation order.",
     "hash": "48f88bcd"
   },
-  "343": {
+  "371": {
     "text": "Print the actual numerical differences, should be negligibly small.",
     "hash": "a22130e0"
   },
-  "345": {
+  "373": {
     "text": "Hard assertion: if any algorithm diverges, the implementation is wrong.",
     "hash": "05f4799f"
   },
-  "346": {
+  "374": {
     "text": "The whole point: same math, different memory access patterns, identical results.",
     "hash": "73e5aaaf",
     "important": true
   },
-  "351": {
+  "379": {
     "text": "Now compare how many times each algorithm reads/writes slow HBM memory.",
     "hash": "af9103a9"
   },
-  "353": {
+  "381": {
     "text": "Print stats for all three algorithms with explanatory notes.",
     "hash": "c1aef1cd"
   },
-  "362": {
+  "390": {
     "text": "Pull the read count and write count out of each algorithm's stats dictionary so we can compare memory traffic side by side.",
     "hash": "e927f01c"
   },
-  "363": {
+  "391": {
     "text": "Total memory operations = reads + writes. Standard attention dominates because of the N*N matrix.",
     "hash": "4882a364"
   },
-  "366": {
-    "text": "Calculate the theoretical HBM traffic for each algorithm using the sequence length and head dimensions for the summary table.",
-    "hash": "1dcc631b"
-  },
-  "367": {
-    "text": "Summary of the exact write counts. Across all heads, standard attention writes 2*n_head*N*N score/probability elements while tiled and online write only n_head*N*d output elements; per head that is 2*N*N vs N*d.",
+  "395": {
+    "text": "The most important caveat in the lab, printed rather than buried. At head_dim=4 re-reading K and V costs almost nothing, so online softmax looks cheap and the ranking above is an artefact of the toy model's width. The sweep below re-runs the same counters at a realistic head_dim and the ranking changes.",
+    "important": true,
     "hash": "6d9733f3"
   },
-  "394": {
+  "408": {
+    "text": "head_dim=64 instead of the model's 4. The comparison above is measured on one 7-character name, which is far too small for anything about scaling to be visible: at head_dim=4 the N x N score matrix is barely larger than the N x d inputs.",
+    "hash": "e0cc9f39"
+  },
+  "409": {
+    "text": "A realistic FlashAttention block size too. Tiling's advantage is tile-size dependent, which the projection at the bottom makes explicit — there is no single \"Nx fewer\" number.",
+    "hash": "0f50e526"
+  },
+  "413": {
+    "text": "Reads plus writes, as one number. Splitting them was useful for the walkthrough above; for the sweep the total is what matters.",
+    "hash": "c40154c2"
+  },
+  "420": {
+    "text": "Sweep N over two orders of magnitude on synthetic Q/K/V. Synthetic because we are counting memory operations, and the counters do not care what the numbers mean.",
+    "hash": "97f42d58"
+  },
+  "421": {
+    "text": "Random Gaussian Q, K and V at the swept length. One head keeps the table readable; heads only multiply every column by the same constant.",
+    "hash": "f9fb9b3c"
+  },
+  "422": {
+    "text": "Standard attention at this N, the denominator for both ratio columns.",
+    "hash": "a040a84f"
+  },
+  "423": {
+    "text": "Online softmax at the same N. Watch the <code>online/std</code> column climb with N: this is the O(N^2 * d) re-read showing up as a growing penalty, not a saving.",
+    "hash": "230cf06f"
+  },
+  "424": {
+    "text": "Tiled attention with a production-sized tile. Its ratio to standard <em>improves</em> as N grows, which is the opposite trend to online softmax.",
+    "hash": "af6a0d5a"
+  },
+  "426": {
+    "text": "The algebra has to hold at a real head_dim too, not just at the toy one. Online softmax is exact, so it should agree to float64 precision.",
+    "hash": "175b32af"
+  },
+  "427": {
+    "text": "Same assertion for tiling. If either drifted, the traffic numbers below would be measuring a different algorithm than the one the reader was shown.",
+    "hash": "feb962de"
+  },
+  "428": {
+    "text": "Collapse each stats dict to one total so the three algorithms sit in one row per N.",
+    "hash": "55318576"
+  },
+  "429": {
+    "text": "The two ratio columns are the payload of the sweep: tiling drifts below 1.0 as N grows, online softmax climbs well above it. At the largest N here online softmax is already an order of magnitude worse than standard on total HBM operations.",
+    "hash": "6d9733f3"
+  },
+  "436": {
+    "text": "Traffic counters are proxies. The peak allocation is the thing you can actually run out of, so measure it directly at a single large N.",
+    "important": true,
+    "hash": "a7affcfc"
+  },
+  "437": {
+    "text": "One fixed shape for all three, so the byte counts are directly comparable.",
+    "hash": "1ad42a2c"
+  },
+  "439": {
+    "text": "Standard attention's peak is the N x N score matrix: megabytes at N=512, and growing as N^2.",
+    "hash": "8f34edc8"
+  },
+  "440": {
+    "text": "Online softmax's peak is one <code>head_dim</code> accumulator — hundreds of bytes, and constant in N. Whatever else is wrong with it, this part it gets right.",
+    "hash": "c2063128"
+  },
+  "441": {
+    "text": "Tiling's peak is one score tile plus one output block: set by the tile size, also constant in N. That is the property FlashAttention actually sells.",
+    "hash": "bb6fc976"
+  },
+  "443": {
+    "text": "Print the bytes rather than describing them. The gap between the three rows is several orders of magnitude and does not need adjectives.",
+    "hash": "e911417d"
+  },
+  "444": {
+    "text": "The takeaway that survives whatever the traffic counters say: two of the three algorithms have a memory footprint that does not grow with context length, and one does.",
+    "hash": "6d9733f3"
+  },
+  "455": {
+    "text": "The same counting formulas evaluated in closed form at a production shape, rather than a new measurement — so these numbers are directly comparable with the sweep above instead of being a different experiment.",
+    "hash": "43dafdbf"
+  },
+  "456": {
+    "text": "Standard attention's closed form: roughly four N^2 traversals of the score matrix plus four N x d passes over the inputs.",
+    "hash": "86608d9e"
+  },
+  "457": {
+    "text": "Online softmax's closed form. The <code>d * N * (N + 1)</code> term is the whole story: K and V are streamed once per query row, so head_dim multiplies the quadratic term instead of sitting next to it.",
+    "hash": "b84d73dd"
+  },
+  "460": {
+    "text": "Tiling's closed form, parameterized by tile size. K and V are read once per <em>block</em> of queries, so the quadratic term is divided by the number of blocks rather than by nothing.",
+    "hash": "f3851746"
+  },
+  "465": {
+    "text": "Project to N=2048, d=128 — a shape where the crossover is not subtle.",
+    "hash": "3e2eba93"
+  },
+  "466": {
+    "text": "Standard attention as the reference row.",
+    "hash": "58e2fd74"
+  },
+  "467": {
+    "text": "Online softmax comes out around 30x <em>worse</em> than standard here. That is the honest verdict on it: a memory-footprint fix, not a memory-traffic fix, and a stepping stone to tiling rather than an optimum in its own right.",
+    "important": true,
+    "hash": "92be4ff0"
+  },
+  "468": {
+    "text": "Sweep the tile size, because tiling's advantage over standard is a function of it and quoting a single number would be dishonest.",
+    "hash": "7963ab4d"
+  },
+  "470": {
+    "text": "Larger tiles amortize the K/V reads over more queries, so the saving grows with the tile — which is exactly why real kernels size tiles to fill SRAM.",
+    "hash": "99bb6614"
+  },
+  "471": {
+    "text": "Two things to read off the table, and neither is the folklore version. Online softmax loses badly on traffic at a real head_dim, and tiling's win has no single number attached to it.",
+    "important": true,
+    "hash": "6d9733f3"
+  },
+  "501": {
     "text": "Temperature 0.5 for more focused name generation.",
     "hash": "7eca5b76"
   },
-  "396": {
+  "503": {
     "text": "Generate 20 sample names using the tiled (FlashAttention) attention algorithm.",
     "hash": "64d836c5"
   },
-  "397": {
+  "504": {
     "text": "Start each name with BOS.",
     "hash": "028c39d2"
   },
-  "399": {
+  "506": {
     "text": "Generate up to <code>block_size</code> tokens per name.",
     "hash": "ab05dc73"
   },
-  "400": {
+  "507": {
     "text": "Full forward pass with tiled attention for each step.",
     "hash": "01e4bbf6"
   },
-  "401": {
+  "508": {
     "text": "Divide logits by temperature before softmax. Lower temperature sharpens the distribution toward the most likely token.",
     "hash": "083e8501"
   },
-  "402": {
+  "509": {
     "text": "Convert the temperature-scaled logits into a probability distribution via softmax for sampling the next token.",
     "hash": "5c3e5ac0"
   },
-  "403": {
+  "510": {
     "text": "Sample from the distribution using NumPy's RNG.",
     "hash": "40884532"
   },
-  "404": {
+  "511": {
     "text": "BOS means end-of-name, stop generating.",
     "hash": "41a35c11"
   },
-  "406": {
+  "513": {
     "text": "Extend the token sequence for the next step.",
     "hash": "7da31c20"
   },
-  "407": {
+  "514": {
     "text": "Convert token ID back to character.",
     "hash": "f0303c4c"
   },
-  "408": {
+  "515": {
     "text": "Display each generated name on its own line so we can visually inspect the model's learned character patterns.",
     "hash": "24147138"
   }

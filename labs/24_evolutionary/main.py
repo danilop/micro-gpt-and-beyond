@@ -29,6 +29,19 @@ PBT, not a full PBT implementation. Canonical PBT copies weights into
 underperformers in-place, preserves optimizer state across generations, and
 perturbs continuous schedules. Here we use a discrete search space, fresh
 optimizers per generation, and deepcopy survivors.
+
+Three things this lab measures that toy evolution demos usually skip, because
+each one deflates the headline number:
+  - Global elitism. The best model of the run is archived when it is found.
+    The best member of the FINAL population is often worse, because the
+    population regresses after its peak generation.
+  - The compute ledger. The evolutionary run spends thousands of training
+    steps; the single random baseline spends 500. Beating it is mostly budget.
+    So we also compare the two configurations at matched per-model budget,
+    and add a random-search arm with the same total budget as evolution.
+  - Diversity. Distinct architectures per generation is printed, because
+    top-k truncation on a population of 8 collapses the gene pool quickly,
+    and a population with one architecture left is not searching any more.
 """
 
 import copy
@@ -256,13 +269,21 @@ print(f"\n{'=' * 70}")
 print("PHASE 1: Random baseline (single random configuration)")
 print("=" * 70)
 
+BASELINE_STEPS = 500
+
 baseline_cfg = random_config()
 print(f"config: {baseline_cfg}")
 baseline_model = build_model(baseline_cfg)
 n_params = sum(p.numel() for p in baseline_model.parameters())
 print(f"params: {n_params}")
 
-train_model(baseline_model, baseline_cfg, train_docs, 500, verbose=True)
+# 500 steps is a SMALL budget, and that matters for every comparison below.
+# The evolutionary run further down spends thousands of steps across its whole
+# population, so "evolved beats this baseline" would mostly be a statement
+# about compute. The results section therefore also compares the two configs
+# at matched per-model budget, and adds a random-search arm with the same total
+# budget as evolution.
+train_model(baseline_model, baseline_cfg, train_docs, BASELINE_STEPS, verbose=True)
 baseline_val_loss = evaluate_model(baseline_model, val_docs)
 print(f"val loss: {baseline_val_loss:.4f}")
 print(f"samples: {', '.join(generate_names(baseline_model, 5))}")
@@ -284,7 +305,12 @@ population = []
 for i in range(POP_SIZE):
     cfg = random_config()
     model = build_model(cfg)
-    population.append({"id": i, "cfg": cfg, "model": model, "val_loss": float("inf")})
+    # "steps" is the cumulative training this member's weights have received.
+    # It is not the same for every member: survivors keep their weights and
+    # keep accumulating, while a child whose architecture changed starts from
+    # scratch at 0. Without this counter, within-generation fitness silently
+    # confounds configuration quality with lineage age.
+    population.append({"id": i, "cfg": cfg, "model": model, "val_loss": float("inf"), "steps": 0})
 
 print(f"population size: {POP_SIZE}")
 print(f"generations: {NUM_GENERATIONS}")
@@ -292,11 +318,21 @@ print(f"steps/generation: {STEPS_PER_GEN}")
 print(f"selection: top-{TOP_K} survive, rest are replaced by mutated copies\n")
 
 generation_stats = []
+evolution_steps = 0  # total training steps spent by the whole population
+
+# Global elitism: an archive of the single best model ever evaluated. Without
+# it the "evolved best" is just whatever happens to be in the final
+# population, which is not the same thing as the best the search found —
+# in this lab the population regularly peaks in a middle generation and then
+# regresses.
+best_ever = {"val_loss": float("inf"), "cfg": None, "model": None, "gen": 0, "steps": 0}
 
 for gen in range(NUM_GENERATIONS):
     # Train each member for STEPS_PER_GEN
     for member in population:
         train_model(member["model"], member["cfg"], train_docs, STEPS_PER_GEN)
+        member["steps"] += STEPS_PER_GEN
+        evolution_steps += STEPS_PER_GEN
         member["val_loss"] = evaluate_model(member["model"], val_docs)
 
     # Sort by fitness (lower val loss = better)
@@ -306,6 +342,21 @@ for gen in range(NUM_GENERATIONS):
     worst = population[-1]
     avg_loss = sum(m["val_loss"] for m in population) / len(population)
 
+    # How much variety is actually left in the population? Two counts: distinct
+    # architectures (what changes the parameter count) and distinct full
+    # configs (architecture plus lr and beta1).
+    n_archs = len({(m["cfg"]["n_embd"], m["cfg"]["n_head"], m["cfg"]["n_layer"]) for m in population})
+    n_cfgs = len({tuple(sorted(m["cfg"].items())) for m in population})
+
+    if best["val_loss"] < best_ever["val_loss"]:
+        best_ever = {
+            "val_loss": best["val_loss"],
+            "cfg": dict(best["cfg"]),
+            "model": copy.deepcopy(best["model"]),
+            "gen": gen + 1,
+            "steps": best["steps"],
+        }
+
     gen_stat = {
         "gen": gen + 1,
         "best_loss": best["val_loss"],
@@ -313,17 +364,29 @@ for gen in range(NUM_GENERATIONS):
         "avg_loss": avg_loss,
         "best_cfg": dict(best["cfg"]),
         "best_params": sum(p.numel() for p in best["model"].parameters()),
+        "best_steps": best["steps"],
+        "n_archs": n_archs,
+        "n_cfgs": n_cfgs,
     }
     generation_stats.append(gen_stat)
 
     print(
         f"gen {gen + 1:2d}: "
-        f"best {best['val_loss']:.4f} (id={best['id']}), "
+        f"best {best['val_loss']:.4f} (id={best['id']}, {best['steps']} steps), "
         f"worst {worst['val_loss']:.4f}, "
         f"avg {avg_loss:.4f}, "
+        f"distinct archs {n_archs}/{POP_SIZE}, configs {n_cfgs}/{POP_SIZE}, "
         f"best cfg: embd={best['cfg']['n_embd']}, heads={best['cfg']['n_head']}, "
         f"layers={best['cfg']['n_layer']}, lr={best['cfg']['lr']:.4f}"
     )
+    # Cumulative steps next to val loss, so you can see the confound directly.
+    for rank, m in enumerate(population):
+        c = m["cfg"]
+        print(
+            f"       rank {rank + 1}: val {m['val_loss']:.4f}  steps {m['steps']:5d}  "
+            f"embd={c['n_embd']:2d}, heads={c['n_head']}, layers={c['n_layer']}, "
+            f"lr={c['lr']:.4f}, beta1={c['beta1']}"
+        )
 
     # Evolution: replace bottom members with mutated copies of top members
     survivors = population[:TOP_K]
@@ -341,11 +404,10 @@ for gen in range(NUM_GENERATIONS):
             or child_cfg["n_layer"] != parent["cfg"]["n_layer"]
         )
 
-        if arch_changed:
-            child_model = build_model(child_cfg)
-        else:
-            # Same architecture: inherit parent's weights (the PBT "exploit" step)
-            child_model = build_model(child_cfg)
+        child_model = build_model(child_cfg)
+        if not arch_changed:
+            # Same architecture: inherit parent's weights (the PBT "exploit"
+            # step), and inherit the parent's accumulated step count with them.
             child_model.load_state_dict(parent["model"].state_dict())
 
         new_population.append({
@@ -353,6 +415,9 @@ for gen in range(NUM_GENERATIONS):
             "cfg": child_cfg,
             "model": child_model,
             "val_loss": float("inf"),
+            # A child with a new architecture is untrained: 0 steps. A child
+            # that inherited weights starts where its parent left off.
+            "steps": 0 if arch_changed else parent["steps"],
         })
 
     population = new_population
@@ -369,46 +434,180 @@ print("=" * 70)
 for member in population:
     if member["val_loss"] == float("inf"):
         train_model(member["model"], member["cfg"], train_docs, STEPS_PER_GEN)
+        member["steps"] += STEPS_PER_GEN
+        evolution_steps += STEPS_PER_GEN
         member["val_loss"] = evaluate_model(member["model"], val_docs)
+        if member["val_loss"] < best_ever["val_loss"]:
+            best_ever = {
+                "val_loss": member["val_loss"],
+                "cfg": dict(member["cfg"]),
+                "model": copy.deepcopy(member["model"]),
+                "gen": NUM_GENERATIONS,  # spawned in the last generation, trained here
+                "steps": member["steps"],
+            }
 
 population.sort(key=lambda m: m["val_loss"])
-best_evolved = population[0]
+final_best = population[0]  # best in the FINAL population
+best_evolved = best_ever  # best ever seen, which is what we report
 evolved_val_loss = best_evolved["val_loss"]
 
-print(f"\n{'Gen':>4s}  {'Best Loss':>9s}  {'Avg Loss':>8s}  {'Worst Loss':>10s}  {'Best Config'}")
-print("-" * 70)
+print(
+    f"\n{'Gen':>4s}  {'Best Loss':>9s}  {'Avg Loss':>8s}  {'Worst Loss':>10s}  "
+    f"{'Steps':>6s}  {'Archs':>5s}  {'Cfgs':>4s}  {'Best Config'}"
+)
+print("-" * 100)
 for s in generation_stats:
     c = s["best_cfg"]
     print(
         f"{s['gen']:>4d}  {s['best_loss']:>9.4f}  {s['avg_loss']:>8.4f}  {s['worst_loss']:>10.4f}  "
+        f"{s['best_steps']:>6d}  {s['n_archs']:>5d}  {s['n_cfgs']:>4d}  "
         f"embd={c['n_embd']}, heads={c['n_head']}, layers={c['n_layer']}, lr={c['lr']:.4f}"
     )
+print("(Steps = cumulative training steps of that generation's best member.")
+print(" Archs/Cfgs = distinct architectures and distinct full configs in the population.)")
 
-print(f"\n--- comparison ---")
-print(f"random baseline:   val_loss={baseline_val_loss:.4f} (config: {baseline_cfg})")
-print(f"evolved best:      val_loss={evolved_val_loss:.4f} (config: {best_evolved['cfg']})")
+# The best of the final population is not the best of the run. Say so with numbers.
+print(f"\nbest in final population: {final_best['val_loss']:.4f} ({final_best['steps']} steps)")
+print(f"best ever seen:           {best_ever['val_loss']:.4f} (generation {best_ever['gen']}, {best_ever['steps']} steps)")
+gen_best_curve = ", ".join(f"{s['best_loss']:.4f}" for s in generation_stats)
+print(f"per-generation best:      {gen_best_curve}")
+if best_ever["gen"] < NUM_GENERATIONS:
+    print(
+        f"  -> the search peaked at generation {best_ever['gen']} and then regressed. "
+        "Global elitism is why we can still report the peak."
+    )
+
+# ===========================================================================
+# Was any of this fair? The compute ledger
+# ===========================================================================
+print(f"\n{'=' * 70}")
+print("COMPUTE LEDGER — the headline number is mostly budget")
+print("=" * 70)
+
+# Arm A: the same 500-step baseline, but let its config keep training so we can
+# compare configurations at MATCHED per-model budget instead of comparing
+# 500 steps against a whole population's worth of training.
+MATCHED_STEPS = 1200
+CHECK_EVERY = 200
+
+
+def budget_curve(cfg, total_steps=MATCHED_STEPS, check_every=CHECK_EVERY, seed=7):
+    """
+    Train one config from scratch and record val loss every `check_every` steps.
+
+    Each chunk builds a fresh optimizer, exactly as a generation of evolution
+    does, so this curve is the like-for-like comparison rather than a single
+    long run with persistent Adam state.
+    """
+    torch.manual_seed(seed)
+    m = build_model(cfg)
+    curve = []
+    for _ in range(total_steps // check_every):
+        train_model(m, cfg, train_docs, check_every)
+        curve.append(evaluate_model(m, val_docs))
+    return curve
+
+
+print(f"\nSame two configs, trained from scratch, val loss every {CHECK_EVERY} steps:")
+base_curve = budget_curve(baseline_cfg)
+eval_curve = budget_curve(best_evolved["cfg"])
+header = "  ".join(f"{(i + 1) * CHECK_EVERY:>7d}" for i in range(MATCHED_STEPS // CHECK_EVERY))
+print(f"\n{'config':>16s}  {header}")
+print("-" * (18 + 9 * (MATCHED_STEPS // CHECK_EVERY)))
+print(f"{'baseline':>16s}  " + "  ".join(f"{v:>7.4f}" for v in base_curve))
+print(f"{'evolved':>16s}  " + "  ".join(f"{v:>7.4f}" for v in eval_curve))
+matched_delta = min(base_curve) - min(eval_curve)
+print(f"\nbest-of-curve: baseline {min(base_curve):.4f}, evolved {min(eval_curve):.4f}, delta {matched_delta:+.4f}")
+print("That delta is the configuration advantage at matched per-model budget.")
+
+# Arm B: random search at (almost) the same total training budget as evolution.
+# This is the control that tells you whether selection and mutation earned
+# anything, or whether spending the same compute on independent random configs
+# would have done as well. POP_SIZE x NUM_GENERATIONS configs at STEPS_PER_GEN
+# steps each is slightly LESS compute than the evolutionary run (which also
+# trains the children spawned in the last generation), so the comparison is
+# conservative in evolution's favour.
+# This is the most expensive block in the lab. It is also the only reason the
+# headline number below can be trusted.
+rs_configs = POP_SIZE * NUM_GENERATIONS
+print(f"\nRandom search control: {rs_configs} random configs x {STEPS_PER_GEN} steps = {rs_configs * STEPS_PER_GEN} steps")
+rs_best = {"val_loss": float("inf"), "cfg": None, "model": None}
+for i in range(rs_configs):
+    cfg = random_config()
+    m = build_model(cfg)
+    train_model(m, cfg, train_docs, STEPS_PER_GEN)
+    vl = evaluate_model(m, val_docs)
+    if vl < rs_best["val_loss"]:
+        rs_best = {"val_loss": vl, "cfg": cfg, "model": m}
+    if (i + 1) % 10 == 0:
+        print(f"  {i + 1:3d}/{rs_configs} configs sampled, best so far {rs_best['val_loss']:.4f}")
+print(f"random search best: {rs_best['val_loss']:.4f} (config: {rs_best['cfg']})")
+
+print("\n--- training steps spent ---")
+print(f"  single random baseline:      {BASELINE_STEPS:>7,d}")
+print(f"  evolution (whole run):       {evolution_steps:>7,d}  ({evolution_steps / BASELINE_STEPS:.0f}x the baseline)")
+print(f"  random search (matched):     {rs_configs * STEPS_PER_GEN:>7,d}")
+print(f"  matched-budget head-to-head: {MATCHED_STEPS:>7,d}  per config")
+
+print("\n--- comparison ---")
+print(f"random baseline ({BASELINE_STEPS} steps):  val_loss={baseline_val_loss:.4f} (config: {baseline_cfg})")
+print(f"evolved best (best ever):     val_loss={evolved_val_loss:.4f} (config: {best_evolved['cfg']})")
+print(f"random search (equal budget): val_loss={rs_best['val_loss']:.4f}")
 improvement = baseline_val_loss - evolved_val_loss
-print(f"improvement:       {improvement:+.4f} ({'better' if improvement > 0 else 'worse'})")
+print(f"\nevolved vs {BASELINE_STEPS}-step baseline:   {improvement:+.4f}  <- NOT a fair comparison, {evolution_steps / BASELINE_STEPS:.0f}x the compute")
+print(f"evolved vs equal-budget search: {rs_best['val_loss'] - evolved_val_loss:+.4f}  <- what evolution bought over random search")
+print(f"config advantage, matched budget: {matched_delta:+.4f}  <- the honest per-config number")
 
 # Generate from both
-print(f"\n--- random baseline samples ---")
+print("\n--- random baseline samples ---")
 for i, name in enumerate(generate_names(baseline_model, 10)):
     print(f"  {i + 1:2d}: {name}")
 
-print(f"\n--- evolved best samples ---")
+print("\n--- evolved best samples ---")
 for i, name in enumerate(generate_names(best_evolved["model"], 10)):
     print(f"  {i + 1:2d}: {name}")
 
 # Show the evolutionary tree
-print(f"\n--- population diversity (final generation) ---")
+print("\n--- population diversity (final generation) ---")
 for i, member in enumerate(population):
     c = member["cfg"]
     n_p = sum(p.numel() for p in member["model"].parameters())
     print(
-        f"  rank {i + 1}: val_loss={member['val_loss']:.4f}, "
+        f"  rank {i + 1}: val_loss={member['val_loss']:.4f}, steps={member['steps']:5d}, "
         f"params={n_p:,}, "
         f"embd={c['n_embd']}, heads={c['n_head']}, layers={c['n_layer']}, "
         f"lr={c['lr']:.4f}, beta1={c['beta1']}"
+    )
+
+final_archs = len({(m["cfg"]["n_embd"], m["cfg"]["n_head"], m["cfg"]["n_layer"]) for m in population})
+final_cfgs = len({tuple(sorted(m["cfg"].items())) for m in population})
+final_sizes = {sum(p.numel() for p in m["model"].parameters()) for m in population}
+final_shapes = len({(m["cfg"]["n_embd"], m["cfg"]["n_layer"]) for m in population})
+arch_curve = ", ".join(str(s["n_archs"]) for s in generation_stats)
+avg_curve = ", ".join(f"{s['avg_loss']:.4f}" for s in generation_stats)
+print(f"\ndistinct architectures per generation: {arch_curve} (final population: {final_archs}/{POP_SIZE})")
+print(f"distinct full configs in final population: {final_cfgs}/{POP_SIZE}")
+print(f"distinct model sizes in final population: {len(final_sizes)}/{POP_SIZE} ({sorted(final_sizes)} params)")
+print(f"population average val loss per generation: {avg_curve}")
+if len(final_sizes) == 1 or final_shapes == 1:
+    print(
+        "\n  -> Read those lines again: every surviving member is the same size.\n"
+        "     Whatever variety is left is in lr, beta1 and the head count, none of\n"
+        "     which changes the parameter count. There is effectively no\n"
+        "     architectural diversity left to select from. Top-k truncation with a\n"
+        "     low mutation rate collapses a gene pool this small very fast.\n"
+        "     A real search needs a diversity floor: forbid duplicate genomes, keep\n"
+        "     a fraction of random immigrants, or raise the mutation rate when\n"
+        "     variance drops. None of that is implemented here — measuring it first\n"
+        "     is the point."
+    )
+if generation_stats[-1]["avg_loss"] > generation_stats[0]["avg_loss"]:
+    print(
+        f"\n  -> The population AVERAGE got worse over the run "
+        f"({generation_stats[0]['avg_loss']:.4f} -> {generation_stats[-1]['avg_loss']:.4f}).\n"
+        "     Children with fresh architectures are untrained, so a population that\n"
+        "     keeps mutating keeps paying a restart cost. 'Evolution improved the\n"
+        "     population' is not a claim this run supports."
     )
 
 # ===========================================================================
@@ -445,7 +644,26 @@ This is the same pattern behind:
   - FunSearch: evolve programs scored by a fitness function
   - Neural Architecture Search: evolve network topologies
 
-At our tiny scale, evolution finds good configurations in {NUM_GENERATIONS} generations.
+THREE THINGS THIS RUN MEASURED, WHICH ARE EASY TO GET WRONG:
+
+  1. The headline is mostly compute. Evolution spent {evolution_steps:,} training
+     steps against the baseline's 500. At matched per-config budget the
+     configuration advantage was {matched_delta:+.4f}, not {improvement:+.4f}.
+
+  2. Fitness within a generation is not a clean config comparison. Survivors
+     keep their weights and keep accumulating steps; children with a new
+     architecture restart at zero. The "steps" column shows the confound.
+     Each generation gives every member the same NUMBER of new steps, which
+     is not the same as giving them the same total training.
+
+  3. Diversity dies quietly. Distinct architectures per generation:
+     {arch_curve}. Once that hits 1, selection has nothing left to select.
+
+The reported winner comes from a best-ever archive, not from the final
+population, because the two are frequently not the same model.
+
 At production scale, PBT discovers training schedules that would take
-human researchers weeks of manual tuning.
+human researchers weeks of manual tuning. It also runs with populations large
+enough, and mutation rates high enough, that the gene pool survives — which is
+exactly the part a toy run at this size cannot show you for free.
 """)

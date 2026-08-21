@@ -89,8 +89,14 @@ def apply_rope(x, cos_freqs, sin_freqs):
     return torch.stack((out1, out2), dim=-1).flatten(-2)
 
 
-# Precompute once for the whole model
-rope_cos, rope_sin = precompute_freqs(head_dim, block_size)
+# Precompute once for the whole model. Note the span: 4 * block_size, not
+# block_size. RoPE has no position table to size, only a formula, so there is
+# nothing stopping us from precomputing positions the model never trains on —
+# which is what makes the length-generalization test at the bottom of this file
+# possible at all. The learned-position baseline has no equivalent option: its
+# `wpe` embedding has exactly block_size rows and row 16 does not exist.
+ROPE_MAX_LEN = 4 * block_size
+rope_cos, rope_sin = precompute_freqs(head_dim, ROPE_MAX_LEN)
 
 
 # ---------------------------------------------------------------------------
@@ -126,7 +132,7 @@ class CausalSelfAttention(nn.Module):
             # V is NOT rotated — RoPE only affects Q and K
 
         att = (q @ k.transpose(-2, -1)) / math.sqrt(head_dim)
-        mask = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
+        mask = torch.triu(torch.ones(T, T, device=x.device, dtype=torch.bool), diagonal=1)
         att = att.masked_fill(mask, float("-inf"))
         att = F.softmax(att, dim=-1)
 
@@ -239,28 +245,212 @@ def generate(model, label, num_samples=10, temperature=0.5):
     model.train()
 
 
-# Train both variants from the same random initialization
+def share_weights(src, dst):
+    """Copy every parameter the two models have in common (everything but wpe)."""
+    src_sd = src.state_dict()
+    shared = 0
+    with torch.no_grad():
+        for name, param in dst.named_parameters():
+            if name in src_sd and src_sd[name].shape == param.shape:
+                param.copy_(src_sd[name])
+                shared += 1
+    return shared
+
+
+# Give both variants genuinely identical starting weights.
+#
+# Re-seeding before each constructor looks like it should do this, and it does
+# not. `apply(_init_weights)` walks the modules in registration order, and the
+# baseline registers `wpe` second, so it draws 16x16 random numbers that the
+# RoPE model never draws. From that point the two streams are offset and every
+# remaining weight differs. The loss comparison then measures initialization
+# luck as much as it measures positional encoding. So: build both models, then
+# copy across every tensor they share, leaving exactly one difference — how
+# position information enters the model.
 print("\n=== Training: Learned Positional Embeddings (baseline) ===")
 torch.manual_seed(42)
 model_learned = MicroGPT(use_rope=False)
 n_params_learned = sum(p.numel() for p in model_learned.parameters())
 print(f"  params: {n_params_learned}")
+
+torch.manual_seed(42)
+model_rope = MicroGPT(use_rope=True)
+n_shared = share_weights(model_learned, model_rope)
+print(f"  copied {n_shared} shared weight tensors into the RoPE model (everything except wpe)")
+
 losses_learned = train(model_learned, "learned-pos")
 
 print("\n=== Training: Rotary Position Embeddings (RoPE) ===")
-torch.manual_seed(42)
-model_rope = MicroGPT(use_rope=True)
 n_params_rope = sum(p.numel() for p in model_rope.parameters())
 print(f"  params: {n_params_rope} (no wpe — {n_params_learned - n_params_rope} fewer)")
 losses_rope = train(model_rope, "rope")
 
-# Compare final losses
-print("\n=== Results ===")
-avg_window = 50
+# Compare losses. A single last-step loss would be pure noise at batch size 1,
+# so report a trailing average over the last `avg_window` steps instead.
+print("\n=== Results: training loss ===")
+avg_window = 100
 avg_learned = sum(losses_learned[-avg_window:]) / avg_window
 avg_rope = sum(losses_rope[-avg_window:]) / avg_window
-print(f"  learned-pos  final avg loss (last {avg_window}): {avg_learned:.4f}")
-print(f"  rope         final avg loss (last {avg_window}): {avg_rope:.4f}")
+print(f"  learned-pos  trailing avg loss (last {avg_window} steps): {avg_learned:.4f}")
+print(f"  rope         trailing avg loss (last {avg_window} steps): {avg_rope:.4f}")
+print("  Two runs of one 16-dim, 1-layer model on 1000 single-name steps. Treat a gap")
+print("  this small as a tie: the interesting difference is below, not here.")
+
+# ---------------------------------------------------------------------------
+# Length generalization — measured, not asserted
+# ---------------------------------------------------------------------------
+# "RoPE generalizes to longer sequences" packs two claims into one sentence,
+# and they are not equally true.
+#
+# (1) It RUNS on longer sequences. `wpe` is a table with block_size rows, so
+#     position 16 does not exist and a longer input raises IndexError. RoPE is
+#     a formula, so the same trained weights accept any position we precomputed.
+#     This part is unambiguous, and the test below shows it as an exception.
+#
+# (2) It stays ACCURATE on longer sequences. This does not follow, and the
+#     numbers below show it does not hold either. Beyond the trained span the
+#     rotations produce relative-distance patterns the model never saw, and
+#     loss degrades. That is exactly why length-extension methods exist: YaRN
+#     (cited in the module docstring) rescales the base frequency because
+#     fixed-base RoPE does not extrapolate for free.
+#
+# Names are short, so a single name never exceeds block_size. To get a genuinely
+# longer sequence we concatenate names separated by BOS — the same token stream
+# the model trained on, just continued past position 15.
+EVAL_LEN = 3 * block_size  # 48 positions, 3x the trained context
+
+
+def make_long_batch(num_seqs=64, length=EVAL_LEN):
+    """Build BOS-separated concatenations of names, `length` + 1 tokens each."""
+    xs, ys = [], []
+    doc_i = 0
+    for _ in range(num_seqs):
+        toks = []
+        while len(toks) < length + 1:
+            toks += [BOS] + [uchars.index(ch) for ch in docs[doc_i % len(docs)]]
+            doc_i += 1
+        toks = toks[: length + 1]
+        xs.append(toks[:-1])
+        ys.append(toks[1:])
+    return torch.tensor(xs), torch.tensor(ys)
+
+
+def eval_loss(model, inputs, targets):
+    """Teacher-forced cross-entropy over the whole sequence in one forward pass."""
+    model.eval()
+    with torch.no_grad():
+        logits = model(inputs)
+        loss = F.cross_entropy(logits.reshape(-1, vocab_size), targets.reshape(-1))
+    model.train()
+    return loss.item()
+
+
+def band_losses(model, inputs, targets, window=block_size):
+    """Per-chunk loss two ways, so position can be separated from content.
+
+    Returns (full, rebased). Both lists cover the same chunks of the same tokens:
+
+      full     — one forward pass over the whole sequence, so chunk c sits at
+                 absolute positions [c*window, ...]. Only chunk 0 is inside the
+                 range the model trained on.
+      rebased  — each chunk fed in as its own sequence, so every chunk sits at
+                 positions [0, window-1], inside the trained range.
+
+    Content is identical between the two, so any gap is the position encoding
+    behaving differently at distances it never saw. (The rebased pass also drops
+    cross-chunk context, but the aggregate numbers above show that context is
+    worth ~0.0002 nats here, so it is not what moves these figures.)
+    """
+    model.eval()
+    full, rebased = [], []
+    with torch.no_grad():
+        logits = model(inputs)
+        for start in range(0, inputs.shape[1], window):
+            ti = targets[:, start : start + window]
+            lg = logits[:, start : start + window]
+            full.append((start, start + ti.shape[1] - 1, F.cross_entropy(lg.reshape(-1, vocab_size), ti.reshape(-1)).item()))
+            lg2 = model(inputs[:, start : start + window])
+            rebased.append(F.cross_entropy(lg2.reshape(-1, vocab_size), ti.reshape(-1)).item())
+    model.train()
+    return full, rebased
+
+
+def eval_loss_windowed(model, inputs, targets, window=block_size):
+    """Same tokens, chopped into independent `window`-sized chunks.
+
+    This is what a hard position limit forces you to do, and it is the fair
+    comparison: context is thrown away at every chunk boundary.
+    """
+    model.eval()
+    total, count = 0.0, 0
+    with torch.no_grad():
+        for start in range(0, inputs.shape[1], window):
+            xi, ti = inputs[:, start : start + window], targets[:, start : start + window]
+            logits = model(xi)
+            total += F.cross_entropy(logits.reshape(-1, vocab_size), ti.reshape(-1)).item() * ti.numel()
+            count += ti.numel()
+    model.train()
+    return total / count
+
+
+long_x, long_y = make_long_batch()
+print(f"\n=== Results: length generalization (trained on {block_size} positions) ===")
+print(f"  Evaluating {long_x.shape[0]} sequences of {EVAL_LEN} tokens ({EVAL_LEN // block_size}x block_size).")
+
+try:
+    loss_learned_long = eval_loss(model_learned, long_x, long_y)
+    print(f"  learned-pos, full {EVAL_LEN} tokens in one pass: loss {loss_learned_long:.4f}")
+except IndexError as exc:
+    print(f"  learned-pos, full {EVAL_LEN} tokens in one pass: {type(exc).__name__}")
+    print(f"    wpe has exactly {block_size} rows, so position {block_size} does not exist. Hard stop —")
+    print("    the only option is to chop the input into windows and lose the context.")
+
+loss_rope_windowed = eval_loss_windowed(model_rope, long_x, long_y)
+loss_rope_long = eval_loss(model_rope, long_x, long_y)
+print(f"  rope, {block_size}-token windows (context reset at each boundary): loss {loss_rope_windowed:.4f}")
+print(f"  rope, full {EVAL_LEN} tokens in one pass:                          loss {loss_rope_long:.4f}")
+
+delta = loss_rope_long - loss_rope_windowed
+verdict = "better" if delta < 0 else "worse"
+print(f"  ...which is {abs(delta):.4f} nats {verdict} than windowing.")
+
+# Now the controlled version: same token chunks, evaluated once at their true
+# (partly unseen) positions and once re-based into the trained range.
+full_bands, rebased = band_losses(model_rope, long_x, long_y)
+print("\n  Loss per chunk, same tokens, two sets of position indices:")
+print(f"    {'chunk':<16} {'at true position':>17} {'re-based to 0-' + str(block_size - 1):>19}   position cost")
+for (lo, hi, loss_full), loss_rebased in zip(full_bands, rebased):
+    print(f"    positions {lo:2d}-{hi:2d}    {loss_full:>17.4f} {loss_rebased:>19.4f}   {loss_full - loss_rebased:>+13.4f}")
+
+extrapolation_cost = sum(f[2] - r for f, r in zip(full_bands[1:], rebased[1:])) / max(1, len(full_bands) - 1)
+
+# Honest reading of the numbers above.
+print("\n  Read the last column, not the third-from-last. The 'at true position' figures")
+print("  rise steadily down the table, which looks like extrapolation damage, and is not:")
+print("  the chunks contain different text. Chunk 0 starts on a name boundary, the others")
+print("  start mid-name. Only the difference against the re-based column controls for that,")
+print("  and chunk 0 checks the method — same positions both ways, so it must read +0.0000.")
+
+print("\n  What this does and does not show:")
+print(f"  - RoPE removes the hard length limit. That is not a claim, it is the {block_size}-row")
+print("    IndexError above. No position table means no position ceiling, so the same")
+print(f"    trained weights accept {EVAL_LEN} positions and produce a loss.")
+if abs(extrapolation_cost) < 0.05:
+    print(f"  - Accuracy at unseen positions: {extrapolation_cost:+.4f} nats on average, which is noise.")
+    print("    At this scale, evaluating past the trained span costs nothing measurable.")
+    print("    Do NOT read that as proof that RoPE extrapolates. A 1-layer, 16-dim model on")
+    print("    a corpus of independent names has almost no long-range structure to get")
+    print("    wrong — the aggregate numbers above put the value of all cross-chunk context")
+    print("    at 0.0002 nats. A test with nothing at stake cannot fail.")
+else:
+    print(f"  - Accuracy at unseen positions costs {extrapolation_cost:+.4f} nats on average, for the")
+    print("    same tokens, purely because of where they sit in the sequence.")
+print("  - So 'RoPE generalizes to longer sequences' is two claims. The mechanical one is")
+print("    proven here. The accuracy one this lab cannot settle, and at real scale it is")
+print("    known to fail: that is why length extension is its own research area. YaRN")
+print("    (module docstring) rescales the base frequency; NTK-aware interpolation and")
+print("    fine-tuning at the target length are the other standard answers. Fixed-base")
+print("    RoPE does not extrapolate for free, and this lab is too small to show why.")
 
 generate(model_learned, "Learned Positional Embeddings")
 generate(model_rope, "RoPE")

@@ -1,13 +1,10 @@
 graph TD
   A[Trained Model] --> B[Generate Candidates]
   B --> C[Score with Verifier]
-  C --> D{Pass Quality<br/>Threshold?}
+  C --> D{Rank by score,<br/>keep the top fraction?}
   D -->|Yes| E[Keep as Training Data]
   D -->|No| F[Discard]
   E --> G[Mix with Real Data]
   G --> H[Retrain Model]
   H --> I[Evaluate New Quality]
   I --> A
-  style D fill:#f9f,stroke:#333
-  style E fill:#9f9,stroke:#333
-  style F fill:#f99,stroke:#333

@@ -1,3 +1,7 @@
 graph TD
-    data["data: scalar"] --> grad["grad: starts at 0"]
-    children["children: inputs"] --> local_grads["local_grads: derivatives"]
+    subgraph V["One Value node"]
+        data["data: the scalar"]
+        grad["grad: starts at 0"]
+        children["children: the input Values"]
+        local_grads["local_grads: d(this)/d(child)"]
+    end

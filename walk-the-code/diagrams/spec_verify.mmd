@@ -1,5 +1,5 @@
 graph TD
-    check{Accept?}
-    check -->|Yes| accept[Keep draft token]
-    check -->|No| reject[Correction sample<br/>and restart]
-    accept --> bonus[If all drafts pass:<br/>take bonus token]
+    check{"Accept?<br/>with probability min(1, p/q)"}
+    check -->|yes| accept[Keep the drafted token]
+    check -->|no| reject["Resample from max(0, p - q)<br/>and end the round"]
+    accept -->|only once all K have passed| bonus[Take one bonus token]

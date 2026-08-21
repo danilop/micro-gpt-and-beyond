@@ -1,9 +1,10 @@
 graph TD
-    prefix[Accepted prefix]
-    prefix --> draft[Draft model]
+    prefix[Accepted prefix] --> draft[Draft model]
     draft --> ktokens[Propose K tokens]
-    ktokens --> target[Target scores<br/>all K at once]
-    target --> check{Accept each token?}
-    check -->|Yes| keep[Keep<br/>draft tokens]
-    check -->|No| restart[Sample correction<br/>restart]
-    keep --> bonus[If all pass:<br/>bonus token]
+    ktokens --> target["Target scores all K<br/>in one forward pass"]
+    target --> check{Accept each token in turn?}
+    check -->|all K pass| keep[Keep all K drafted tokens]
+    check -->|first rejection| restart["Keep the accepted ones, resample<br/>from max(0, p - q), end the round"]
+    keep --> bonus[Add one bonus token]
+    bonus --> prefix
+    restart --> prefix

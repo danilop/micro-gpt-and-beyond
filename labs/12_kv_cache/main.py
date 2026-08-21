@@ -4,8 +4,17 @@ microGPT — KV Cache edition.
 Same model as lab 03, but with a KV-cache-aware inference path that avoids
 recomputing Key and Value tensors for already-processed positions. This is
 THE fundamental optimization behind every fast LLM serving system.
-Without KV cache: each new token reprocesses the full sequence -> O(n^3) total.
-With KV cache: each new token only computes attention for ONE position -> O(n^2) total.
+
+Be precise about which cost is being counted, because two different quantities
+get called "the complexity of decoding" and they have different exponents. Over
+a T-token generation:
+
+  attention scores    naive O(T^3)   cached O(T^2)
+  projections + MLP   naive O(T^2)   cached O(T)
+
+Every "cubic to quadratic" claim in this lab, including the operation counter it
+prints, is about the attention term — the one that dominates at long context and
+the only one the cache changes asymptotically.
 
 KV caching is a standard inference optimization for autoregressive transformers,
 implicit in the original "Attention Is All You Need" (Vaswani et al., 2017),
@@ -207,8 +216,9 @@ def sample_token(logits):
 
 
 def generate_naive(num_samples=20):
-    """Standard generation: re-run full sequence at every step. O(n^3) total attention."""
+    """Standard generation: re-run full sequence at every step. O(T^3) attention work."""
     total_attn_ops = 0
+    total_steps = 0
     names = []
     for sample_idx in range(num_samples):
         torch.manual_seed(1000 + sample_idx)
@@ -217,17 +227,18 @@ def generate_naive(num_samples=20):
             idx = torch.tensor([tokens[-block_size:]], device=device)
             T = idx.shape[1]
             total_attn_ops += T * T * n_head
+            total_steps += 1
             logits, _ = model(idx)  # no cache — recomputes everything
             token_id = sample_token(logits)
             if token_id == BOS:
                 break
             tokens.append(token_id)
         names.append("".join(uchars[t] for t in tokens[1:]))
-    return names, total_attn_ops
+    return names, total_attn_ops, total_steps
 
 
 def generate_with_cache(num_samples=20):
-    """KV-cache generation: only process new token each step. O(n^2) total attention."""
+    """KV-cache generation: only process new token each step. O(T^2) attention work."""
     total_attn_ops = 0
     names = []
     for sample_idx in range(num_samples):
@@ -257,7 +268,7 @@ print("=" * 60)
 
 with torch.no_grad():
     t0 = time.perf_counter()
-    names_naive, ops_naive = generate_naive(num_samples)
+    names_naive, ops_naive, steps_naive = generate_naive(num_samples)
     t_naive = time.perf_counter() - t0
 
     t0 = time.perf_counter()
@@ -272,26 +283,104 @@ for i, (n1, n2) in enumerate(zip(names_naive, names_cached)):
     print(f"  {i + 1:2d}: {n1:12s}  |  {n2:12s}  [{match}]")
 print(f"\nAll outputs identical: {all_match}")
 
-# Operation counts
-print("\n--- Attention operation counts (Q*K multiply-adds) ---")
+# ---------------------------------------------------------------------------
+# The headline number: attention operations counted, not timed
+# ---------------------------------------------------------------------------
+# This is a count of work actually performed, so it is exact and it is what the
+# optimization is about. Wall clock comes later, with caveats.
+print("\n--- Attention operation counts (Q*K multiply-adds, counted exactly) ---")
 print(f"  Naive (full recompute):  {ops_naive:,} ops")
 print(f"  KV cache (incremental):  {ops_cached:,} ops")
-print(f"  Reduction:               {ops_naive / ops_cached:.1f}x fewer operations")
+print(f"  Reduction:               {ops_naive / ops_cached:.1f}x fewer attention operations")
 
-# Timing
-print("\n--- Wall-clock time ---")
-print(f"  Naive:    {t_naive * 1000:.1f} ms")
-print(f"  KV cache: {t_cached * 1000:.1f} ms")
-if t_cached > 0:
-    print(f"  Speedup:  {t_naive / t_cached:.2f}x")
-
-# Theoretical analysis
+# Reconcile that measured reduction with the closed form, because they differ
+# and the reason is worth one line: the formula is evaluated at T = block_size,
+# but generation stops at BOS long before position 16.
 T = block_size
-print("\n--- Theoretical analysis ---")
-print(f"  For a sequence of length T = {T}:")
+avg_steps = steps_naive / num_samples
+print("\n--- Reconciling with the closed form ---")
+print(f"  For a full sequence of length T = {T}:")
 print(f"  Naive total attention:   sum(t^2 for t=1..T) = T(T+1)(2T+1)/6 = {T * (T + 1) * (2 * T + 1) // 6} (per head)")
 print(f"  Cached total attention:  sum(t   for t=1..T) = T(T+1)/2       = {T * (T + 1) // 2} (per head)")
 print(f"  Ratio:                   (2T+1)/3 = {(2 * T + 1) / 3:.1f}x")
+print(f"\n  The measured reduction is {ops_naive / ops_cached:.1f}x, not {(2 * T + 1) / 3:.1f}x, and nothing is wrong.")
+print(f"  These names average {avg_steps:.1f} decode steps, not {T}: generation stops on BOS.")
+print(f"  Evaluate the same formula at T = {avg_steps:.1f} and you get {(2 * avg_steps + 1) / 3:.1f}x. The saving grows")
+print("  with sequence length, so a toy corpus of six-letter names sees the small end of it.")
+
+# ---------------------------------------------------------------------------
+# Wall clock, end to end — and why it says the opposite
+# ---------------------------------------------------------------------------
+print("\n--- Wall-clock time, whole generation loop ---")
+print(f"  Naive:    {t_naive * 1000:.1f} ms")
+print(f"  KV cache: {t_cached * 1000:.1f} ms")
+print(f"  Ratio:    {t_naive / t_cached:.2f}x  <- naive time / cached time, NOT a speedup figure")
+print("\n  Do not read that ratio as the value of the KV cache. It is a measurement of")
+print("  Python. One layer, 16 dimensions, six-token names: each forward pass is a few")
+print("  dozen microseconds of tensor arithmetic wrapped in a few hundred microseconds of")
+print("  interpreter and dispatch overhead. Both paths make the same NUMBER of forward")
+print("  calls, so both pay that overhead the same number of times, and the arithmetic the")
+print("  cache eliminates is too small to rise above the noise. Re-run this file and the")
+print("  ratio moves; it has been seen below 1.00x on a loaded machine. That is a statement")
+print("  about the benchmark, not about the optimization. The section below fixes the")
+print("  benchmark instead of explaining away the number.")
+
+# ---------------------------------------------------------------------------
+# Where the speedup actually lives: one decode step, at real context lengths
+# ---------------------------------------------------------------------------
+# To see the effect, measure the thing the cache changes and nothing else: a
+# single decode step, at a context length a serving system would actually reach.
+# A fresh attention module on random activations is enough — timing depends on
+# tensor shapes, not on trained weights.
+#
+#   naive  = recompute Q,K,V for the whole prefix, run a T x T attention
+#   cached = compute Q,K,V for one position, run a 1 x T attention
+#
+# Theory says the attention term shrinks by a factor of T. Reality falls short
+# of that, and the gap is instructive.
+def best_of(module, x, kv_cache, reps):
+    """Fastest of `reps` calls to module(x, kv_cache=kv_cache), in seconds.
+
+    Take the minimum, not the mean. Anything else sharing the CPU can only ever
+    make a run slower, so the mean measures the machine's mood while the minimum
+    measures the code. Standard practice for microbenchmarks, and the reason the
+    numbers below are stable enough to read as a trend.
+    """
+    best = float("inf")
+    for _ in range(reps):
+        t0 = time.perf_counter()
+        module(x, kv_cache=kv_cache)
+        best = min(best, time.perf_counter() - t0)
+    return best
+
+
+print("\n--- One decode step, attention module only, synthetic input (best of N) ---")
+print(f"  {'T':>6} {'naive':>11} {'cached':>11} {'measured':>10} {'theory':>8}")
+bench_attn = CausalSelfAttention().eval()
+with torch.no_grad():
+    for T_bench in (64, 256, 1024, 2048):
+        x_full = torch.randn(1, T_bench, n_embd)
+        x_one = torch.randn(1, 1, n_embd)
+        bench_cache = (
+            torch.randn(1, n_head, T_bench - 1, head_dim),
+            torch.randn(1, n_head, T_bench - 1, head_dim),
+        )
+        reps = max(5, 3000 // T_bench)
+        bench_attn(x_full)  # warm up the allocator
+        bench_attn(x_one, kv_cache=bench_cache)
+        t_step_naive = best_of(bench_attn, x_full, None, reps)
+        t_step_cached = best_of(bench_attn, x_one, bench_cache, reps)
+        print(
+            f"  {T_bench:>6} {t_step_naive * 1e6:>9.1f}us {t_step_cached * 1e6:>9.1f}us "
+            f"{t_step_naive / t_step_cached:>9.1f}x {T_bench:>7}x"
+        )
+print("""
+  Now the curve goes the right way, and it keeps going: the speedup grows with T
+  because naive attention is T x T against the cache's 1 x T. It stays well short
+  of the theoretical T because the projections and the fixed per-call overhead do
+  not shrink at all, and at T = 64 that overhead still swamps everything — which
+  is precisely what the 20-name wall clock above was measuring. This is the whole
+  reason the operation counter, not the stopwatch, is this lab's headline.""")
 
 # ===========================================================================
 # Summary
@@ -312,6 +401,15 @@ print("""
   ─────────────────────────────────────────────────────────
   Total:          ~T^3/3 operations     ~T^2/2 operations
 
-  At scale (7B model, 2048 ctx): ~680x speedup, ~1 GB cache per request.
-  Prerequisite for speculative decoding, PagedAttention, disaggregated serving.
+  At 2048 context the ratio (2T+1)/3 is 1366x FEWER ATTENTION OPERATIONS. That
+  is not a 1366x speedup and the distinction matters: the projections, the MLP,
+  and the memory traffic reading the cache back do not shrink by that factor,
+  and past a few thousand tokens decode is memory-bound rather than compute-
+  bound. The end-to-end win is large — large enough that no serving system ships
+  without it — but it is smaller than the operation count, and it is bounded by
+  whatever does not get cheaper.
+
+  A 7B model (32 layers, 32 heads, head_dim 128, fp16) needs 512 KB of cache per
+  token, so ~1 GB for a 2048-token request. Prerequisite for speculative
+  decoding, PagedAttention, and disaggregated serving.
 """)

@@ -12,11 +12,20 @@ manual backpropagation applies the chain rule as described in "Learning
 representations by back-propagating errors" (Rumelhart, Hinton & Williams,
 1986). Normalization uses RMSNorm following "Root Mean Square Layer
 Normalization" (Zhang & Sennrich, 2019, https://arxiv.org/abs/1910.07467).
+Note that the paper's RMSNorm has a learnable per-channel gain; this
+implementation drops it and keeps the plain rescaling, which is one fewer
+parameter tensor to differentiate by hand and makes no difference to the
+lesson.
+
+Every training step prints its wall-clock time, so the "NumPy is faster than
+pure Python" claim is something you measure on your own machine rather than
+something you take on trust.
 """
 
 import math
 import os
 import random
+import time
 
 import numpy as np
 
@@ -301,7 +310,9 @@ Vb = {k: np.zeros_like(v) for k, v in P.items()}  # second moment
 # Training loop
 # ---------------------------------------------------------------------------
 num_steps = 1000
+step_ms = []  # wall-clock time per step, so speed is measured instead of asserted
 for step in range(num_steps):
+    t_step = time.perf_counter()
     doc = docs[step % len(docs)]
     tokens = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
     tokens_np = np.array(tokens)
@@ -322,8 +333,14 @@ for step in range(num_steps):
         v_hat = Vb[k] / (1 - beta2 ** (step + 1))
         P[k] -= lr_t * m_hat / (np.sqrt(v_hat) + eps_adam)
 
+    step_ms.append((time.perf_counter() - t_step) * 1000)
+
     if (step + 1) % 10 == 0 or step == 0:
-        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss:.4f}")
+        # Average over the steps since the last print: single steps are noisy.
+        recent = step_ms[-10:]
+        print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss:.4f} | {sum(recent) / len(recent):6.2f} ms/step")
+
+print(f"\nmean {sum(step_ms) / len(step_ms):.2f} ms/step over {num_steps} steps (forward + manual backward + Adam)")
 
 # ---------------------------------------------------------------------------
 # Inference
