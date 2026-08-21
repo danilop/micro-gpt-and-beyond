@@ -243,6 +243,10 @@ def benchmark(model):
         path = os.path.join(d, "model.pt")
         torch.save(model.state_dict(), path)
         size_mb = os.path.getsize(path) / (1024 * 1024)
+    # Warm up before timing. Whichever arm runs first otherwise absorbs the
+    # one-time setup cost (thread pool, kernel selection, cold caches), and on a
+    # cold machine that is large enough to reverse the comparison entirely.
+    generate(model, 5)
     # Seed immediately before generating so both models draw the SAME sampling
     # decisions. Without this the two timings run different numbers of forward
     # passes on different-length sequences, and the "comparison" compares nothing.
@@ -263,7 +267,7 @@ int8_size, int8_time = benchmark(model_int8)
 print(
     f"INT8: {int8_size:.3f} MB ({int8_size / fp32_size:.1%}), {int8_time:.2f} ms/sample ({int8_time / fp32_time:.1%})"
 )
-print(f"size: {fp32_size / int8_size:.2f}x smaller | speed: {int8_time / fp32_time - 1:+.1%} vs FP32 (slower is expected here)")
+print(f"size: {fp32_size / int8_size:.2f}x smaller | speed: {int8_time / fp32_time - 1:+.1%} vs FP32 (dequantizing on every forward costs time; the exact figure is machine-dependent)")
 print("\nNote: This implementation prioritizes memory savings.")
 print("Production systems use INT8 kernels for both size and speed benefits.")
 

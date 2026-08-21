@@ -694,75 +694,84 @@
     "important": true,
     "hash": "63e20ade"
   },
-  "371": {
+  "373": {
     "text": "Chunk <code>c</code> read out of one long forward pass, so it sits at absolute positions starting at <code>c*window</code>. Only chunk 0 is inside the range the model was trained on.",
     "hash": "981b9821"
   },
-  "372": {
+  "374": {
     "text": "The control: feed the very same tokens in as their own short sequence, so they land at positions 0..15 where the model is at home. Everything else about the input is identical, which is the entire point.",
     "important": true,
     "hash": "89357590"
   },
-  "378": {
+  "380": {
     "text": "What a hard position limit forces you to do: chop the stream into <code>block_size</code> windows and throw away context at every boundary. This is the fair thing to compare RoPE's single long pass against, rather than comparing it to nothing.",
     "hash": "49cefe8e"
   },
-  "401": {
+  "398": {
+    "text": "The probe that breaks the circularity. It predicts the same targets twice &mdash; once with the real history, once with a neighbouring row's history &mdash; holding absolute positions, sequence length and targets identical. The only thing that changes is <em>which</em> distant context the model sees, so the gap prices distant context alone.",
+    "important": true,
+    "hash": "7868719f"
+  },
+  "425": {
     "text": "Evaluating the baseline over 48 positions is wrapped in <code>try</code> because it is expected to raise. This is the one claim about length the lab can actually prove, so it is demonstrated as an exception rather than asserted in prose.",
     "important": true,
     "hash": "ea284d34"
   },
-  "403": {
+  "427": {
     "text": "A real <code>IndexError</code> from <code>wpe</code>, not a printed warning. The learned-position model has 16 embedding rows and position 16 does not exist — no amount of extra compute or fine-tuning gets you past that.",
     "hash": "6238b4ea"
   },
-  "408": {
+  "432": {
     "text": "RoPE evaluated the windowed way too, so the two numbers below differ in exactly one respect: whether cross-chunk context was available.",
     "hash": "b6d27179"
   },
-  "413": {
+  "437": {
     "text": "The full pass and the windowed pass differ by about 0.0002 nats on this run, which is a rounding error. That is the honest measure of how much cross-chunk context is worth on a corpus of independent names — and it is why the length test below needs the re-based control to say anything at all.",
     "hash": "4aa7dd00"
   },
-  "419": {
+  "445": {
+    "text": "How much all context older than <code>block_size</code> tokens is actually worth, in nats. This is the yardstick the position-extrapolation number is compared against: a cost smaller than this cannot be separated from the context confound.",
+    "hash": "4d001091"
+  },
+  "453": {
     "text": "Run the controlled comparison and print both columns. The interesting figure is the difference between them, not either one alone.",
     "important": true,
     "hash": "d0fe7d23"
   },
-  "423": {
+  "457": {
     "text": "The last column is the whole result: loss at the true position minus loss at the re-based position, for identical tokens. Anything that is a property of the text cancels here.",
     "hash": "5f252eaa"
   },
-  "425": {
+  "459": {
     "text": "Average the position cost over chunks 1 and up. Chunk 0 is excluded because it is the method check, not a data point — its two passes use the same positions, so it contributes a structural zero.",
     "hash": "59d37a6e"
   },
-  "428": {
+  "462": {
     "text": "The warning the reader needs before reading the table. The 'at true position' column rises steadily down the rows, which looks exactly like extrapolation damage and is not: later chunks start mid-name and are simply harder text.",
     "hash": "2ece94bf"
   },
-  "432": {
+  "466": {
     "text": "Chunk 0 must read <code>+0.0000</code> — same tokens, same positions, both ways. A control that cannot fail is useless, but a control that would visibly break if the harness were wrong is worth printing.",
     "hash": "4f37dcf1"
   },
-  "438": {
-    "text": "Branch on the size of the measured cost rather than announcing a conclusion. On this run it comes out at a few ten-thousandths of a nat, so the lab takes the 'this is noise' path and refuses to claim a win.",
-    "hash": "f94fb75b"
+  "480": {
+    "text": "Branch on a <em>measured</em> threshold, not a magic constant. The old version tested <code>&lt; 0.05</code>, a number with no provenance; this compares the extrapolation cost against the value of the far context that the same experiment inevitably varies alongside it.",
+    "hash": "4246c694"
   },
-  "441": {
+  "485": {
     "text": "The line that keeps the lab honest: a null result here is not evidence that RoPE extrapolates. A 1-layer, 16-dimensional model on independent names has almost nothing at stake past position 15, and a test with nothing at stake cannot fail.",
     "hash": "4550ce8e"
   },
-  "448": {
+  "494": {
     "text": "'RoPE generalizes to longer sequences' is two claims wearing one sentence. The mechanical one is settled above by an exception; the accuracy one is why YaRN, NTK-aware interpolation, and fine-tuning at the target length exist at all.",
     "important": true,
     "hash": "90fedbb7"
   },
-  "455": {
+  "501": {
     "text": "Generate names from the learned-position model.",
     "hash": "8354355a"
   },
-  "456": {
+  "502": {
     "text": "Generate names from the RoPE model, quality should be comparable despite fewer parameters.",
     "hash": "f6552e4d"
   }

@@ -2,7 +2,7 @@
 
 Same architecture as the PyTorch version (03/16), but with two model sizes, a small "draft" model and a larger "target" model, demonstrating speculative decoding. The draft model guesses multiple tokens ahead, the target model verifies them all in a single forward pass. The output distribution is mathematically identical to target-only generation, and the lab tests that rather than asserting it.
 
-It cuts target forward passes per name from 5.0 to 2.3. It does **not** run faster on this CPU — roughly 0.72x, i.e. about 28% slower — and the lab measures why: at this model size the target forward costs only about twice the draft forward, so there is nothing worth amortizing. Forward-pass count is the metric that transfers to a GPU; wall clock at 100K parameters is not.
+It cuts target forward passes per name from 5.0 to 2.1. It does **not** run faster on this CPU — 0.74x on an unloaded machine, i.e. about 26% slower — and the lab measures why: at this model size the target forward costs only about 2.5x the draft forward, so there is nothing worth amortizing. Forward-pass count is the metric that transfers to a GPU; wall clock at 100K parameters is not.
 
 ## Why this version exists
 
@@ -36,6 +36,8 @@ The GPU computes 175× faster than it can read data. It sits idle 99.4% of the t
 
 This acceptance/rejection scheme guarantees the output distribution is **exactly** the same as sampling from the target model alone. It's not an approximation. It's mathematically lossless.
 
+The guarantee only holds if step 3 compares each drafted token against the *right* row of the target's output. That is easy to get wrong here: the models take at most `block_size = 16` tokens, so once the prefix plus the K drafted tokens is longer than the window, the front of the sequence falls off and row 0 of the target's output is no longer the first drafted token. The lab converts absolute token positions into row indices by subtracting what fell off (`row_offset`). Without that subtraction some drafted tokens near the length cap get accepted or rejected against another position's distribution, which breaks losslessness silently — the generated names still look fine, and only the acceptance statistics move.
+
 ### The acceptance rate tradeoff
 
 The key metric is the **per-token acceptance rate**, usually written α: given that the target model looked at a drafted token, how often did it accept? Rules of thumb:
@@ -48,18 +50,18 @@ In this lab the draft model (1 layer, 32-dim, 14,528 parameters) is **7.1× smal
 **α is not "accepted ÷ drafted".** This distinction is easy to get wrong, and the lab prints all three numbers so the difference is visible:
 
 ```
-  per-token acceptance rate alpha: 87.2%  (accepted / evaluated)
-  mean accepted run per round:     2.24 tokens of K=4
-  draft window utilisation:        56.1%  (accepted / all K proposals)
+  per-token acceptance rate alpha: 85.5%  (accepted / evaluated)
+  mean accepted run per round:     2.26 tokens of K=4
+  draft window utilisation:        56.5%  (accepted / all K proposals)
 ```
 
-The draft proposes K=4 tokens per round, but the target stops examining the window at the first rejection, so tokens after that point are discarded without ever being evaluated. Dividing accepted tokens by *all K proposals* therefore measures how much of the draft window survived, which shrinks as you raise K no matter how good the draft model is. Dividing by tokens actually *evaluated* gives α, which is a property of the two models and does not move with K. Here that is the difference between 56.1% and 87.2% — large enough to change which rule of thumb you think you are in.
+The draft proposes K=4 tokens per round, but the target stops examining the window at the first rejection, so tokens after that point are discarded without ever being evaluated. Dividing accepted tokens by *all K proposals* therefore measures how much of the draft window survived, which shrinks as you raise K no matter how good the draft model is. Dividing by tokens actually *evaluated* gives α, which is a property of the two models and does not move with K. Here that is the difference between 56.5% and 85.5% — large enough to change which rule of thumb you think you are in.
 
-The third number, mean accepted run per round, is the one that predicts the speedup: 2.24 accepted tokens per target forward pass.
+The third number, mean accepted run per round, is the one that predicts the speedup: 2.26 accepted tokens per target forward pass.
 
 ### High acceptance, and still no speedup
 
-At α = 87.2% this lab is comfortably in the ">80%, large speedup" band, and it still runs **slower** than plain autoregressive decoding — about 0.72x on wall clock. That is not a contradiction; it is the second half of the tradeoff, which the acceptance rate alone does not capture.
+At α = 85.5% this lab is comfortably in the ">80%, large speedup" band, and it still runs **slower** than plain autoregressive decoding — 0.74x on wall clock. That is not a contradiction; it is the second half of the tradeoff, which the acceptance rate alone does not capture. (The same run on a contended machine printed 1.50x, i.e. speculative decoding came out *faster*. A ratio that flips sign with background load is not measuring the algorithm.)
 
 The standard model for the expected speedup is
 
@@ -70,15 +72,15 @@ speedup = (1 - α^(K+1)) / ((1 - α) · (K·c + 1))
 where `c` is the cost of one draft forward pass as a fraction of one target forward pass. The lab measures `c` rather than assuming it:
 
 ```
-measured cost per forward pass: draft 0.646 ms, target 1.283 ms
-  -> target is 1.99x the draft's cost, against a 7.1x parameter ratio
+measured cost per forward pass: draft 0.456 ms, target 1.136 ms
+  -> target is 2.49x the draft's cost, against a 7.1x parameter ratio
 ```
 
-Those absolute times move with machine load; across runs here the ratio lands around 1.7-2.0x, so `c ≈ 0.5-0.6`. Plug `c = 0.58` in with α = 0.872 and K = 4 and the model predicts about 1.17x — barely above break-even before any implementation overhead. Set `c = 0.05`, which is the regime a 1B draft against a 70B target lives in, and the same formula gives about 3.2x. That is where the production numbers come from.
+Those absolute times move a lot with machine load — on a busy host the same measurement collapsed to 1.07x, because contention inflates the fixed per-call overhead both models pay. Take the unloaded number: 2.49x, so `c ≈ 0.40`. Plug that in with α = 0.855 and K = 4 and the model predicts about 1.44x — some headroom, but nothing like the production figures, and all of it before any implementation overhead. Set `c = 0.05`, which is the regime a 1B draft against a 70B target lives in, and the same formula gives about 3.1x. That is where the production numbers come from.
 
-Two things follow. First, the parameter ratio is not the cost ratio: 7.1x fewer parameters bought only about 2x less time here, because at this size both models are dominated by per-call Python and dispatch overhead rather than by arithmetic. Second, the measured 0.72x is below even the 1.17x the model predicts, because the model does not charge for the Python accept/reject loop, the tensor construction per round, or the repeated re-encoding of the prefix.
+Two things follow. First, the parameter ratio is not the cost ratio: 7.1x fewer parameters bought only about 2.5x less time here, because at this size both models are dominated by per-call Python and dispatch overhead rather than by arithmetic. Second, the measured 0.74x is below even the 1.44x the model predicts, because the model does not charge for the Python accept/reject loop, the tensor construction per round, or the repeated re-encoding of the prefix.
 
-The transferable metric is therefore the **target forward pass count**: 2.3 per name speculatively against 5.0 autoregressively, a 2.19x reduction. On a GPU running a real model, the target forward is essentially the whole cost, so that reduction is the speedup. On this CPU it is not.
+The transferable metric is therefore the **target forward pass count**: 2.1 per name speculatively against 5.0 autoregressively, a 2.36x reduction. On a GPU running a real model, the target forward is essentially the whole cost, so that reduction is the speedup. On this CPU it is not.
 
 ### Proving it is lossless
 
@@ -88,16 +90,16 @@ The part that makes the test meaningful is the noise floor. Two independent auto
 
 ```
   run                        n  mean length
-  autoregressive A         500        5.152
-  autoregressive B         500        5.210
-  speculative (K=4)        500        5.212
+  autoregressive A         500        5.164
+  autoregressive B         500        5.208
+  speculative (K=4)        500        5.200
 
-  character-unigram TV distance, AR vs AR:          0.0327   <- noise floor
-  character-unigram TV distance, AR vs speculative:  0.0271
-  ratio to noise floor: 0.83x
+  character-unigram TV distance, AR vs AR:          0.0335   <- noise floor
+  character-unigram TV distance, AR vs speculative:  0.0330
+  ratio to noise floor: 0.99x
 ```
 
-The speculative sample is *closer* to autoregressive run A than run B is. That is what lossless looks like as a measurement: not a distance of zero, but a distance no larger than sampling error.
+The speculative sample lands on the noise floor — a hair *closer* to autoregressive run A than run B is. That is what lossless looks like as a measurement: not a distance of zero, but a distance no larger than sampling error.
 
 Two honest caveats. This compares two summary statistics, not the full joint distribution over strings, and it does so at n=500 — it can fail to detect a real difference, and it cannot prove there is none. And it is a check on *this implementation*; the proof that the accept/reject rule preserves the target distribution is in Leviathan et al. (2023).
 
@@ -105,7 +107,7 @@ Two honest caveats. This compares two summary statistics, not the full joint dis
 
 The magic of speculative decoding is that verification costs almost nothing extra. The target model already reads all its weights from memory for one token, so processing K+1 tokens instead of 1 barely changes the wall-clock time on a GPU, because the bottleneck is memory bandwidth, not compute.
 
-At our tiny scale (CPU, Python loops) this overlap isn't visible, and the lab measures why: the target forward costs only about twice the draft forward, so there is nothing much to amortize. On real hardware with billion-parameter models that ratio is 10-100x, and the overlap is where the speedup comes from.
+At our tiny scale (CPU, Python loops) this overlap isn't visible, and the lab measures why: the target forward costs only about 2.5x the draft forward, so there is nothing much to amortize. On real hardware with billion-parameter models that ratio is 10-100x, and the overlap is where the speedup comes from.
 
 ## What you learn here
 
@@ -136,10 +138,10 @@ uv run python main.py
 
 Trains both models (draft: 14,528 params, target: 102,784 params), then generates samples using autoregressive decoding, speculative decoding, and draft-only decoding. It reports:
 
-- Target forward passes per name: 2.3 speculative against 5.0 autoregressive, a 2.19x reduction
-- Acceptance three ways: α = 87.2%, mean accepted run 2.24 of K=4, draft window utilisation 56.1%
-- Measured per-forward-pass cost for each model, giving a cost ratio around 1.7-2.0x on this machine
-- Wall clock: about 0.72x, i.e. speculative decoding is slower here, with the reason spelled out
+- Target forward passes per name: 2.1 speculative against 5.0 autoregressive, a 2.36x reduction
+- Acceptance three ways: α = 85.5%, mean accepted run 2.26 of K=4, draft window utilisation 56.5%
+- Measured per-forward-pass cost for each model, giving a cost ratio of 2.49x on an idle machine (and as little as 1.07x on a busy one)
+- Wall clock: 0.74x, i.e. speculative decoding is slower here, with the reason spelled out
 - A distributional check against an autoregressive-vs-autoregressive noise floor
 
 ## Why speculative decoding matters

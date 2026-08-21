@@ -8,7 +8,7 @@ The dimensions come from version 04 (64-dim embeddings, 4 heads, 2 layers, 102,7
 
 After training a model in PyTorch (version 03), you often want to deploy it somewhere with limited memory or compute. Quantization shrinks the weights by storing them as INT8 plus a scale factor instead of FP32.
 
-Be clear about what this lab does and does not show. It measures a real size reduction: 0.397 MB down to 0.114 MB, 3.48x smaller. It does **not** show a speedup, and it is not supposed to: the forward pass here dequantizes INT8 back to FP32 and then runs an ordinary FP32 matmul, so INT8 comes out **25-30% slower** than FP32 on this machine. Speed requires INT8 GEMM kernels that do the arithmetic in integers, which this lab deliberately does not implement. Size savings are the honest result; the speed claim belongs to TensorRT and friends.
+Be clear about what this lab does and does not show. It measures a real size reduction: 0.397 MB down to 0.114 MB, 3.48x smaller. It does **not** show a speedup, and it is not supposed to: the forward pass here dequantizes INT8 back to FP32 and then runs an ordinary FP32 matmul, so INT8 comes out slower than FP32. How much slower is a property of the machine and the moment, not a constant — over eleven quiet runs on the 2-core CPU container this was last measured on, FP32 took 4.9-5.7 ms/sample and INT8 6.2-7.1 ms/sample, so **+13% to +38%, median +26%**. Read the number your own run prints, not this one. Speed requires INT8 GEMM kernels that do the arithmetic in integers, which this lab deliberately does not implement. Size savings are the honest result; the speed claim belongs to TensorRT and friends.
 
 ## What makes it interesting
 
@@ -41,11 +41,11 @@ This is symmetric quantization:
 - Store weights as INT8 + a single scale factor per layer
 - Dequantize on the fly during forward pass
 
-**Tradeoff**: Dequantizing on every forward pass adds overhead, but keeps memory usage low. This is measured, not hypothetical: INT8 runs 25-30% slower than FP32 in this lab. Production systems use specialized INT8 matrix multiplication kernels that operate directly on INT8 without dequantization, achieving both memory savings and speed improvements.
+**Tradeoff**: Dequantizing on every forward pass adds overhead, but keeps memory usage low. This is measured, not hypothetical: the lab prints the ratio it observed, and on the machine used to write this that landed between +13% and +38% depending on the run. Production systems use specialized INT8 matrix multiplication kernels that operate directly on INT8 without dequantization, achieving both memory savings and speed improvements.
 
 ### Model size comparison
 
-The script measures model size and inference speed with a unified `benchmark()` function that saves the state dict, measures file size, and times sample generation. Both timing runs reseed the sampler immediately before generating, so FP32 and INT8 draw the same sampling decisions and therefore run the same number of forward passes on the same-length sequences. Without that, the "comparison" would be comparing two different workloads.
+The script measures model size and inference speed with a unified `benchmark()` function that saves the state dict, measures file size, warms the model up, and times sample generation. Both timing runs reseed the sampler immediately before generating, so FP32 and INT8 draw the same sampling decisions and therefore run the same number of forward passes on the same-length sequences. Without that, the "comparison" would be comparing two different workloads. The warmup matters for the same reason: FP32 is timed first, so without it FP32 pays for one-time setup (thread pool, kernel selection, cold caches) that INT8 does not.
 
 For this model (102,784 parameters), the measured results:
 - FP32: 0.397 MB
@@ -81,7 +81,9 @@ A 0.006% loss increase for a 3.48x size reduction is the whole argument for quan
 
 ### Inference speed comparison
 
-**Important**: this implementation does not just fail to speed up, it measurably slows down. Dequantizing on every forward pass costs more than the FP32 baseline: around 7.6 ms/sample FP32 against 9.6-9.8 ms/sample INT8 across runs, so **+25-30%**. Absolute times move with machine load; the sign and rough size of the gap do not. The benefit here is entirely **memory**: 3.48x smaller.
+**Important**: this implementation does not just fail to speed up, it measurably slows down. Dequantizing on every forward pass costs more than the FP32 baseline. On the 2-core CPU container used to write this, eleven quiet runs measured 4.9-5.7 ms/sample FP32 against 6.2-7.1 ms/sample INT8: **+13% to +38%, median +26%**.
+
+Treat that spread as the result, and treat it as one machine's, not a law. This is a 100K-parameter model on CPU timed for a few seconds, so the ratio is noisy: a loaded machine pushed it past +100%, and one cold first-ever run in a fresh container reported INT8 as *faster*, because the FP32 arm is timed first and absorbed the process's warm-up cost (which is why `benchmark()` now warms each model up before timing). What is structural is the direction — an extra dequantize per matmul cannot be free. The benefit here is entirely **memory**: 3.48x smaller.
 
 Production quantization systems (TensorRT, ONNX Runtime, PyTorch native) use specialized INT8 kernels that operate directly on INT8 data, achieving both memory savings and 2-4× speed improvements on large models.
 
@@ -123,7 +125,7 @@ uv run python main.py
 
 Trains for 1000 steps, quantizes the model, then reports:
 - Model size reduction: 0.397 MB to 0.114 MB, 3.48x
-- Inference time, seeded identically for both models: INT8 is 25-30% slower
+- Inference time, seeded identically and warmed up for both models: INT8 slower (+13% to +38% across runs on the machine this was written on, but read your own run)
 - Per-layer quantization error, `max|W - dequant(W)|`, ~0.394% of `max|W|` everywhere
 - Held-out per-token loss on 2,000 unseen names: 2.4003 (FP32) vs 2.4004 (INT8)
 - 10 samples from each version, which come out identical

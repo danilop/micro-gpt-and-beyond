@@ -472,7 +472,7 @@
     "hash": "0d8a8193"
   },
   "232": {
-    "text": "Execute the target function 50 times to get a stable average, smoothing out per-run timing noise.",
+    "text": "Collect 50 timings of the target function. They are not averaged: the loop keeps every sample so the caller can sort them and take the median, which one scheduling hiccup cannot distort.",
     "hash": "f2d6b87d"
   },
   "233": {
@@ -550,7 +550,7 @@
     "hash": "0a0fa0c5"
   },
   "283": {
-    "text": "Print a formatted comparison table.",
+    "text": "Print the comparison table header.",
     "hash": "6d9733f3"
   },
   "284": {
@@ -568,129 +568,129 @@
     "hash": "23d6da0b"
   },
   "292": {
-    "text": "Print the comparison table header.",
+    "text": "Print one row of the comparison table, one per prompt length in the sweep.",
     "hash": "6d9733f3"
   },
   "293": {
     "text": "Print the per-token cost next to the total. That column is the diagnostic: it is huge at the shortest prompt because almost all of the time is fixed per-call overhead, bottoms out in the middle, and climbs again once the quadratic attention term starts to dominate. Reading the total alone hides both effects.",
     "hash": "e089b32d"
   },
-  "297": {
+  "303": {
     "text": "How much the wall clock grew across the sweep, to be compared against the FLOP growth on the next line.",
     "hash": "d7e8214f"
   },
-  "298": {
+  "304": {
     "text": "And how much the FLOP count grew. The two numbers are wildly different, and the gap is the amount of the short-prompt measurement that was never arithmetic in the first place.",
     "hash": "40d5443f"
   },
-  "299": {
+  "305": {
     "text": "Attention's share of prefill FLOPs at the short end, where the dense terms dominate.",
     "hash": "aef8a3bc"
   },
-  "300": {
+  "306": {
     "text": "And at the long end. Watching this share climb is the honest version of \"prefill is compute-bound\": true at production context lengths, not at the length of a name.",
     "hash": "91a90933"
   },
-  "329": {
+  "339": {
     "text": "Controls how peaked the sampling distribution is. Lower temperature means more deterministic output; higher means more variety.",
     "hash": "7eca5b76"
   },
-  "334": {
+  "344": {
     "text": "Simulated prefill cost per prompt token. Deliberately in the milliseconds: on a loaded host <code>time.sleep()</code> overshoots by around a millisecond, so a simulation built on 0.3 ms sleeps would measure OS scheduling noise instead of its own cost model. Only the ratios between these three constants matter.",
     "hash": "1cffb792"
   },
-  "335": {
+  "345": {
     "text": "Simulated decode cost per step, lower than prefill's per-token cost. Decode does less arithmetic per token; on real hardware it is memory-bound instead.",
     "hash": "7f92f7b7"
   },
-  "343": {
+  "353": {
     "text": "The one cost disaggregation adds and colocated serving never pays. In this lab the handoff is a tuple of the same tensors on a queue — literally no copy — so without an explicit charge the simulation would report the transfer as free while the closing text says it costs a millisecond. Charge it, then print the break-even value.",
     "important": true,
     "hash": "27981412"
   },
-  "347": {
+  "357": {
     "text": "A serving request: prompt, timing metadata, and generated tokens.",
     "hash": "1d4d2afb"
   },
-  "348": {
+  "358": {
     "text": "A numeric ID that uniquely identifies this request in the serving system.",
     "hash": "fa3ade80"
   },
-  "349": {
+  "359": {
     "text": "The prompt tokens to prefill.",
     "hash": "84b61c78"
   },
-  "350": {
+  "360": {
     "text": "When this request arrives in the system.",
     "hash": "aed6af2b"
   },
-  "351": {
+  "361": {
     "text": "Upper limit on how many tokens to generate per request, bounding the decode phase for this simulation.",
     "hash": "28eea12a"
   },
-  "352": {
+  "362": {
     "text": "Time-to-first-token: the key latency metric for user experience.",
     "hash": "b94923dd",
     "important": true
   },
-  "353": {
+  "363": {
     "text": "When the request completes entirely.",
     "hash": "bc4138df"
   },
-  "354": {
+  "364": {
     "text": "List that collects the tokens generated for this request during the decode phase.",
     "hash": "3c153559"
   },
-  "361": {
+  "371": {
     "text": "Each request carries its own sampling RNG. The global torch RNG is unusable here: the disaggregated arm samples from two threads, so thread interleaving decides who draws which number and the generated names changed from run to run. Per-request generators make both strategies draw the same numbers in the same order for the same request, so the text is identical by construction and only latency differs.",
     "important": true,
     "hash": "b1152e08"
   },
-  "364": {
+  "374": {
     "text": "Create a realistic workload: mix of short prompts (fast prefill) and long prompts (slow prefill). The long prompts are the problem, they block everything in colocated serving.",
     "hash": "aa9601f2"
   },
-  "365": {
+  "375": {
     "text": "Separate RNG for reproducible workload.",
     "hash": "48c08608"
   },
-  "367": {
+  "377": {
     "text": "Loop through the specified number of requests, creating each with a random prompt and staggered arrival time.",
     "hash": "62292715"
   },
-  "368": {
+  "378": {
     "text": "30% chance of a long prompt (8-12 tokens), these are the \"heavy\" requests that cause head-of-line blocking.",
     "hash": "668cbc97"
   },
-  "369": {
+  "379": {
     "text": "Fill the prompt with random token IDs drawn from the vocabulary to simulate a realistic request payload.",
     "hash": "abc37cba"
   },
-  "374": {
+  "384": {
     "text": "Stagger arrivals by 0.3 ms so requests do not all appear at t=0. Head-of-line blocking needs a queue to form.",
     "hash": "3915a4c1"
   },
-  "376": {
+  "386": {
     "text": "One <code>torch.Generator</code> per request, seeded from its id. This is the mechanism that makes the two strategies byte-identical: the seed travels with the request rather than with the worker that happens to process it.",
     "hash": "1dbe3af3"
   },
-  "382": {
+  "392": {
     "text": "Simulate a prefill operation: run the actual model AND sleep to simulate GPU time.",
     "hash": "19b0a7a3"
   },
-  "383": {
+  "393": {
     "text": "Real forward pass to get logits and KV caches.",
     "hash": "e5fc762b"
   },
-  "384": {
+  "394": {
     "text": "Sleep proportional to prompt length, longer prompts take longer to prefill.",
     "hash": "2b8797f4"
   },
-  "388": {
+  "398": {
     "text": "The prefill-to-decode handoff, modelled as a delay proportional to prompt length — which is how the real thing scales, since the KV cache is per token. In production this is NVLink or RDMA; here it is the only honest way to make a zero-copy tuple pass cost something.",
     "hash": "b9f6898e"
   },
-  "390": {
+  "400": {
     "text": "Sleep for the transfer, then return the charge in milliseconds so the results section can total it and compute a break-even.",
     "diagram": "serving_request_timeline",
     "highlight": {
@@ -706,47 +706,47 @@
     },
     "hash": "f4c1c526"
   },
-  "394": {
+  "404": {
     "text": "Simulate a decode step: real model computation + simulated GPU time.",
     "hash": "a88089a6"
   },
-  "395": {
+  "405": {
     "text": "Real single-token forward pass with KV cache.",
     "hash": "ea55395a"
   },
-  "396": {
+  "406": {
     "text": "Fixed cost per decode step.",
     "hash": "39da17e4"
   },
-  "400": {
+  "410": {
     "text": "Sample one token, from a generator passed in rather than from the global RNG. That extra parameter is the whole fix for the cross-thread nondeterminism.",
     "hash": "21723ebb"
   },
-  "401": {
+  "411": {
     "text": "Temperature-scaled softmax, then one multinomial draw against <em>this request's</em> generator. Same request, same draws, whichever worker and whichever thread executes it.",
     "hash": "a5dfa557"
   },
-  "411": {
+  "421": {
     "text": "Colocated serving: ONE worker does both prefill AND decode. Processes requests FIFO, a long prefill blocks ALL subsequent requests.",
     "hash": "6fe0ce14"
   },
-  "412": {
+  "422": {
     "text": "Track results and wall-clock time.",
     "hash": "63088272"
   },
-  "413": {
+  "423": {
     "text": "Handle one request at a time in FIFO order: prefill its prompt, then decode all tokens before moving to the next.",
     "hash": "a33d8004"
   },
-  "414": {
+  "424": {
     "text": "Wait until the request's arrival time.",
     "hash": "16762fcc"
   },
-  "415": {
+  "425": {
     "text": "Sleep if the request hasn't arrived yet.",
     "hash": "a3b6daf1"
   },
-  "417": {
+  "427": {
     "text": "Prefill the prompt, if this is a LONG prompt, all subsequent requests wait.",
     "hash": "3db8c780",
     "diagram": "serving_colocated",
@@ -755,56 +755,56 @@
       "co_pre2"
     ]
   },
-  "418": {
+  "428": {
     "text": "Record time-to-first-token, this is terrible for requests stuck behind long prefills.",
     "hash": "1655a896"
   },
-  "419": {
+  "429": {
     "text": "Sample the first token and start decoding. In this arm the same worker just did the prefill, so the first token lands immediately after it.",
     "hash": "3b8f1185"
   },
-  "420": {
+  "430": {
     "text": "Decode loop: generate tokens one at a time.",
     "hash": "06a2d3c7"
   },
-  "421": {
+  "431": {
     "text": "Stop on BOS (end token) or context limit.",
     "hash": "4f38ee45"
   },
-  "423": {
+  "433": {
     "text": "Append each newly generated token to this request's output list, building the name character by character.",
     "hash": "60d078c5"
   },
-  "424": {
+  "434": {
     "text": "One decode step with KV cache.",
     "hash": "2158d0d7"
   },
-  "425": {
+  "435": {
     "text": "Sample the next token from this request's generator and advance the position.",
     "hash": "e614043e"
   },
-  "426": {
+  "436": {
     "text": "Record completion time and results.",
     "hash": "5bd1498c"
   },
-  "432": {
+  "442": {
     "text": "Disaggregated serving: SEPARATE prefill and decode workers connected by a queue. Prefill doesn't block decode. The key insight: while one worker prefills a long prompt, the other worker continues decoding in-flight requests.",
     "hash": "326bca13",
     "important": true
   },
-  "433": {
+  "443": {
     "text": "Thread-safe queue connects prefill worker to decode worker.",
     "hash": "bd730e0c"
   },
-  "434": {
+  "444": {
     "text": "Results collection with lock for thread safety.",
     "hash": "7b740ab2"
   },
-  "435": {
+  "445": {
     "text": "Signal when prefill is done; wall-clock baseline.",
     "hash": "4fbb3996"
   },
-  "438": {
+  "448": {
     "text": "The prefill worker owns the wide prompt-processing phase, then hands finished KV state across the queue instead of hanging around to decode tokens itself.",
     "hash": "d7cc4ce6",
     "diagram": "serving_disagg",
@@ -813,36 +813,36 @@
       "d_pre2"
     ]
   },
-  "440": {
+  "450": {
     "text": "Wait for each request's arrival time.",
     "hash": "16762fcc"
   },
-  "443": {
+  "453": {
     "text": "Prefill the prompt, runs independently of any ongoing decoding.",
     "hash": "3db8c780"
   },
-  "448": {
+  "458": {
     "text": "Ship the KV cache before recording the first-token time. The first token is not useful until the request can actually continue on the decode worker, so the transfer belongs inside TTFT rather than outside it.",
     "important": true,
     "hash": "0bb7d29d"
   },
-  "449": {
+  "459": {
     "text": "Record time-to-first-token, now only depends on THIS request's prefill, not previous requests.",
     "hash": "1655a896"
   },
-  "450": {
+  "460": {
     "text": "Push the prefilled request state onto the thread-safe queue so the decode worker can pick it up without data races.",
     "hash": "e7d43909"
   },
-  "451": {
+  "461": {
     "text": "Hand off the prefilled state — request, KV caches, first sampled token, position — over the queue. This tuple is the whole interface between the two workers.",
     "hash": "71363164"
   },
-  "452": {
+  "462": {
     "text": "Signal that all prefills are done.",
     "hash": "4c26a215"
   },
-  "454": {
+  "464": {
     "text": "The decode worker lives on the other side of that handoff, interleaving many in-flight requests while the prefill worker keeps chewing through new prompts.",
     "hash": "ce75c89b",
     "diagram": "serving_disagg",
@@ -851,7 +851,7 @@
       "d_dec1"
     ]
   },
-  "456": {
+  "466": {
     "text": "A dict mapping request id to that request's in-flight decode state. This is what continuous batching looks like structurally: many requests advance one step each per pass, rather than one request running to completion.",
     "diagram": "serving_request_timeline",
     "highlight": {
@@ -868,229 +868,236 @@
     },
     "hash": "01880ac5"
   },
-  "457": {
+  "467": {
     "text": "Keep running until prefill is done and all decodes finish.",
     "hash": "6b450cdd"
   },
-  "463": {
+  "473": {
     "text": "Sample the completion flag <em>before</em> draining the queue. Read afterwards, prefill could append its last request and set the flag in the window between drain and check, and the loop would exit having silently dropped that request — which then makes the paired comparison misalign every row after it. A one-line reordering, and the reason the result table can be trusted.",
     "important": true,
     "hash": "a4905636"
   },
-  "464": {
+  "474": {
     "text": "Poll the queue for any newly prefilled requests that the prefill worker has handed off for decoding.",
     "hash": "e7d43909"
   },
-  "465": {
+  "475": {
     "text": "Drain the queue, grab all available prefilled requests.",
     "hash": "0aca94e8"
   },
-  "466": {
+  "476": {
     "text": "Unpack the handoff: request, KV caches, first sampled token, position.",
     "hash": "83946ba0"
   },
-  "467": {
+  "477": {
     "text": "Admit each newly prefilled request into the active set, keyed by id, with an empty output list.",
     "hash": "7a2a90c6"
   },
-  "468": {
+  "478": {
     "text": "Record the drained-queue state while still holding the lock, so the exit test below reasons about a consistent snapshot rather than re-reading the queue unlocked.",
     "hash": "f27d6355"
   },
-  "469": {
+  "479": {
     "text": "If nothing active and prefill not done, briefly wait.",
     "hash": "c984df68"
   },
-  "470": {
+  "480": {
     "text": "Exit only when prefill has finished, the queue is empty, and nothing is in flight. All three conditions, evaluated against the same snapshot.",
     "hash": "c59f11fe"
   },
-  "472": {
+  "482": {
     "text": "Brief sleep to avoid busy-waiting.",
     "hash": "85f75237"
   },
-  "474": {
+  "484": {
     "text": "Rebuild the active set each pass rather than mutating it while iterating. Requests that finished this step simply do not get carried over.",
     "hash": "23dde2a4"
   },
-  "475": {
+  "485": {
     "text": "One decode step for every in-flight request per pass. This interleaving is what the colocated arm does not do, and it is the actual mechanism behind the latency difference.",
     "hash": "14dfbd5e"
   },
-  "476": {
+  "486": {
     "text": "Evaluate stopping conditions for each active request: did it generate BOS (end token) or hit the maximum length?",
     "hash": "30cc0e3b"
   },
-  "477": {
+  "487": {
     "text": "Request finished: record timing and results.",
     "hash": "5bd1498c"
   },
-  "478": {
+  "488": {
     "text": "Acquire the results lock before writing, since the main thread reads results after both workers finish.",
     "hash": "dc14b412"
   },
-  "481": {
+  "491": {
     "text": "Continue generating: append token, decode one step, sample next.",
     "hash": "60d078c5"
   },
-  "482": {
+  "492": {
     "text": "One decode step with KV cache.",
     "hash": "2158d0d7"
   },
-  "483": {
+  "493": {
     "text": "Carry the request forward with its next sampled token, again from its own generator. Which thread ran this step does not affect what was drawn.",
     "hash": "24976137"
   },
-  "484": {
+  "494": {
     "text": "Filter out finished requests so we only continue decoding the ones that still have tokens left to generate.",
     "hash": "ed58f1ab"
   },
-  "486": {
+  "496": {
     "text": "Spin up one thread for the prefill worker and one for the decode worker, which will run concurrently.",
     "hash": "695b3126"
   },
-  "487": {
+  "497": {
     "text": "Start both workers, they run in parallel.",
     "hash": "bd70c3e0"
   },
-  "488": {
+  "498": {
     "text": "Launch both threads to begin parallel execution of the prefill and decode workers.",
     "hash": "9add5811"
   },
-  "489": {
+  "499": {
     "text": "Block until both worker threads complete, ensuring all requests have finished processing before returning results.",
     "hash": "bd70c3e0"
   },
-  "490": {
+  "500": {
     "text": "Join the second worker thread. After this returns, all generation work is done and results are ready.",
     "hash": "b7cd0490"
   },
-  "491": {
+  "501": {
     "text": "Sort by request id so the two strategies can be zipped row by row, and return the total transfer charge alongside — it feeds the break-even calculation in the results.",
     "hash": "760d6ad6"
   },
-  "495": {
+  "505": {
     "text": "Show the workload configuration: how many requests, their prompt lengths, and arrival pattern for context.",
     "hash": "ea972444"
   },
-  "496": {
+  "506": {
     "text": "Generate the test workload of requests with mixed prompt lengths and staggered arrival times.",
     "hash": "0be36607"
   },
-  "497": {
+  "507": {
     "text": "Show each request's prompt type.",
     "hash": "5d62fad3"
   },
-  "498": {
+  "508": {
     "text": "Label long vs short prompts, long ones are the troublemakers.",
     "hash": "50afb86d"
   },
-  "501": {
+  "511": {
     "text": "The colocated arm. There is no seed being set here on purpose: each request built its own generator in <code>make_workload</code>, so reproducibility travels with the request rather than depending on the order the workers happen to run in.",
     "important": true,
     "hash": "35768b1d"
   },
-  "504": {
+  "514": {
     "text": "The disaggregated arm on a freshly built but identically seeded workload. Same per-request generators, so both arms produce the same names for the same request and the only thing that differs is when those names arrive.",
     "hash": "87ed66e6"
   },
-  "505": {
+  "515": {
     "text": "Assert nothing was dropped before comparing. The termination race this guards against used to silently lose the last request, and a dropped row would shift every pair in the table below.",
     "hash": "43e35fe7"
   },
-  "514": {
+  "524": {
     "text": "Count text mismatches instead of trusting that the RNG plumbing works. The claim \"only latency differs\" is checked, not asserted.",
     "hash": "ec983a75"
   },
-  "515": {
+  "525": {
     "text": "Compare each request between the two strategies.",
     "hash": "7809f43f"
   },
-  "516": {
+  "526": {
     "text": "Extract how many tokens were in this request's prompt for the comparison table.",
     "hash": "5037fcca"
   },
-  "517": {
+  "527": {
     "text": "TTFT speedup: how much faster was disaggregated for this request?",
     "hash": "8149aef3"
   },
-  "518": {
+  "528": {
     "text": "Decode generated tokens back to characters.",
     "hash": "e1e1b15e"
   },
-  "519": {
+  "529": {
     "text": "Decode the disaggregated-generated tokens back to characters for the side-by-side name comparison.",
     "hash": "bed2ae07"
   },
-  "520": {
+  "530": {
     "text": "Compare the two arms' output for this request. Any difference here means the per-request generator plumbing has a hole in it.",
     "hash": "7048a54f"
   },
-  "521": {
+  "531": {
     "text": "Tag long prompts for visibility.",
     "hash": "52fc4c8d"
   },
-  "522": {
+  "532": {
     "text": "Print timing and names side-by-side.",
     "hash": "6d9733f3"
   },
-  "535": {
+  "545": {
     "text": "Report the mismatch count explicitly. When this was sampling from the global RNG across two threads it was never zero, and the resulting diffs were easy to mistake for a bug in the scheduling.",
     "hash": "936dc615"
   },
-  "536": {
+  "546": {
     "text": "And make it fatal. Per-request generators are supposed to make the two strategies produce identical text; if that ever stops being true the latency comparison is comparing two different workloads.",
     "important": true,
     "hash": "2797b93d"
   },
-  "538": {
+  "548": {
     "text": "Average TTFT across all requests, the headline metric.",
     "hash": "56b3e15d"
   },
-  "539": {
+  "549": {
     "text": "Compute the average time-to-first-token across all requests in the disaggregated strategy.",
     "hash": "7651d280"
   },
-  "540": {
+  "550": {
     "text": "Average time-to-first-token, both arms. This is the headline metric, and the caveats printed below are what keep it from being read as more than it is.",
     "hash": "09c525c5"
   },
-  "541": {
+  "551": {
     "text": "Total wall-clock time for all requests to complete.",
     "hash": "0f3777c6"
   },
-  "542": {
+  "552": {
     "text": "Compute the total wall-clock time for the disaggregated strategy to complete all requests.",
     "hash": "789dcf89"
   },
-  "543": {
+  "553": {
     "text": "Show the total completion time for both strategies side by side to quantify the end-to-end throughput difference.",
     "hash": "a3eb2ff5"
   },
-  "547": {
+  "557": {
     "text": "Average prompt length, needed to convert a per-token transfer cost into a per-request one.",
     "hash": "fa7cc413"
   },
-  "548": {
+  "558": {
     "text": "The average TTFT advantage in milliseconds — the quantity the transfer cost has to eat before disaggregation stops paying.",
     "hash": "b219fe5b"
   },
-  "550": {
+  "567": {
+    "text": "The mean of the <em>cumulative</em> prompt length &mdash; on average, how many prompt tokens are queued ahead of a request plus its own. Because the handoff runs inline on the prefill worker, that is the number of tokens whose transfer cost each request waits behind.",
+    "important": true,
+    "hash": "f06c71f5"
+  },
+  "568": {
+    "text": "Break-even: the per-token transfer cost at which the whole TTFT gain is eaten. Using the mean prompt length here instead would overstate it by roughly the queue depth, because it would charge each request only for its own tokens.",
+    "hash": "2e76ae3e"
+  },
+  "569": {
     "text": "The transfer bill, totalled across the workload and already included in the disaggregated TTFT above. Not a footnote about production hardware: a charge this run actually paid.",
     "hash": "e44e520e"
   },
-  "552": {
+  "571": {
     "text": "The break-even transfer cost: the per-token price at which the advantage disappears entirely. This is the number that makes the KV handoff an engineering constraint rather than a caveat in prose.",
-    "important": true,
     "hash": "0a68a0b9"
   },
-  "553": {
-    "text": "And an invitation to falsify it — raise <code>KV_TRANSFER_COST_MS</code> past this value and re-run. A break-even you can cross is worth more than a claim you cannot.",
-    "hash": "73c690e3"
+  "573": {
+    "text": "And an invitation to falsify it &mdash; raise <code>KV_TRANSFER_COST_MS</code> past this value and re-run. A break-even you can cross is worth more than a claim you cannot.",
+    "hash": "38e71f37"
   },
-  "556": {
-    "text": "The caveats, printed with the result rather than left to the reader. One worker against two, a strict-FIFO baseline with no continuous batching, and sleeps standing in for GPU time — what is being demonstrated is the scheduling structure, not a benchmark.",
-    "important": true,
+  "576": {
+    "text": "The caveats, printed with the result rather than left to the reader. One worker against two, a strict-FIFO baseline with no continuous batching, and sleeps standing in for GPU time &mdash; what is being demonstrated is the scheduling structure, not a benchmark.",
     "hash": "35cd4244"
   }
 }

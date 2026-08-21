@@ -303,11 +303,11 @@
     "hash": "1f1c8516"
   },
   "152": {
-    "text": "Decode one token id by recursively unpacking merge history until it reaches base characters.",
+    "text": "Decode one token id with a single dict lookup. The merge history was already unpacked once, at training time, when <code>token_text</code> was filled in.",
     "hash": "d8064d27"
   },
   "153": {
-    "text": "Docstring: decode a single BPE token ID to its string representation, recursively expanding merges.",
+    "text": "Docstring: decode a single BPE token id to its string representation.",
     "hash": "aa07c5c0"
   },
   "154": {
@@ -550,10 +550,6 @@
     "important": true,
     "hash": "d4fd1716"
   },
-  "282": {
-    "text": "Show the components that were merged (which might themselves be merged tokens).",
-    "hash": "5c4688e3"
-  },
   "283": {
     "text": "Print the learned merged tokens so the reader can inspect which subwords the greedy algorithm discovered.",
     "hash": "a8b3128d"
@@ -571,12 +567,16 @@
     "hash": "4417f60d"
   },
   "294": {
-    "text": "Decode the merged token to show what string it represents (e.g., token 28 = 'an').",
+    "text": "Decode the merged token to show what string it represents (the first merge is token <code>27</code> = <code>'an'</code>; the vocab column in the training log reads 28 because it counts the new token, so do not confuse the two).",
     "hash": "ed106312"
   },
   "295": {
     "text": "Decode the first component of the merge, replacing the pipe symbol with a readable BOS tag.",
     "hash": "814b73bc"
+  },
+  "296": {
+    "text": "Decode the second component of the merge. Either component may itself be a merged token, which is how longer chunks get built out of earlier ones.",
+    "hash": "dc1bb32e"
   },
   "297": {
     "text": "Print one row: the new token ID, its decoded string, and which two tokens were merged to create it.",
@@ -725,7 +725,7 @@
     "hash": "7fb1680f"
   },
   "382": {
-    "text": "Return the average: total log-likelihood divided by number of tokens. This per-token measure is comparable across different vocab sizes.",
+    "text": "Dividing by the token count is exactly what breaks this metric: the same corpus is far fewer tokens under BPE, so each model is asked a different question and the averages are not on the same scale. The run prints the figure only so you can watch it rank the two models the opposite way from bits per character.",
     "hash": "5b6381c3"
   },
   "387": {

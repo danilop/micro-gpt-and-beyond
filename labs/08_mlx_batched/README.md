@@ -43,7 +43,7 @@ att = mx.where(causal, -1e9, att)
 att = mx.where(pad_mask[None, None, :], -1e9, att)
 ```
 
-On the machine this was measured on, the `vmap` version ran at the same speed as the hand-reshaped `(B, T, ...)` version (93 vs 101 ms/step), so this is a readability win, not a trade.
+Is the readable version also the slower one? The lab measures that rather than asserting it. `forward_batched` in `main.py` is the same computation with the batch axis written out by hand, sharing the same parameters, and the run prints two things about it: the largest logit difference between the two paths (zero on the CPU-only build used here — same operations, same order), and the best of 20 timed forward passes each way. On this build the two came out within a couple of percent of each other, and the verdict line the lab prints is computed from the gap it just measured, not remembered from another machine. Run it on your Mac and it will tell you what the transform costs there.
 
 ### Lazy evaluation and mx.compile
 
@@ -72,13 +72,14 @@ Because `mx.compile` specialises on input shapes, and `make_batch` pads to the l
 
 ```
 distinct batch shapes seen: 9 (compile = True)
-  first-time-shape steps:   128.74 ms mean
-  repeated-shape steps:      98.51 ms mean
+  first-time-shape steps:   100.83 ms mean
+  repeated-shape steps:      80.04 ms mean
+  each shape first seen at step: [0, 1, 4, 10, 11, 15, 79, 304, 532]
 ```
 
-Nine shapes, nine traces, and the tracing itself is cheap: a first-time shape costs about 30 ms more than a repeat. `06_jax_batched` shows the fix anyway — pad to a fixed length and there is only one shape to compile.
+Nine shapes, nine traces. Do not read the first-vs-repeat gap as the price of tracing, though — run the same file with `use_compile = False` and the gap is still there (93.87 against 84.02 ms), with nothing being traced at all. That last printed line is why: six of the nine shapes turn up in the first sixteen steps, so "first-time shape" is largely a synonym for "early step", when nothing is warm yet. `06_jax_batched` shows the fix for the shape churn anyway — pad to a fixed length and there is only one shape to compile.
 
-Set `use_compile = False` and compare. On the CPU-only build these numbers came from, uncompiled steps averaged 102.88 ms against 98.51 ms compiled: close to a wash at this batch size, because the per-operation dispatch overhead that compilation removes is small next to 32 sequences worth of matmuls. `07_mlx`, whose steps are tiny, gets roughly 3x from the same call. Measure it on your own hardware rather than believing either number.
+Set `use_compile = False` and compare. On the CPU-only Linux build these numbers came from, uncompiled repeated-shape steps averaged 84.02 ms against 80.04 ms compiled: close to a wash at this batch size, because the per-operation dispatch overhead that compilation removes is small next to 32 sequences worth of matmuls. `07_mlx`, whose steps are around a millisecond, gets 2.5x from the same call on the same build (2.77 ms uncompiled against 1.12 ms compiled). Measure it on your own hardware rather than believing either number.
 
 ### Scaled up
 
@@ -118,7 +119,7 @@ There is also no `nan_to_num`-style guard after the softmax, and none is needed.
 
 ## What you learn here
 
-- `mx.vmap`, and that MLX has the same "write for one, run for many" transform JAX does
+- `mx.vmap`, and that MLX has the same "write for one, run for many" transform JAX does — including how to check it against a hand-written batch dimension for both output and speed
 - How padding and masking work with MLX's array API, and which of the two masks actually does anything
 - `mx.eval` as a bound on the pending graph, and `mx.compile` as MLX's `jit`, per-shape specialisation included
 - The practical tradeoff: MLX's API familiarity plus functional transforms, on Apple hardware
@@ -134,4 +135,4 @@ uv run python main.py
 
 Trains for 1000 steps (prints every 10) and generates 20 names. Runs on the Apple GPU automatically.
 
-Every tenth step prints its wall-clock time, and the run ends with the per-shape averages above. Those numbers came from a CPU-only MLX build in a Linux container, so read them as ratios, not as what to expect on your Mac.
+Every tenth step prints its wall-clock time, and the run ends with the per-shape averages above and the `mx.vmap`-against-hand-written comparison. Those numbers came from a CPU-only MLX build in a Linux container, so read them as ratios, not as what to expect on your Mac.

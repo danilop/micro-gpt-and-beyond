@@ -63,9 +63,11 @@ Entropy only measures the benefit — how much of the distribution survives into
 | Soft T=2.0 (diffuse blend) | 2.995 | 2.2805 | 20.8% |
 | Real held-out names (500) | — | 2.4001 | 4.9% |
 
-"Sample NLL" is the per-token negative log-likelihood of each row's generated names, scored under the same model on the ordinary hard path. It answers "would the model itself have written this?". Higher means the output has drifted away from what the model was trained on. "Adjacent-dup rate" is the fraction of neighbouring character pairs that repeat the same character, which is the specific way this technique degrades: at T=2.0 the output is full of stuttered vowels (`aayay`, `maaea`, `aall`).
+"Sample NLL" is the per-token negative log-likelihood of each row's generated names, scored under the same model on the ordinary hard path. It answers "would the model itself have written this?". Read it as a trend down the column — higher means the output has drifted away from what the model was trained on — and not as pass/fail against the real-names row. Sampling runs at temperature 0.5, which sharpens the output, so every generated row scores below real names whether it has drifted or not; the reference row is there to give the numbers a scale, not a threshold.
 
-Read the table left to right and the tradeoff is not rhetorical any more. Entropy rises monotonically with soft temperature, exactly as the theory says. So does NLL, and so does the stutter rate — from 1.9% at hard decoding to 20.8% at T=2.0, which is four times the 4.9% you see in real names. Richer information in, more drift out.
+"Adjacent-dup rate" is the fraction of neighbouring character pairs that repeat the same character, of any kind, which is the specific way this technique degrades: at T=2.0 the output is full of stutters (`aayay`, `maaea`, `aall` — note that the last one repeats a consonant, so this is not a vowel-only effect).
+
+Read the table left to right and the tradeoff is not rhetorical any more. Entropy rises monotonically with soft temperature, exactly as the theory says. So does NLL, and so does the stutter rate — from 1.9% at hard decoding to 20.8% at T=2.0, which is 4.3x the 4.9% you see in real names. Richer information in, more drift out. Why the drift takes the form of repeated characters is a plausible story (a flat blend carries little information about which token was just emitted) rather than something measured here.
 
 ### The out-of-distribution challenge
 
@@ -101,4 +103,4 @@ This lab is self-contained. Lab 18 duplicates the model and the generation funct
 
 ## Why soft thinking matters
 
-Large language models spend enormous compute producing rich output distributions at every step, only to throw almost all of it away by picking a single token. Soft thinking is the insight that this information doesn't have to be wasted because the full distribution can flow forward as a continuous signal. At scale, this improves reasoning accuracy by +2.5% while using 22% fewer tokens. This lab shows the core mechanism at microGPT scale: one line of code (`softmax @ embedding_table`) is the entire difference.
+Large language models spend enormous compute producing rich output distributions at every step, only to throw almost all of it away by picking a single token. Soft thinking is the insight that this information doesn't have to be wasted because the full distribution can flow forward as a continuous signal. At scale it appears to pay off: Zhang et al. (2025) report +2.5 pass@1 while using 22% fewer tokens on large reasoning models. That is their result, not this lab's — nothing at 4,192 parameters and a names dataset could test it. What this lab shows is the core mechanism: one line of code (`softmax @ embedding_table`) is the entire difference.

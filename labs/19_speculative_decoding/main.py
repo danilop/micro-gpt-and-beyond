@@ -269,10 +269,16 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
             # accept, so reading len(tokens) inside the loop would drift by +i
             # and verify token i against the wrong target row.
             base_len = len(tokens)
+            # get_probs() feeds the model only the last `block_size` tokens, so
+            # once the draft sequence is longer than the window, row 0 of
+            # target_probs is no longer draft_tokens[0]. Convert absolute token
+            # positions into row indices by subtracting what fell off the front.
+            row_offset = len(draft_tokens) - target_probs.shape[0]
             for i, (drafted_token, q_x, draft_dist) in enumerate(draft_probs_list):
                 # Target model's probability for the drafted token
-                # Position in target_probs: tokens before draft + i
-                pos = base_len - 1 + i
+                # Position in target_probs: tokens before draft + i, shifted
+                # into the window the target actually saw
+                pos = base_len - 1 + i - row_offset
                 if pos >= target_probs.shape[0]:
                     break
                 p_x = target_probs[pos, drafted_token].item()
@@ -315,7 +321,7 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
 
             else:
                 # All K tokens accepted — sample one bonus token from target
-                bonus_pos = len(tokens) - 1
+                bonus_pos = len(tokens) - 1 - row_offset
                 if bonus_pos < target_probs.shape[0]:
                     bonus_probs = target_probs[bonus_pos]
                     token_id = torch.multinomial(bonus_probs, 1).item()

@@ -37,26 +37,69 @@ split in a form that is easy to inspect.
 
 ### The best model of the run is archived, not assumed
 
-Per-generation best in a representative run: 2.5289, 2.5000, 2.5118, **2.4962**,
-2.5326, 2.5367. The search peaks at generation 4 and then regresses, so the best
-member of the final population (2.5321) is *not* the best model found. A
+Per-generation best in a representative run: 2.5289, **2.4547**, 2.5023, 2.4553,
+2.4881, 2.5103. The search peaks at generation 2 and then regresses, so the best
+member of the final population (2.4718, at 1,400 steps) is *not* the best model
+found — the winner is a generation-2 model with only 400 steps on it. A
 best-ever archive keeps the peak, and the lab reports from the archive.
+
+### The reported number is selected on the number reported
+
+There is a bias in the headline that the ledger below does not fix. Fitness is
+validation loss on the first 200 names of the validation split. Selection,
+mutation, the best-ever archive and the random-search control all rank models by
+that one number — and then the lab reports that same number as the quality of
+the winner. The reported loss is a minimum over dozens of noisy evaluations of
+the same statistic, so it is optimistically biased: part of the gap to the
+baseline is genuine configuration quality, and part of it is the luckiest draw
+of evaluation noise, which is exactly what taking a minimum selects for. The
+more models the search evaluates, the better that number looks even if no
+configuration is any better than the others. The random-search arm is a minimum
+over its own 48 evaluations too, so *that* comparison is at least symmetric; the
+comparison against the single baseline run is not.
+
+The clean version costs almost nothing here. Split three ways — train, a search
+split that fitness scores against, and a final split nothing in the loop ever
+sees — and report the winner on the third. This lab is one line away from it
+already: `val_size` is 1,000 names but fitness only ever reads the first
+`VAL_SAMPLES` = 200, so the remaining 800 are untouched by the search and would
+serve as an honest held-out set for the winner. Until that number is printed,
+read every validation loss in this lab as a ranking signal, not as a measurement
+of how good the model is.
 
 ### The compute ledger
 
 Evolution spends `POP_SIZE × NUM_GENERATIONS × STEPS_PER_GEN` plus the final
 children's training: **10,600 steps** against the single baseline's **500**.
-That is 21x the compute, so "evolved beats baseline by +0.2259" is mostly a
+That is 21x the compute, so "evolved beats baseline by +0.2675" is mostly a
 statement about budget. The lab therefore prints three numbers:
 
 | Comparison | Measured | What it means |
 |---|---|---|
-| evolved vs 500-step baseline | +0.2259 | not a fair comparison, 21x the compute |
-| config advantage at matched budget | +0.0817 | both configs from scratch, val loss every 200 steps to 1,200 |
-| evolved vs equal-budget random search | +0.0328 | what selection and mutation bought over 48 random configs |
+| evolved vs 500-step baseline | +0.2675 | not a fair comparison, 21x the compute |
+| config advantage at matched budget | +0.1082 | both configs from scratch, val loss every 200 steps to 1,200 |
+| evolved vs equal-budget random search | +0.0792 | what selection and mutation bought over 48 random configs |
 
 The configuration evolution found is genuinely better. It is better by about
-0.08, not 0.23.
+0.11, not 0.27.
+
+The matched-budget delta is a best-of-curve difference, and the curves it comes
+from do not descend cleanly:
+
+```
+          config      200      400      600      800     1000     1200
+        baseline   2.6410   2.5805   2.6796   2.5828   2.5856   2.7694
+         evolved   2.5413   2.4769   2.5166   2.4723   2.4801   2.4824
+```
+
+Both wobble, and the baseline ends at its worst checkpoint. That is not
+overfitting: each 200-step chunk reads a *fresh* slice of `train_docs`, so 1,200
+steps is 1,200 distinct names out of 31,033 and the model has seen 4% of the
+training set once. It is measurement noise from a training loop that takes one
+gradient step per example, plus a fresh Adam state at the start of every chunk,
+which throws away the moment estimates and briefly destabilises the model each
+time. Taking endpoints instead of minima would turn that noise into a result, so
+the lab compares the best point on each curve.
 
 ### Cumulative steps are printed next to val loss
 
@@ -70,10 +113,10 @@ away.
 
 ### Diversity dies, and the lab says so
 
-Distinct architectures per generation in the same run: 7, 6, 4, 3, 3, 4, and
-every member of the final population has the same parameter count (7,264). Once
+Distinct architectures per generation in the same run: 7, 6, 4, 3, 4, 2, and
+every member of the final population has the same parameter count (14,528). Once
 the population is one size, mutation is only shuffling learning rate and head
-count. The population average also degrades (2.5702 to 2.5717 across six
+count. The population average also degrades (2.5702 to 2.6011 across six
 generations), because every fresh architecture pays a restart cost. Neither of
 those facts is fatal to the lesson, but a lab that printed only the best-of-run
 number would hide both.
@@ -90,6 +133,7 @@ used in larger search systems.
 - How to encode a hyperparameter search space
 - Why validation loss, not training loss, must drive selection
 - Why a search needs a best-ever archive, not just a final population
+- Why the winner's fitness score is not the winner's quality: a minimum over many noisy evaluations of the same statistic is biased low, and the fix is a split the search never scored against
 - How to compare a search result honestly against equal compute
 - How weight inheritance changes the economics of exploration, and how it
   confounds within-generation fitness

@@ -358,8 +358,10 @@ def band_losses(model, inputs, targets, window=block_size):
 
     Content is identical between the two, so any gap is the position encoding
     behaving differently at distances it never saw. (The rebased pass also drops
-    cross-chunk context, but the aggregate numbers above show that context is
-    worth ~0.0002 nats here, so it is not what moves these figures.)
+    cross-chunk context, which is a genuine confound. It is bounded by the
+    distant-context probe printed above, which varies the far history with the
+    positions held fixed — not by the aggregate windowed-vs-full comparison,
+    which varies both at once and so cannot separate them.)
     """
     model.eval()
     full, rebased = [], []
@@ -393,6 +395,28 @@ def eval_loss_windowed(model, inputs, targets, window=block_size):
     return total / count
 
 
+def distant_context_value(model, inputs, targets, window=block_size):
+    """Nats of loss paid when context older than `window` tokens is made useless.
+
+    Predict the last `window` targets twice: once from the real history, once
+    with everything before that window replaced by a neighbouring sequence's
+    tokens. Target tokens, absolute positions and sequence length are identical
+    in both passes, so nothing about the position encoding changes and the gap is
+    purely the information content of the far context. That is the number the
+    chunk table below needs, and the aggregate windowed-vs-full comparison cannot
+    supply it: that comparison changes the context and the positions together.
+    """
+    corrupted = inputs.roll(1, dims=0)  # each row inherits its neighbour's history
+    corrupted[:, -window:] = inputs[:, -window:]  # ...but keeps its own last window
+    ti = targets[:, -window:].reshape(-1)
+    model.eval()
+    with torch.no_grad():
+        real = F.cross_entropy(model(inputs)[:, -window:].reshape(-1, vocab_size), ti)
+        fake = F.cross_entropy(model(corrupted)[:, -window:].reshape(-1, vocab_size), ti)
+    model.train()
+    return (fake - real).item()
+
+
 long_x, long_y = make_long_batch()
 print(f"\n=== Results: length generalization (trained on {block_size} positions) ===")
 print(f"  Evaluating {long_x.shape[0]} sequences of {EVAL_LEN} tokens ({EVAL_LEN // block_size}x block_size).")
@@ -413,6 +437,16 @@ print(f"  rope, full {EVAL_LEN} tokens in one pass:                          los
 delta = loss_rope_long - loss_rope_windowed
 verdict = "better" if delta < 0 else "worse"
 print(f"  ...which is {abs(delta):.4f} nats {verdict} than windowing.")
+print("  That aggregate settles nothing by itself: the full pass has more context AND")
+print("  sits at positions the model never trained on, so it moves both variables at")
+print("  once. The two measurements below change one at a time.")
+
+# Context, with position held fixed.
+context_value = distant_context_value(model_rope, long_x, long_y)
+print(f"\n  Value of all context older than {block_size} tokens: {context_value:+.4f} nats")
+print(f"    (loss on the last {block_size} targets, at their true positions either way, with")
+print("    the earlier history swapped for a neighbouring sequence's — positions and")
+print("    target tokens identical, only the far context changes)")
 
 # Now the controlled version: same token chunks, evaluated once at their true
 # (partly unseen) positions and once re-based into the trained range.
@@ -430,21 +464,33 @@ print("  rise steadily down the table, which looks like extrapolation damage, an
 print("  the chunks contain different text. Chunk 0 starts on a name boundary, the others")
 print("  start mid-name. Only the difference against the re-based column controls for that,")
 print("  and chunk 0 checks the method — same positions both ways, so it must read +0.0000.")
+print("  The last column is still not pure position cost: the re-based pass also loses the")
+print(f"  far context, and the probe above prices that at {context_value:+.4f} nats — the same order")
+print("  as the gaps themselves. That confound has a sign, too. Losing context can only")
+print("  make the re-based column worse, which flatters the true-position column, so the")
+print("  gaps in the table understate the position cost by roughly their own size.")
 
 print("\n  What this does and does not show:")
 print(f"  - RoPE removes the hard length limit. That is not a claim, it is the {block_size}-row")
 print("    IndexError above. No position table means no position ceiling, so the same")
 print(f"    trained weights accept {EVAL_LEN} positions and produce a loss.")
-if abs(extrapolation_cost) < 0.05:
-    print(f"  - Accuracy at unseen positions: {extrapolation_cost:+.4f} nats on average, which is noise.")
-    print("    At this scale, evaluating past the trained span costs nothing measurable.")
+# The verdict threshold is the measured confound, not a number picked to make the
+# sentence come out right: an effect smaller than the noise it is measured against
+# has not been observed.
+if abs(extrapolation_cost) <= abs(context_value):
+    print(f"  - Accuracy at unseen positions: {extrapolation_cost:+.4f} nats on average, which this test")
+    print(f"    cannot separate from zero — it is smaller than the {context_value:+.4f} nats of far")
+    print("    context the re-based pass also throws away. The confound is bigger than the")
+    print("    effect, so evaluating past the trained span costs nothing this lab can see.")
     print("    Do NOT read that as proof that RoPE extrapolates. A 1-layer, 16-dim model on")
-    print("    a corpus of independent names has almost no long-range structure to get")
-    print("    wrong — the aggregate numbers above put the value of all cross-chunk context")
-    print("    at 0.0002 nats. A test with nothing at stake cannot fail.")
+    print(f"    a corpus of independent names loses only {context_value:+.4f} nats when every token")
+    print(f"    older than {block_size} is destroyed, against a loss of {loss_rope_long:.4f} nats: there is almost")
+    print("    no long-range structure here to get wrong, and a test with this little at")
+    print("    stake cannot fail.")
 else:
-    print(f"  - Accuracy at unseen positions costs {extrapolation_cost:+.4f} nats on average, for the")
-    print("    same tokens, purely because of where they sit in the sequence.")
+    print(f"  - Accuracy at unseen positions costs {extrapolation_cost:+.4f} nats on average for the same")
+    print(f"    tokens, more than the {context_value:+.4f} nats the missing far context is worth, so")
+    print("    position rather than content is the better explanation of that gap.")
 print("  - So 'RoPE generalizes to longer sequences' is two claims. The mechanical one is")
 print("    proven here. The accuracy one this lab cannot settle, and at real scale it is")
 print("    known to fail: that is why length extension is its own research area. YaRN")

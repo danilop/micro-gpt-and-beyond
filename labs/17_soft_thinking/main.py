@@ -227,9 +227,10 @@ def dup_rate(names):
     """Fraction of adjacent character pairs that repeat the same character.
 
     Real names do this a little (emma, aaron). Soft decoding at high temperature
-    does it constantly, because a diffuse concept token carries almost no
-    information about which token was just emitted, so the model loses track and
-    stutters. One number, and it catches the specific way this technique fails.
+    does it constantly. The tempting explanation is that a diffuse concept token
+    carries little information about which token was just emitted, so the model
+    loses track and stutters -- plausible, but this lab measures the stutter, not
+    the mechanism. One number, and it catches the specific way this fails.
     """
     pairs = dups = 0
     for name in names:
@@ -305,6 +306,7 @@ if __name__ == "__main__":
     # Entropy alone only measures the BENEFIT (how much of the distribution
     # survives into the next step). On its own it would make T=2.0 look best.
     # The other two columns are the price.
+    hot_dup = rows[-1][3]  # the T=2.0 row, the one the prose points at
     print("--- benefit vs. cost ---\n")
     print(f"  {'mode':<28s} {'concept H':>9s}  {'sample NLL':>10s}  {'dup rate':>8s}")
     print(f"  {'-' * 28} {'-' * 9}  {'-' * 10}  {'-' * 8}")
@@ -315,11 +317,14 @@ if __name__ == "__main__":
   concept H   entropy of the distribution that builds the next input (max {max_H:.2f}).
               Hard decoding is exactly 0: one token in, everything else discarded.
   sample NLL  per-token NLL of the generated names under the model itself, hard
-              inputs. Higher means the output has drifted off the manifold the
-              model was trained on. The real-names row is the yardstick.
-  dup rate    adjacent repeated characters — the vowel stutter visible in the
-              T=2.0 block above. Real names do this 4.9% of the time; T=2.0 soft
-              decoding does it four times as often.
+              inputs. Read it as a trend down the column: it climbs with soft
+              temperature, which is the output drifting away from what the model
+              was trained on. Do not read it as pass/fail against the real-names
+              row — the sampling temperature of 0.5 sharpens every generated row,
+              so they all score below real names, drift included.
+  dup rate    adjacent repeated characters, of any kind — the stutter visible in
+              the T=2.0 block above. Real names do this {real_dup:.1%} of the time;
+              T=2.0 soft decoding does it {hot_dup / real_dup:.1f}x as often.
 """)
 
     print(f"""--- what's happening ---
@@ -347,11 +352,14 @@ entropy means more tokens contribute to the concept token — richer information
 but higher risk of out-of-distribution drift. Max entropy = ln({vocab_size}) = {max_H:.2f}.
 
 The tradeoff in that sentence is not rhetorical: the table above measures both
-halves of it. Entropy rises monotonically with T, and so does the NLL of what
-comes out. Past some point the concept token is carrying so little information
-about what was just emitted that the model starts stuttering vowels.
+halves of it. Entropy rises monotonically with T, and so do both costs: the NLL
+of what comes out, and the rate of repeated adjacent characters. Why the damage
+takes the form of repetition in particular is not something this lab establishes
+-- the natural guess is that a flat blend says little about which token was just
+emitted -- but that the output degrades, and degrades in that specific way, is
+measured.
 
 This is training-free — no model weights change. The Soft Thinking paper
-(Zhang et al., 2025) shows this improves reasoning in large models by
-+2.5 pass@1 while using 22% fewer tokens.
+(Zhang et al., 2025) reports +2.5 pass@1 while using 22% fewer tokens on large
+reasoning models. That is their measurement at their scale, not this lab's.
 """)

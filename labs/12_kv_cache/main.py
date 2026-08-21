@@ -30,6 +30,7 @@ import math
 import os
 import random
 import time
+from itertools import pairwise
 
 import torch
 import torch.nn as nn
@@ -338,25 +339,52 @@ print("  benchmark instead of explaining away the number.")
 #
 # Theory says the attention term shrinks by a factor of T. Reality falls short
 # of that, and the gap is instructive.
-def best_of(module, x, kv_cache, reps):
-    """Fastest of `reps` calls to module(x, kv_cache=kv_cache), in seconds.
+#
+# A microbenchmark is only worth printing if its numbers are stable, so this one
+# is defended twice. Inside a timing run, take the minimum of many repetitions:
+# anything else sharing the CPU can only ever make a call slower, so the mean
+# measures the machine's mood while the minimum measures the code. Across runs,
+# take the median, so one throttled run cannot set the reported number.
+#
+# The repetition count is not a fixed number, because no fixed number serves both
+# ends of this table: a cached call is microseconds, where hundreds of reps cost
+# nothing and five reps measure mostly noise, while a naive call at T = 2048 can
+# take a large fraction of a second all by itself. So each run repeats until a
+# time budget is spent, with a floor and a ceiling, and prints how many reps it
+# actually got. A cell that lands on the floor did so because one call already
+# costs more than the whole budget: fine when that call is tens of milliseconds,
+# a reason to distrust the number when it is microseconds.
+BENCH_ROUNDS = 5  # independent timing runs per cell; the median of these is reported
+BENCH_BUDGET = 0.1  # seconds of repetitions inside one run
+BENCH_MIN_REPS = 5  # never fewer, however slow the call
+BENCH_MAX_REPS = 500  # never more, however fast the call
 
-    Take the minimum, not the mean. Anything else sharing the CPU can only ever
-    make a run slower, so the mean measures the machine's mood while the minimum
-    measures the code. Standard practice for microbenchmarks, and the reason the
-    numbers below are stable enough to read as a trend.
-    """
-    best = float("inf")
-    for _ in range(reps):
+
+def best_of(module, x, kv_cache):
+    """Fastest call to module(x, kv_cache=kv_cache), in seconds, and the rep count."""
+    best, reps = float("inf"), 0
+    deadline = time.perf_counter() + BENCH_BUDGET
+    while reps < BENCH_MIN_REPS or (reps < BENCH_MAX_REPS and time.perf_counter() < deadline):
         t0 = time.perf_counter()
         module(x, kv_cache=kv_cache)
         best = min(best, time.perf_counter() - t0)
-    return best
+        reps += 1
+    return best, reps
 
 
-print("\n--- One decode step, attention module only, synthetic input (best of N) ---")
-print(f"  {'T':>6} {'naive':>11} {'cached':>11} {'measured':>10} {'theory':>8}")
+def bench_step(module, x, kv_cache):
+    """Median over BENCH_ROUNDS runs of best_of, plus the total reps behind it."""
+    module(x, kv_cache=kv_cache)  # warm up: first call pays allocator and cache misses
+    runs = sorted(best_of(module, x, kv_cache) for _ in range(BENCH_ROUNDS))
+    return runs[len(runs) // 2][0], sum(reps for _, reps in runs)
+
+
+print("\n--- One decode step, attention module only, synthetic input ---")
+print(f"  median of {BENCH_ROUNDS} runs, each the fastest of as many reps as fit in {BENCH_BUDGET:.2f}s")
+print(f"  (floor {BENCH_MIN_REPS}, ceiling {BENCH_MAX_REPS} per run), after one warm-up call")
+print(f"  {'T':>6} {'naive':>11} {'cached':>11} {'measured':>10} {'theory':>8} {'reps n/c':>12}")
 bench_attn = CausalSelfAttention().eval()
+rows = []
 with torch.no_grad():
     for T_bench in (64, 256, 1024, 2048):
         x_full = torch.randn(1, T_bench, n_embd)
@@ -365,22 +393,39 @@ with torch.no_grad():
             torch.randn(1, n_head, T_bench - 1, head_dim),
             torch.randn(1, n_head, T_bench - 1, head_dim),
         )
-        reps = max(5, 3000 // T_bench)
-        bench_attn(x_full)  # warm up the allocator
-        bench_attn(x_one, kv_cache=bench_cache)
-        t_step_naive = best_of(bench_attn, x_full, None, reps)
-        t_step_cached = best_of(bench_attn, x_one, bench_cache, reps)
+        t_step_naive, reps_naive = bench_step(bench_attn, x_full, None)
+        t_step_cached, reps_cached = bench_step(bench_attn, x_one, bench_cache)
+        rows.append((T_bench, t_step_naive, t_step_cached))
         print(
             f"  {T_bench:>6} {t_step_naive * 1e6:>9.1f}us {t_step_cached * 1e6:>9.1f}us "
-            f"{t_step_naive / t_step_cached:>9.1f}x {T_bench:>7}x"
+            f"{t_step_naive / t_step_cached:>9.1f}x {T_bench:>7}x "
+            f"{f'{reps_naive}/{reps_cached}':>11}"
         )
 print("""
-  Now the curve goes the right way, and it keeps going: the speedup grows with T
-  because naive attention is T x T against the cache's 1 x T. It stays well short
-  of the theoretical T because the projections and the fixed per-call overhead do
-  not shrink at all, and at T = 64 that overhead still swamps everything — which
-  is precisely what the 20-name wall clock above was measuring. This is the whole
-  reason the operation counter, not the stopwatch, is this lab's headline.""")
+  The speedup grows with T, because naive attention is T x T against the cache's
+  1 x T. It stays well short of the theoretical T because the projections and the
+  fixed per-call overhead do not shrink at all, and at T = 64 that overhead still
+  swamps everything — which is precisely what the 20-name wall clock above was
+  measuring. This is the whole reason the operation counter, not the stopwatch, is
+  this lab's headline.""")
+
+# Both columns time work that grows with T, so both must grow with T. Check that
+# rather than assert it: if this machine is too busy for the trend to survive,
+# say so here instead of leaving the reader to trust an impossible table.
+noisy = [
+    name
+    for name, col in (("naive", 1), ("cached", 2))
+    if not all(b[col] > a[col] for a, b in pairwise(rows))
+]
+if noisy:
+    print(f"""
+  NOTE: on this run the {" and ".join(noisy)} column did not increase monotonically
+  with T, which cannot be true of work that grows with T. Read that as contention
+  on this machine, not as a property of the code — something else had the CPU
+  during the fast rows. Re-run on an idle machine, or raise BENCH_ROUNDS and
+  BENCH_BUDGET above, before drawing any conclusion from the table.""")
+else:
+    print("  (Both timing columns increase monotonically with T on this run, as they must.)")
 
 # ===========================================================================
 # Summary

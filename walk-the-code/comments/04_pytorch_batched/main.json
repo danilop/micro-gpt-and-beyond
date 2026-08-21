@@ -314,11 +314,11 @@
     "hash": "fcf6c0c7"
   },
   "156": {
-    "text": "N(0, 0.08) for all weights.",
+    "text": "Only <code>Linear</code> and <code>Embedding</code> carry weights to initialize; <code>RMSNorm</code> here has none, so it is skipped.",
     "hash": "e2ce6cde"
   },
   "157": {
-    "text": "Same init as previous labs.",
+    "text": "N(0, 0.08) for all weights, the same initialization as every previous lab.",
     "hash": "9677d3fd"
   },
   "159": {

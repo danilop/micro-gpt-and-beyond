@@ -199,9 +199,15 @@ def heldout_nll(model, names, soft_inputs=False):
 
     With soft_inputs=False the model is fed ground-truth token embeddings, which
     is exactly what standard training trains on. With soft_inputs=True every
-    position after BOS is replaced by the model's own concept token, which is
-    what soft decoding actually feeds it at inference (mix=1.0 in the curriculum
-    above). The difference between the two is the train-test gap, in nats.
+    position after BOS is replaced by the concept token the model predicts for
+    it, which is the mix=1.0 end of the curriculum below. The difference between
+    the two is the train-test gap, in nats.
+
+    Note what the soft column is not: free-running soft decoding. There, each
+    concept token is built from a prefix that is itself soft, so the input drifts
+    further from the embedding manifold with every step. Here the prefix is the
+    real name, which keeps both columns scoring the same targets under the same
+    teacher forcing -- comparable, and a lower bound on the gap at inference.
     """
     total, count = 0.0, 0
     for doc in names:
@@ -350,9 +356,12 @@ print(f"""
   the curriculum working as advertised.
 
   It is not free. On hard inputs the soft-trained model is WORSE:
-  {sft_hard:.4f} against {std_hard:.4f} nats. It spent capacity learning to read blended
-  embeddings, and gave up some of its fit to clean ones. The best single cell in
-  the table is still standard-trained on hard inputs ({std_hard:.4f}).
+  {sft_hard:.4f} against {std_hard:.4f} nats. The two runs start from identical weights and
+  walk the same names in the same order, so the curriculum is what caused that.
+  Why it costs this much is a further question these two numbers do not settle:
+  capacity spent on reading blended embeddings and fewer gradient steps on clean
+  ones (mix reaches 1.0) both predict it. The best single cell in the table is
+  still standard-trained on hard inputs ({std_hard:.4f}).
 
   That is the honest shape of the result: soft training buys robustness to soft
   inputs and pays for it on hard inputs. Whether the trade is worth it depends
@@ -380,6 +389,7 @@ position i-1, replacing the ground-truth embedding that would normally
 occupy that slot. Position 0 (BOS) always stays ground truth.
 
 This is scheduled sampling with soft tokens: the model gradually learns
-to work with continuous inputs, closing the distribution gap between
-training and soft inference.
+to work with continuous inputs, narrowing the distribution gap between
+training and soft inference — narrowing it, note, not closing it: the
+table above measures what is left.
 """)

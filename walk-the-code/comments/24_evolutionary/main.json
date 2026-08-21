@@ -217,99 +217,104 @@
     "text": "Everything after the validation slice is the training pool, shared by every member of every generation. Data is therefore never a confound between candidates — only configuration and accumulated compute are.",
     "hash": "543342fa"
   },
-  "83": {
-    "text": "Printing the split sizes makes the fitness budget explicit: one pool for training, one pool for selection.",
-    "hash": "2e44e890"
+  "87": {
+    "text": "Fitness is measured on the first 200 validation names, not all 1000. That is a deliberate cost/precision trade: this lab evaluates roughly 150 models, so each extra validation name costs ~150 forward passes. 200 names is enough to <em>rank</em> candidates, which is all selection needs.",
+    "important": true,
+    "hash": "17668e70"
   },
   "88": {
+    "text": "Printing the split sizes &mdash; and how much of the validation split the fitness signal actually uses &mdash; makes the search budget explicit: one pool for training, one pool for selection, and a stated sample size for the number that decides who survives.",
+    "hash": "9d9a499e"
+  },
+  "93": {
     "text": "Everything runs on CPU to keep the example local and deterministic. The evolutionary idea does not depend on accelerators.",
     "hash": "b39e14b0"
   },
-  "89": {
+  "94": {
     "text": "The context window is fixed for the whole population so sequence length does not become another hidden variable.",
     "hash": "ea3e077e"
   },
-  "92": {
+  "97": {
     "text": "RMSNorm stays unchanged from the earlier labs. Evolution is changing macro configuration, not swapping in new layer types.",
     "hash": "69fade3d"
   },
-  "93": {
+  "98": {
     "text": "RMSNorm remains parameter-free and unchanged; the search is over macro configuration, not normalization variants.",
     "hash": "1760089d"
   },
-  "94": {
+  "99": {
     "text": "The normalization layer itself has no learned weights here, so widening the model changes surrounding matrices more than it changes normalization.",
     "hash": "7678213b"
   },
-  "101": {
+  "106": {
     "text": "Attention now takes `n_embd` and `n_head` as parameters because those are evolvable traits in the search space.",
     "hash": "c20aaac2"
   },
-  "102": {
+  "107": {
     "text": "Attention receives dynamic width and head-count arguments because those two architectural choices are part of the evolvable genome.",
     "hash": "fd88ecfc"
   },
-  "103": {
+  "108": {
     "text": "The attention module is rebuilt to match each sampled genome, which is why architectural mutation naturally changes parameter count too.",
     "hash": "7678213b"
   },
-  "104": {
+  "109": {
     "text": "Store head count on the module because both tensor reshaping and legality checks depend on it.",
     "hash": "495be473"
   },
-  "106": {
+  "111": {
     "text": "Query projection width grows and shrinks with embedding size, so larger genomes pay for more expressive attention with more parameters.",
     "hash": "433b771f"
   },
-  "111": {
+  "116": {
     "text": "The attention forward pass stays standard even though the model size changes. Evolution is selecting among architectures, not inventing new operators.",
     "hash": "a87869a2"
   },
-  "112": {
+  "117": {
     "text": "Unpack batch, time, and channel dimensions so the tensor geometry stays visible while the model size changes.",
     "hash": "4584ac61"
   },
-  "113": {
+  "118": {
     "text": "Queries are always projected at full head count. Evolution changes head count by rebuilding the module, not by changing the attention rule.",
     "hash": "30a1c8b6"
   },
-  "114": {
+  "119": {
     "text": "Keys follow the same head geometry as queries because this lab changes capacity through width and depth, not by introducing KV-sharing tricks.",
     "hash": "dcae243b"
   },
-  "115": {
+  "120": {
     "text": "Values mirror keys so attention remains standard scaled dot-product attention regardless of which genome is active.",
     "hash": "9931351d"
   },
-  "116": {
+  "121": {
     "text": "Scaled dot-product attention is still standard. Evolution is not discovering a new attention rule here.",
     "hash": "636b2645"
   },
-  "117": {
+  "122": {
     "text": "The causal mask is unchanged across the population. Evolution compares model sizes and learning rates, not different generation rules.",
     "hash": "14eeec63"
   },
-  "124": {
+  "129": {
     "text": "Blocks become parameterized because architecture depth and width are now part of the genome, not compile-time constants.",
     "hash": "4bcc8ea8"
   },
-  "127": {
+  "132": {
     "text": "Each block carries the sampled width and head count through both attention and MLP, so a genome affects the full transformer stack.",
     "hash": "e92b587d"
   },
-  "130": {
+  "135": {
     "text": "The MLP expansion still uses the usual 4x multiplier. Capacity changes through `n_embd` and `n_layer`, not an extra search dimension.",
     "hash": "8e9f0642"
   },
-  "131": {
+  "136": {
     "text": "The second linear layer contracts the 4x hidden expansion back to model width, making parameter count very sensitive to the sampled embedding dimension.",
     "hash": "62c4768b"
   },
-  "133": {
+  "138": {
     "text": "The block's forward pass is fixed: pre-norm attention added back to the residual stream, then a pre-norm MLP added back the same way. Evolution changes a block's width and head count, and how many blocks there are, never what a block does.",
     "hash": "a87869a2"
   },
-  "139": {
+  "144": {
     "text": "The top-level model constructor exposes the exact architectural knobs that evolution is allowed to search over.",
     "hash": "e94c5dc2",
     "diagram": "evo_genome",
@@ -320,35 +325,35 @@
       "model"
     ]
   },
-  "140": {
+  "145": {
     "text": "MicroGPT accepts n_embd, n_head, and n_layer as constructor arguments, making the architecture evolvable.",
     "hash": "68116235"
   },
-  "141": {
+  "146": {
     "text": "The full model is assembled from the genome here: embeddings, transformer depth, and output head all depend on the sampled configuration.",
     "hash": "7678213b"
   },
-  "142": {
+  "147": {
     "text": "Embedding tables scale with `n_embd`, so wider models immediately cost more parameters.",
     "hash": "2a2b79bb"
   },
-  "145": {
+  "150": {
     "text": "Depth comes straight from the genome: one or two blocks, each built at the sampled width. Along with <code>n_embd</code> and <code>n_head</code> this is one of the three knobs that changes tensor shapes, so mutating it forces the child to start from random weights.",
     "hash": "08b0a2bd"
   },
-  "152": {
+  "157": {
     "text": "Small init std (0.08) keeps initial outputs low-entropy -- important so all population members start trainable.",
     "hash": "9677d3fd"
   },
-  "155": {
+  "160": {
     "text": "Sequence length is still inferred at runtime, so genomes change capacity without changing the caller interface.",
     "hash": "47cad82b"
   },
-  "156": {
+  "161": {
     "text": "Position embeddings still use the same fixed context length. This keeps comparisons between candidates fair.",
     "hash": "84f385df"
   },
-  "166": {
+  "171": {
     "text": "This discrete table is the search landscape. Evolution can only step among these predefined choices.",
     "hash": "f0aaa577",
     "diagram": "evo_genome",
@@ -357,244 +362,249 @@
       "genome"
     ]
   },
-  "167": {
+  "172": {
     "text": "The search space is deliberately discrete and small so the reader can reason about every possible mutation.",
     "hash": "d3f9078f"
   },
-  "168": {
+  "173": {
     "text": "Embedding size is the main capacity knob. Larger values increase both model expressiveness and parameter count.",
     "hash": "f5a02ca8"
   },
-  "169": {
+  "174": {
     "text": "Number of attention heads: 1, 2, or 4. Must evenly divide n_embd, which the code enforces.",
     "hash": "63dfa0d3"
   },
-  "170": {
+  "175": {
     "text": "Depth is part of the genome too, which lets the search compare shallow and slightly deeper tiny GPTs under the same budget.",
     "hash": "53a5929e"
   },
-  "171": {
+  "176": {
     "text": "Learning rate varies by 4x across the space -- this is often the most impactful hyperparameter to tune.",
     "hash": "1cf7d9d1"
   },
-  "172": {
+  "177": {
     "text": "Beta1 controls momentum in Adam -- lower values make the optimizer more responsive to recent gradients.",
     "hash": "0628d33a"
   },
-  "176": {
+  "181": {
     "text": "Random initialization samples a fresh genome for a new individual in the population.",
     "hash": "e5a1c5a7"
   },
-  "177": {
+  "182": {
     "text": "A fresh genome is just a dict sampled from the search space; evolution later decides which of these simple objects deserve to survive.",
     "hash": "d6f4a7af"
   },
-  "178": {
+  "183": {
     "text": "A configuration is one genome in the population: architecture depth/width and optimizer settings all become evolvable traits.",
     "hash": "35f65a63"
   },
-  "179": {
+  "184": {
     "text": "This repair step prevents illegal genomes from surviving sampling or mutation, which keeps the search focused on runnable candidates.",
     "hash": "cea3669f"
   },
-  "180": {
+  "185": {
     "text": "This legality check prevents the search from proposing invalid head layouts where embedding width cannot be split evenly across heads.",
     "hash": "bfce5cba"
   },
-  "181": {
+  "186": {
     "text": "Constraint repair: if n_embd isn't divisible by n_head, resample n_head until the constraint is satisfied.",
     "hash": "c54d8797"
   },
-  "185": {
+  "190": {
     "text": "Mutation starts from an existing survivor genome rather than from scratch, which is why the search can improve cumulatively.",
     "hash": "546349d4"
   },
-  "187": {
+  "192": {
     "text": "Mutation starts by copying the parent genome so only the selected fields change and the rest of the inherited design stays intact.",
     "hash": "265e09e2"
   },
-  "188": {
+  "193": {
     "text": "Most children mutate only one trait, which keeps the search local enough for successful parents to pass on useful structure.",
     "hash": "1a8b35f6"
   },
-  "189": {
+  "194": {
     "text": "Sampling mutation keys without replacement means one generation cannot accidentally mutate the same hyperparameter twice in opposite directions.",
     "hash": "670d3572"
   },
-  "190": {
+  "195": {
     "text": "Mutation is plain resampling from the discrete search space. There is no gradient for these choices, only selection pressure.",
     "hash": "24958565"
   },
-  "193": {
+  "198": {
     "text": "After mutation, the same divisibility guard runs again so children stay architecturally valid.",
     "hash": "78694e95"
   },
-  "194": {
+  "199": {
     "text": "Repair after mutation matters most when width changed, because that can invalidate the current head-count choice.",
     "hash": "e86f5d58"
   },
-  "198": {
+  "203": {
     "text": "build_model() is a factory: given a config dict, it returns a fresh MicroGPT with those hyperparameters.",
     "hash": "718e1622"
   },
-  "199": {
+  "204": {
     "text": "Model construction is factored out because evolution repeatedly instantiates architectures from sampled genomes.",
     "hash": "8424d573"
   },
-  "200": {
+  "205": {
     "text": "Genome-to-model translation is a separate step so survivors can be copied, mutated, and rebuilt cleanly.",
     "hash": "099e5520"
   },
-  "203": {
-    "text": "Training is intentionally short and fixed-length. Evolution needs many comparable partial runs, not one full convergence run.",
-    "hash": "e399b735"
+  "208": {
+    "text": "Training is intentionally short and fixed-length. Evolution needs many comparable partial runs, not one full convergence run. <code>start_step</code> is what makes those runs <em>consecutive</em> rather than repeated.",
+    "hash": "7223c321"
   },
-  "204": {
+  "209": {
     "text": "A fixed number of steps per call, so every member gets the same amount of <em>new</em> training each generation. That is not the same as equal total training, and the step counter tracked in the population is what exposes the difference.",
-    "hash": "80033645"
+    "hash": "fd30b63d"
   },
-  "205": {
+  "211": {
+    "text": "The subtle part of population-based training. Without an offset, every generation would restart at name 0, so a member with 1200 steps would have read the same 200 names six times over. \"More compute\" would then buy memorisation of a tiny slice, and the matched-budget curves further down would measure overfitting rather than learning.",
+    "important": true,
+    "hash": "2a6c7838"
+  },
+  "216": {
     "text": "Optimizer settings are part of the genome too, so learning dynamics themselves are under evolutionary control.",
     "hash": "01de0182"
   },
-  "206": {
+  "217": {
     "text": "Adam hyperparameters come directly from the genome, which makes optimization dynamics part of what evolution is selecting for.",
     "hash": "e5da2e6e"
   },
-  "208": {
+  "219": {
     "text": "Average training loss is tracked per member mainly for observability; survival itself is still based on validation loss.",
     "hash": "554a65df"
   },
-  "210": {
-    "text": "Every member walks the same corpus in the same order, so data is not a confound between members. Compute still is: survivors have been walking it for several generations longer than a freshly initialized child.",
-    "hash": "87c1b059"
+  "221": {
+    "text": "Each member walks the corpus in the same <em>order</em>, but resumes at its own offset, so a longer-lived member has seen strictly more data rather than the same data more often. Data is still not a confound between members at equal step count; compute and lineage age are.",
+    "hash": "60917733"
   },
-  "211": {
+  "222": {
     "text": "Like the self-improving lab, names are still encoded as BOS-delimited character sequences before training.",
     "hash": "f5526170"
   },
-  "213": {
+  "224": {
     "text": "Inputs stay on CPU here so population search can run in a minimal environment without distributed orchestration.",
     "hash": "968a3346"
   },
-  "214": {
+  "225": {
     "text": "Targets are the inputs shifted by one, so every position predicts the next character. The objective is identical for every member of the population — the search is over configuration, not over what the models are trying to do.",
     "hash": "1b63fd95"
   },
-  "216": {
+  "227": {
     "text": "Training loss drives weight updates inside a generation, but it is not the survival criterion. That distinction matters.",
     "hash": "4f1dd754"
   },
-  "223": {
+  "234": {
     "text": "Returning average loss lets us monitor training quality, though fitness is measured separately on validation data.",
     "hash": "00070e67"
   },
-  "226": {
+  "237": {
     "text": "@torch.no_grad() disables gradient tracking during evaluation -- we only need forward passes for fitness.",
     "hash": "eec96875"
   },
-  "227": {
-    "text": "Validation loss is the fitness signal. Lower is better, so evolution selects candidates that generalize best.",
-    "hash": "cc91e2ea"
+  "238": {
+    "text": "Validation loss is the fitness signal. Lower is better, so evolution selects candidates that generalize best &mdash; as judged on the fixed 200-name sample declared above.",
+    "hash": "1c921cdb"
   },
-  "228": {
+  "239": {
     "text": "Validation loss is the fitness function. Lower loss means a genome earns the right to survive and reproduce.",
     "hash": "cdec2ada"
   },
-  "231": {
+  "242": {
     "text": "Cap evaluation samples to keep selection cheap. The goal is a stable ranking signal, not a perfect benchmark.",
     "hash": "52fddd71"
   },
-  "233": {
+  "244": {
     "text": "Walk the validation set in order rather than sampling from it, so every member is scored on exactly the same names in the same sequence. Fitness comparisons across a population are worthless if the evaluation set moves between members.",
     "hash": "df318831"
   },
-  "236": {
+  "247": {
     "text": "Evaluation reuses the same autoregressive objective, but on held-out names so the search favors generalizing configurations.",
     "hash": "c99ff416"
   },
-  "242": {
+  "253": {
     "text": "Average validation loss is the fitness score. The evolution loop will sort the population by this value.",
     "hash": "de99a098"
   },
-  "245": {
+  "256": {
     "text": "Sampling from a model after evolution is not part of fitness, but it helps verify that lower validation loss corresponds to plausible-looking names.",
     "hash": "eec96875"
   },
-  "246": {
+  "257": {
     "text": "Autoregressive generation: predict one token at a time, append it, and feed the growing sequence back in.",
     "hash": "05abd08d"
   },
-  "251": {
+  "262": {
     "text": "Each sample starts from BOS, keeping generation behavior aligned with how the models were trained.",
     "hash": "5c52ddc4"
   },
-  "253": {
+  "264": {
     "text": "Generation is only for qualitative inspection. Fitness is decided numerically by validation loss, not by cherry-picked samples.",
     "hash": "e05597da"
   },
-  "254": {
+  "265": {
     "text": "Scale logits by temperature before sampling so sample diversity can be inspected without changing the learned model.",
     "hash": "c02460c5"
   },
-  "256": {
+  "267": {
     "text": "Multinomial sampling exposes the actual learned distribution of the winner instead of forcing greedy outputs.",
     "hash": "5b83becd"
   },
-  "257": {
+  "268": {
     "text": "BOS token acts as both start and end marker -- generating BOS means the name is complete.",
     "hash": "41a35c11"
   },
-  "268": {
+  "279": {
     "text": "Phase 1 is a single randomly configured model trained once. It is the number the evolutionary run will be compared against, and the compute ledger further down is what stops that comparison from being a fiction.",
     "hash": "8db4326f"
   },
-  "272": {
+  "283": {
     "text": "500 steps is a <em>small</em> budget, and that matters for every comparison in this file. The evolutionary run below spends roughly twenty times as much across its population, so \"evolved beats this baseline\" is mostly a statement about compute. The results section therefore also compares the two configurations at matched per-model budget and adds an equal-budget random-search arm.",
     "important": true,
     "hash": "acef6e8c"
   },
-  "274": {
+  "285": {
     "text": "One random draw from the search space, as the thing to beat. A single sample is a weak reference point on purpose — the honest comparisons are the matched-budget curve and the random-search arm, not this.",
     "hash": "69327638"
   },
-  "276": {
+  "287": {
     "text": "Instantiate the baseline from the sampled config so later improvement can be measured against a single-run search.",
     "hash": "20cbf89a"
   },
-  "277": {
+  "288": {
     "text": "Counting parameters shows model capacity -- evolution might discover that smaller or larger models work better.",
     "hash": "0d263549"
   },
-  "286": {
+  "297": {
     "text": "Train the baseline once. Everything downstream that quotes an improvement against this run has to also quote the step counts, which is why the ledger section exists.",
     "hash": "da55a0fd"
   },
-  "287": {
+  "298": {
     "text": "The baseline's fitness, measured the same way the population's will be: validation loss on held-out names.",
     "hash": "48b8da27"
   },
-  "288": {
+  "299": {
     "text": "The baseline validation score becomes the denominator for the final improvement claim: evolution should beat this single random trial.",
     "hash": "3ae03ae5"
   },
-  "289": {
+  "300": {
     "text": "Five samples from the baseline, so the loss numbers further down have something legible beside them rather than standing on their own.",
     "hash": "33cdf373"
   },
-  "298": {
+  "309": {
     "text": "Population size controls how much diversity the search can maintain at once.",
     "hash": "3db7f0e8"
   },
-  "299": {
+  "310": {
     "text": "Six generations. Long enough for the gene pool to collapse, which is one of the things the run is measuring.",
     "hash": "851ef511"
   },
-  "300": {
+  "311": {
     "text": "Each generation only gets 200 training steps. That is enough to rank candidates without making the demo too slow.",
     "hash": "fe9c080e"
   },
-  "301": {
+  "312": {
     "text": "Top-3 of 8 survive; the other five are replaced by mutated copies. This truncation ratio is aggressive for a population this small, and the diversity diagnostics at the end are the bill for it.",
     "diagram": "evo_generation",
     "highlight": {
@@ -608,15 +618,15 @@
     },
     "hash": "49accc8b"
   },
-  "303": {
+  "314": {
     "text": "This is the initial population: multiple independently sampled genomes enter the search before any selection has happened.",
     "hash": "4b1f0578"
   },
-  "304": {
+  "315": {
     "text": "The population container holds each individual’s identity, genome, model weights, and most recent fitness.",
     "hash": "3b6eff6b"
   },
-  "305": {
+  "316": {
     "text": "Population initialization: create POP_SIZE individuals, each with a random config and fresh model.",
     "diagram": "evo_generation",
     "highlight": [
@@ -626,33 +636,33 @@
     ],
     "hash": "3aaf9fdf"
   },
-  "308": {
+  "319": {
     "text": "<code>steps</code> is the cumulative training this member's weights have received, and it is deliberately <em>not</em> the same for every member. Survivors keep their weights and keep accumulating; a child whose architecture changed restarts at zero. Without this counter, within-generation fitness silently confounds configuration quality with lineage age.",
     "important": true,
     "hash": "66f6cb95"
   },
-  "313": {
+  "324": {
     "text": "New members start at infinite validation loss, so an unevaluated member can never be mistaken for a fit one by the sort below, and at zero steps.",
     "hash": "27823c7c"
   },
-  "320": {
+  "331": {
     "text": "Generation stats accumulate a compressed history of the search so the final report can show trend, not just the winner.",
     "hash": "d59be0c9"
   },
-  "321": {
+  "332": {
     "text": "Total training steps spent by the whole population. This counter is the entire reason the headline improvement can be put in context rather than quoted bare.",
     "hash": "7de710d0"
   },
-  "323": {
+  "334": {
     "text": "Global elitism: an archive of the single best model ever evaluated, kept outside the population. Before this existed the lab reported whatever survived to the last generation, which meant it could report a worse model than it had already found and discarded.",
     "important": true,
     "hash": "d7c7a814"
   },
-  "328": {
+  "339": {
     "text": "The archive itself — loss, config, a deep copy of the weights, and which generation produced it. The generation number is what lets the closing text say whether the search peaked early and regressed.",
     "hash": "b464e755"
   },
-  "330": {
+  "341": {
     "text": "Each generation repeats the same cycle: train, evaluate, sort, keep the best, and repopulate.",
     "diagram": "evo_generation",
     "highlight": [
@@ -661,82 +671,82 @@
     ],
     "hash": "3f36c440"
   },
-  "331": {
+  "342": {
     "text": "Within a generation, every member gets trained before any survivor decision is made. Selection is based on a synchronized snapshot of the population.",
     "hash": "ce2cf69b"
   },
-  "333": {
-    "text": "Every member gets the same number of <em>new</em> steps this generation. It does not follow that they are equally trained: a survivor arrives here with several generations of weights behind it and a fresh-architecture child arrives with none. The competition is therefore partly about lineage age, not only configuration quality — which is what the steps column is printed to show.",
+  "345": {
+    "text": "Every member gets the same number of <em>new</em> steps this generation, resuming at the name where it left off. It does not follow that they are equally trained: a survivor arrives here with several generations of weights behind it and a fresh-architecture child arrives with none. The competition is therefore partly about lineage age, not only configuration quality &mdash; which is what the steps column is printed to show.",
     "important": true,
-    "hash": "fe90bb5a"
+    "hash": "a676943f"
   },
-  "334": {
+  "346": {
     "text": "Accumulate into this member's lifetime step count, so the confound stays visible instead of being reset each generation.",
     "hash": "eec34d26"
   },
-  "335": {
+  "347": {
     "text": "And into the run total, which the compute ledger divides by the baseline's 500.",
     "hash": "d943aa56"
   },
-  "336": {
+  "348": {
     "text": "Fitness is updated immediately after training so ranking reflects the current generation, not stale scores from earlier rounds.",
     "hash": "28d946ea"
   },
-  "338": {
+  "350": {
     "text": "Sorting by validation loss makes the best candidate land at index 0 and the worst at the end.",
     "hash": "6418bc2d"
   },
-  "339": {
+  "351": {
     "text": "Sorting by validation loss creates the selection pressure. Once ordered, survivors and replacees are obvious.",
     "hash": "08c188b4"
   },
-  "341": {
+  "353": {
     "text": "Once sorted, `best` is both the current champion and the most likely parent source for the next generation.",
     "hash": "154fbb73"
   },
-  "342": {
+  "354": {
     "text": "The worst member as well as the best. Printing the tail matters: a population whose best improves while its average and worst degrade is not improving.",
     "hash": "d2034bfc"
   },
-  "343": {
+  "355": {
     "text": "Average population loss matters because evolution can improve the frontier while still collapsing diversity, and this metric helps reveal that.",
     "hash": "4b66982d"
   },
-  "345": {
+  "357": {
     "text": "How much variety is actually left, counted two ways: distinct architectures (what changes the parameter count) and distinct full configs (architecture plus learning rate and beta1). The second stays higher than the first long after the search has stopped exploring anything structural.",
     "important": true,
     "hash": "d150a38d"
   },
-  "348": {
+  "360": {
     "text": "Distinct architectures in the population. Once this reaches 1 the search has nothing structural left to select between, whatever the config count says.",
     "hash": "1065e71e"
   },
-  "349": {
+  "361": {
     "text": "Distinct full configs, including the optimizer knobs. Useful as a contrast: lr and beta1 keep mutating happily while the architecture space has already collapsed.",
     "hash": "0d50f93a"
   },
-  "351": {
+  "363": {
     "text": "Update the archive whenever this generation's best beats everything seen so far. Three lines, and they are the difference between reporting the search's peak and reporting its last gasp.",
     "important": true,
     "hash": "10358d7c"
   },
-  "360": {
+  "372": {
     "text": "Record generation-level telemetry so the search can be inspected as a trend in best, average, and worst population quality.",
     "hash": "299eca47"
   },
-  "367": {
+  "379": {
     "text": "The best member's cumulative step count, stored per generation so the results table can put it next to that generation's best loss. A loss that improves alongside a rising step count has not told you much about the configuration.",
     "hash": "2decd423"
   },
-  "368": {
+  "380": {
     "text": "Diversity goes into the per-generation record too, so the collapse can be printed as a curve rather than as a single final number.",
     "hash": "29d60fca"
   },
-  "374": {
+  "386": {
     "text": "The per-generation printout exposes the whole exploit-explore story in one line: who won, how bad the tail is, and what genome led the field.",
     "hash": "52e7945d"
   },
-  "375": {
+  "387": {
     "text": "The generation's champion, with its cumulative steps alongside its loss. Survivors keep their trained weights across generations — that is the PBT \"exploit\" — which is exactly why the step count has to be printed next to the fitness.",
     "diagram": "evo_exploit_explore",
     "highlight": {
@@ -752,20 +762,20 @@
     },
     "hash": "f37a6a4d"
   },
-  "378": {
+  "390": {
     "text": "Distinct architectures and configs, printed every generation rather than only at the end. Diversity dies quietly, and a single end-of-run number cannot tell you when it happened.",
     "hash": "7b63ac00"
   },
-  "382": {
+  "394": {
     "text": "The whole population, ranked, with cumulative steps next to each validation loss. This is where the lineage-age confound is visible directly: read down the steps column and check whether the ranking tracks configuration or training time.",
     "important": true,
     "hash": "eb89d91f"
   },
-  "386": {
-    "text": "Loss, steps, and the full genome per member. Five columns so that a member winning on 1400 steps against a member on 200 cannot be mistaken for a better configuration.",
+  "398": {
+    "text": "Loss, cumulative steps and the full genome, one row per member. The steps column is the reason this table exists: by the last generation a member on <code>1200</code> steps is ranked against a fresh child on <code>200</code>, and that gap is training time, not a better configuration.",
     "hash": "eb9e39f3"
   },
-  "391": {
+  "403": {
     "text": "The evolutionary step starts here. Survivors stay; everyone else is replaced by mutated descendants.",
     "diagram": "evo_generation",
     "highlight": [
@@ -774,16 +784,16 @@
     ],
     "hash": "4ef550c2"
   },
-  "392": {
+  "404": {
     "text": "The top-K slice is the survivor pool. These members are the only ones allowed to pass structure into the next generation.",
     "hash": "b78d7127",
     "important": true
   },
-  "393": {
+  "405": {
     "text": "Deep-copy the survivors so their trained weights persist into the next generation instead of being overwritten in place.",
     "hash": "290e7128"
   },
-  "395": {
+  "407": {
     "text": "Exactly `POP_SIZE - TOP_K` children are created so population size stays constant across generations.",
     "diagram": "evo_generation",
     "highlight": [
@@ -793,27 +803,27 @@
     ],
     "hash": "4ede37b3"
   },
-  "396": {
+  "408": {
     "text": "Parents are chosen from survivors only, which means every child descends from a genome that already proved itself on validation loss.",
     "hash": "efab39c9"
   },
-  "397": {
+  "409": {
     "text": "Random parent selection from survivors: each child descends from one of the top-K. This spreads good genes.",
     "hash": "a2e0d0e0"
   },
-  "398": {
+  "410": {
     "text": "Each child starts from a successful parent genome, then explores nearby configurations by mutation.",
     "hash": "cbf74ca9"
   },
-  "401": {
+  "413": {
     "text": "Only the three architecture knobs decide whether weights can be inherited. A mutation that touches lr or beta1 alone leaves the tensor shapes intact, so the child keeps its parent's learning for free.",
     "hash": "ed517cfa"
   },
-  "407": {
+  "419": {
     "text": "If shape changed, exploration wins completely and the child starts from fresh random weights.",
     "hash": "51cc3aec"
   },
-  "408": {
+  "420": {
     "text": "The clean split between exploit and explore: inherit weights when the shape allows it, start from scratch when it does not. A child that restarts pays a real cost, and it shows up as a rising population average later in the run.",
     "diagram": "evo_generation",
     "highlight": {
@@ -829,239 +839,244 @@
     },
     "hash": "f16347a4"
   },
-  "409": {
+  "421": {
     "text": "Same architecture, so the child loads the parent's parameters — and inherits the parent's accumulated step count with them, on the next line. Copying one without the other is how the confound gets hidden.",
     "hash": "6e6a9577"
   },
-  "411": {
+  "423": {
     "text": "When shape is unchanged, the child inherits learned weights. This is the exploit step that makes PBT more efficient than restarting every trial.",
     "hash": "91cb0e44",
     "important": true
   },
-  "413": {
+  "425": {
     "text": "Each child re-enters the population with a new identity and an unknown fitness, even if it inherited strong weights.",
     "hash": "f8b7fcf7"
   },
-  "414": {
+  "426": {
     "text": "Each child gets a unique ID for tracking lineage across generations.",
     "hash": "57331fba"
   },
-  "418": {
+  "430": {
     "text": "A child with a new architecture is genuinely untrained, so its step count starts at zero; a child that inherited weights starts where its parent left off. Keeping these two cases honest is what makes the steps column mean anything.",
     "hash": "602c1d7d"
   },
-  "432": {
+  "444": {
     "text": "This final pass avoids a subtle reporting bug: the last batch of spawned children has been created but not yet trained unless you evaluate them here.",
     "hash": "963b7386"
   },
-  "434": {
+  "446": {
     "text": "The children spawned in the last generation have never been trained, so evaluating the final population without this pass would compare trained survivors against random initializations.",
     "hash": "2634752f"
   },
-  "440": {
+  "452": {
     "text": "And those late children get a shot at the archive too. A model discovered on the very last pass should still be reportable as the run's best.",
     "hash": "bdc2ed8b"
   },
-  "449": {
+  "461": {
     "text": "Sort the final population so it can be listed and so <code>final_best</code> is well defined. Note what this sort does <em>not</em> decide: the reported winner comes from the archive, not from index 0 here.",
     "hash": "08c188b4"
   },
-  "450": {
+  "462": {
     "text": "The best of the final population — kept only so it can be printed <em>against</em> the archive. The gap between these two lines is the whole argument for elitism.",
     "hash": "56e674f9"
   },
-  "451": {
+  "463": {
     "text": "<code>best_evolved</code> is the fittest individual discovered across the entire run, and that claim is now true because it reads the elitist archive rather than the surviving population. Before the archive existed this line took <code>population[0]</code>, which meant the lab could report a model measurably worse than one it had already found and thrown away.",
     "important": true,
     "hash": "0383d4ae"
   },
-  "454": {
+  "466": {
     "text": "The generation table: best, average and worst loss, cumulative steps of the best member, and the two diversity counts. Six columns because the best-loss column on its own is the one that flatters the method.",
     "important": true,
     "hash": "6d9733f3"
   },
-  "459": {
+  "471": {
     "text": "The summary table gives a generation-by-generation view of search progress, which is the clearest way to see whether evolution is genuinely converging.",
     "hash": "ebe6826a"
   },
-  "466": {
+  "478": {
     "text": "Spell out what the steps column means in the output itself, since a cumulative count next to a loss is easy to misread as a per-generation budget.",
     "hash": "841847e5"
   },
-  "470": {
+  "482": {
     "text": "Best in the final population, with its step count.",
     "hash": "50ae8760"
   },
-  "471": {
+  "483": {
     "text": "And the best ever seen, with the generation that produced it. When these two lines differ — which they usually do — the second is the honest answer to \"what did the search find?\"",
     "important": true,
     "hash": "26f8990e"
   },
-  "472": {
+  "484": {
     "text": "The full per-generation best curve, so a non-monotonic search is visible as a shape rather than hidden behind a minimum.",
     "hash": "86eb2636"
   },
-  "474": {
+  "486": {
     "text": "If the peak was not the last generation, say so explicitly. \"The search peaked and then regressed\" is a normal outcome for top-k truncation on a small population, and elitism is the only reason the peak is still reportable.",
     "hash": "122ea286"
   },
-  "483": {
+  "495": {
     "text": "The compute ledger. The first improvement number this lab could print is mostly a statement about training budget, and this section is what turns it into an honest one.",
     "important": true,
     "hash": "8db4326f"
   },
-  "490": {
+  "502": {
     "text": "1200 steps per config, matched. Comparing the baseline's 500 steps against a whole population's worth of training is not a configuration comparison, so run both configs at the same budget instead.",
     "hash": "df47c3ca"
   },
-  "491": {
+  "503": {
     "text": "Check the validation loss every 200 steps rather than only at the end, because a single endpoint cannot distinguish a better configuration from a luckier stopping point.",
     "hash": "fcdb7fce"
   },
-  "494": {
+  "506": {
     "text": "Train one config from scratch and record a curve. Deliberately from scratch: reusing the evolved model's weights would smuggle its extra training back into the comparison.",
     "hash": "09667805"
   },
-  "498": {
+  "510": {
     "text": "Each chunk builds a fresh optimizer, exactly as a generation of evolution does. Without that, this curve would be a single long run with persistent Adam state and would not be like-for-like.",
     "hash": "22c60d3e"
   },
-  "512": {
+  "518": {
+    "text": "Each 200-step chunk resumes where the previous one stopped, so 1,200 steps means 1,200 distinct names. Without the offset every chunk would re-read the same first 200, and the curve would measure how fast a model memorises a tiny slice rather than how it improves with budget.",
+    "important": true,
+    "hash": "95d2c394"
+  },
+  "524": {
     "text": "The baseline config's curve at matched budget.",
     "hash": "e747647f"
   },
-  "513": {
+  "525": {
     "text": "And the evolved config's, same budget, same seed, same chunking. Any gap here is attributable to the configuration and nothing else.",
     "hash": "23994ab3"
   },
-  "519": {
-    "text": "Best point on each curve, not the last point. Both curves wander upward at the end — 1200 steps is enough to start overfitting a model this small — and taking endpoints would turn that noise into a result.",
+  "531": {
+    "text": "Best point on each curve, not the last point. Neither curve descends cleanly &mdash; each chunk trains on one name at a time and rebuilds Adam from scratch, so single-example gradient noise moves the validation loss around by more than the trend does &mdash; and taking endpoints would turn that noise into a result.",
     "hash": "c897f59c"
   },
-  "521": {
+  "533": {
     "text": "This delta is the honest per-config number, and it is a fraction of the headline improvement. Everything above it in the ledger is budget.",
     "important": true,
     "hash": "9dc55065"
   },
-  "523": {
+  "535": {
     "text": "The control that decides whether selection and mutation earned anything at all: spend the same total compute on independent random configs and see how close they get.",
     "important": true,
     "hash": "4ae0c651"
   },
-  "532": {
+  "544": {
     "text": "POP_SIZE x NUM_GENERATIONS configs at STEPS_PER_GEN steps each is slightly <em>less</em> compute than the evolutionary run, which also trains the children spawned in the last generation. The comparison is therefore conservative in evolution's favour.",
     "hash": "2c823051"
   },
-  "534": {
+  "546": {
     "text": "Track only the best random config found. Random search gets the same elitism the evolutionary arm does, or the comparison would be rigged.",
     "hash": "f82f1fd7"
   },
-  "540": {
+  "552": {
     "text": "Keep the incumbent whenever a sample beats it. This is what makes random search a real baseline rather than a straw man — it is evolution with the selection and mutation removed and nothing else changed.",
     "hash": "8d468366"
   },
-  "544": {
+  "556": {
     "text": "The equal-budget random-search result. How close this lands to the evolved best is the measure of what selection and mutation actually bought.",
     "hash": "8adcd777"
   },
-  "546": {
+  "558": {
     "text": "The step counts, printed side by side. Once these four numbers are visible, the improvement figures below can be read for what they are.",
     "hash": "5a51ee40"
   },
-  "548": {
+  "560": {
     "text": "Evolution's whole-run cost, and its ratio to the baseline. This is the multiplier that the headline comparison quietly spends.",
     "hash": "db394207"
   },
-  "552": {
+  "564": {
     "text": "The headline question: did evolutionary search beat a single random configuration trained once?",
     "hash": "1dfbb440"
   },
-  "553": {
+  "565": {
     "text": "The unfair comparison first, labelled as such rather than omitted.",
     "hash": "12b354cc"
   },
-  "554": {
+  "566": {
     "text": "The evolved best, taken from the archive — which is why this line can quote a model that no longer exists in the population.",
     "hash": "e9ddb8a4"
   },
-  "557": {
+  "569": {
     "text": "The number a less careful version of this lab would have stopped at, printed with the compute multiplier attached so it cannot be quoted alone.",
     "important": true,
     "hash": "f36470f7"
   },
-  "558": {
+  "570": {
     "text": "What evolution bought over random search at the same total budget. Much smaller, and this is the number that actually says something about selection and mutation.",
     "hash": "fa82a1b1"
   },
-  "559": {
-    "text": "And the configuration advantage at matched per-model budget: the honest per-config figure. Three numbers for one question, in descending order of flattery.",
+  "571": {
+    "text": "And the configuration advantage at matched per-model budget: the honest per-config figure. Three numbers for one question, and the largest of them is the one with 21x the compute behind it.",
     "important": true,
     "hash": "5678a4a6"
   },
-  "561": {
+  "573": {
     "text": "Side-by-side samples keep the numerical improvement grounded in generated outputs, not just in lower validation loss.",
     "hash": "a493ba9e"
   },
-  "566": {
+  "578": {
     "text": "Sample from the evolved winner so the improvement is visible in the output, not just in the loss number.",
     "hash": "106a3ba3"
   },
-  "571": {
+  "583": {
     "text": "The final population, listed in full. Whether several genome families survived or selection collapsed everything onto one configuration is not something a best-loss number can tell you.",
     "hash": "8a7a9763"
   },
-  "573": {
-    "text": "Printing the whole final population exposes diversity, showing whether evolution converged tightly or kept multiple viable regions alive.",
+  "585": {
+    "text": "Pull this member's genome out so the row below can print every knob next to the loss, not just the winner's.",
     "hash": "419d4845"
   },
-  "576": {
+  "588": {
     "text": "Loss, cumulative steps, parameter count and genome per surviving member. The parameter column is the one to watch: identical counts across the whole population mean the architecture search is over, whatever the config column shows.",
     "hash": "394280af"
   },
-  "582": {
+  "594": {
     "text": "Distinct architectures left at the end, counted on the three shape knobs.",
     "hash": "b76c91e3"
   },
-  "584": {
-    "text": "Distinct model <em>sizes</em>, which is the strictest diversity test here: lr and beta1 can keep mutating forever without changing this number by one.",
+  "596": {
+    "text": "Distinct model <em>sizes</em>, the strictest of the three diversity counts. Parameter count depends only on <code>n_embd</code> and <code>n_layer</code>, so <code>n_head</code>, <code>lr</code> and <code>beta1</code> can all keep mutating without moving it — which is why the run can end with two distinct architectures and still only one distinct size.",
     "hash": "dec91a56"
   },
-  "586": {
+  "598": {
     "text": "The architecture count as a curve across generations. Collapse is a trajectory, and this line is the diagnostic the lab exists to print.",
     "important": true,
     "hash": "4e46dd15"
   },
-  "588": {
+  "600": {
     "text": "Print the curve and the final count together, so an end state of one or two architectures can be traced back to the generation where the pool narrowed.",
     "hash": "76c011ac"
   },
-  "591": {
+  "603": {
     "text": "Population average per generation, alongside the diversity curve. A rising average with a falling architecture count is a search that has stopped exploring and started churning.",
     "hash": "8cbbf1c2"
   },
-  "592": {
+  "604": {
     "text": "If every survivor is the same size, say so in plain language. Top-k truncation with a low mutation rate collapses a gene pool this small very fast, and a real search needs a diversity floor — forbid duplicate genomes, keep random immigrants, or raise the mutation rate when variance drops. None of that is implemented here; measuring it first is the point.",
     "important": true,
     "hash": "9e98c1ca"
   },
-  "604": {
+  "616": {
     "text": "And if the population average got <em>worse</em> over the run, print that too. Children with fresh architectures restart untrained, so a population that keeps mutating keeps paying a restart cost — and \"evolution improved the population\" stops being a claim this run supports.",
     "important": true,
     "hash": "11b4c559"
   },
-  "621": {
+  "633": {
     "text": "The numbered recap restates the algorithm as a control loop: initialize, train, evaluate, select, mutate, inherit, repeat.",
     "hash": "15f8d0d2"
   },
-  "632": {
+  "644": {
     "text": "Lab 23 improves training data (output quality); Lab 24 improves the model architecture and optimizer settings.",
     "hash": "7fef5bfe"
   },
-  "635": {
+  "647": {
     "text": "Lab 23 is like self-play refinement (STaR); Lab 24 is like natural selection -- fundamentally different strategies.",
     "hash": "9ef2261c"
   },
-  "637": {
+  "649": {
     "text": "Exploit means reusing what already works; explore means mutating it enough to discover a better region of the search space.",
     "diagram": "evo_exploit_explore",
     "highlight": [
@@ -1075,40 +1090,40 @@
     ],
     "hash": "9eea4e1a"
   },
-  "638": {
+  "650": {
     "text": "EXPLOIT: children inherit trained weights from successful parents, getting a head start on learning.",
     "hash": "d2cb5380"
   },
-  "639": {
+  "651": {
     "text": "EXPLORE: random hyperparameter mutations ensure the population doesn't get stuck in a local optimum.",
     "hash": "976c2ed3"
   },
-  "642": {
+  "654": {
     "text": "PBT was originally designed to evolve learning rate schedules and data augmentation during training.",
     "hash": "628476cd"
   },
-  "644": {
+  "656": {
     "text": "FunSearch uses the same pattern but evolves LLM-generated programs instead of numeric hyperparameters.",
     "hash": "538e94ff"
   },
-  "649": {
+  "661": {
     "text": "The compute point, restated with the run's own numbers: the matched-budget configuration advantage against the raw improvement figure. The gap between the two is what a compute ledger is for.",
     "hash": "99121e25"
   },
-  "653": {
+  "665": {
     "text": "The lineage-age point. Equal <em>new</em> steps per generation is not equal total training, and the steps column is where that shows.",
     "hash": "1a7f2f57"
   },
-  "659": {
+  "671": {
     "text": "The diversity point, with the per-generation architecture curve inline. Once it reaches 1, selection has nothing left to select.",
     "hash": "53b51876"
   },
-  "662": {
+  "674": {
     "text": "And the reason the reported winner comes from the archive rather than the final population: the two are frequently not the same model.",
     "important": true,
     "hash": "b269fe9b"
   },
-  "665": {
+  "677": {
     "text": "The closing claim is deliberately modest. Production PBT does discover schedules that would cost a researcher weeks — with populations large enough and mutation rates high enough that the gene pool survives, which is exactly the part a run at this size cannot show for free.",
     "hash": "25d70917"
   }

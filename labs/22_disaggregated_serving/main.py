@@ -294,6 +294,12 @@ for prompt_len in [8, 64, 256, 1024]:
         f"| {fp:14,} | {fa:12,} ({fa / fp:.0%}) | {fd:12,}"
     )
 
+# The per-token curve is a U, not a slide: fixed per-call overhead dominates at
+# short prompts and is amortised away, then the quadratic attention term takes
+# over. Reporting only the endpoints would make it look monotone, so find the
+# actual minimum and print it.
+per_token = {t: prefill_times[t] * 1e6 / t for t in prefill_times}
+best_T = min(per_token, key=per_token.get)
 time_growth = prefill_times[1024] / prefill_times[8]
 flop_growth = count_flops(1024, N_DECODE)[0] / count_flops(8, N_DECODE)[0]
 attn_share_8 = count_flops(8, N_DECODE)[1] / count_flops(8, N_DECODE)[0]
@@ -302,9 +308,13 @@ attn_share_1024 = count_flops(1024, N_DECODE)[1] / count_flops(1024, N_DECODE)[0
 print(f"""
 Read the us/token column, not the total. From T=8 to T=1024 the prefill FLOP
 count grows {flop_growth:.0f}x while the wall clock grows only {time_growth:.0f}x, and the per-token
-cost drops from {prefill_times[8] * 1e6 / 8:.1f} to {prefill_times[1024] * 1e6 / 1024:.1f} us. At short prompts almost all of the
-time is fixed per-call overhead — Python, dispatch, kernel launch — not
-arithmetic. That is why the earlier version of this table, measured at prompt
+cost traces a U: {per_token[8]:.1f} us/token at T=8, down to a minimum of
+{per_token[best_T]:.1f} us/token at T={best_T}, then back up to {per_token[1024]:.1f} us/token at T=1024.
+Quoting only the endpoints ({per_token[8]:.1f} -> {per_token[1024]:.1f}) would make that look monotone.
+The left arm falls because at short prompts almost all of the time is fixed
+per-call overhead — Python, dispatch, kernel launch — not arithmetic, and that
+overhead is amortised over more tokens as T grows. The right arm rises because
+the O(T^2) attention term overtakes the amortisation. That is why the earlier version of this table, measured at prompt
 lengths of 2 to 12 tokens, came out flat and could not support any claim about
 O(T^2) scaling. The effect is real; you have to measure it where it exists.
 
@@ -546,11 +556,21 @@ print(f"  Total:     colocated {t_c * 1000:.1f} ms  |  disaggregated {t_d * 1000
 # disaggregation stopped being worth it?
 avg_plen = sum(len(r.prompt) for r in results_coloc) / len(results_coloc)
 gain_ms = (avg_c - avg_d) * 1000
-breakeven_per_token = KV_TRANSFER_COST_MS + gain_ms / avg_plen
+# The handoff runs inline on the prefill worker, so raising its per-token cost
+# delays a request by every prompt token queued AHEAD of it, not just its own.
+# The right denominator is therefore the mean cumulative prompt length, which is
+# far larger than the mean prompt length -- and makes the break-even far closer.
+_cum, _cums = 0, []
+for _r in results_coloc:
+    _cum += len(_r.prompt)
+    _cums.append(_cum)
+mean_cum_plen = sum(_cums) / len(_cums)
+breakeven_per_token = KV_TRANSFER_COST_MS + gain_ms / mean_cum_plen
 print(f"\n  KV transfer: {KV_TRANSFER_COST_MS} ms/token, {total_transfer_ms:.1f} ms total across 12 requests")
 print("               already included in the disaggregated TTFT above")
 print(f"  Break-even:  ~{breakeven_per_token:.2f} ms/token would erase the {gain_ms:.1f} ms average TTFT gain")
-print(f"               (average prompt is {avg_plen:.1f} tokens; raise KV_TRANSFER_COST_MS and re-run)")
+print(f"               (mean prompt {avg_plen:.1f} tokens, but mean prompt-tokens-ahead-of-you {mean_cum_plen:.1f};")
+print("                that second number is the one that sets the break-even. Raise KV_TRANSFER_COST_MS and re-run.)")
 
 # Honest accounting of what this comparison is.
 print(f"""

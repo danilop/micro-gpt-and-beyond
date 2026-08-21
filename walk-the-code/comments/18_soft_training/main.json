@@ -493,15 +493,15 @@
     "text": "Two ways to feed the same held-out names: ground-truth embeddings, which is what teacher forcing trained on, and the model's own concept tokens, which is what soft decoding hands it at inference. The difference between the two <em>is</em> the train-test gap, in nats.",
     "hash": "6b8bb8c3"
   },
-  "213": {
+  "219": {
     "text": "The soft-input branch. <code>n &gt; 1</code> because a one-token sequence has no position to replace, so there is nothing to measure.",
     "hash": "9ad48698"
   },
-  "215": {
+  "221": {
     "text": "Build the concept tokens exactly as the training curriculum does, at the same <code>soft_temp</code>. If the evaluation used a different blend from training, the gap it reported would be a gap to somewhere the model never goes.",
     "hash": "4b807adf"
   },
-  "219": {
+  "225": {
     "text": "Same shift as the curriculum: <code>soft_embeds[:, i]</code> is the prediction for position <code>i+1</code>, and BOS stays ground truth. Getting this off by one would leak the answer into the input and quietly flatter both models.",
     "diagram": "soft_training",
     "highlight": {
@@ -517,51 +517,51 @@
     },
     "hash": "f730d2fc"
   },
-  "224": {
+  "230": {
     "text": "Targets are the ground-truth next tokens in both branches. Only the inputs change between the hard and soft columns, which is what makes their difference attributable to input distribution alone.",
     "hash": "147bb2a1"
   },
-  "232": {
+  "238": {
     "text": "Training function: supports both standard teacher forcing and soft input mixing via the <code>soft_mix</code> flag.",
     "hash": "6bac6ad9"
   },
-  "234": {
+  "240": {
     "text": "Print model name and parameter count.",
     "hash": "5bc76c01"
   },
-  "235": {
+  "241": {
     "text": "Adam optimizer with standard hyperparameters.",
     "hash": "92d21e78"
   },
-  "237": {
+  "243": {
     "text": "Iterate over training steps, processing one name per step with teacher forcing.",
     "hash": "53f56939"
   },
-  "238": {
+  "244": {
     "text": "Pick the next training name by cycling through the shuffled dataset with a modulo index.",
     "hash": "47ec0e2c"
   },
-  "239": {
+  "245": {
     "text": "Tokenize: BOS + characters + BOS.",
     "hash": "ae86abd0"
   },
-  "240": {
+  "246": {
     "text": "Limit the sequence to the maximum context window the model can handle.",
     "hash": "3d9da8cd"
   },
-  "242": {
+  "248": {
     "text": "Input token IDs (all except last).",
     "hash": "968a3346"
   },
-  "243": {
+  "249": {
     "text": "Target token IDs (shifted by one).",
     "hash": "1b63fd95"
   },
-  "245": {
+  "251": {
     "text": "Soft mixing branch: only when enabled and sequence is long enough.",
     "hash": "1cb3444a"
   },
-  "246": {
+  "252": {
     "text": "The curriculum schedule: <code>mix</code> goes from 0 (pure ground truth) to 1 (pure concept tokens) linearly over training. This is the key insight, gradual transition avoids the shock of suddenly switching from perfect teacher inputs to noisy self-generated ones.",
     "hash": "abf4f92c",
     "diagram": "soft_training",
@@ -570,7 +570,7 @@
       "mix"
     ]
   },
-  "249": {
+  "255": {
     "text": "First forward pass (detached): get the model's current predictions without tracking gradients. These predictions become the concept tokens for the second forward pass.",
     "hash": "d4f61231",
     "diagram": "soft_training",
@@ -580,11 +580,11 @@
       "model"
     ]
   },
-  "250": {
+  "256": {
     "text": "Standard forward pass on ground-truth inputs.",
     "hash": "f8803263"
   },
-  "251": {
+  "257": {
     "text": "Convert logits to soft concept tokens: softmax gives probabilities, matrix multiply with embedding weights gives the weighted average embedding. This is the same concept token computation used in Lab 17's soft decoding, but now applied during training.",
     "hash": "4b807adf",
     "diagram": "soft_training",
@@ -592,7 +592,7 @@
       "concept"
     ]
   },
-  "255": {
+  "261": {
     "text": "Ground-truth embeddings for the input sequence.",
     "hash": "ed0b9634",
     "diagram": "soft_training",
@@ -600,7 +600,7 @@
       "gt"
     ]
   },
-  "256": {
+  "262": {
     "text": "The blending: position 0 (BOS) always stays ground truth. For all other positions, mix between ground truth and the concept token from the previous position's prediction. Early in training (mix≈0), this is mostly ground truth. Late (mix≈1), mostly concept tokens, matching what the model will see at inference time.",
     "hash": "a0a4fb84",
     "diagram": "soft_training",
@@ -608,7 +608,7 @@
       "mix"
     ]
   },
-  "258": {
+  "264": {
     "text": "Second forward pass: model processes the blended input and produces logits for the loss.",
     "hash": "8312ccb4",
     "diagram": "soft_training",
@@ -626,19 +626,19 @@
       ]
     }
   },
-  "260": {
+  "266": {
     "text": "Standard path: just use token IDs when soft mixing is off.",
     "hash": "17df3885"
   },
-  "262": {
+  "268": {
     "text": "Cross-entropy loss against ground-truth targets.",
     "hash": "4f1dd754"
   },
-  "264": {
+  "270": {
     "text": "Zero gradients from previous step.",
     "hash": "fbede2b3"
   },
-  "265": {
+  "271": {
     "text": "Backpropagate through the computation graph.",
     "hash": "227fe80d",
     "diagram": "soft_training",
@@ -646,188 +646,188 @@
       "model"
     ]
   },
-  "266": {
+  "272": {
     "text": "Reduce the learning rate linearly toward zero as training progresses, allowing fine-grained convergence near the end.",
     "hash": "60602e3a"
   },
-  "267": {
+  "273": {
     "text": "Write the decayed learning rate into the optimizer's parameter group so the next update uses the reduced value.",
     "hash": "9f6d3592"
   },
-  "268": {
+  "274": {
     "text": "Write the decayed learning rate into the optimizer's parameter group.",
     "hash": "3030870a"
   },
-  "269": {
+  "275": {
     "text": "Apply the computed gradients to update all model weights one step toward lower loss.",
     "hash": "d9e59d7e"
   },
-  "271": {
+  "277": {
     "text": "Print the training loss at regular intervals so we can monitor convergence.",
     "hash": "cf37956f"
   },
-  "272": {
+  "278": {
     "text": "Include the mix ratio in the log when soft training, shows the curriculum progressing.",
     "hash": "a019eac1"
   },
-  "273": {
+  "279": {
     "text": "Print step, loss, and optional mix ratio.",
     "hash": "64891018"
   },
-  "279": {
+  "285": {
     "text": "Instantiate the baseline model that will be trained with standard teacher forcing and no concept token mixing.",
     "hash": "8e2ccf18"
   },
-  "280": {
+  "286": {
     "text": "Instantiate the soft-trained model that will learn with a curriculum of gradually increasing concept token mixing.",
     "hash": "9844ce0f"
   },
-  "281": {
+  "287": {
     "text": "Copy weights so both start from the exact same initialization. This ensures any difference in output quality is due to the training method, not random init.",
     "hash": "f610b2ac"
   },
-  "283": {
+  "289": {
     "text": "Train with standard teacher forcing (always ground-truth inputs).",
     "hash": "88d5c78c"
   },
-  "284": {
+  "290": {
     "text": "Train with soft mixing curriculum (gradually replace ground truth with concept tokens).",
     "hash": "b807f3d8"
   },
-  "289": {
+  "295": {
     "text": "Section header for the comparison.",
     "hash": "d20052fb"
   },
-  "290": {
+  "296": {
     "text": "Generate 20 names per configuration, enough samples to see meaningful entropy and quality differences.",
     "hash": "ba8d14e2"
   },
-  "291": {
+  "297": {
     "text": "Maximum possible entropy (uniform distribution), used to normalize entropy readings.",
     "hash": "430f12d4"
   },
-  "293": {
+  "299": {
     "text": "Set up the four test configurations: two models (standard vs. soft-trained) times two decoding modes (hard vs. soft).",
     "hash": "61d93dc2"
   },
-  "294": {
+  "300": {
     "text": "Standard model with hard (discrete) decoding, the classic baseline.",
     "hash": "c67aa79b"
   },
-  "295": {
+  "301": {
     "text": "Standard model with soft decoding, Lab 17's approach, applied to a model that never saw concept tokens during training.",
     "hash": "a809297d"
   },
-  "296": {
+  "302": {
     "text": "Soft-trained model with hard decoding, tests whether soft training helps even with standard decoding.",
     "hash": "1e7f3faa"
   },
-  "297": {
+  "303": {
     "text": "Soft-trained model with soft decoding, the ideal combo: trained on concept tokens, generates with them.",
     "hash": "8de341ce"
   },
-  "298": {
+  "304": {
     "text": "End of the configuration list. Each entry specifies a model, decoding mode, and descriptive label for the comparison.",
     "hash": "cfae0d42"
   },
-  "300": {
+  "306": {
     "text": "Keep each cell's mean entropy keyed by (model, mode) so the caveat printed below can quote the two soft cells against each other instead of asking the reader to scroll back.",
     "hash": "6298df96"
   },
-  "301": {
+  "307": {
     "text": "Turn off gradient computation for the entire generation phase to save memory and compute during inference.",
     "hash": "d4f61231"
   },
-  "302": {
+  "308": {
     "text": "Iterate over all four configurations.",
     "hash": "74cbecb2"
   },
-  "303": {
+  "309": {
     "text": "Switch this configuration's model to evaluation mode for deterministic behavior during generation.",
     "hash": "60d578c6"
   },
-  "304": {
+  "310": {
     "text": "Print the configuration being tested.",
     "hash": "420478f3"
   },
-  "305": {
+  "311": {
     "text": "Collect entropy values across samples.",
     "hash": "17aa2167"
   },
-  "306": {
+  "312": {
     "text": "Generate the specified number of name samples for this configuration, collecting output and entropy data.",
     "hash": "567e2f37"
   },
-  "307": {
+  "313": {
     "text": "Generate one name with the specified mode and temperature.",
     "hash": "77e5dac4"
   },
-  "308": {
+  "314": {
     "text": "Decode token IDs to characters.",
     "hash": "9e3829cc"
   },
-  "309": {
+  "315": {
     "text": "Average entropy for this sample. Neither direction is 'better': this measures how much of the distribution flows forward, not whether the model can use it. The hard rows are zero by construction and the soft rows are wider — that is a description of the decoder, not a score.",
     "hash": "8eb7b603"
   },
-  "310": {
+  "316": {
     "text": "Append this sample's average entropy to the list so we can compute the overall mean across all samples.",
     "hash": "bbbd844c"
   },
-  "311": {
+  "317": {
     "text": "Show the first 10 generated names with their entropy scores for a quick visual comparison of quality.",
     "hash": "5416cee6"
   },
-  "312": {
+  "318": {
     "text": "Print each name with its concept-token entropy against the <code>ln(27)</code> ceiling. The soft-trained model under soft decoding comes out <em>highest</em> here, around 2.68 against the standard model's 2.52 — more spread, not less, which is the opposite of what a 'more confident model' story would predict.",
     "important": true,
     "hash": "ea51a505"
   },
-  "314": {
+  "320": {
     "text": "The per-cell mean, useful and not decisive. It says how much distribution survives into the next step; whether that helps is a question only held-out likelihood can answer, which is the section below.",
     "hash": "50d53439"
   },
-  "316": {
+  "322": {
     "text": "The caveat is printed rather than left to the reader, because the entropy table invites exactly one wrong conclusion and this paragraph names it.",
     "hash": "67aebcba"
   },
-  "322": {
+  "328": {
     "text": "The sentence that keeps the whole lab honest: entropy measures how much of the distribution flows forward, not whether the model makes use of it. Two labs report this statistic and neither of them treats it as a quality score.",
     "important": true,
     "hash": "9540b5f7"
   },
-  "334": {
+  "340": {
     "text": "Training walked <code>docs[0:num_steps]</code>, so these 2000 names are genuinely unseen. A gap measured on training data would mostly report memorization.",
     "hash": "87190294"
   },
-  "336": {
+  "342": {
     "text": "Four numbers and two derived gaps: each model scored on hard inputs and on soft inputs. This 2x2 is the claim, and printing all four cells means the reader can check the reading rather than take the summary on trust.",
     "important": true,
     "hash": "44b400b2"
   },
-  "340": {
+  "346": {
     "text": "Hard inputs: ground-truth embeddings, exactly what teacher forcing optimizes. <code>2.3892</code> for the standard model against <code>2.4699</code> for the soft-trained one — the curriculum costs something here.",
     "hash": "755ab663"
   },
-  "341": {
+  "347": {
     "text": "Soft inputs: every position after BOS replaced by the model's own concept token, which is what soft decoding actually feeds. <code>2.6501</code> against <code>2.6082</code>, and this time the soft-trained model is ahead.",
     "important": true,
     "hash": "afbee55c"
   },
-  "342": {
+  "348": {
     "text": "Store the pair and their difference. The gap is the quantity the curriculum is supposed to shrink, so it gets its own column instead of being left as mental arithmetic.",
     "hash": "cac9023f"
   },
-  "348": {
+  "354": {
     "text": "Read the two gaps, not the two best cells. The soft-input penalty falls from <code>+0.2609</code> to <code>+0.1384</code> nats, roughly a 47% reduction — the curriculum working as advertised, measured rather than asserted.",
     "important": true,
     "hash": "b079bf29"
   },
-  "352": {
+  "358": {
     "text": "And it is not free: on hard inputs the soft-trained model is worse. It spent capacity learning to read blended embeddings and gave up some of its fit to clean ones, so the best single cell in the table is still standard-trained on hard inputs.",
     "hash": "0d02632b"
   },
-  "357": {
+  "366": {
     "text": "The honest shape of the result — robustness to soft inputs bought at a price on hard ones — and the conclusion left where it belongs: with whichever decoder you actually deploy.",
     "hash": "cf5d33b4"
   }

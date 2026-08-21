@@ -207,13 +207,16 @@ for step in range(num_steps):
 # The step count is a dial, not a constant, and it is the whole reason to care
 # about diffusion: with fewer steps than tokens, several positions commit in the
 # same forward pass. Left-to-right decoding has no such dial — it always costs
-# one forward pass per token.
+# one forward pass per token. Note that the first arm below (16 steps for 16
+# positions) is not that saving: it cannot commit more than one position per
+# step on average, and the run reports that it does not.
 
 
 def denoise(num_denoise_steps):
-    """Generate one name by iterative unmasking. Returns (name, forward_passes)."""
+    """Generate one name by iterative unmasking. Returns (name, passes, commits)."""
     seq = [MASK] * block_size  # start from pure noise
     passes = 0
+    commits = []  # positions committed per step — the schedule, as measured
 
     for step_i in range(num_denoise_steps, 0, -1):
         # Cosine schedule: `t` is the fraction of positions masked going into
@@ -238,16 +241,20 @@ def denoise(num_denoise_steps):
         # Commit the most confident predictions and re-mask the rest, so the
         # number left masked is what the schedule asked for. Anchoring on
         # block_size — not on how many happen to be masked right now — is what
-        # lets the schedule actually drive the process; the `- 1` floor
-        # guarantees every step commits at least one position.
+        # lets the schedule set the pace; the `- 1` floor guarantees every step
+        # commits at least one position. Which of the two binds depends on the
+        # step count: with as many steps as positions the floor wins every time,
+        # and the per-step commit counts printed below say which happened.
+        n_to_remask = 0
         if confidences:
             n_to_remask = min(int(block_size * s), len(confidences) - 1)
             confidences.sort()
             for _, i in confidences[:n_to_remask]:
                 predicted[i] = MASK
+        commits.append(len(confidences) - n_to_remask)
         seq = predicted
 
-    return "".join(uchars[c] for c in seq if c < len(uchars)), passes
+    return "".join(uchars[c] for c in seq if c < len(uchars)), passes, commits
 
 
 model.eval()
@@ -256,11 +263,19 @@ with torch.no_grad():
         torch.manual_seed(1234)  # same noise every time, so only the schedule differs
         print(f"\n--- inference: {num_steps_denoise} denoising steps ---")
         total_passes = 0
+        commits = []
         for sample_idx in range(10):
-            name, passes = denoise(num_steps_denoise)
+            name, passes, commits = denoise(num_steps_denoise)
             total_passes += passes
             print(f"sample {sample_idx + 1:2d}: {name}")
         print(f"  {total_passes / 10:.1f} forward passes per name (left-to-right needs up to {block_size})")
+        # The commit counts depend only on block_size and the schedule, not on
+        # sampling, so one sample's pattern is every sample's pattern.
+        print(f"  positions committed per step: {','.join(str(c) for c in commits)}")
+        if max(commits) == 1:
+            print("  Every step committed exactly one position: with as many steps as")
+            print("  positions the `- 1` floor is what sets the pace, not the cosine")
+            print("  schedule, and this arm costs the same as left-to-right decoding.")
 
 print(
     "\nFewer steps means more positions committed per pass, so generation gets cheaper"

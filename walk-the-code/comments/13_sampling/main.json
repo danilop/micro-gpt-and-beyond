@@ -546,7 +546,7 @@
     "hash": "ce311cc5"
   },
   "237": {
-    "text": "Extract the raw logit vector for the last position, which predicts what token comes next.",
+    "text": "One forward pass over the whole sequence so far. It returns logits for every position; only the last row is useful when generating.",
     "hash": "7d28f274"
   },
   "238": {
@@ -641,13 +641,13 @@
     "text": "Encode \"mar\" to see what the model predicts next, likely 'i', 'y', 'a', etc.",
     "hash": "dde77096"
   },
-  "291": {
-    "text": "Run the model on \"mar\" to get raw logits for the next token.",
-    "hash": "1b80e0f7"
-  },
   "292": {
-    "text": "Logits for the next token after \"mar\".",
+    "text": "Run the model on \"mar\" to get raw logits.",
     "hash": "7d28f274"
+  },
+  "293": {
+    "text": "Logits for the next token after \"mar\".",
+    "hash": "2acd8fbc"
   },
   "295": {
     "text": "Helper to format the top probabilities as a readable string.",
@@ -657,28 +657,28 @@
     "text": "Show the top tokens and their probabilities, plus how many tokens have non-zero probability.",
     "hash": "47a6d438"
   },
-  "308": {
+  "312": {
     "text": "Raw model distribution at T=1.0, the model's unfiltered opinion.",
-    "hash": "08560b58"
+    "hash": "06f40190"
   },
-  "311": {
+  "316": {
     "text": "T=0.3: the distribution becomes very peaked, the top token dominates.",
-    "hash": "094bb807"
+    "hash": "94a39c0a"
   },
-  "315": {
+  "320": {
     "text": "T=2.0: the distribution flattens out, even unlikely tokens get noticeable probability.",
-    "hash": "ee8a1eea"
+    "hash": "f40f14a0"
   },
-  "319": {
+  "327": {
     "text": "Top-k=3: exactly 3 tokens survive, rest are zero. Hard cutoff.",
-    "hash": "e6131156"
+    "hash": "87e4c3ac"
   },
-  "326": {
+  "338": {
     "text": "Top-p=0.9: keep tokens until cumulative probability hits 90%. Variable number of candidates.",
-    "hash": "80fb0b11"
+    "hash": "d4befe61"
   },
-  "337": {
+  "345": {
     "text": "Min-p=0.1: keep tokens with >= 10% of the max probability. Naturally adaptive.",
-    "hash": "60ff2a02"
+    "hash": "81978fbc"
   }
 }

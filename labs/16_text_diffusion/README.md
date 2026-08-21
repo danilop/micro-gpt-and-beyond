@@ -109,20 +109,38 @@ for step_i in range(num_denoise_steps, 0, -1):
 Three techniques improve generation quality:
 
 - **Confidence-based remasking**: instead of randomly re-corrupting predictions, the model keeps the tokens it's most sure about and reconsiders the rest. This is the same `low_confidence` strategy used in [LLaDA's inference code](https://github.com/ML-GSAI/LLaDA/blob/main/generate.py) and originally introduced by [MaskGIT](https://arxiv.org/abs/2202.04200).
-- **Temperature annealing** (0.8 to 0.3): high temperature early on encourages exploration when everything is uncertain; low temperature at the end sharpens the final choices.
+- **Temperature annealing**: high temperature early on encourages exploration when everything is uncertain, low temperature at the end sharpens the final choices. The formula is `0.3 + 0.5 * t` with `t` the cosine schedule's mask fraction, so it starts at exactly 0.8 and the `0.3` is an asymptote it never reaches: the last step's temperature is 0.349 at 16 steps, 0.398 at 8 and 0.491 at 4. The fewer steps you take, the less the anneal has time to cool.
 - **Cosine schedule**: instead of linearly decreasing the noise level, a cosine curve spends more of its steps in the middle range where the name's structure is being decided. Note that the target is `block_size * s` — a fraction of the *whole sequence*, not of whatever is masked right now. Anchoring it on the sequence is what lets the schedule set the pace; anchor it on the current mask count and it collapses to one token per step regardless of the curve.
+
+  There is a second constraint next to the schedule: `len(confidences) - 1`, a floor that forces every step to commit at least one position so the loop cannot stall. Which of the two binds is a property of the step count, and at the top of the sweep it is the floor. With 16 steps for 16 positions there is nothing else it could be — 16 positions over 16 steps is one per step by arithmetic — so the 16-step arm is *not* a demonstration of the schedule driving anything, and the parallel-decoding saving there is zero. The lab prints the per-step commit counts for each arm, and says so explicitly when every step committed exactly one:
+
+  ```
+  --- inference: 16 denoising steps ---
+    16.0 forward passes per name (left-to-right needs up to 16)
+    positions committed per step: 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+    Every step committed exactly one position: ...
+  --- inference: 8 denoising steps ---
+    positions committed per step: 1,1,1,2,3,2,3,3
+  --- inference: 4 denoising steps ---
+    positions committed per step: 2,3,5,6
+  ```
+
+  The 8- and 4-step arms are where the schedule actually sets the pace.
 
 At 8 steps over a 16-position sequence, the schedule commits 1, 1, 1, 2, 3, 2, 3, 3
 positions — slow while everything is uncertain, several at a time once the structure
-is settled. Illustrated on the first 8 positions:
+is settled. Sketched below on the first 8 of the 16 positions, with the mask count
+being what is masked *going into* that step (so most of the remaining masks live in
+the 8 positions that are off-screen to the right):
 
 ```
 Step 8 (t=1.00, temp=0.80): [M]  [M]  [M]  [M]  [M]  [M]  [M]  [M]   16 masked
 Step 6 (t=0.92, temp=0.76): [M]   a   [M]  [M]  [M]  [M]  [M]  [PAD] 14 masked
 Step 4 (t=0.71, temp=0.65):  m    a   [M]   i   [M]  [M]  [PAD][PAD]  11 masked
 Step 2 (t=0.38, temp=0.49):  m    a    r    i    a   [M]  [PAD][PAD]   6 masked
-Step 1 (t=0.20, temp=0.40):  m    a    r    i    a   [PAD][PAD][PAD]   0 masked
-Result:                       maria
+Step 1 (t=0.20, temp=0.40):  m    a    r    i    a   [M]  [PAD][PAD]   3 masked
+After step 1:                m    a    r    i    a   [PAD][PAD][PAD]   0 masked
+Result:                      maria
 ```
 
 ## Why These Choices
@@ -159,7 +177,7 @@ The input embeddings (`wte`) and output projection (`lm_head`) share the same ma
 | Layers | 1 | 2 (diffusion needs depth for message-passing) |
 | Loss masking | All positions | Only masked positions (MASK logit suppressed) |
 | Noise schedule | — | Log-uniform (importance sampling) |
-| Inference passes | ~8 (average name length) | 16 / 8 / 4 (a dial, not a constant) |
+| Inference passes | ~7 (mean name length is 6.1 characters, plus the terminal BOS) | 16 / 8 / 4 (a dial — though 16 steps over 16 positions saves nothing) |
 | Inference strategy | Sampling with temperature | Confidence remasking + temperature annealing |
 | Weight tying | No | Yes (wte = lm_head) |
 
@@ -173,7 +191,7 @@ python run_lab.py 16
 cd 16_text_diffusion && uv run python main.py
 ```
 
-Trains for 3000 steps with batch size 32, then generates 10 names at each of three step counts (16, 8, 4). Takes a few seconds on a laptop thanks to PyTorch.
+Trains for 3000 steps with batch size 32, then generates 10 names at each of three step counts (16, 8, 4), reporting forward passes and the per-step commit counts for each. The whole run took about 90 seconds on the 2-core CPU container it was last timed on.
 
 ## Why This Matters
 
@@ -181,7 +199,7 @@ Autoregressive generation is the dominant paradigm for language models. GPT, LLa
 
 For text, diffusion is still catching up. But it has structural advantages: parallel generation (several positions per forward pass, not one), bidirectional context (no "reversal curse" because the model sees the whole sequence), and natural support for editing (re-mask and re-generate any part).
 
-The step-count sweep at the end of the run is where that advantage becomes concrete, and where its price shows up too. At 16 steps the names are clean (`rina`, `saria`, `kalan`, `jaria`, `jamie`); at 8 they start to fray; at 4 they are mostly mush. Fewer steps means more positions committed per pass with less information about their neighbours — and a 6.8K-parameter model has very little slack. How few steps you can get away with is exactly the question production diffusion LMs are trying to answer.
+The step-count sweep at the end of the run is where that advantage becomes concrete, and where its price shows up too. At 16 steps the names are clean (`rina`, `saria`, `kalan`, `jaria`, `jamie`) but the run costs one forward pass per position, exactly like left-to-right decoding — that arm is the quality reference, not the speed result. The saving starts at 8 steps, where they begin to fray, and at 4 they are mostly mush. Fewer steps means more positions committed per pass with less information about their neighbours — and a 6.8K-parameter model has very little slack. How few steps you can get away with is exactly the question production diffusion LMs are trying to answer.
 
 ### Why the generated names aren't as good as lab 03's
 

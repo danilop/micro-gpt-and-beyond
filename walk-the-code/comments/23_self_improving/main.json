@@ -200,7 +200,7 @@
     "hash": "1db347c6"
   },
   "99": {
-    "text": "This function builds a simple bigram language model from the training data -- it captures which character pairs appear frequently in real names.",
+    "text": "Docstring: build a log-probability scorer from bigram statistics. It is called with <code>heldout_docs</code>, never the training split, so the character pairs it learns come from names the model has never been shown.",
     "hash": "af27fde0"
   },
   "100": {

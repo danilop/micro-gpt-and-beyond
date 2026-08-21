@@ -140,8 +140,7 @@
     }
   },
   "79": {
-    "text": "The math: <code>W*x + B*A*x</code>. Since B starts at zero, the adapter contributes nothing initially. As B learns non-zero values, the adapter gently steers the output. With rank=2, A is (2, d_in) and B is (d_out, 2) &mdash; tiny compared to W's (d_out, d_in).",
-    "hash": "895dfbdb",
+    "text": "The math, scaling included: <code>W*x + (alpha/rank) * B*A*x</code>. B starts at zero, so the adapter contributes nothing until training moves it. At rank 1, A is (1, d_in) and B is (d_out, 1) &mdash; 32 numbers per adapted matrix against W's 256.",
     "diagram": "lora_adapter",
     "highlight": [
       "x",
@@ -149,7 +148,8 @@
       "down",
       "up",
       "add"
-    ]
+    ],
+    "hash": "895dfbdb"
   },
   "85": {
     "text": "Same model config as lab 03.",

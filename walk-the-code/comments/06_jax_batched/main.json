@@ -24,17 +24,17 @@
     "text": "Fix the outer randomness so the benefit of <code>vmap</code> is visible as a code-structure improvement rather than as a different experiment.",
     "hash": "f0726c6e"
   },
-  "38": {
+  "37": {
     "text": "Path to the shared dataset file used consistently across all labs.",
+    "hash": "5ac9686d"
+  },
+  "38": {
+    "text": "Download the names dataset from the internet if it is not already present locally.",
     "hash": "9667c968"
   },
-  "39": {
-    "text": "Download the names dataset from the internet if it is not already present locally.",
-    "hash": "84cdb92b"
-  },
-  "42": {
+  "41": {
     "text": "URL pointing to the raw names dataset hosted in Karpathy's repository.",
-    "hash": "25ec775b"
+    "hash": "5e579f27"
   },
   "44": {
     "text": "Read the text file and split it into individual name strings, one per line.",
@@ -129,7 +129,7 @@
     "hash": "408c658f"
   },
   "86": {
-    "text": "Token embeddings include a PAD row. Compare lab 04: <code>vocab_size_with_pad</code> for the embedding, <code>vocab_size</code> for the output head.",
+    "text": "Resume filling the parameter dict. It is split into two statements only because <code>wte</code> has to exist before its PAD row can be zeroed on the line above.",
     "hash": "ec55f1ce"
   },
   "87": {

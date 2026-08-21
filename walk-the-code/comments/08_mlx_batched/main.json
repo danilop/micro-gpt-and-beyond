@@ -1,159 +1,159 @@
 {
-  "23": {
+  "25": {
     "text": "Same dataset again. The point is to see what batched training feels like once MLX's lazy, unified-memory model enters the picture.",
     "hash": "b67c9dde"
   },
-  "24": {
+  "26": {
     "text": "The outer randomness stays framework-independent so the comparison with the other batched labs remains meaningful.",
     "hash": "de2abade"
   },
-  "25": {
+  "27": {
     "text": "This lab combines two ideas at once: the realistic mini-batch training structure from the PyTorch track and the Apple-Silicon execution model from the MLX track.",
     "hash": "7e18ed42"
   },
-  "28": {
+  "30": {
     "text": "MLX's core runtime is still the differentiator here: batched training now runs through a system designed around Apple hardware and deferred execution.",
     "hash": "00d25044",
     "important": true
   },
-  "29": {
+  "31": {
     "text": "The layer API is familiar on purpose. That lets the reader focus on how batching interacts with MLX rather than relearning the model definition itself.",
     "hash": "826b699d"
   },
-  "30": {
+  "32": {
     "text": "The optimizer is where MLX's runtime story becomes concrete: training steps are shaped by lazy execution and a memory model tuned for Apple Silicon.",
     "hash": "8ee68a62"
   },
-  "31": {
+  "33": {
     "text": "Even in a higher-level MLX model, parameter trees still matter. These helpers make the runtime feel manageable without hiding the structure completely.",
     "hash": "adb10b27"
   },
-  "33": {
+  "35": {
     "text": "Lock the run down so the interesting differences come from batching and MLX execution, not from shuffled luck.",
     "hash": "f0726c6e"
   },
-  "34": {
+  "36": {
     "text": "Seed MLX's random number generator separately for reproducible weight initialization.",
     "hash": "f9057c48"
   },
-  "39": {
+  "41": {
     "text": "Path to the shared dataset file used consistently across all labs.",
     "hash": "5ac9686d"
   },
-  "40": {
+  "42": {
     "text": "Download the names dataset from the internet if it is not already present locally.",
     "hash": "9667c968"
   },
-  "43": {
+  "45": {
     "text": "URL pointing to the raw names dataset hosted in Karpathy's repository.",
     "hash": "5e579f27"
   },
-  "46": {
+  "48": {
     "text": "Read the text file and split it into individual name strings, one per line.",
     "hash": "2f367d0b"
   },
-  "47": {
+  "49": {
     "text": "Randomize the training order so the model does not memorize sequences of names.",
     "hash": "c8f1cb86"
   },
-  "50": {
+  "52": {
     "text": "Gather every unique character from all names to build our token vocabulary. Sorting ensures a deterministic, reproducible mapping from characters to integer IDs.",
     "hash": "5f7ca3bb"
   },
-  "51": {
+  "53": {
     "text": "The beginning-of-sequence token doubles as the end-of-sequence marker for name boundaries.",
     "hash": "476ca504"
   },
-  "52": {
+  "54": {
     "text": "The real vocabulary has 27 tokens: 26 lowercase letters plus the BOS/EOS marker.",
     "hash": "0a38d2ba"
   },
-  "53": {
+  "55": {
     "text": "PAD token for batch alignment.",
     "hash": "615f41c9"
   },
-  "54": {
+  "56": {
     "text": "The total embedding table size includes the PAD token. The model needs an embedding for PAD even though we mask it during attention and loss.",
     "hash": "f3abd8f4"
   },
-  "60": {
+  "62": {
     "text": "4x larger than lab 07, same scale-up as PyTorch batched (lab 04).",
     "hash": "3b06c323"
   },
-  "61": {
+  "63": {
     "text": "Four attention heads, each working on 16 dimensions. Multiple heads let the model attend to different relationship types simultaneously.",
     "hash": "e804f3b9"
   },
-  "62": {
+  "64": {
     "text": "Two transformer layers for deeper representations, matching the batched PyTorch lab.",
     "hash": "6664fd8c"
   },
-  "63": {
+  "65": {
     "text": "Each name can be at most 16 characters long, setting the attention window size.",
     "hash": "ecfd6b0a"
   },
-  "64": {
+  "66": {
     "text": "Each attention head operates on 16 dimensions, giving finer-grained representations.",
     "hash": "77ba194a"
   },
-  "65": {
+  "67": {
     "text": "Process 32 names at once in each training step. Batching amortizes the overhead of each forward/backward pass and provides more stable gradient estimates.",
     "hash": "d607968f"
   },
-  "66": {
+  "68": {
     "text": "Train for 1000 steps, same as all other labs but each step processes a full batch.",
     "hash": "f105aa30"
   },
-  "72": {
+  "74": {
     "text": "RMSNorm, identical to lab 07.",
     "hash": "69fade3d"
   },
-  "75": {
+  "77": {
     "text": "A tiny constant that prevents division by zero during normalization.",
     "hash": "a6082d20"
   },
-  "77": {
+  "79": {
     "text": "Run the input through RMSNorm to stabilize activations before the transformer.",
     "hash": "54e7034e"
   },
-  "78": {
+  "80": {
     "text": "Compute the mean of squared values along the last axis for RMS normalization.",
     "hash": "f12ba3c4"
   },
-  "79": {
+  "81": {
     "text": "Divide each element by the root-mean-square of its vector. This rescales activations to a consistent magnitude without shifting them by their mean, which is simpler than LayerNorm.",
     "hash": "9989efa7"
   },
-  "82": {
+  "84": {
     "text": "Attention written for <em>one</em> sequence, shapes <code>(T, C)</code> throughout. Compare lab 04, where the same module had to be rewritten around <code>(B, T, ...)</code> by hand: here <code>mx.vmap</code> adds the batch axis further down and this code never learns about it.",
     "important": true,
     "hash": "c20aaac2"
   },
-  "85": {
+  "87": {
     "text": "Project the input into query vectors that will attend to other positions.",
     "hash": "433b771f"
   },
-  "86": {
+  "88": {
     "text": "Project the input into key vectors that other positions will compare against.",
     "hash": "bf2475c8"
   },
-  "87": {
+  "89": {
     "text": "Project the input into value vectors carrying content to aggregate by attention.",
     "hash": "d1a077cb"
   },
-  "88": {
+  "90": {
     "text": "Project the concatenated multi-head output back into the embedding space.",
     "hash": "887b9875"
   },
-  "90": {
+  "92": {
     "text": "Takes a padding mask, and takes it unconditionally rather than as an optional keyword — under <code>vmap</code> the caller always has one to give.",
     "hash": "675ebdf8"
   },
-  "92": {
+  "94": {
     "text": "Two dimensions, not three. The absence of a batch dimension here is the whole point of the lab.",
     "hash": "6d4140e3"
   },
-  "93": {
+  "95": {
     "text": "Query projection and multi-head reshape: <code>(T, D)</code> to <code>(T, nh, hd)</code> to <code>(nh, T, hd)</code>. Three dimensions where lab 04 needs four, because there is no batch axis to carry along.",
     "diagram": "transformer_attn",
     "highlight": [
@@ -161,7 +161,7 @@
     ],
     "hash": "d9e45544"
   },
-  "94": {
+  "96": {
     "text": "Keys get the same reshape, so each head matches its own queries against its own keys.",
     "diagram": "transformer_attn",
     "highlight": [
@@ -169,7 +169,7 @@
     ],
     "hash": "beb047ef"
   },
-  "95": {
+  "97": {
     "text": "Values likewise, each head retrieving content from its own slice of the embedding.",
     "diagram": "transformer_attn",
     "highlight": [
@@ -177,7 +177,7 @@
     ],
     "hash": "a6bd1c79"
   },
-  "97": {
+  "99": {
     "text": "Scaled dot-product scores, <code>(nh, T, T)</code> for this one sequence. Dividing by the square root of the head dimension keeps the scores out of softmax's saturated tails.",
     "diagram": "transformer_attn",
     "highlight": [
@@ -185,15 +185,15 @@
     ],
     "hash": "518be9ea"
   },
-  "99": {
+  "101": {
     "text": "Build an upper-triangular boolean mask that blocks attention to future positions.",
     "hash": "9a239573"
   },
-  "100": {
+  "102": {
     "text": "Future positions get a large negative score so softmax gives them almost nothing. Note <code>-1e9</code>, not <code>-inf</code>: finite, which matters two lines below.",
     "hash": "775f0941"
   },
-  "110": {
+  "112": {
     "text": "Block attention to PAD keys — and this fill uses <code>-1e9</code>, not <code>-inf</code>. In this configuration the line is inert: padding is appended rather than interleaved, and the causal mask already stops position <em>t</em> from looking past <em>t</em>, so every key a real query can reach is a real token. It only changes pad <em>query</em> rows, which <code>target_mask</code> multiplies by zero. Keep it anyway: left-padding, bidirectional attention or packed documents all make it load-bearing.",
     "important": true,
     "diagram": "transformer_attn",
@@ -203,7 +203,7 @@
     ],
     "hash": "e95fbc41"
   },
-  "115": {
+  "117": {
     "text": "Turn raw attention scores into a probability distribution so weights sum to one.",
     "hash": "ebebc376",
     "diagram": "transformer_attn",
@@ -211,7 +211,7 @@
       "softmax"
     ]
   },
-  "117": {
+  "119": {
     "text": "Weight the values, then undo the head split back to <code>(T, C)</code>. Two transposes and a reshape instead of lab 04's three, again because there is no batch axis in flight.",
     "diagram": "transformer_attn",
     "highlight": [
@@ -219,7 +219,7 @@
     ],
     "hash": "9d6a0a0c"
   },
-  "118": {
+  "120": {
     "text": "Project the combined multi-head output through the final linear layer.",
     "hash": "36f2db67",
     "diagram": "transformer_out",
@@ -227,23 +227,23 @@
       "wo"
     ]
   },
-  "121": {
+  "123": {
     "text": "A two-layer feed-forward network identical to lab 07. Attention mixes information between positions; the MLP then processes each position independently to add nonlinear capacity.",
     "hash": "3ad666a1"
   },
-  "124": {
+  "126": {
     "text": "Widen the representation to 4x the embedding dimension for richer nonlinear transformations.",
     "hash": "8e9f0642"
   },
-  "125": {
+  "127": {
     "text": "Compress the expanded hidden state back to the original embedding dimension.",
     "hash": "62c4768b"
   },
-  "127": {
+  "129": {
     "text": "Run the input through the MLP combining expansion, ReLU activation, and contraction.",
     "hash": "54e7034e"
   },
-  "128": {
+  "130": {
     "text": "MLX's equivalent of ReLU: <code>mx.maximum(x, 0)</code> zeroes out negative values, giving the network a simple nonlinearity between the two linear layers.",
     "hash": "3aa8c8cc",
     "diagram": "transformer_mlp",
@@ -253,31 +253,31 @@
       "fc2"
     ]
   },
-  "131": {
+  "133": {
     "text": "Transformer block with padding mask.",
     "hash": "4bcc8ea8"
   },
-  "134": {
+  "136": {
     "text": "Normalize the input before passing it to the attention sub-layer for stable training.",
     "hash": "e92b587d"
   },
-  "135": {
+  "137": {
     "text": "The self-attention sub-layer that mixes information across positions in the sequence.",
     "hash": "95b016d9"
   },
-  "136": {
+  "138": {
     "text": "Normalize before the feed-forward network, following the pre-norm transformer pattern.",
     "hash": "f58a7657"
   },
-  "137": {
+  "139": {
     "text": "The feed-forward network that processes each position independently after attention mixing.",
     "hash": "17fdd551"
   },
-  "139": {
+  "141": {
     "text": "The block hands the mask down to attention and nowhere else. The MLP on the following line works position by position, so padding cannot leak sideways through it.",
     "hash": "675ebdf8"
   },
-  "140": {
+  "142": {
     "text": "Attention with residual and padding mask.",
     "hash": "5c9f1363",
     "diagram": "transformer_out",
@@ -285,7 +285,7 @@
       "res1"
     ]
   },
-  "141": {
+  "143": {
     "text": "Apply the MLP with a residual connection that preserves the original signal.",
     "hash": "50e2183f",
     "diagram": "transformer_mlp",
@@ -293,7 +293,7 @@
       "fc2"
     ]
   },
-  "145": {
+  "147": {
     "text": "The full model. Same architecture as lab 07, and still written entirely without a batch dimension — the batch appears only in <code>__call__</code>, where <code>mx.vmap</code> puts it there.",
     "diagram": "transformer_forward",
     "highlight": [
@@ -304,36 +304,36 @@
     ],
     "hash": "e94c5dc2"
   },
-  "148": {
+  "150": {
     "text": "The embedding table needs a row for PAD, so <code>vocab_size_with_pad</code> here and plain <code>vocab_size</code> for the output head. Unlike lab 04 there is no <code>padding_idx</code> to pass — MLX's <code>nn.Embedding</code> has no such argument, so nothing masks that row's gradient. Harmless in this lab, because the gradient reaching it is exactly zero anyway, but it is a difference and not parity.",
     "hash": "fadfb807"
   },
-  "149": {
+  "151": {
     "text": "A learned vector for each position in the sequence. Added to token embeddings so the model knows where each token sits, since attention alone is position-agnostic.",
     "hash": "5338449e"
   },
-  "150": {
+  "152": {
     "text": "Apply RMSNorm to stabilize embeddings before they enter the transformer layers.",
     "hash": "5caa073e"
   },
-  "151": {
+  "153": {
     "text": "Register all transformer layers so MLX can discover and manage their parameters.",
     "hash": "7efcda6b"
   },
-  "152": {
+  "154": {
     "text": "Output head maps to real vocab (no PAD).",
     "hash": "1774314d"
   },
-  "154": {
+  "156": {
     "text": "The forward pass for a single sequence: <code>(T,)</code> tokens and a <code>(T,)</code> mask in, <code>(T, vocab_size)</code> logits out. Write the simple case, then lift it — the same move lab 06 makes with <code>forward_single</code>, and the opposite of lab 04's hand-written batch shapes.",
     "important": true,
     "hash": "3a86573a"
   },
-  "160": {
+  "162": {
     "text": "One number unpacked, not two. Everything downstream is per-sequence, which is why the module code stays as readable as lab 03's.",
     "hash": "9f4e6e30"
   },
-  "161": {
+  "163": {
     "text": "Embedding lookup for this one sequence's tokens.",
     "diagram": "transformer_embed",
     "highlight": [
@@ -341,7 +341,7 @@
     ],
     "hash": "8d137e9c"
   },
-  "162": {
+  "164": {
     "text": "Position embeddings for positions 0 to T-1. No broadcasting over a batch is needed, because at this level there is no batch.",
     "diagram": "transformer_embed",
     "highlight": [
@@ -349,7 +349,7 @@
     ],
     "hash": "63121461"
   },
-  "163": {
+  "165": {
     "text": "Combine token and position embeddings and normalize before entering the transformer.",
     "hash": "b88a95ea",
     "diagram": "transformer_embed",
@@ -357,11 +357,11 @@
       "norm_in"
     ]
   },
-  "164": {
+  "166": {
     "text": "Feed the normalized embeddings through each transformer block in sequence. Each layer refines the representations through attention and MLP sublayers.",
     "hash": "359aba32"
   },
-  "165": {
+  "167": {
     "text": "Each layer gets the mask. Worth reading with lab 04's version in mind: this is the same code, minus every batch index.",
     "diagram": "transformer_block",
     "highlight": {
@@ -375,7 +375,7 @@
     },
     "hash": "3b78410a"
   },
-  "166": {
+  "168": {
     "text": "Project the final hidden states to vocabulary-sized logits for next-token prediction.",
     "hash": "9ef9adcf",
     "diagram": "transformer_logits",
@@ -384,15 +384,15 @@
       "logits"
     ]
   },
-  "168": {
+  "196": {
     "text": "The batched entry point, and the only function in the model that knows batches exist.",
     "hash": "2de15fc3"
   },
-  "177": {
+  "205": {
     "text": "Inference feeds a single sequence with nothing padded, so synthesize an all-False mask rather than branching inside the model.",
     "hash": "d899abbe"
   },
-  "179": {
+  "207": {
     "text": "The line that does the batching. <code>in_axes=(0, 0)</code> maps over the first axis of both <code>idx</code> and <code>pad_mask</code>; the parameters come from <code>self</code> and are shared, which is what <code>jax.vmap</code> would spell as <code>in_axes=None</code> in lab 06. Set against lab 04's manual <code>(B, T, nh, hd)</code> reshapes, this is the whole three-way comparison in one line.",
     "important": true,
     "diagram": "compare_frameworks",
@@ -410,11 +410,11 @@
     },
     "hash": "daf556fa"
   },
-  "185": {
+  "213": {
     "text": "Batch creation, same strategy as labs 04 and 06.",
     "hash": "b170f5cb"
   },
-  "187": {
+  "215": {
     "text": "Grab the next batch of names from the corpus, wrapping around if we reach the end. This cycling ensures we keep training even if the dataset is smaller than the total steps.",
     "hash": "84e051fc",
     "diagram": "batch_prep",
@@ -423,19 +423,19 @@
       "tokenize"
     ]
   },
-  "189": {
+  "217": {
     "text": "Convert each name into a sequence of integer token IDs. Each character maps to its position in the sorted vocabulary, with BOS tokens bookending the name.",
     "hash": "0f605b9f"
   },
-  "190": {
+  "218": {
     "text": "Wrap each name with beginning-of-sequence tokens to mark the start and end boundaries.",
     "hash": "9fe8ad12"
   },
-  "191": {
+  "219": {
     "text": "Clip any name longer than the model's maximum context window. Names beyond this length would exceed the positional embedding table and cause errors.",
     "hash": "fd45d40a"
   },
-  "198": {
+  "226": {
     "text": "Padded to the longest sequence in <em>this</em> batch, the way lab 04 does it. That means the batch shape moves from step to step and <code>mx.compile</code> traces once per shape — the count printed after training is the bill. Lab 06 shows the fix: pad to a fixed width instead.",
     "important": true,
     "diagram": "batch_prep",
@@ -444,21 +444,21 @@
     ],
     "hash": "d5c54ef8"
   },
-  "199": {
+  "227": {
     "text": "Allocate four parallel arrays (input, target, pad mask, target mask) all padded to the same length so they can be stacked into rectangular tensors.",
     "hash": "4fa495a3"
   },
-  "201": {
+  "229": {
     "text": "The number of real tokens in this name, before any padding was added. This tells us where the actual content ends and the padding begins.",
     "hash": "8ada38af"
   },
-  "202": {
+  "230": {
     "text": "Input: real tokens + PAD.",
     "hash": "9de6a4a2",
     "diagram": "batch_prep",
     "highlight": []
   },
-  "206": {
+  "234": {
     "text": "Targets shifted by one, filled with 0 at padded positions — and 0 is a real character, 'a'. That is precisely why <code>target_mask</code> is not optional here: without it the model would be trained to predict 'a' at every padded position.",
     "important": true,
     "diagram": "batch_prep",
@@ -467,7 +467,7 @@
     ],
     "hash": "32a8915b"
   },
-  "207": {
+  "235": {
     "text": "The attention mask, True where padded. Redundant under right-padding plus causal masking, kept because this is the shape of the code you meet in real training scripts.",
     "diagram": "batch_prep",
     "highlight": [
@@ -475,59 +475,59 @@
     ],
     "hash": "0e6e57e9"
   },
-  "208": {
+  "236": {
     "text": "The mask that genuinely matters: 1.0 on real positions, 0.0 on padding, multiplied into the per-token loss. MLX has no <code>ignore_index</code> to lean on, so this multiplication is doing lab 04's job by hand.",
     "hash": "5f83ca8d"
   },
-  "214": {
+  "242": {
     "text": "Convert all to MLX arrays.",
     "hash": "fc4c1868"
   },
-  "215": {
+  "243": {
     "text": "Input token IDs as an MLX array, real tokens followed by PAD.",
     "hash": "b305741c"
   },
-  "216": {
+  "244": {
     "text": "Target tokens, shifted by one, with dummy zeros where padding starts.",
     "hash": "b011dad8"
   },
-  "217": {
+  "245": {
     "text": "The boolean padding mask handed down to attention.",
     "hash": "2d2a300b"
   },
-  "218": {
+  "246": {
     "text": "The float target mask that keeps padded positions out of the loss and the gradient.",
     "hash": "af8ccbb5"
   },
-  "225": {
+  "253": {
     "text": "Create the model with all its layers and projections. MLX initializes parameters immediately in unified memory shared between CPU and GPU.",
     "hash": "15299a22"
   },
-  "228": {
+  "256": {
     "text": "Re-initialize every weight to N(0, 0.08) to match all the other labs. <code>nn.Module.apply</code> maps the function over each parameter array in place; MLX has it, just as PyTorch does.",
     "hash": "3b035bca"
   },
-  "230": {
+  "258": {
     "text": "Re-zero the PAD embedding row that the initializer above just overwrote. There is no <code>padding_idx</code> in MLX to keep gradients off it, but none is needed: PAD positions never contribute to the loss, so the gradient arriving here is exactly zero.",
     "hash": "ac12be10"
   },
-  "231": {
+  "259": {
     "text": "Force the initialization to actually happen. MLX is lazy, and leaving a graph of random draws pending before the training loop starts would only make the first step harder to read.",
     "hash": "35f0345a"
   },
-  "232": {
+  "260": {
     "text": "Sum up all parameter sizes to report the total number of trainable weights.",
     "hash": "339de0cf"
   },
-  "235": {
+  "263": {
     "text": "Adam optimizer settings: a learning rate of 1e-2 with conservative momentum (beta1=0.85, beta2=0.99). These match the other labs for a fair comparison.",
     "hash": "dca02c26"
   },
-  "238": {
+  "266": {
     "text": "Loss function. Takes the model as first arg for MLX's autograd.",
     "hash": "24f01561"
   },
-  "239": {
+  "267": {
     "text": "Batched forward pass with padding mask.",
     "hash": "f95b7eef",
     "diagram": "batch_train",
@@ -536,24 +536,24 @@
       "logits"
     ]
   },
-  "240": {
+  "268": {
     "text": "Subtract the log-sum-exp to get log-probabilities. This is numerically more stable than taking softmax and then log, which can lose precision on small probabilities.",
     "hash": "e8b01f5c"
   },
-  "241": {
+  "269": {
     "text": "Unpack the batch, sequence length, and vocabulary dimensions from the log-prob tensor.",
     "hash": "6fd1445a"
   },
-  "243": {
+  "271": {
     "text": "Gather target log-probs via fancy indexing. Same pattern as lab 06.",
     "hash": "f3e3ebd2"
   },
-  "244": {
+  "272": {
     "text": "Multiply by the target mask so padded positions contribute nothing. This is the load-bearing mask in the lab: the dummy target is 0, a real character, so dropping this line would teach the model to predict 'a' after every name.",
     "important": true,
     "hash": "04bbd9c3"
   },
-  "245": {
+  "273": {
     "text": "Normalize by real token count, same as lab 06.",
     "hash": "3c4cc88b",
     "diagram": "batch_train",
@@ -561,35 +561,35 @@
       "loss"
     ]
   },
-  "249": {
+  "277": {
     "text": "Value-and-grad: compute loss and gradients simultaneously.",
     "hash": "fc7d4fe4"
   },
-  "250": {
+  "278": {
     "text": "MLX's built-in Adam optimizer manages momentum and adaptive learning rates for every parameter. It works with MLX's lazy evaluation, updating only when evaluated.",
     "hash": "d828d8b5"
   },
-  "255": {
+  "283": {
     "text": "The switch that makes the compiler claim testable: set it to False, rerun, and compare the printed ms/step.",
     "hash": "cc65e803"
   },
-  "256": {
+  "284": {
     "text": "Parameters and optimizer moments are read and written by the step without ever being passed as arguments, so <code>mx.compile</code> has to be told about them explicitly.",
     "hash": "dbf19cb8"
   },
-  "259": {
+  "287": {
     "text": "The step as plain Python. Compiling it afterwards means both versions run literally the same code.",
     "hash": "8b708134"
   },
-  "260": {
+  "288": {
     "text": "Run the forward pass and backpropagation together. MLX's <code>value_and_grad</code> returns both the scalar loss and the gradient tree in one efficient pass.",
     "hash": "e4b3bfdd"
   },
-  "261": {
+  "289": {
     "text": "Push the computed gradients into the optimizer to update all model weights.",
     "hash": "f28c1e54"
   },
-  "266": {
+  "294": {
     "text": "<code>mx.compile</code> is MLX's <code>jax.jit</code>: trace once, then hand fused kernels to the device. It specializes on input shapes too, which is why the varying batch width above costs something measurable.",
     "diagram": "compare_frameworks",
     "highlight": [
@@ -597,36 +597,35 @@
     ],
     "hash": "84525e10"
   },
-  "268": {
-    "text": "Count the distinct batch shapes, one trace each. This run sees nine — the same nine lab 06 reports as the compilations its static padding avoids.",
-    "important": true,
-    "hash": "9136485d"
+  "296": {
+    "text": "Record the <em>step</em> each batch shape first appeared on, not just the set of shapes. That turns \"nine distinct shapes\" into a testable statement about <em>when</em> the retracing cost is paid.",
+    "hash": "d4e27c46"
   },
-  "269": {
+  "297": {
     "text": "First-time shapes and repeats kept apart, so tracing cost is separated from running cost.",
     "hash": "88f7200c"
   },
-  "271": {
+  "299": {
     "text": "Iterate over training steps, processing a batch of 32 names per step.",
     "hash": "53f56939"
   },
-  "272": {
+  "300": {
     "text": "Assemble a padded batch of 32 names for this training step. Each sequence is tokenized, truncated, and padded so all sequences share the same length.",
     "hash": "e9483f2a"
   },
-  "274": {
+  "302": {
     "text": "Ask before recording. Both branches run the same step; only the bookkeeping differs.",
     "hash": "d8a11154"
   },
-  "277": {
+  "305": {
     "text": "Linear learning-rate decay, same schedule as every other lab. It is written as an <code>mx.array</code> because the value lives in optimizer state the compiled step captured, so updating it does not force a retrace.",
     "hash": "1f5c0a82"
   },
-  "279": {
+  "307": {
     "text": "Start the clock around the step alone, keeping Python-side batch construction out of the measurement.",
     "hash": "d5030329"
   },
-  "280": {
+  "308": {
     "text": "One compiled call: vmapped forward pass over 32 sequences, gradients, and the Adam update.",
     "diagram": "batch_train",
     "highlight": [
@@ -637,77 +636,95 @@
     ],
     "hash": "3591e91f"
   },
-  "284": {
+  "312": {
     "text": "MLX is lazy, so the update above is only a graph. <code>loss_val.item()</code> would force the loss but not the parameters or the optimizer moments — without this line the pending graph would grow for the entire run. It bounds the graph; it is not how the number gets read.",
     "important": true,
     "hash": "c8e3dc6b"
   },
-  "285": {
+  "313": {
     "text": "Elapsed milliseconds. On a new batch shape this includes the trace; otherwise it is the compiled kernels alone.",
     "hash": "eebade14"
   },
-  "288": {
+  "316": {
     "text": "Print the loss periodically so we can monitor whether the model is learning.",
     "hash": "cf37956f"
   },
-  "291": {
+  "319": {
     "text": "Nine distinct batch shapes, because the padding width follows the longest name in each batch. Lab 06 prints exactly the same nine as the traces it avoids by padding to <code>block_size</code>.",
     "important": true,
     "hash": "0d7be719"
   },
-  "292": {
+  "320": {
     "text": "Steps that paid for a trace, averaged.",
     "hash": "9f98b32f"
   },
-  "293": {
+  "321": {
     "text": "Steps that reused one. The gap is much narrower than lab 05's, because MLX's compiler is far cheaper to invoke than XLA's — shape churn is a nuisance here rather than a catastrophe.",
     "hash": "024da885"
   },
-  "298": {
+  "325": {
+    "text": "The list that settles it. Six of the nine shapes appear inside the first sixteen steps, so a \"first-time shape is 30 ms slower\" story is mostly \"early step, nothing warm yet\" &mdash; the same gap shows up with <code>use_compile = False</code>, where nothing is traced at all.",
+    "important": true,
+    "hash": "dc959d05"
+  },
+  "337": {
+    "text": "Same parameters, same batch, two code paths: <code>mx.vmap</code> over a per-sequence function versus a hand-written <code>(B, T, ...)</code> forward. Printing the max absolute logit difference is how the lab earns the right to call them equivalent instead of asserting it.",
+    "important": true,
+    "hash": "2bb5782a"
+  },
+  "358": {
+    "text": "Time the hand-written batched path on the same input, so the comparison is <code>vmap</code>-vs-manual and not <code>vmap</code>-vs-a-different-computation.",
+    "hash": "9f4bbfaf"
+  },
+  "360": {
+    "text": "Zero difference, to the last bit: <code>vmap</code> is a transform of the same arithmetic, not an approximation of it. The timing lines below then answer the separate question of whether that transform costs anything.",
+    "hash": "27bc4a94"
+  },
+  "375": {
     "text": "Temperature controls how peaked or flat the sampling distribution is. At 0.5, the model becomes more confident, favoring high-probability characters over rare ones.",
     "hash": "7eca5b76"
   },
-  "300": {
+  "377": {
     "text": "Generate 20 brand-new names by sampling from the model's learned distribution.",
     "hash": "64d836c5"
   },
-  "301": {
+  "378": {
     "text": "Begin each generated name with the beginning-of-sequence token as the initial prompt.",
     "hash": "5c52ddc4"
   },
-  "302": {
+  "379": {
     "text": "Autoregressive generation loop: predict one character at a time, append it to the sequence, and feed the extended sequence back into the model for the next prediction.",
     "hash": "ab05dc73"
   },
-  "303": {
+  "380": {
     "text": "Feed as (1, T) batch, the batched model always expects a batch dimension.",
     "hash": "637b4070"
   },
-  "304": {
+  "381": {
     "text": "Run the full batched model on the current token sequence to predict the next character.",
     "hash": "17df3885"
   },
-  "305": {
+  "382": {
     "text": "Grab the logits for the very last position (the model's prediction for the next token) and divide by temperature to sharpen or soften the probability distribution.",
     "hash": "e1a1328f"
   },
-  "306": {
+  "383": {
     "text": "Randomly pick one token from the probability distribution. This stochastic sampling produces diverse outputs instead of always choosing the most likely character.",
     "hash": "eae262da"
   },
-  "307": {
+  "384": {
     "text": "When the model predicts BOS, it signals the name is complete, so we stop generating.",
     "hash": "41a35c11"
   },
-  "309": {
+  "386": {
     "text": "Append the newly sampled token to the growing sequence for the next forward pass.",
     "hash": "a1ca669a"
   },
-  "310": {
+  "387": {
     "text": "Map each integer token ID back to its corresponding character and join them into a readable name string, skipping the initial BOS token.",
     "hash": "b4368128"
   },
-  "311": {
+  "388": {
     "text": "Display the generated name so we can visually assess the model's output quality and check whether it learned plausible name patterns.",
     "hash": "f9d6f741"
   }

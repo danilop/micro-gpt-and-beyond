@@ -80,7 +80,12 @@ print(f"vocab size: {vocab_size}")
 val_size = 1000
 val_docs = docs[:val_size]
 train_docs = docs[val_size:]
-print(f"train: {len(train_docs)}, val: {len(val_docs)}")
+
+# Fitness is evaluated on a fixed PREFIX of the validation split, not all of it.
+# 200 names is enough to rank models while keeping the search affordable: this
+# lab evaluates ~150 models, so every extra sample costs 150 forward passes.
+VAL_SAMPLES = 200
+print(f"train: {len(train_docs)}, val: {len(val_docs)} (fitness uses the first {VAL_SAMPLES})")
 
 # ---------------------------------------------------------------------------
 # Flexible model (hyperparameters are configurable)
@@ -200,14 +205,20 @@ def build_model(cfg):
     return MicroGPT(cfg["n_embd"], cfg["n_head"], cfg["n_layer"])
 
 
-def train_model(model, cfg, train_data, num_steps, verbose=False):
-    """Train a model for a fixed number of steps, return avg loss."""
+def train_model(model, cfg, train_data, num_steps, verbose=False, start_step=0):
+    """Train a model for a fixed number of steps, return avg loss.
+
+    `start_step` is where in `train_data` this call picks up. A model that has
+    already seen 400 names must continue at name 400, not restart at name 0 --
+    otherwise every generation re-reads the same first STEPS_PER_GEN names and
+    "more steps" buys memorisation of a tiny slice rather than more data.
+    """
     optimizer = torch.optim.Adam(
         model.parameters(), lr=cfg["lr"], betas=(cfg["beta1"], 0.99), eps=1e-8
     )
     total_loss = 0
     for step in range(num_steps):
-        doc = train_data[step % len(train_data)]
+        doc = train_data[(start_step + step) % len(train_data)]
         tokens = [BOS] + [char_to_id[ch] for ch in doc] + [BOS]
         n = min(block_size, len(tokens) - 1)
         input_ids = torch.tensor([tokens[:n]], device=device)
@@ -224,7 +235,7 @@ def train_model(model, cfg, train_data, num_steps, verbose=False):
 
 
 @torch.no_grad()
-def evaluate_model(model, val_data, max_samples=200):
+def evaluate_model(model, val_data, max_samples=VAL_SAMPLES):
     """Evaluate validation loss (fitness = negative val loss)."""
     model.eval()
     total_loss = 0
@@ -330,7 +341,8 @@ best_ever = {"val_loss": float("inf"), "cfg": None, "model": None, "gen": 0, "st
 for gen in range(NUM_GENERATIONS):
     # Train each member for STEPS_PER_GEN
     for member in population:
-        train_model(member["model"], member["cfg"], train_docs, STEPS_PER_GEN)
+        # start_step: this member resumes at the name after the last one it saw.
+        train_model(member["model"], member["cfg"], train_docs, STEPS_PER_GEN, start_step=member["steps"])
         member["steps"] += STEPS_PER_GEN
         evolution_steps += STEPS_PER_GEN
         member["val_loss"] = evaluate_model(member["model"], val_docs)
@@ -433,7 +445,7 @@ print("=" * 70)
 # (children spawned in the last generation haven't been trained yet)
 for member in population:
     if member["val_loss"] == float("inf"):
-        train_model(member["model"], member["cfg"], train_docs, STEPS_PER_GEN)
+        train_model(member["model"], member["cfg"], train_docs, STEPS_PER_GEN, start_step=member["steps"])
         member["steps"] += STEPS_PER_GEN
         evolution_steps += STEPS_PER_GEN
         member["val_loss"] = evaluate_model(member["model"], val_docs)
@@ -502,8 +514,8 @@ def budget_curve(cfg, total_steps=MATCHED_STEPS, check_every=CHECK_EVERY, seed=7
     torch.manual_seed(seed)
     m = build_model(cfg)
     curve = []
-    for _ in range(total_steps // check_every):
-        train_model(m, cfg, train_docs, check_every)
+    for chunk in range(total_steps // check_every):
+        train_model(m, cfg, train_docs, check_every, start_step=chunk * check_every)
         curve.append(evaluate_model(m, val_docs))
     return curve
 

@@ -67,19 +67,21 @@ That 4.3x does not match the 11.0x the closed form gives for T=16, and the reaso
 
 **End-to-end wall clock, by contrast, measures Python.** One layer, 16 dimensions, six-token names: each forward pass is a few dozen microseconds of tensor arithmetic wrapped in a few hundred microseconds of interpreter and dispatch overhead. Both paths make the same *number* of forward calls, so both pay that overhead the same number of times, and the arithmetic the cache eliminates never rises above the noise. The printed ratio moves between runs and has been observed below 1.00x on a loaded machine. `main.py` prints it labelled as a ratio rather than a speedup, and says outright that it is a statement about the benchmark.
 
-**So the lab fixes the benchmark instead of explaining away the number.** It times one decode step of the attention module alone, on synthetic activations, at context lengths a serving system would actually reach — best-of-N, since anything else sharing the CPU can only make a run slower:
+**So the lab fixes the benchmark instead of explaining away the number.** It times one decode step of the attention module alone, on synthetic activations, at context lengths a serving system would actually reach. Getting a number worth printing takes some care, and `main.py` spells the recipe out: warm up once, then inside a timing run take the *minimum* over repetitions (anything else sharing the CPU can only make a call slower, so the minimum measures the code and the mean measures the machine), and across five such runs take the *median*, so one throttled run cannot set the reported figure. The repetition count is not fixed — each run repeats until a 0.1s budget is spent, floor 5 and ceiling 500 — because one count cannot serve both a cached call of a few microseconds and a naive call at T=2048 that takes a large fraction of a second. The rep counts are printed alongside the times, so a row measured too few times is visible rather than implied:
 
 ```
-       T       naive      cached   measured   theory
-      64     253.7us     149.8us       1.7x      64x
-     256     799.1us     198.4us       4.0x     256x
-    1024   28483.5us     294.3us      96.8x    1024x
-    2048  149999.2us     405.7us     369.7x    2048x
+       T       naive      cached   measured   theory     reps n/c
+      64     167.9us      96.9us       1.7x      64x   2301/2500
+     256     631.5us     107.6us       5.9x     256x    666/2500
+    1024   19729.8us     141.6us     139.4x    1024x     26/2258
+    2048   95327.6us     224.0us     425.5x    2048x     25/1664
 ```
 
-(Absolute microseconds depend on the machine; the shape of the last two columns does not.)
+(One run on a 2-core Linux box. Absolute microseconds depend on the machine; the shape of the last two columns does not.)
 
-Now the curve goes the right way and keeps going, because naive attention is T x T against the cache's 1 x T. It stays well short of the theoretical T because the projections and the fixed per-call overhead do not shrink at all — and at T=64 that overhead still swamps everything, which is exactly what the 20-name wall clock was measuring.
+Both timed columns measure work that grows with T, so both must grow with T — and `main.py` checks that rather than asserting it, printing a warning if the machine was too busy for the trend to survive. An earlier version of this benchmark used too few repetitions and reported a *cached* time that fell as T rose, which is impossible; the fix was to make the sample count adequate and visible, not to reword the paragraph underneath it.
+
+The speedup grows with T because naive attention is T x T against the cache's 1 x T. It stays well short of the theoretical T because the projections and the fixed per-call overhead do not shrink at all — and at T=64 that overhead still swamps everything, which is exactly what the 20-name wall clock was measuring.
 
 ## The core change
 

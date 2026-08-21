@@ -23,17 +23,17 @@
     "text": "Keep the data order fixed so the conceptual jump to functional programming does not get muddied by run-to-run noise.",
     "hash": "f0726c6e"
   },
-  "41": {
+  "40": {
     "text": "Dataset path, shared across labs.",
+    "hash": "5ac9686d"
+  },
+  "41": {
+    "text": "Download the names dataset from the internet if it is not already present locally.",
     "hash": "9667c968"
   },
-  "42": {
-    "text": "Download the names dataset from the internet if it is not already present locally.",
-    "hash": "84cdb92b"
-  },
-  "45": {
+  "44": {
     "text": "URL pointing to the raw names dataset hosted in Karpathy's repository.",
-    "hash": "25ec775b"
+    "hash": "5e579f27"
   },
   "47": {
     "text": "Read the text file and split it into individual name strings, one per line.",

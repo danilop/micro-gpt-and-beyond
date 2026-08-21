@@ -14,7 +14,9 @@ labs 04, 06 and 08 a genuine three-way comparison of the same batching problem:
 PyTorch's manual (B, T, ...) reshape, jax.vmap, and mx.vmap.
 
 The step is also wrapped in mx.compile (MLX's jax.jit) and the loop prints
-ms/step, so the framework claims here are measured rather than asserted.
+ms/step, so the framework claims here are measured rather than asserted. In the
+same spirit, after training the lab times mx.vmap against a hand-written
+(B, T, ...) forward pass on the same weights, and checks that the two agree.
 
 Reference: "Attention Is All You Need" (Vaswani et al., 2017),
 https://arxiv.org/abs/1706.03762
@@ -165,6 +167,32 @@ class MicroGPT(nn.Module):
             x = layer(x, pad_mask)
         return self.lm_head(x)
 
+    def forward_batched(self, idx, pad_mask):
+        """The same forward pass with the batch dimension written out by hand.
+
+        Nothing trains through this: it exists so the lab can measure mx.vmap
+        against the (B, T, ...) style 04_pytorch_batched writes by hand, on the
+        same parameters and the same batch. Only attention has to be rewritten —
+        RMSNorm and the MLP are shape-agnostic, so those modules are reused
+        as they are, and any difference in output would be a bug in one of them.
+        """
+        B, T = idx.shape
+        x = self.norm_in(self.wte(idx) + self.wpe(mx.arange(T)))
+        causal = mx.triu(mx.ones((T, T)), k=1).astype(mx.bool_)
+        for layer in self.layers:
+            h, attn = layer.norm1(x), layer.attn
+            q = attn.wq(h).reshape(B, T, n_head, head_dim).transpose(0, 2, 1, 3)
+            k = attn.wk(h).reshape(B, T, n_head, head_dim).transpose(0, 2, 1, 3)
+            v = attn.wv(h).reshape(B, T, n_head, head_dim).transpose(0, 2, 1, 3)
+            att = (q @ k.transpose(0, 1, 3, 2)) / math.sqrt(head_dim)
+            att = mx.where(causal, -1e9, att)
+            att = mx.where(pad_mask[:, None, None, :], -1e9, att)
+            att = mx.softmax(att, axis=-1)
+            out = (att @ v).transpose(0, 2, 1, 3).reshape(B, T, n_embd)
+            x = x + attn.wo(out)
+            x = x + layer.mlp(layer.norm2(x))
+        return self.lm_head(x)
+
     def __call__(self, idx, pad_mask=None):
         """
         Forward pass for a BATCH: idx (B, T) -> logits (B, T, vocab_size).
@@ -265,14 +293,14 @@ def train_step(input_ids, targets, pad_mask, target_mask):
 if use_compile:
     train_step = mx.compile(train_step, inputs=state, outputs=state)
 
-seen_shapes = set()  # one trace per distinct batch shape
+seen_shapes = {}  # batch shape -> step it first appeared on; one trace per shape
 first_shape_ms, cached_shape_ms = [], []
 
 for step in range(num_steps):
     input_ids, targets, pad_mask, target_mask = make_batch(docs, step, batch_size)
 
     is_new_shape = input_ids.shape not in seen_shapes
-    seen_shapes.add(input_ids.shape)
+    seen_shapes.setdefault(input_ids.shape, step)
 
     optimizer.learning_rate = mx.array(learning_rate * (1 - step / num_steps))
 
@@ -291,6 +319,55 @@ for step in range(num_steps):
 print(f"\ndistinct batch shapes seen: {len(seen_shapes)} (compile = {use_compile})")
 print(f"  first-time-shape steps: {sum(first_shape_ms) / len(first_shape_ms):8.2f} ms mean")
 print(f"  repeated-shape steps:   {sum(cached_shape_ms) / len(cached_shape_ms):8.2f} ms mean")
+# Do not read that gap as the price of tracing. Run with use_compile = False and it
+# is still there, because new shapes turn up mostly in the first few dozen steps —
+# so "first-time shape" is largely a synonym for "early step", when nothing is warm.
+print(f"  each shape first seen at step: {sorted(seen_shapes.values())}")
+
+# ---------------------------------------------------------------------------
+# mx.vmap against a hand-written batch dimension — measured, not asserted
+# ---------------------------------------------------------------------------
+# The model above is written for one sequence because that reads better. The fair
+# question is what the transform costs, and `forward_batched` is the same
+# computation with the batch axis written out by hand, so the two can be compared
+# on the same weights: first for agreement, then for speed. Forward pass only —
+# that is where the transform lives, and it keeps the comparison free of the
+# optimizer state a training step would mutate.
+bench_ids, _, bench_pmask, _ = make_batch(docs, 0, batch_size)
+diff = mx.max(mx.abs(model(bench_ids, bench_pmask) - model.forward_batched(bench_ids, bench_pmask)))
+mx.eval(diff)
+
+
+def best_forward_ms(forward, reps=20):
+    """Fastest of `reps` forward passes over the benchmark batch, in ms.
+
+    The minimum, not the mean: anything else sharing the machine can only make a
+    pass slower. mx.eval inside the loop is essential — MLX is lazy, so without
+    it this would time graph construction and nothing else.
+    """
+    mx.eval(forward(bench_ids, bench_pmask))  # warm up
+    best = float("inf")
+    for _ in range(reps):
+        t0 = time.perf_counter()
+        mx.eval(forward(bench_ids, bench_pmask))
+        best = min(best, (time.perf_counter() - t0) * 1000)
+    return best
+
+
+ms_vmap = best_forward_ms(model.__call__)
+ms_manual = best_forward_ms(model.forward_batched)
+print(f"\n--- mx.vmap vs a hand-written (B, T, ...) forward, batch {bench_ids.shape} ---")
+print(f"  max |logit difference|:     {diff.item():.2e}  (same parameters, same batch)")
+print(f"  mx.vmap:                    {ms_vmap:7.2f} ms  (best of 20)")
+print(f"  hand-written batch axis:     {ms_manual:6.2f} ms  (best of 20)")
+gap = abs(ms_vmap - ms_manual) / min(ms_vmap, ms_manual)
+if gap < 0.1:
+    print(f"  Same speed to within {gap * 100:.1f}% on this machine, so writing the model for one")
+    print("  sequence and lifting it is a readability win rather than a trade.")
+else:
+    slower = "mx.vmap" if ms_vmap > ms_manual else "the hand-written version"
+    print(f"  {slower} is {gap * 100:.1f}% slower on this machine — a real trade at this size,")
+    print("  not the wash it usually is. Worth re-measuring on the hardware you deploy on.")
 
 # ---------------------------------------------------------------------------
 # Inference

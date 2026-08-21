@@ -453,7 +453,7 @@
     "hash": "434eb04d"
   },
   "192": {
-    "text": "Ratio of used to allocated. For short sequences in a large buffer, this is often just 10-20%.",
+    "text": "Ratio of used to allocated. The run reports <code>31%</code> for this cache: a 5-token name in a buffer reserved for the full 16-token context window.",
     "hash": "dd75e4cc"
   },
   "195": {
@@ -1230,7 +1230,7 @@
     "hash": "39a4c2fa"
   },
   "418": {
-    "text": "Verify that paged and contiguous caches produce the exact same output. The allocation strategy must be invisible to the model's computation.",
+    "text": "The payoff in one line: same name, a fraction of the reservation. Where the KV lives changed; what the model computed did not.",
     "hash": "dd0c7e75"
   },
   "427": {
@@ -1291,7 +1291,7 @@
     "hash": "438ab5f7"
   },
   "450": {
-    "text": "Used slots = tokens x layers, since every layer caches a K and a V for every position.",
+    "text": "Used slots = tokens x layers. One slot per (position, layer) holds that position's K and V together, so there is no factor of two here and the figure is directly comparable with <code>allocated</code> above.",
     "hash": "109c7b60"
   },
   "454": {
@@ -1529,7 +1529,7 @@
     "hash": "e8f7a080"
   },
   "542": {
-    "text": "The block table now points somewhere new. Note the id: it came off the free list, so it is the neighbouring block rather than anything contiguous with req_0's old mapping.",
+    "text": "The block table now points at a different physical block, and that difference is the proof the clone happened. The new id came off the free list, so it sits wherever the pool had a spare block — next door here only because this pool is fresh and blocks are popped from the end.",
     "hash": "8caa6fc1"
   },
   "543": {
