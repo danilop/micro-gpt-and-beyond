@@ -495,236 +495,60 @@
     "text": "Softmax converts logits to probabilities. Returns (T, V), one distribution per position.",
     "hash": "5ec5b6a6"
   },
-  "190": {
-    "text": "Standard autoregressive generation: one token, one forward pass, repeat. This is the baseline we want to beat.",
-    "hash": "a79a3548",
+  "191": {
+    "text": "The invariant that keeps the rest of this file simple. The window must hold the sequence plus everything drafted ahead of it, so generation stops one token short of <code>block_size</code>. Every sequence built here then fits, and <code>get_probs()</code> returns exactly one row per token it was handed.",
+    "hash": "41c7af0f",
     "important": true
   },
-  "192": {
+  "197": {
+    "text": "Standard autoregressive generation: one token, one forward pass, repeat. This is the baseline we want to beat.",
+    "hash": "062f170b",
+    "important": true
+  },
+  "199": {
     "text": "Start with just the BOS token.",
     "hash": "5c52ddc4"
   },
-  "193": {
+  "200": {
     "text": "No gradients needed for generation.",
     "hash": "d4f61231"
   },
-  "194": {
+  "201": {
     "text": "Generate up to <code>max_len</code> tokens.",
     "hash": "75241adf"
   },
-  "195": {
+  "202": {
     "text": "Run the model on the full token sequence and return only the last position's probability distribution for next-token prediction.",
     "hash": "4dedce91"
   },
-  "196": {
+  "203": {
     "text": "Sample one token from the distribution.",
     "hash": "5b83becd"
   },
-  "197": {
+  "204": {
     "text": "The BOS token doubles as an end-of-sequence marker. When sampled, it signals that the name is complete.",
     "hash": "41a35c11"
   },
-  "198": {
+  "205": {
     "text": "End-of-sequence detected, so stop generating further tokens for this name.",
     "hash": "14ebe56a"
   },
-  "199": {
+  "206": {
     "text": "Append the new token and continue.",
     "hash": "a1ca669a"
   },
-  "200": {
+  "207": {
     "text": "Hand back the generated token sequence with the leading BOS removed, since it was just a start signal, not part of the name.",
     "hash": "464c2a60"
   },
-  "206": {
-    "text": "The heart of the lab: speculative decoding with draft model <code>draft</code> and target model <code>target</code>. <code>K=4</code> means the draft model guesses 4 tokens ahead.",
-    "hash": "dce5929f",
-    "diagram": "spec_round"
-  },
-  "231": {
-    "text": "Start the sequence with BOS.",
-    "hash": "5c52ddc4"
-  },
-  "240": {
-    "text": "Five counters, and the interesting part is that <code>drafted</code> and <code>evaluated</code> are different numbers. Every proposal increments <code>drafted</code>; only proposals the target actually ruled on increment <code>evaluated</code>, because after the first rejection the rest of the window is discarded unexamined. Three different acceptance figures come out of these five counters.",
-    "hash": "565e9195"
-  },
-  "242": {
-    "text": "Disable PyTorch's gradient tracking during inference since we don't need backpropagation, saving memory and compute.",
-    "hash": "d4f61231"
-  },
-  "243": {
-    "text": "Keep generating until we hit <code>max_len</code>.",
-    "hash": "7c604905"
-  },
-  "245": {
-    "text": "Copy current tokens, the draft model will extend this speculatively.",
-    "hash": "4837adfa"
-  },
-  "246": {
-    "text": "Track each drafted token and its probability under the draft model.",
-    "hash": "6c1ee093"
-  },
-  "247": {
-    "text": "Speculatively generate K tokens using the cheap draft model. These guesses will be verified against the target in one batch.",
-    "hash": "f4a4cd2e",
-    "diagram": "spec_draft",
-    "highlight": [
-      "draft",
-      "propose",
-      "target"
-    ]
-  },
-  "248": {
-    "text": "Stop if we've hit the length limit.",
-    "hash": "1f53d53a"
-  },
-  "249": {
-    "text": "Break out of the draft loop.",
-    "hash": "14ebe56a"
-  },
-  "250": {
-    "text": "Get draft model's next-token probabilities. This is cheap because the draft model is small.",
-    "hash": "6e0b49ad",
-    "diagram": "spec_draft",
-    "highlight": [
-      "draft",
-      "propose"
-    ]
-  },
-  "251": {
-    "text": "Keep a running count of how many forward passes the draft model has executed, for the efficiency comparison later.",
-    "hash": "f561adb3"
-  },
-  "252": {
-    "text": "Sample a token from the draft distribution.",
-    "hash": "3723de77"
-  },
-  "253": {
-    "text": "Record the token and its draft probability q(x), we'll need q(x) for the acceptance ratio.",
-    "hash": "ca6df082"
-  },
-  "254": {
-    "text": "Append the newly sampled token to the draft sequence so the next draft step can condition on it.",
-    "hash": "9cba9599"
-  },
-  "256": {
-    "text": "Edge case: no tokens were drafted.",
-    "hash": "0261cebb"
-  },
-  "257": {
-    "text": "Edge case: if no tokens were drafted (e.g., length limit hit immediately), skip the verification step entirely.",
-    "hash": "14ebe56a"
-  },
-  "259": {
-    "text": "Record how many tokens the draft model proposed.",
-    "hash": "00687dd2"
-  },
-  "263": {
-    "text": "The key efficiency win: the target model scores every drafted position in a single forward pass, where autoregressive decoding would need K separate ones. Since inference is memory-bound, with reading weights dominating, one pass costs almost the same as K.",
-    "hash": "d0b3fd8d",
-    "diagram": "spec_draft",
-    "highlight": [
-      "target"
-    ]
-  },
-  "264": {
-    "text": "Count target forward passes, should be much fewer than autoregressive.",
-    "hash": "83bb73cd"
-  },
-  "267": {
-    "text": "Track how many consecutive drafts get accepted in this round.",
-    "hash": "f092ada8"
-  },
-  "271": {
-    "text": "Snapshot the prefix length <em>before</em> the accept loop. <code>tokens</code> grows every time we accept, so reading <code>len(tokens)</code> inside the loop would drift by <code>+i</code> and verify each drafted token against the wrong row of the target's output.",
-    "hash": "064357e5",
+  "213": {
+    "text": "The correction step, lifted out and given the name it has in the paper. On rejection the drafted token cannot simply be replaced by a fresh draw from the target, and this function is why.",
+    "hash": "83118513",
     "important": true
   },
-  "277": {
-    "text": "Verify each drafted token against the target model's distribution.",
-    "hash": "1385998e",
-    "diagram": "spec_verify",
-    "highlight": [
-      "check",
-      "accept",
-      "reject"
-    ]
-  },
-  "281": {
-    "text": "Map draft position <code>i</code> to a row of the target's output. The target scored the whole drafted sequence in one pass, so the row we want is at absolute position <code>base_len - 1 + i</code> &mdash; minus whatever fell off the front of the context window, which is what <code>row_offset</code> carries.",
-    "hash": "7df2002a"
-  },
-  "282": {
-    "text": "Make sure the draft position maps to a valid index in the target's output tensor.",
-    "hash": "f492de16"
-  },
-  "283": {
-    "text": "The position is beyond what the target model computed, so exit the verification loop.",
-    "hash": "14ebe56a"
-  },
-  "284": {
-    "text": "Get the target model's probability p(x) for the exact token the draft proposed.",
-    "hash": "5ca7363f"
-  },
-  "287": {
-    "text": "Zero draft probability means the draft model would never have picked this token, reject.",
-    "hash": "bcfac76e"
-  },
-  "288": {
-    "text": "Can't compute the ratio, stop.",
-    "hash": "14ebe56a"
-  },
-  "291": {
-    "text": "The denominator of alpha. Counting here rather than at the top of the loop is what keeps alpha the literature's per-token acceptance rate: tokens that were never examined never dilute it.",
-    "hash": "e5e04fd7"
-  },
-  "292": {
-    "text": "The acceptance probability: min(1, p(x)/q(x)). If the target likes this token at least as much as the draft, always accept. If the target likes it less, accept proportionally. This ratio is what guarantees the output distribution matches the target exactly.",
-    "hash": "60a6d497",
-    "diagram": "spec_verify",
-    "highlight": [
-      "check"
-    ]
-  },
-  "294": {
-    "text": "Coin flip: accept with the computed probability.",
-    "hash": "cb62d5aa",
-    "diagram": "spec_verify",
-    "highlight": [
-      "accept"
-    ]
-  },
-  "296": {
-    "text": "Token accepted, add to the final sequence.",
-    "hash": "16ea5fe1"
-  },
-  "297": {
-    "text": "Bump the accepted token counter, so accepted and drafted can be compared to compute the acceptance rate.",
-    "hash": "e613048a"
-  },
-  "298": {
-    "text": "Special case: accepted token is BOS (end of sequence).",
-    "hash": "f0c84d0e"
-  },
-  "299": {
-    "text": "Remove BOS from the output and stop generating.",
-    "hash": "08b8f3af"
-  },
-  "304": {
-    "text": "The BOS was verified and accepted, so it counts in <code>accepted</code> even though it is popped off and never emitted. <code>accepted</code> measures verification outcomes, not output length, which is why the earlier \"don't count BOS\" behaviour was wrong for alpha.",
-    "hash": "1bda14d8"
-  },
-  "305": {
-    "text": "Bundle the final token sequence with the draft/target statistics so the caller can analyze both quality and efficiency.",
-    "hash": "372ace73"
-  },
-  "308": {
-    "text": "Retrieve the target model's full probability distribution at the rejected position, needed for the correction sampling step.",
-    "hash": "a7495bf8"
-  },
-  "309": {
-    "text": "The residual distribution, and the most subtle line in the lab. Clamping <code>p - q</code> at zero keeps only the mass the target wants that the draft under-supplied; resampling from that (normalized) exactly compensates for the tokens the accept test rejected. This clamp plus the <code>min(1, p/q)</code> test above is the whole losslessness proof of Leviathan et al.",
+  "221": {
+    "text": "The residual distribution, and the most subtle line in the lab. Clamping <code>p - q</code> at zero keeps only the mass the target wants that the draft under-supplied; resampling from that (normalized) exactly compensates for the tokens the accept test rejected. This clamp plus the <code>min(1, p/q)</code> test is the whole losslessness proof of Leviathan et al.",
+    "hash": "e8a031c1",
     "important": true,
     "diagram": "spec_verify",
     "highlight": {
@@ -734,46 +558,208 @@
       "links": [
         1
       ]
-    },
-    "hash": "befbaf29"
+    }
+  },
+  "222": {
+    "text": "If the clamp zeroed everything, there is no residual mass to sample from and the target's own distribution is the right fallback.",
+    "hash": "dfc7c2d6"
+  },
+  "223": {
+    "text": "Normalize and sample in one expression. The conditional handles the degenerate case where the draft already covered everything the target wanted.",
+    "hash": "3b256b31"
+  },
+  "226": {
+    "text": "The heart of the lab: speculative decoding with draft model <code>draft</code> and target model <code>target</code>. <code>K=4</code> means the draft model guesses 4 tokens ahead.",
+    "hash": "410825d4",
+    "diagram": "spec_round"
+  },
+  "251": {
+    "text": "Start the sequence with BOS.",
+    "hash": "5c52ddc4"
+  },
+  "260": {
+    "text": "Five counters, and the interesting part is that <code>drafted</code> and <code>evaluated</code> are different numbers. Every proposal increments <code>drafted</code>; only proposals the target actually ruled on increment <code>evaluated</code>, because after the first rejection the rest of the window is discarded unexamined. Three different acceptance figures come out of these five counters.",
+    "hash": "565e9195"
+  },
+  "262": {
+    "text": "Disable PyTorch's gradient tracking during inference since we don't need backpropagation, saving memory and compute.",
+    "hash": "d4f61231"
+  },
+  "263": {
+    "text": "Keep generating until we hit <code>max_len</code>.",
+    "hash": "7c604905"
+  },
+  "265": {
+    "text": "Copy current tokens, the draft model will extend this speculatively.",
+    "hash": "4837adfa"
+  },
+  "266": {
+    "text": "Track each drafted token and its probability under the draft model.",
+    "hash": "6c1ee093"
+  },
+  "267": {
+    "text": "Speculatively generate K tokens using the cheap draft model. These guesses will be verified against the target in one batch.",
+    "hash": "f4a4cd2e",
+    "diagram": "spec_draft",
+    "highlight": [
+      "draft",
+      "propose",
+      "target"
+    ]
+  },
+  "270": {
+    "text": "Stop drafting at the length limit and at the context boundary. The second condition is what a real implementation needs too: you cannot propose past the end of the window, and honouring that here means every row of the target's output lines up with a token below.",
+    "hash": "b9fe172a"
+  },
+  "271": {
+    "text": "Edge case: if no tokens were drafted (e.g., length limit hit immediately), skip the verification step entirely.",
+    "hash": "14ebe56a"
+  },
+  "272": {
+    "text": "Get draft model's next-token probabilities. This is cheap because the draft model is small.",
+    "hash": "6e0b49ad",
+    "diagram": "spec_draft",
+    "highlight": [
+      "draft",
+      "propose"
+    ]
+  },
+  "273": {
+    "text": "Keep a running count of how many forward passes the draft model has executed, for the efficiency comparison later.",
+    "hash": "f561adb3"
+  },
+  "274": {
+    "text": "Sample a token from the draft distribution.",
+    "hash": "3723de77"
+  },
+  "275": {
+    "text": "Record the token and its draft probability q(x), we'll need q(x) for the acceptance ratio.",
+    "hash": "ca6df082"
+  },
+  "276": {
+    "text": "Append the newly sampled token to the draft sequence so the next draft step can condition on it.",
+    "hash": "9cba9599"
+  },
+  "278": {
+    "text": "Edge case: no tokens were drafted.",
+    "hash": "0261cebb"
+  },
+  "279": {
+    "text": "Can't compute the ratio, stop.",
+    "hash": "14ebe56a"
+  },
+  "281": {
+    "text": "Record how many tokens the draft model proposed.",
+    "hash": "00687dd2"
+  },
+  "285": {
+    "text": "The key efficiency win: the target model scores every drafted position in a single forward pass, where autoregressive decoding would need K separate ones. Since inference is memory-bound, with reading weights dominating, one pass costs almost the same as K.",
+    "hash": "d0b3fd8d",
+    "diagram": "spec_draft",
+    "highlight": [
+      "target"
+    ]
+  },
+  "286": {
+    "text": "Count target forward passes, should be much fewer than autoregressive.",
+    "hash": "83bb73cd"
+  },
+  "292": {
+    "text": "Snapshot the prefix length <em>before</em> the accept loop. <code>tokens</code> grows every time we accept, so reading <code>len(tokens)</code> inside the loop would drift by <code>+i</code> and verify each drafted token against the wrong row of the target's output.",
+    "hash": "064357e5",
+    "important": true
+  },
+  "293": {
+    "text": "Verify each drafted token against the target model's distribution.",
+    "hash": "1385998e",
+    "diagram": "spec_verify",
+    "highlight": [
+      "check",
+      "accept",
+      "reject"
+    ]
+  },
+  "296": {
+    "text": "Map draft position <code>i</code> to a row of the target's output. The target scored the whole drafted sequence in one pass, and because the draft never crosses the window, the row is simply <code>base_len - 1 + i</code> with no correction needed.",
+    "hash": "2cda2602"
+  },
+  "297": {
+    "text": "Get the target model's probability p(x) for the exact token the draft proposed.",
+    "hash": "5ca7363f"
+  },
+  "300": {
+    "text": "Zero draft probability means the draft model would never have picked this token, reject.",
+    "hash": "bcfac76e"
+  },
+  "301": {
+    "text": "A draft probability of zero means the draft model never really proposed this token, so there is nothing to accept or reject and the round ends here.",
+    "hash": "14ebe56a"
+  },
+  "304": {
+    "text": "The denominator of alpha. Counting here rather than at the top of the loop is what keeps alpha the literature's per-token acceptance rate: tokens that were never examined never dilute it.",
+    "hash": "e5e04fd7"
+  },
+  "305": {
+    "text": "The acceptance probability: min(1, p(x)/q(x)). If the target likes this token at least as much as the draft, always accept. If the target likes it less, accept proportionally. This ratio is what guarantees the output distribution matches the target exactly.",
+    "hash": "60a6d497",
+    "diagram": "spec_verify",
+    "highlight": [
+      "check"
+    ]
+  },
+  "307": {
+    "text": "Coin flip: accept with the computed probability.",
+    "hash": "cb62d5aa",
+    "diagram": "spec_verify",
+    "highlight": [
+      "accept"
+    ]
+  },
+  "309": {
+    "text": "Token accepted, add to the final sequence.",
+    "hash": "16ea5fe1"
   },
   "310": {
-    "text": "Sum the corrected distribution to check if it has positive mass. If it's all zeros, we'll fall back to the raw target distribution.",
-    "hash": "36838d92"
+    "text": "Count the acceptance where it happens. Every exit path below is then a bare <code>return</code>, with no per-round total left to flush on the way out.",
+    "hash": "7a71451c"
   },
   "311": {
-    "text": "If there's positive mass in the adjusted distribution...",
-    "hash": "87db8376"
+    "text": "Special case: accepted token is BOS (end of sequence).",
+    "hash": "f0c84d0e"
   },
   "312": {
-    "text": "Normalize to a proper probability distribution.",
-    "hash": "8c9b1e0e"
-  },
-  "314": {
-    "text": "Fallback: if adjustment zeroes everything out, use the target's raw distribution.",
-    "hash": "87d5e833"
-  },
-  "315": {
-    "text": "Sample from the corrected distribution.",
-    "hash": "bd17f113"
-  },
-  "316": {
-    "text": "If the sampled token is BOS (end-of-sequence marker), the name is done and we should stop generating further tokens.",
-    "hash": "41a35c11"
+    "text": "Remove BOS from the output and stop generating.",
+    "hash": "08b8f3af"
   },
   "317": {
-    "text": "Record the final counts and return early since the name ended with the corrected token.",
-    "hash": "1bda14d8"
-  },
-  "318": {
     "text": "Package the completed sequence and return it to the caller along with the generation statistics.",
     "hash": "372ace73"
   },
-  "319": {
+  "318": {
+    "text": "Python for-else: this runs if the loop completed without <code>break</code>, meaning every one of the K tokens was accepted.",
+    "hash": "675c27cf"
+  },
+  "320": {
+    "text": "Reject, and replace the drafted token with a draw from the corrected distribution. All of the subtlety now lives in <code>resample_corrected</code> above.",
+    "hash": "5d4046a4",
+    "diagram": "spec_verify",
+    "highlight": [
+      "reject"
+    ]
+  },
+  "321": {
+    "text": "If the sampled token is BOS (end-of-sequence marker), the name is done and we should stop generating further tokens.",
+    "hash": "41a35c11"
+  },
+  "322": {
+    "text": "The target's correction sampled BOS, so the name ends. Returning here rather than falling through is part of what keeps the output distribution exact.",
+    "hash": "372ace73"
+  },
+  "323": {
     "text": "Add the corrected token to the output sequence. This token was sampled from the adjusted distribution to match the target's behavior.",
     "hash": "a1ca669a"
   },
-  "320": {
+  "324": {
     "text": "After rejection, restart the draft loop from the new position. Don't try to reuse remaining drafts.",
     "hash": "cfc086b1",
     "diagram": "spec_verify",
@@ -781,36 +767,16 @@
       "reject"
     ]
   },
-  "322": {
-    "text": "Python for-else: this runs if the loop completed without <code>break</code>, meaning every one of the K tokens was accepted.",
-    "hash": "675c27cf"
-  },
-  "324": {
-    "text": "When all K drafts are accepted, we get a bonus: the target already computed the probability distribution for the position after the last draft. Same window correction applies.",
+  "329": {
+    "text": "When every drafted token is accepted, the target has already computed the distribution for the position after the last one, so a bonus token costs nothing extra.",
+    "hash": "8bf6861a",
     "diagram": "spec_verify",
     "highlight": [
       "accept",
       "bonus"
-    ],
-    "hash": "286c46e6"
-  },
-  "325": {
-    "text": "Bounds check on the bonus position.",
-    "hash": "155d652c"
-  },
-  "326": {
-    "text": "Look up what the target model would predict at the bonus position, which we get for free since the target already computed it.",
-    "hash": "dc58e240"
-  },
-  "327": {
-    "text": "Sample a bonus token, a free extra token from the target with no additional cost.",
-    "hash": "6a6b2052",
-    "diagram": "spec_verify",
-    "highlight": [
-      "bonus"
     ]
   },
-  "328": {
+  "330": {
     "text": "A bonus token of BOS is the target's own stop decision, so this path returns rather than falling through. Falling through would discard the stop, redraft from the same prefix and quietly bias generated names longer, a losslessness bug hiding in the happy path.",
     "important": true,
     "diagram": "spec_verify",
@@ -825,301 +791,297 @@
     },
     "hash": "41a35c11"
   },
-  "334": {
-    "text": "Fold this round's accepted run into the totals before the early return, so a sequence that ends on a bonus token still contributes to the acceptance statistics.",
-    "hash": "1bda14d8"
-  },
   "336": {
+    "text": "The bonus token was BOS, so the target itself decided the name is finished.",
+    "hash": "372ace73"
+  },
+  "337": {
     "text": "Add this free bonus token to the sequence. It cost zero extra forward passes since it came from the target's existing computation.",
     "hash": "a1ca669a"
   },
-  "338": {
-    "text": "Update accepted count at end of round.",
-    "hash": "1bda14d8"
-  },
-  "340": {
+  "339": {
     "text": "Package the completed token sequence together with the acceptance statistics for the final benchmark comparison.",
     "hash": "372ace73"
   },
-  "346": {
+  "345": {
     "text": "Section header for the comparison.",
     "hash": "da1b818f"
   },
-  "348": {
+  "347": {
     "text": "Switch draft model to evaluation mode (disables dropout if any).",
     "hash": "a69e26c9"
   },
-  "349": {
+  "348": {
     "text": "Switch target model to evaluation mode.",
     "hash": "2f69986e"
   },
-  "350": {
+  "349": {
     "text": "50 samples gives stable timing statistics.",
     "hash": "c16f0427"
   },
-  "353": {
+  "352": {
     "text": "Utility: time a generation function over <code>n_samples</code> runs.",
     "hash": "9333c84d"
   },
-  "354": {
+  "353": {
     "text": "Print a label identifying which generation method is about to be timed, so the benchmark output is easy to read.",
     "hash": "1cdb4b94"
   },
-  "358": {
+  "357": {
     "text": "<code>perf_counter</code>, not <code>time()</code>: monotonic and high resolution. A lab whose whole output is a timing measurement should not be reading a clock that NTP is allowed to step underneath it.",
     "hash": "463acf83"
   },
-  "359": {
+  "358": {
     "text": "Run the generation function for all samples, collecting both the outputs and the total wall-clock time.",
     "hash": "6f1ccdfe"
   },
-  "360": {
+  "359": {
     "text": "Stop the clock and hand the elapsed time back with the samples, so the caller can divide by whatever it wants (per sample, per token, per forward pass).",
     "hash": "2fdbc1e5"
   },
-  "361": {
+  "360": {
     "text": "Print total and per-sample timing.",
     "hash": "aa62e7b4"
   },
-  "362": {
+  "361": {
     "text": "Bundle the generated samples together with the elapsed time so the caller can analyze both output quality and speed.",
     "hash": "a21709a1"
   },
-  "365": {
+  "364": {
     "text": "The draft/target cost ratio <em>is</em> the premise of speculative decoding, so measure it rather than inferring it from parameter counts. Everything the lab claims about why the wall clock disappoints rests on this one number.",
     "important": true,
     "hash": "a5c8887f"
   },
-  "371": {
+  "370": {
     "text": "Random token ids at a fixed length: we are timing the forward pass, not the model's opinion of the input.",
     "hash": "e92b4d90"
   },
-  "373": {
+  "372": {
     "text": "One untimed call first. The first forward pass pays for lazy allocation and kernel selection, and folding that into the mean would inflate the smaller model more than the larger one, which is exactly the comparison we are trying to make.",
     "hash": "afb09b22"
   },
-  "380": {
+  "379": {
     "text": "Benchmark 1: standard autoregressive decoding with the target model (the baseline).",
     "hash": "62ef3537"
   },
-  "381": {
+  "380": {
     "text": "One forward pass per token, the slowest approach.",
     "hash": "42a3ce54"
   },
-  "388": {
+  "387": {
     "text": "Accumulators for the per-sample stats dicts. Summing across all 50 samples rather than averaging per-sample ratios matters: alpha is a ratio of totals, not a mean of ratios.",
     "hash": "02ffef5b"
   },
-  "389": {
+  "388": {
     "text": "List to collect results with stats.",
     "hash": "da0ad394"
   },
-  "392": {
+  "391": {
     "text": "A named function instead of a lambda, because <code>timed_generate</code> only wants the token list back while we also want the stats. The previous version was a lambda exploiting the fact that <code>list.append</code> returns <code>None</code>; this says what it does.",
     "hash": "a2183a6d"
   },
-  "393": {
+  "392": {
     "text": "<code>K=4</code>: the draft proposes four tokens per round, so at best one target forward pass replaces five.",
     "hash": "e14bd033"
   },
-  "398": {
+  "397": {
     "text": "Benchmark 2: speculative decoding, timed under exactly the same harness as the autoregressive baseline so the comparison is like for like.",
     "hash": "5b1be5ce"
   },
-  "399": {
+  "398": {
     "text": "Aggregate statistics across all samples.",
     "hash": "83007b46"
   },
-  "400": {
+  "399": {
     "text": "Add up each statistic category (drafted, accepted, target passes, draft passes) across all generated samples.",
     "hash": "1a9652bb"
   },
-  "401": {
+  "400": {
     "text": "Add this sample's individual stat values into the running totals for the final summary.",
     "hash": "ef0d7ac5"
   },
-  "403": {
+  "402": {
     "text": "Benchmark 3: draft-only autoregressive (for reference, fast but lower quality).",
     "hash": "d294c37a"
   },
-  "404": {
+  "403": {
     "text": "Uses the small draft model alone.",
     "hash": "06166649"
   },
-  "410": {
+  "409": {
     "text": "Alpha, the per-token acceptance rate from the literature: of the proposals the target actually ruled on, what fraction survived. This is the K-independent number, and it is the one to quote.",
     "hash": "e6c39948"
   },
-  "411": {
+  "410": {
     "text": "Draft window utilization: accepted over <em>all</em> proposals, including the ones thrown away after the first rejection. It falls as K grows even with an unchanged draft model, which is why it is not a property of the draft model and not a substitute for alpha.",
     "hash": "0f59d82c"
   },
-  "412": {
+  "411": {
     "text": "Mean accepted run per round, meaning accepted tokens divided by target forward passes. This is the figure that actually determines speedup, because it is how many tokens each expensive target pass buys.",
     "hash": "132c214a"
   },
-  "413": {
+  "412": {
     "text": "Average target forward passes per sample, should be much less than the average token count.",
     "hash": "4259692d"
   },
-  "414": {
+  "413": {
     "text": "Average draft forward passes per sample.",
     "hash": "761a49f5"
   },
-  "415": {
+  "414": {
     "text": "Average tokens generated autoregressively (for comparison).",
     "hash": "011f967c"
   },
-  "416": {
+  "415": {
     "text": "Average tokens generated speculatively (should match autoregressive closely).",
     "hash": "0610655c"
   },
-  "418": {
+  "417": {
     "text": "Time one draft forward pass in isolation, away from the sampling loop.",
     "hash": "f8e878c8"
   },
-  "419": {
+  "418": {
     "text": "And one target forward pass. The ratio of these two is what decides whether the algorithm can pay for itself on this machine.",
     "hash": "47953fd7"
   },
-  "421": {
+  "420": {
     "text": "Print the statistics section header before showing acceptance rates and forward pass counts.",
     "hash": "8a6ef687"
   },
-  "427": {
+  "426": {
     "text": "Lead with the forward-pass count, because that is the metric that transfers. On a GPU with a real model the target forward dominates everything, so cutting target forwards per name is the win.",
     "important": true,
     "hash": "44ecd63b"
   },
-  "429": {
+  "428": {
     "text": "The other side of the ledger: the draft forwards are extra work that did not exist in the baseline. Speculative decoding is a trade, not a free lunch.",
     "hash": "71cee8fd"
   },
-  "431": {
+  "430": {
     "text": "Three acceptance figures from the same run, printed together on purpose. Papers quote whichever one flatters the method, and they can differ by tens of points on identical data.",
     "important": true,
     "hash": "e4685524"
   },
-  "432": {
+  "431": {
     "text": "Alpha: accepted over evaluated. Independent of K, so this is the number you can compare across papers.",
     "hash": "dd8ad50f"
   },
-  "433": {
+  "432": {
     "text": "Mean accepted run of a K=4 window. Compare it against K to see how much of the speculation budget the draft model is actually earning.",
     "hash": "24ebcf93"
   },
-  "434": {
+  "433": {
     "text": "Window utilization: accepted over all K proposals. Lower than alpha by construction, because everything after the first rejection is counted as proposed and never evaluated.",
     "hash": "88204ac6"
   },
-  "439": {
+  "438": {
     "text": "The measured per-forward-pass costs, not an estimate from parameter counts. This is the line that explains the wall clock below.",
     "hash": "dcb16fee"
   },
-  "440": {
+  "439": {
     "text": "The arbitrage the whole technique depends on. At this scale the cost ratio and the parameter ratio have come apart completely, because both models are dominated by per-call Python and dispatch overhead rather than arithmetic. In production that ratio is 10-100x, which is where the reported 2-3x speedups come from.",
     "important": true,
     "hash": "0c2ae797"
   },
-  "445": {
+  "444": {
     "text": "The wall clock, reported as a ratio rather than a \"speedup\" because on this box it comes out below 1.00. Printing an unflattering measurement is the point: the forward-pass reduction is real and transfers, the wall clock is a property of this CPU and this interpreter.",
     "hash": "49c34122"
   },
-  "449": {
+  "448": {
     "text": "Token counts should be similar, the distribution is mathematically identical.",
     "hash": "a4d7def5"
   },
-  "463": {
+  "462": {
     "text": "The headline claim of this lab is that the output distribution is unchanged. A speedup number does not test that at all, so test it directly.",
     "important": true,
     "hash": "5055074b"
   },
-  "464": {
+  "463": {
     "text": "500 samples per arm. Enough that the noise floor below is a stable reference, small enough to run on a CPU in the same script.",
     "hash": "91415064"
   },
-  "467": {
+  "466": {
     "text": "A 27-bin character histogram is a crude summary of a distribution over strings, but it is a statistic both arms must agree on if the accept/reject math is right.",
     "hash": "92e4737f"
   },
-  "476": {
+  "475": {
     "text": "Total variation distance: the largest disagreement any event can show between two distributions. Zero means identical, one means disjoint support.",
     "hash": "1cab3591"
   },
-  "481": {
+  "480": {
     "text": "Autoregressive run A, the reference sample from the target model alone.",
     "hash": "ace9a6e4"
   },
-  "482": {
+  "481": {
     "text": "Autoregressive run B, from the same model with the same settings. This second run is the essential part: two finite samples from one distribution already differ, and without that reference \"the distributions match\" is unfalsifiable, since any small difference can be waved away.",
     "important": true,
     "hash": "fe029885"
   },
-  "483": {
+  "482": {
     "text": "And the speculative sample, drawn the same way and at the same size, so the only difference between it and A is the decoding algorithm.",
     "hash": "ba973bb2"
   },
-  "493": {
+  "492": {
     "text": "Three histograms from the three runs, ready to be compared pairwise.",
     "hash": "a154a135"
   },
-  "494": {
+  "493": {
     "text": "AR versus AR: the noise floor. This is how far apart two samples from the <em>same</em> distribution land at this sample size, and it is the yardstick everything else is measured against.",
     "hash": "d0a8ca84"
   },
-  "495": {
+  "494": {
     "text": "AR versus speculative: the number under test. On its own it means nothing, and it becomes evidence only when divided by the floor above.",
     "hash": "845f5eef"
   },
-  "497": {
+  "496": {
     "text": "Print the floor first and label it, so the reader cannot mistake the measured distance for an absolute error.",
     "hash": "8d306211"
   },
-  "499": {
+  "498": {
     "text": "The ratio is the actual verdict. Around 1x means the speculative sample is no further from an autoregressive sample than another autoregressive sample would be.",
     "hash": "ad82c010"
   },
-  "501": {
+  "500": {
     "text": "Two noise floors is a deliberately loose threshold, and both branches print. A check whose failure branch is unreachable is not a check, so the failure text is written out in full and left in the file.",
     "hash": "b8e4e0e9"
   },
-  "511": {
+  "510": {
     "text": "State the limits of the test in the output rather than in a comment. Two summary statistics at n=500 can fail to detect a real difference; they cannot prove there is none. The proof lives in Leviathan et al. (2023), and this is a sanity check on the implementation of it.",
     "hash": "3b0676e9"
   },
-  "549": {
+  "548": {
     "text": "Show actual generated names from each method.",
     "hash": "a3e3e588"
   },
-  "550": {
+  "549": {
     "text": "Iterate over all three approaches.",
     "hash": "8ed9bbcc"
   },
-  "551": {
+  "550": {
     "text": "The names generated by standard autoregressive decoding with the full target model, our quality baseline.",
     "hash": "a0559c23"
   },
-  "552": {
+  "551": {
     "text": "The names generated by speculative decoding, which should match the target's distribution exactly despite being faster.",
     "hash": "5f7b3a2f"
   },
-  "553": {
+  "552": {
     "text": "Names from the small draft model alone. Faster but lower quality, included to show the quality gap that speculative decoding bridges.",
     "hash": "ddc013ad"
   },
-  "555": {
+  "554": {
     "text": "Print which generation method produced the following names so we can compare quality across approaches.",
     "hash": "a3b8d2cf"
   },
-  "556": {
+  "555": {
     "text": "Show the first 10 samples from each method.",
     "hash": "5da4a4c3"
   },
-  "557": {
+  "556": {
     "text": "Decode token IDs back to characters and print.",
     "hash": "2a0d1a6c"
   },
-  "558": {
+  "557": {
     "text": "Visual separator between the three methods' output blocks for cleaner readability in the terminal.",
     "hash": "525d5133"
   }

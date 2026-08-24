@@ -11,7 +11,7 @@ lab's block_size of 4 tokens and 5-token names, that bound is measured at 37.5%
 waste for a single sequence and around 20% for two. With vLLM's 16-token blocks
 and requests of hundreds of tokens, the same bound is a rounding error.
 
-Zero dependencies. Pure Python. The algorithms are pure data structures.
+Zero dependencies. Pure Python. The paging logic is plain lists and dicts.
 
 Based on "Efficient Memory Management for Large Language Model Serving with
 PagedAttention" (Kwon et al., 2023), https://arxiv.org/abs/2309.06180, the
@@ -345,7 +345,7 @@ def gpt(token_id, pos_id, cache, seq_id=0, W=None):
 learning_rate, beta1, beta2, eps_adam = 0.01, 0.85, 0.99, 1e-8
 m = [0.0] * len(params)
 v = [0.0] * len(params)
-num_steps = 1000
+num_steps = 350
 
 for step in range(num_steps):
     doc = docs[step % len(docs)]

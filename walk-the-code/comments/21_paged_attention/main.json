@@ -1014,8 +1014,8 @@
     "hash": "0db42250"
   },
   "348": {
-    "text": "Train for 1000 gradient steps, which is enough for this small model to learn basic character-level name patterns.",
-    "hash": "f105aa30"
+    "text": "Train for 350 gradient steps. Fewer than lab 01 uses, because this lab needs weights that generate a short plausible name, not a well-trained model, and scalar autograd is slow enough that the difference is felt.",
+    "hash": "18d5d7a3"
   },
   "350": {
     "text": "Iterate over training steps, processing one name per step with teacher forcing.",

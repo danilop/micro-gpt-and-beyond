@@ -184,10 +184,17 @@ def get_probs(model, tokens):
     return F.softmax(logits, dim=-1)  # (T, V)
 
 
+# The window has to hold the sequence plus everything drafted ahead of it. Stop
+# one token short of block_size and nothing this file builds can outgrow the
+# window, so get_probs() always returns one row per token it was given. The
+# longest name in the dataset is 15 characters, so nothing gets truncated.
+MAX_NEW_TOKENS = block_size - 1
+
+
 # --- 1) Naive autoregressive decoding (baseline) ---
 
 
-def generate_autoregressive(model, max_len=block_size):
+def generate_autoregressive(model, max_len=MAX_NEW_TOKENS):
     """Standard decoding: one token at a time, one forward pass per token."""
     tokens = [BOS]
     with torch.no_grad():
@@ -203,7 +210,20 @@ def generate_autoregressive(model, max_len=block_size):
 # --- 2) Speculative decoding ---
 
 
-def generate_speculative(draft, target, max_len=block_size, K=4):
+def resample_corrected(p, q):
+    """Sample from the normalized max(0, p - q), the correction in Leviathan et al.
+
+    On rejection the drafted token cannot just be replaced by a draw from p. The
+    rejection itself already says something about which tokens the draft
+    over-proposed, and removing q's mass from p before sampling is what makes the
+    scheme reproduce p exactly rather than approximately.
+    """
+    adjusted = torch.clamp(p - q, min=0)
+    total = adjusted.sum()
+    return torch.multinomial(adjusted / total if total > 0 else p, 1).item()
+
+
+def generate_speculative(draft, target, max_len=MAX_NEW_TOKENS, K=4):
     """
     Speculative decoding: the draft model proposes K tokens, the target
     model verifies them all in one forward pass.
@@ -245,7 +265,9 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
             draft_tokens = list(tokens)
             draft_probs_list = []  # (token_id, q(x), full distribution) for each drafted token
             for _ in range(K):
-                if len(draft_tokens) - 1 >= max_len:
+                # Stop at the context boundary as well as at max_len. A real
+                # implementation cannot propose past the window either.
+                if len(draft_tokens) - 1 >= max_len or len(draft_tokens) >= block_size:
                     break
                 probs_d = get_probs(draft, draft_tokens)[-1]
                 stats["draft_fwd"] += 1
@@ -264,23 +286,14 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
             stats["target_fwd"] += 1
 
             # Step 3: Accept/reject each drafted token
-            n_accepted = 0
             # Snapshot the prefix length before the loop: `tokens` grows as we
             # accept, so reading len(tokens) inside the loop would drift by +i
             # and verify token i against the wrong target row.
             base_len = len(tokens)
-            # get_probs() feeds the model only the last `block_size` tokens, so
-            # once the draft sequence is longer than the window, row 0 of
-            # target_probs is no longer draft_tokens[0]. Convert absolute token
-            # positions into row indices by subtracting what fell off the front.
-            row_offset = len(draft_tokens) - target_probs.shape[0]
             for i, (drafted_token, q_x, draft_dist) in enumerate(draft_probs_list):
-                # Target model's probability for the drafted token
-                # Position in target_probs: tokens before draft + i, shifted
-                # into the window the target actually saw
-                pos = base_len - 1 + i - row_offset
-                if pos >= target_probs.shape[0]:
-                    break
+                # Row of target_probs that predicts this drafted token. The
+                # draft never crosses the window, so rows and tokens line up.
+                pos = base_len - 1 + i
                 p_x = target_probs[pos, drafted_token].item()
 
                 # Accept with probability min(1, p(x) / q(x))
@@ -294,48 +307,34 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
                 if random.random() < accept_prob:
                     # Accept this token
                     tokens.append(drafted_token)
-                    n_accepted += 1
+                    stats["accepted"] += 1
                     if drafted_token == BOS:
                         tokens.pop()  # remove BOS, end generation
                         # The BOS was accepted by the verification step even
                         # though it is not emitted, so it counts in `accepted`.
                         # `accepted` measures verification outcomes here, not
                         # emitted tokens.
-                        stats["accepted"] += n_accepted
                         return tokens[1:], stats
                 else:
-                    # Reject: sample from adjusted distribution max(0, p - q)
-                    pos_probs = target_probs[pos]
-                    adjusted = torch.clamp(pos_probs - draft_dist, min=0)
-                    adj_sum = adjusted.sum()
-                    if adj_sum > 0:
-                        adjusted = adjusted / adj_sum
-                    else:
-                        adjusted = pos_probs
-                    token_id = torch.multinomial(adjusted, 1).item()
+                    # Reject: replace it with a draw from the corrected distribution
+                    token_id = resample_corrected(target_probs[pos], draft_dist)
                     if token_id == BOS:
-                        stats["accepted"] += n_accepted
                         return tokens[1:], stats
                     tokens.append(token_id)
                     break  # restart drafting from the new position
 
             else:
-                # All K tokens accepted, so sample one bonus token from target
-                bonus_pos = len(tokens) - 1 - row_offset
-                if bonus_pos < target_probs.shape[0]:
-                    bonus_probs = target_probs[bonus_pos]
-                    token_id = torch.multinomial(bonus_probs, 1).item()
-                    if token_id == BOS:
-                        # BOS from the target means end of sequence, exactly as in
-                        # the accept and correction paths above. Returning here
-                        # matters for losslessness: falling through instead would
-                        # silently drop the target's own stop decision and redraft
-                        # from the same prefix, biasing generated names longer.
-                        stats["accepted"] += n_accepted
-                        return tokens[1:], stats
-                    tokens.append(token_id)
-
-            stats["accepted"] += n_accepted
+                # Every drafted token was accepted, so the target's distribution
+                # for the next position is already computed: one bonus token free.
+                token_id = torch.multinomial(target_probs[len(tokens) - 1], 1).item()
+                if token_id == BOS:
+                    # BOS from the target means end of sequence, exactly as in
+                    # the accept and correction paths above. Returning here
+                    # matters for losslessness: falling through instead would
+                    # silently drop the target's own stop decision and redraft
+                    # from the same prefix, biasing generated names longer.
+                    return tokens[1:], stats
+                tokens.append(token_id)
 
     return tokens[1:], stats
 

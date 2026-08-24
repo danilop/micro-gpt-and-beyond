@@ -2,7 +2,7 @@
 
 Same architecture as the pure-Python version (01), but with two KV cache implementations for inference: contiguous (wasteful pre-allocation) and paged (on-demand block allocation). PagedAttention is the core innovation in vLLM. It applies the operating system's virtual memory paging concept to KV caches, replacing unbounded over-allocation with waste bounded by one partially-filled block per sequence.
 
-Zero dependencies. Pure Python. The algorithms are pure data structures.
+Zero dependencies. Pure Python. The model is scaffolding borrowed from lab 01, needed only to produce weights. The paging itself is plain lists and dicts.
 
 ## Why this version exists
 
@@ -146,7 +146,7 @@ Measured in the run, with `BLOCK_SIZE_TOKENS = 4`:
 python main.py
 ```
 
-Trains for 1000 steps (pure Python, a few minutes), then:
+Trains for 350 steps (pure Python, about 20 seconds), then:
 1. Compares contiguous and paged KV caches on the same sequence, asserting identical output
 2. Prints the allocation events and the full block table for two interleaved sequences
 3. Frees one sequence and shows its physical blocks being recycled by the next one
