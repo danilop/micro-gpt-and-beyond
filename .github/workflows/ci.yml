@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint and format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.1
+      - uses: astral-sh/setup-uv@v7.1.6
+      - name: ruff check
+        run: uvx ruff@0.16.4 check labs
+      # Scoped to Python on purpose: ruff 0.16 also formats code blocks inside
+      # Markdown, and the lab READMEs have not been through that pass yet.
+      - name: ruff format --check
+        run: git ls-files 'labs/*.py' | xargs uvx ruff@0.16.4 format --check --force-exclude
+
+  tutorial:
+    name: Validate tutorial content
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.1
+      - uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.14'
+      - uses: astral-sh/setup-uv@v7.1.6
+      - name: Install walk-the-code
+        run: uv tool install "walk-the-code @ git+https://github.com/danilop/walk-the-code"
+      # Catches stale annotations after a reformat, out-of-range line numbers,
+      # missing diagrams, and highlight targets that no longer resolve.
+      - name: wtc-validate
+        run: wtc-validate walk-the-code/config.json
+      # Catches the failure that shipped once already: the bundle filename
+      # changing under the deploy step.
+      - name: wtc-build produces data/units.json
+        run: |
+          wtc-build walk-the-code/config.json
+          test -f walk-the-code/data/units.json
+
+  resolve:
+    name: Dependencies resolve on the declared floor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.1
+      - uses: astral-sh/setup-uv@v7.1.6
+      # A requires-python bump that no published wheel supports fails here
+      # instead of in a student's terminal.
+      - name: uv lock --check for every lab
+        run: |
+          fail=0
+          for d in labs/*/; do
+            [ -f "$d/uv.lock" ] || continue
+            if ! (cd "$d" && uv lock --check); then
+              echo "::error::${d} lock is stale or unsatisfiable"
+              fail=1
+            fi
+          done
+          exit $fail
+
+  labs:
+    name: Run labs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # One stdlib lab, one per framework family. The rest share these paths.
+        lab:
+          - 01_pure_python
+          - 09_bpe_tokenizer
+          - 21_paged_attention
+          - 02_numpy_manual_backprop
+          - 03_pytorch
+          - 05_jax
+    steps:
+      - uses: actions/checkout@v6.0.1
+      - uses: astral-sh/setup-uv@v7.1.6
+      - name: Run ${{ matrix.lab }}
+        working-directory: labs/${{ matrix.lab }}
+        run: |
+          if [ -f pyproject.toml ]; then
+            uv run --frozen python main.py
+          elif [ -f main.py ]; then
+            python3 main.py
+          else
+            python3 microgpt.py
+          fi
