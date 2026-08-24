@@ -620,7 +620,7 @@
   },
   "313": {
     "text": "The population container holds each individual’s identity, genome, model weights, and most recent fitness.",
-    "hash": "3b6eff6b"
+    "hash": "423a57dc"
   },
   "314": {
     "text": "Population initialization: create POP_SIZE individuals, each with a random config and fresh model.",
@@ -643,7 +643,7 @@
   },
   "329": {
     "text": "Generation stats accumulate a compressed history of the search so the final report can show trend, not just the winner.",
-    "hash": "d59be0c9"
+    "hash": "a007b67f"
   },
   "330": {
     "text": "Total training steps spent by the whole population. This counter is the entire reason the headline improvement can be put in context rather than quoted bare.",
@@ -656,7 +656,7 @@
   },
   "337": {
     "text": "The archive itself: loss, config, a deep copy of the weights, and which generation produced it. The generation number is what lets the closing text say whether the search peaked early and regressed.",
-    "hash": "b464e755"
+    "hash": "1e60bf81"
   },
   "339": {
     "text": "Each generation repeats the same cycle: train, evaluate, sort, keep the best, and repopulate.",

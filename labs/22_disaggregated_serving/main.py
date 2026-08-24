@@ -299,7 +299,7 @@ for prompt_len in [8, 64, 256, 1024]:
 # over. Reporting only the endpoints would make it look monotone, so find the
 # actual minimum and print it.
 per_token = {t: prefill_times[t] * 1e6 / t for t in prefill_times}
-best_T = min(per_token, key=per_token.get)
+best_T = min(per_token, key=lambda t: per_token[t])
 time_growth = prefill_times[1024] / prefill_times[8]
 flop_growth = count_flops(1024, N_DECODE)[0] / count_flops(8, N_DECODE)[0]
 attn_share_8 = count_flops(8, N_DECODE)[1] / count_flops(8, N_DECODE)[0]

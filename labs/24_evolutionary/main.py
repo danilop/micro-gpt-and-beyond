@@ -310,7 +310,7 @@ STEPS_PER_GEN = 200
 TOP_K = 3  # keep top-k, replace the rest
 
 # Initialize population with random configurations
-population = []
+population: list[dict] = []
 for i in range(POP_SIZE):
     cfg = random_config()
     model = build_model(cfg)
@@ -326,7 +326,7 @@ print(f"generations: {NUM_GENERATIONS}")
 print(f"steps/generation: {STEPS_PER_GEN}")
 print(f"selection: top-{TOP_K} survive, rest are replaced by mutated copies\n")
 
-generation_stats = []
+generation_stats: list[dict] = []
 evolution_steps = 0  # total training steps spent by the whole population
 
 # Global elitism: an archive of the single best model ever evaluated. Without
@@ -334,7 +334,7 @@ evolution_steps = 0  # total training steps spent by the whole population
 # population, which is not the same thing as the best the search found,
 # in this lab the population regularly peaks in a middle generation and then
 # regresses.
-best_ever = {"val_loss": float("inf"), "cfg": None, "model": None, "gen": 0, "steps": 0}
+best_ever: dict = {"val_loss": float("inf"), "cfg": None, "model": None, "gen": 0, "steps": 0}
 
 for gen in range(NUM_GENERATIONS):
     # Train each member for STEPS_PER_GEN

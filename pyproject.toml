@@ -52,8 +52,9 @@ exclude_dirs = ["01_pure_python", ".venv"]
 skips = ["B101", "B310", "B311", "B404", "B602", "B603"]
 
 [tool.codespell]
-skip = "*.lock,01_pure_python/*,.venv/*,*/.venv/*,data/*"
-ignore-words-list = "uchars,amin,numer,dout,nin"
+skip = "*.lock,01_pure_python/*,.venv/*,*/.venv/*,data/*,walk-the-code/data/*"
+# gage: Philip Gage, author of the 1994 paper that introduced BPE (cited in lab 09)
+ignore-words-list = "uchars,amin,numer,dout,nin,gage"
 
 [tool.ty]
 

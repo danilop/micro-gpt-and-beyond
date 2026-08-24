@@ -549,7 +549,7 @@ unfiltered_unique = unfiltered_stats[-1]["unique"]
 # Which arm ended up least diverse? Compute it instead of asserting it: the
 # answer depends on the seed, the scorer and the number of rounds.
 arm_unique = {"filtered": final_unique, "unfiltered": unfiltered_unique, "control": control_unique}
-least_diverse = min(arm_unique, key=arm_unique.get)
+least_diverse = min(arm_unique, key=lambda a: arm_unique[a])
 final_top_name = filtered_stats[-1]["top_name"]
 final_top_count = filtered_stats[-1]["top_count"]
 top_share = final_top_count / EVAL_SAMPLES
