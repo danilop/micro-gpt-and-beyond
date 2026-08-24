@@ -174,7 +174,7 @@
     ]
   },
   "89": {
-    "text": "Interleave rotated pairs back into the original dimension ordering. The key insight: when Q at position m and K at position n are dot-producted, the rotation angles subtract, making attention depend on <code>m-n</code> (relative distance) automatically.",
+    "text": "Interleave rotated pairs back into the original dimension ordering. When Q at position m and K at position n are dot-producted, the rotation angles subtract, so attention depends on <code>m-n</code> (relative distance) automatically.",
     "hash": "b26c2556",
     "diagram": "rope_apply",
     "highlight": [

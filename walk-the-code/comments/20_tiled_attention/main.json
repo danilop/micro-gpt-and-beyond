@@ -150,7 +150,7 @@
     "hash": "95b016d9"
   },
   "101": {
-    "text": "RMSNorm before the feed-forward network, ensuring the MLP receives well-scaled inputs regardless of what attention produced.",
+    "text": "RMSNorm before the feed-forward network. Whatever attention produced, the MLP receives well-scaled inputs.",
     "hash": "f58a7657"
   },
   "102": {

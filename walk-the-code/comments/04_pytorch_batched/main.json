@@ -306,7 +306,7 @@
     "hash": "f0a5c171"
   },
   "149": {
-    "text": "Walk through every sub-module and apply N(0, 0.08) initialization, ensuring consistent starting conditions across all labs.",
+    "text": "Walk through every sub-module and apply N(0, 0.08) initialization, so every lab starts from the same conditions.",
     "hash": "e4941829"
   },
   "152": {
@@ -508,7 +508,7 @@
     ]
   },
   "222": {
-    "text": "<code>ignore_index=-100</code> means the loss is only computed on real tokens, not padding. This is crucial, otherwise shorter sequences would be penalized differently than longer ones.",
+    "text": "<code>ignore_index=-100</code> means the loss is only computed on real tokens, not padding. Without it, shorter sequences would be penalized differently than longer ones.",
     "hash": "96f390f4",
     "diagram": "batch_train",
     "highlight": [

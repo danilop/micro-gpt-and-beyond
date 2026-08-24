@@ -242,7 +242,7 @@
     "hash": "e35ec662"
   },
   "98": {
-    "text": "RMSNorm before the feed-forward network, ensuring the MLP sees well-scaled inputs regardless of what attention produced.",
+    "text": "RMSNorm before the feed-forward network, so the MLP sees well-scaled inputs whatever attention produced.",
     "hash": "f58a7657"
   },
   "99": {
@@ -310,7 +310,7 @@
     ]
   },
   "115": {
-    "text": "Walk through every submodule and apply the weight initialization function, ensuring all layers start with well-scaled parameters.",
+    "text": "Walk through every submodule and apply the weight initialization function. Every layer then starts with well-scaled parameters.",
     "hash": "e4941829"
   },
   "117": {

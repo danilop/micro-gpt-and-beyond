@@ -19,7 +19,7 @@ labs/
   09_bpe_tokenizer/          Byte-Pair Encoding from scratch. The algorithm behind GPT's tokenizer.
   10_rope/                   Rotary Position Embeddings. How modern LLMs encode position.
   11_gqa/                    Grouped-Query Attention (MHA to GQA to MQA). KV head sharing.
-  12_kv_cache/               KV cache for inference. THE fundamental decoding optimization.
+  12_kv_cache/               KV cache for inference. Reuse past keys and values instead of recomputing.
   13_sampling/               Sampling strategies: greedy, temperature, top-k, top-p, min-p.
   14_lora/                   LoRA. Parameter-efficient fine-tuning with low-rank adapters.
   15_pytorch_quantized/      INT8 quantization for inference. FP32 to INT8, about 3.5x smaller, not faster.

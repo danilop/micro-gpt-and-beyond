@@ -8,7 +8,7 @@
     "hash": "f17e4b01"
   },
   "5": {
-    "text": "The key insight: instead of improving one model's outputs, we improve the model population itself through evolutionary pressure.",
+    "text": "Instead of improving one model's outputs, we improve the model population itself through evolutionary pressure.",
     "hash": "575237c0",
     "diagram": "evo_generation",
     "highlight": {

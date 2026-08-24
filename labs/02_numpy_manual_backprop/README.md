@@ -1,6 +1,6 @@
 # Understanding LLMs by Building One: NumPy with Manual Backpropagation
 
-Same GPT architecture as the pure-Python version, but using NumPy arrays for vectorized matrix operations. The key twist: every gradient is derived by hand and coded explicitly. There is no autograd. You *are* the autograd.
+Same GPT architecture as the pure-Python version, but using NumPy arrays for vectorized matrix operations. Every gradient is derived by hand and coded explicitly. There is no autograd. You *are* the autograd.
 
 ## Why this version exists
 

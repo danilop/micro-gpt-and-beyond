@@ -2,7 +2,7 @@
 
 > *Instead of generating names left-to-right, names emerge from pure noise, all [MASK] tokens, through iterative unmasking.*
 
-This is a **masked diffusion language model** in PyTorch. Same transformer building blocks as the PyTorch labs (03, 04), but a fundamentally different generative paradigm.
+A **masked diffusion language model** in PyTorch. Same transformer building blocks as the PyTorch labs (03, 04), but a fundamentally different generative paradigm.
 
 Where the original GPT predicts the next token given all previous tokens (autoregressive, left-to-right), this model predicts *all masked tokens simultaneously* given the unmasked context (diffusion, all-at-once). The name materializes from noise like a photograph developing in a darkroom.
 
@@ -61,14 +61,14 @@ batch_size = 32  # critical for diffusion
 
 ### 3. Training: Noise Instead of Next-Token Prediction
 
-This is where diffusion diverges most from autoregressive training. Lab 03 wraps each name with BOS and predicts each next character. Here, we corrupt the name with random masks and predict what's underneath:
+Training is where diffusion diverges most from the autoregressive labs. Lab 03 wraps each name with BOS and predicts each next character. Here, we corrupt the name with random masks and predict what's underneath:
 
 ```python
 t = math.exp(random.uniform(math.log(0.2), 0))  # log-uniform noise level
 noisy = [MASK if random.random() < t else c for c in clean]
 ```
 
-The noise level `t` is sampled log-uniformly rather than uniformly. This is importance sampling that cancels the `1/t` weight in the ELBO, eliminating gradient spikes.
+The noise level `t` is sampled log-uniformly rather than uniformly. The log-uniform draw is importance sampling that cancels the `1/t` weight in the ELBO, which removes the gradient spikes.
 
 The loss is computed only on masked positions, and the MASK logit is suppressed so no probability mass is wasted on an impossible prediction:
 
@@ -151,7 +151,7 @@ Lab 03's GPT works with a single layer because the causal mask provides a strong
 
 ### Batch size 32
 
-This is the single most important difference from the autoregressive labs. In autoregressive training, every position contributes to the loss, giving a stable gradient even from one sample. In diffusion, only masked positions contribute, and the masking is random, so each single-sample gradient points in a different noisy direction. Batching averages 32 gradients per step, smoothing out the noise. Without it, the model produces gibberish.
+Batch size is the biggest difference from the autoregressive labs. In autoregressive training, every position contributes to the loss, giving a stable gradient even from one sample. In diffusion, only masked positions contribute, and the masking is random, so each single-sample gradient points in a different noisy direction. Batching averages 32 gradients per step, smoothing out the noise. Without it, the model produces gibberish.
 
 ### 3000 steps
 

@@ -612,7 +612,7 @@
     "hash": "b2819d47"
   },
   "132": {
-    "text": "Weighted sum of value vectors. Tokens that \"match\" the query contribute more. This is the core of the attention mechanism.",
+    "text": "Weighted sum of value vectors. Tokens that \"match\" the query contribute more, which is what attention computes.",
     "hash": "83bb7bf9",
     "diagram": "transformer_attn",
     "highlight": [
@@ -966,7 +966,7 @@
     "hash": "f0303c4c"
   },
   "201": {
-    "text": "Print the generated name. These are entirely new names invented by the model, reflecting statistical patterns learned from 32K real names.",
+    "text": "Print the generated name. These are entirely new names invented by the model from statistical patterns learned across 32K real names.",
     "hash": "288b1b13"
   }
 }

@@ -172,7 +172,7 @@
     "hash": "328b177d"
   },
   "105": {
-    "text": "This is the crucial reuse step: old keys stay alive, and only the new key is appended. The history grows without being recomputed.",
+    "text": "The reuse step: old keys stay alive, and only the new key is appended. The history grows without being recomputed.",
     "hash": "a418bc9d",
     "diagram": "kv_cached",
     "highlight": [

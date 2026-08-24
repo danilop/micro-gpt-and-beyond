@@ -458,7 +458,7 @@
     "hash": "fbede2b3"
   },
   "159": {
-    "text": "The pivotal line: <code>loss.backward()</code> computes every gradient automatically. This single call replaces lab 01's entire <code>Value.backward()</code> engine and lab 02's 80-plus lines of hand-derived gradients.",
+    "text": "<code>loss.backward()</code> computes every gradient automatically. This single call replaces lab 01's entire <code>Value.backward()</code> engine and lab 02's 80-plus lines of hand-derived gradients.",
     "hash": "227fe80d",
     "important": true
   },

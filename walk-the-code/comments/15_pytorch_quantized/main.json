@@ -88,7 +88,7 @@
     "hash": "69fade3d"
   },
   "69": {
-    "text": "Scale the input by its inverse root-mean-square, ensuring activations have roughly unit magnitude without learned parameters.",
+    "text": "Scale the input by its inverse root-mean-square. Activations come out at roughly unit magnitude, with no learned parameters.",
     "hash": "53678ba7"
   },
   "72": {

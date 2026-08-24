@@ -776,7 +776,7 @@
     "hash": "5bd1498c"
   },
   "442": {
-    "text": "Disaggregated serving: separate prefill and decode workers connected by a queue, so prefill does not block decode. The key insight is that while one worker prefills a long prompt, the other keeps decoding in-flight requests.",
+    "text": "Disaggregated serving: separate prefill and decode workers connected by a queue, so prefill does not block decode. While one worker prefills a long prompt, the other keeps decoding in-flight requests.",
     "hash": "326bca13",
     "important": true
   },

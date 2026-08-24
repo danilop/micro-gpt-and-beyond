@@ -28,7 +28,7 @@ The GPU computes 175× faster than it can read data. It sits idle 99.4% of the t
 ### The speculative decoding algorithm
 
 1. **Draft phase**: A small, fast model generates K candidate tokens autoregressively
-2. **Verify phase**: The target model processes ALL tokens (original + K drafted) in one forward pass
+2. **Verify phase**: The target model processes all tokens (original + K drafted) in one forward pass
 3. **Accept/reject**: For each drafted token, compare draft probability q(x) with target probability p(x):
    - Accept with probability `min(1, p(x) / q(x))`
    - On rejection: sample from adjusted distribution `max(0, p(x) - q(x))` (normalized)
@@ -111,7 +111,7 @@ At our tiny scale (CPU, Python loops) this overlap isn't visible, and the lab me
 
 ## What you learn here
 
-- Why autoregressive decoding is memory-bound (the key insight behind ALL inference optimization)
+- Why autoregressive decoding is memory-bound, and why that constraint drives inference optimization
 - How speculation + verification preserves output quality, and how to test that claim with a noise floor instead of asserting it
 - What the acceptance rate α actually is, why "accepted ÷ drafted" is a different and K-dependent quantity, and why the difference matters
 - That a high acceptance rate is necessary but not sufficient: the draft/target *cost* ratio is the other half, and it is not the parameter ratio

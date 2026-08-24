@@ -273,7 +273,7 @@
     "hash": "12ede0d6"
   },
   "148": {
-    "text": "Snapshot the representation before attention transforms it. The residual connection will add this back, ensuring the layer can only refine, not destroy, what came before.",
+    "text": "Snapshot the representation before attention transforms it. The residual connection will add this back, so the layer can only refine what came before, never destroy it.",
     "hash": "e180f0b6"
   },
   "151": {
@@ -405,7 +405,7 @@
     ]
   },
   "192": {
-    "text": "Add the MLP output back to its input via the residual connection. This is the second skip connection in the block, completing the norm-transform-add pattern.",
+    "text": "Add the MLP output back to its input via the residual connection. It is the second skip connection in the block, and it completes the norm-transform-add pattern.",
     "hash": "deb4c88c",
     "diagram": "transformer_mlp",
     "highlight": [

@@ -108,7 +108,7 @@
     ]
   },
   "73": {
-    "text": "<code>lora_B</code>: the up-projection (d_out x rank). Zero init is crucial &mdash; it makes the adapter a no-op at the start. The model behaves exactly like the base model until training shifts B away from zero.",
+    "text": "<code>lora_B</code>: the up-projection (d_out x rank). Zero init makes the adapter a no-op at the start. The model behaves exactly like the base model until training shifts B away from zero.",
     "hash": "fcda10d1",
     "diagram": "lora_adapter",
     "highlight": [

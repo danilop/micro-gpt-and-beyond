@@ -562,7 +562,7 @@
     "hash": "1cb3444a"
   },
   "252": {
-    "text": "The curriculum schedule: <code>mix</code> goes from 0 (pure ground truth) to 1 (pure concept tokens) linearly over training. This is the key insight, gradual transition avoids the shock of suddenly switching from perfect teacher inputs to noisy self-generated ones.",
+    "text": "The curriculum schedule: <code>mix</code> goes from 0 (pure ground truth) to 1 (pure concept tokens) linearly over training. The gradual transition avoids the shock of switching suddenly from perfect teacher inputs to noisy self-generated ones.",
     "hash": "abf4f92c",
     "diagram": "soft_training",
     "highlight": [

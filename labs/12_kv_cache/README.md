@@ -6,7 +6,7 @@ Same model as lab 03, but with the single most important inference optimization 
 
 During autoregressive generation, a transformer produces tokens one at a time. At step `t`, the standard approach feeds all `t` tokens through the model to get the next one. But the Keys and Values for positions `1..t-1` are identical to what was computed at step `t-1`, so we are recomputing them for nothing.
 
-KV cache eliminates this redundancy: store the K,V tensors, and at each new step only compute the new position's Q, K, V. Attention is then computed between the single new query and ALL cached keys/values.
+KV cache eliminates this redundancy: store the K,V tensors, and at each new step only compute the new position's Q, K, V. Attention is then computed between the single new query and all cached keys/values.
 
 ## Prefill vs decode
 

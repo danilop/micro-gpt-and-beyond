@@ -15,7 +15,7 @@ RoPE removes the ceiling outright and builds relative position into the represen
 
 ### Rotation in complex space
 
-The core idea: treat each pair of dimensions in a query or key vector as a complex number, then rotate it by an angle proportional to its position. Position `m` rotates by angle `m * theta`, where `theta` varies across dimension pairs (low-frequency for early pairs, high-frequency for later ones).
+Treat each pair of dimensions in a query or key vector as a complex number, then rotate it by an angle proportional to its position. Position `m` rotates by angle `m * theta`, where `theta` varies across dimension pairs (low-frequency for early pairs, high-frequency for later ones).
 
 The rotation frequencies follow a geometric schedule:
 
@@ -47,7 +47,7 @@ This is just the 2D rotation matrix applied to each pair independently. RoPE is 
 
 ### Why relative position emerges
 
-The key insight is mathematical. When you compute `q_m . k_n` (the attention score between positions `m` and `n`), the rotation angles combine as:
+When you compute `q_m . k_n` (the attention score between positions `m` and `n`), the rotation angles combine as:
 
 ```
 q_m . k_n = Re[(q * e^{i*m*theta}) . conj(k * e^{i*n*theta})]

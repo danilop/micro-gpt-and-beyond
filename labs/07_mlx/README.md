@@ -18,7 +18,7 @@ logits = model(input_ids)  # computed on GPU
 loss_val = loss_val.item()  # read on CPU, no copy needed
 ```
 
-This is a fundamental hardware difference on Apple Silicon, and MLX is designed around it.
+Unified memory is a fundamental hardware difference on Apple Silicon, and MLX is designed around it.
 
 ### Lazy evaluation, and what `mx.eval` is really for
 

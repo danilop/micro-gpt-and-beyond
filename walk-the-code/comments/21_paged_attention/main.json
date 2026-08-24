@@ -168,7 +168,7 @@
     "hash": "4c9be768"
   },
   "96": {
-    "text": "Handle <code>number * value</code> by delegating to the Value's own multiplication, ensuring the computation graph tracks both operands.",
+    "text": "Handle <code>number * value</code> by delegating to the Value's own multiplication, which keeps both operands in the computation graph.",
     "hash": "88c2cb40"
   },
   "97": {
@@ -1569,7 +1569,7 @@
     "hash": "dacbe77a"
   },
   "569": {
-    "text": "Generate 20 names to showcase the model's learned character patterns, each using its own paged cache sequence.",
+    "text": "Generate 20 names to show the model's learned character patterns, each using its own paged cache sequence.",
     "hash": "64d836c5"
   },
   "570": {

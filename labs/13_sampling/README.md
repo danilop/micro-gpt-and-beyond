@@ -35,7 +35,7 @@ Temperature is almost always combined with one of the filtering strategies below
 
 Keep only the k highest-probability tokens, set everything else to zero, renormalize, sample. A hard cutoff that prevents sampling from the long tail of unlikely tokens.
 
-The problem: k is fixed regardless of how the distribution looks. If the model is very confident (one token at 95%), k=10 still keeps 10 tokens. If the model is uncertain (flat distribution), k=10 might cut off reasonable options.
+k is fixed regardless of how the distribution looks. If the model is very confident (one token at 95%), k=10 still keeps 10 tokens. If the model is uncertain (flat distribution), k=10 might cut off reasonable options.
 
 ```python
 topk_vals, _ = torch.topk(scaled, k)

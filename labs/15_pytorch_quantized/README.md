@@ -115,7 +115,7 @@ If outputs diverge significantly, it means the model is sensitive to precision. 
 - **INT8 kernels**: Specialized implementations that operate directly on INT8
 - **4-bit quantization**: GPTQ, GGUF, and other extreme compression schemes
 
-This version focuses on the core idea: FP32 to INT8 weight compression for memory savings.
+This version focuses on FP32 to INT8 weight compression for memory savings.
 
 ## Run
 

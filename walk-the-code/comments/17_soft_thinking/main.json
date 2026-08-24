@@ -60,7 +60,7 @@
     "hash": "0a38d2ba"
   },
   "54": {
-    "text": "Small model, same architecture as Lab 03, but with one crucial addition: the forward pass accepts pre-computed embeddings, not just token IDs.",
+    "text": "Small model, same architecture as Lab 03, but with one addition: the forward pass accepts pre-computed embeddings, not just token IDs.",
     "hash": "f6d4f4da",
     "diagram": "transformer_soft_input",
     "highlight": [

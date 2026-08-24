@@ -185,7 +185,7 @@
     "hash": "3e2b4921"
   },
   "112": {
-    "text": "Forward pass for a single sequence. This is the key insight: you write the simplest possible code for one example and let <code>vmap</code> handle batching. Compare lab 04, where the entire forward pass was rewritten for (B, T, C) shapes.",
+    "text": "Forward pass for a single sequence. You write the simplest possible code for one example and let <code>vmap</code> handle batching. Compare lab 04, where the entire forward pass was rewritten for (B, T, C) shapes.",
     "hash": "9ac5e756",
     "important": true
   },
