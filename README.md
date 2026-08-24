@@ -50,6 +50,29 @@ The [interactive web tutorial](https://danilop.github.io/micro-gpt-and-beyond/) 
 | **Production Serving** | 19, 20, 21, 22 | Speculative decoding, FlashAttention, PagedAttention, disaggregated serving |
 | **Self-Improvement** | 23, 24 | Filtered self-training and population-based evolution |
 
+## Not yet covered
+
+Four topics a reader might reasonably expect and will not find here. They are
+listed rather than left implicit, in the same spirit as each lab stating what it
+does not show.
+
+Lab numbers are identifiers, not reading order. Chapter membership is set by the
+`groups` section of `walk-the-code/config.json`, so a new lab takes the next free
+number and still joins whichever chapter it belongs to. Nothing gets renumbered.
+
+| Topic | Chapter it would join | What it would add |
+|---|---|---|
+| **Preference alignment (DPO)** | Fine-tuning & Deployment | The whole of post-training. The labs train a base model and then serve it, so nothing covers the step that makes a model follow an instruction. DPO suits this scale: a closed-form loss over preference pairs against a frozen reference, with no reward model and no RL loop. |
+| **Mixture of Experts** | Tokenization & Architecture | Every model here is dense, while Mixtral, DeepSeek and Qwen3 are sparse. Four expert MLPs and a top-2 router work at 16 dimensions, and expert collapse appears at that size, so the load-balancing loss has something real to fix. |
+| **Gated MLP (SwiGLU)** | Tokenization & Architecture | Every feed-forward block in the repo is a plain ReLU MLP, which is the GPT-2 design. Everything since LLaMA gates it instead. Three lines of change, and a reason worth stating: the gate lets the network suppress channels multiplicatively. |
+| **Continuous batching** | Production Serving | Lab 21 builds the paged cache that makes it possible and lab 22 splits prefill from decode, but nothing schedules sequences into and out of a batch while it runs, which is where most of vLLM's throughput comes from. |
+
+Deliberately out of scope: mixed precision, gradient checkpointing and sharded
+training, none of which becomes a problem at 4,192 parameters; scaling laws,
+which need more model sizes than one laptop run can honestly produce; and a
+general evaluation harness, since the labs that depend on held-out loss already
+measure it themselves.
+
 ## The idea
 
 Every version trains the same architecture (a character-level transformer with RMSNorm, ReLU, multi-head attention, and linear LR decay) on the same names dataset. What changes is *how* the computation is expressed:
