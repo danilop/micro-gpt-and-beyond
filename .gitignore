@@ -16,3 +16,7 @@ wheels/
 
 # macOS
 .DS_Store
+
+# Built tutorial bundle: wtc-build regenerates it, and the deploy workflow
+# rebuilds it before copying, so the committed copy was never read.
+walk-the-code/data/units.json
