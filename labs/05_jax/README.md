@@ -14,12 +14,12 @@ There are no `nn.Module` classes. Parameters are a plain Python dict of JAX arra
 
 ```python
 params = {
-    'wte': init_param(next(ki), (vocab_size, n_embd)),
-    'wpe': init_param(next(ki), (block_size, n_embd)),
-    'lm_head': init_param(next(ki), (vocab_size, n_embd)),
+    "wte": init_param(next(ki), (vocab_size, n_embd)),
+    "wpe": init_param(next(ki), (block_size, n_embd)),
+    "lm_head": init_param(next(ki), (vocab_size, n_embd)),
 }
 for i in range(n_layer):
-    params[f'l{i}.wq'] = init_param(next(ki), (n_embd, n_embd))
+    params[f"l{i}.wq"] = init_param(next(ki), (n_embd, n_embd))
     # ...
 ```
 
@@ -32,19 +32,19 @@ This dict *is* the model. There's no wrapper object, no registration, no `state_
 ```python
 def forward(params, input_ids):
     n = input_ids.shape[0]
-    tok_emb = params['wte'][input_ids]
-    pos_emb = params['wpe'][jnp.arange(n)]
+    tok_emb = params["wte"][input_ids]
+    pos_emb = params["wpe"][jnp.arange(n)]
     x = rmsnorm(tok_emb + pos_emb)
 
     for li in range(n_layer):
         x_res = x
         x_n = rmsnorm(x)
-        Q = x_n @ params[f'l{li}.wq']
-        K = x_n @ params[f'l{li}.wk']
-        V = x_n @ params[f'l{li}.wv']
+        Q = x_n @ params[f"l{li}.wq"]
+        K = x_n @ params[f"l{li}.wk"]
+        V = x_n @ params[f"l{li}.wv"]
         # ... attention, MLP, residuals ...
 
-    return x @ params['lm_head'].T
+    return x @ params["lm_head"].T
 ```
 
 Because it's pure, JAX can transform it: differentiate it with `grad`, compile it with `jit`, vectorize it with `vmap`, all automatically.
@@ -80,7 +80,7 @@ Note `jax.tree.map` rather than a Python `for k in params` loop. The optimizer a
 JAX doesn't have a global random state. Every random operation requires an explicit key, and you split keys to get new ones:
 
 ```python
-key = jax.random.key(42)            # typed key, the modern API
+key = jax.random.key(42)  # typed key, the modern API
 keys = jax.random.split(key, num_param_tensors)
 ```
 
@@ -107,7 +107,9 @@ new_m = jax.tree.map(lambda m, g: beta1 * m + (1 - beta1) * g, m_state, grads)
 new_v = jax.tree.map(lambda v, g: beta2 * v + (1 - beta2) * g**2, v_state, grads)
 new_params = jax.tree.map(
     lambda p, m, v: p - lr * (m / bias1) / (jnp.sqrt(v / bias2) + eps_adam),
-    params, new_m, new_v,
+    params,
+    new_m,
+    new_v,
 )
 ```
 

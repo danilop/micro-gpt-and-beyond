@@ -13,9 +13,9 @@ If you have a Mac with Apple Silicon, this version trains on the GPU with zero c
 In PyTorch, you move tensors between CPU and GPU with `.to(device)`. In MLX, there's no transfer because CPU and GPU share the same memory:
 
 ```python
-input_ids = mx.array(tokens[:n])   # lives in unified memory
-logits = model(input_ids)           # computed on GPU
-loss_val = loss_val.item()          # read on CPU, no copy needed
+input_ids = mx.array(tokens[:n])  # lives in unified memory
+logits = model(input_ids)  # computed on GPU
+loss_val = loss_val.item()  # read on CPU, no copy needed
 ```
 
 This is a fundamental hardware difference on Apple Silicon, and MLX is designed around it.
@@ -26,7 +26,7 @@ MLX doesn't compute anything until you ask for a result. Operations build a comp
 
 ```python
 optimizer.update(model, grads)
-mx.eval(state)   # state = [model.state, optimizer.state]
+mx.eval(state)  # state = [model.state, optimizer.state]
 ```
 
 It is easy to get the reason for that line wrong. It is *not* needed to print the loss: `loss_val.item()` already forces the loss to be computed, because you cannot read a Python float out of a graph. What `.item()` does not force is the parameter update or the optimizer moments, which nothing downstream reads.
@@ -40,10 +40,12 @@ Lazy evaluation on its own only defers work. `mx.compile` is what turns the defe
 ```python
 state = [model.state, optimizer.state]
 
+
 def train_step(input_ids, targets):
     loss_val, grads = loss_and_grad(model, input_ids, targets)
     optimizer.update(model, grads)
     return loss_val
+
 
 train_step = mx.compile(train_step, inputs=state, outputs=state)
 ```

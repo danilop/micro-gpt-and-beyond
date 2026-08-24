@@ -27,6 +27,7 @@ def forward_single(self, idx, pad_mask):
     tok_emb = self.wte(idx)
     ...
 
+
 def __call__(self, idx, pad_mask=None):
     # idx: (B, T) -> logits (B, T, vocab_size)
     return mx.vmap(self.forward_single, in_axes=(0, 0))(idx, pad_mask)
@@ -52,10 +53,12 @@ MLX doesn't compute anything until asked. With batches the pending graph per ste
 ```python
 state = [model.state, optimizer.state]
 
+
 def train_step(input_ids, targets, pad_mask, target_mask):
     loss_val, grads = loss_and_grad(model, input_ids, targets, pad_mask, target_mask)
     optimizer.update(model, grads)
     return loss_val
+
 
 train_step = mx.compile(train_step, inputs=state, outputs=state)
 ```
@@ -100,7 +103,7 @@ def make_batch(docs, step, batch_size):
     for s in sequences:
         n = len(s) - 1
         inp = s[:n] + [PAD] * (max_len - 1 - n)
-        tgt = s[1:n+1] + [0] * (max_len - 1 - n)
+        tgt = s[1 : n + 1] + [0] * (max_len - 1 - n)
         pmask = [False] * n + [True] * (max_len - 1 - n)
         tmask = [1.0] * n + [0.0] * (max_len - 1 - n)
 

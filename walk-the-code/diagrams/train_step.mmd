@@ -1,4 +1,39 @@
+%% The four top-level phases keep their original ids and edge order, so
+%% annotations in other labs that highlight forward/loss/backward/update or
+%% links 0-2 are unaffected. The subgraphs let a reader walking one training
+%% step land on a different box for each line of it.
 graph TD
     forward[Forward: GPT] --> loss[Cross-entropy loss]
     loss --> backward[Backward: compute grads]
     backward --> update[Adam: update params]
+    subgraph fwd[Inside the forward pass]
+        direction TB
+        cache[Per-layer K,V lists]
+        walk[Walk positions left to right]
+        gpt_call[GPT forward for one position]
+    end
+    subgraph lossbox[Inside the loss]
+        direction TB
+        probs[Softmax to probabilities]
+        nll[Negative log of the target probability]
+        mean[Average over the document]
+    end
+    subgraph adam[Inside the Adam step]
+        direction TB
+        lr[Decay the learning rate]
+        moments[Update the moments m and v]
+        bias[Bias-correct to m_hat and v_hat]
+        apply[Move the parameters]
+        zero[Reset grads to zero]
+    end
+    forward --> cache
+    cache --> walk
+    walk --> gpt_call
+    loss --> probs
+    probs --> nll
+    nll --> mean
+    update --> lr
+    lr --> moments
+    moments --> bias
+    bias --> apply
+    apply --> zero

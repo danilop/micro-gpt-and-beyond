@@ -30,20 +30,20 @@ def make_batch(docs, step, batch_size):
     for i in range(batch_size):
         doc = docs[(step * batch_size + i) % len(docs)]
         toks = [BOS] + [uchars.index(ch) for ch in doc] + [BOS]
-        toks = toks[:block_size + 1]
+        toks = toks[: block_size + 1]
         sequences.append(toks)
 
     max_len = max(len(s) for s in sequences)
     for s in sequences:
         n = len(s) - 1
         inp = s[:n] + [PAD] * (max_len - 1 - n)
-        tgt = s[1:n+1] + [-100] * (max_len - 1 - n)  # -100 = ignore in loss
+        tgt = s[1 : n + 1] + [-100] * (max_len - 1 - n)  # -100 = ignore in loss
         mask = [False] * n + [True] * (max_len - 1 - n)
 ```
 
 Padding always goes on the end: real tokens first, `PAD` afterwards. That detail matters more than it looks, as the next section shows.
 
-The `toks[:block_size + 1]` slice is a safety bound rather than a working truncation. The longest name in the corpus is 15 characters, so `BOS + name + EOS` is at most 17 tokens, which is exactly `block_size + 1`. Nothing in this dataset is ever cut; point the same code at a corpus of sentences and it will be.
+The `toks[: block_size + 1]` slice is a safety bound rather than a working truncation. The longest name in the corpus is 15 characters, so `BOS + name + EOS` is at most 17 tokens, which is exactly `block_size + 1`. Nothing in this dataset is ever cut; point the same code at a corpus of sentences and it will be.
 
 ### The mask that does the work: `ignore_index`
 
@@ -57,9 +57,9 @@ The attention layer stacks the causal mask (can't look ahead) on top of the padd
 def forward(self, x, pad_mask=None):
     att = (q @ k.transpose(-2, -1)) / math.sqrt(head_dim)
     causal = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
-    att = att.masked_fill(causal, float('-inf'))
+    att = att.masked_fill(causal, float("-inf"))
     if pad_mask is not None:
-        att = att.masked_fill(pad_mask[:, None, None, :], float('-inf'))
+        att = att.masked_fill(pad_mask[:, None, None, :], float("-inf"))
     att = F.softmax(att, dim=-1)
     att = torch.nan_to_num(att)
 ```

@@ -58,8 +58,8 @@ class FlexAttention(nn.Module):
         self.n_kv_head = n_kv_head
         self.repeats = n_head // n_kv_head
 
-        self.wq = nn.Linear(n_embd, n_embd, bias=False)                    # full Q heads
-        self.wk = nn.Linear(n_embd, n_kv_head * head_dim, bias=False)      # fewer KV heads
+        self.wq = nn.Linear(n_embd, n_embd, bias=False)  # full Q heads
+        self.wk = nn.Linear(n_embd, n_kv_head * head_dim, bias=False)  # fewer KV heads
         self.wv = nn.Linear(n_embd, n_kv_head * head_dim, bias=False)
 
     def forward(self, x):

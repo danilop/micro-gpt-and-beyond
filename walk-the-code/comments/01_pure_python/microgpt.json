@@ -138,10 +138,7 @@
     "hash": "1afe9bbf",
     "diagram": "autograd_forward",
     "highlight": [
-      "a",
-      "b",
-      "op",
-      "c"
+      "b"
     ]
   },
   "42": {
@@ -165,10 +162,7 @@
     "hash": "1afe9bbf",
     "diagram": "autograd_forward",
     "highlight": [
-      "a",
-      "b",
-      "op",
-      "c"
+      "b"
     ]
   },
   "46": {
@@ -181,7 +175,10 @@
     "hash": "49017103",
     "diagram": "autograd_forward",
     "highlight": [
-      "c"
+      "x",
+      "uop",
+      "y",
+      "children_x"
     ]
   },
   "49": {
@@ -189,7 +186,10 @@
     "hash": "61baa151",
     "diagram": "autograd_forward",
     "highlight": [
-      "c"
+      "x",
+      "uop",
+      "y",
+      "children_x"
     ]
   },
   "50": {
@@ -197,7 +197,10 @@
     "hash": "3d5a7ab6",
     "diagram": "autograd_forward",
     "highlight": [
-      "c"
+      "x",
+      "uop",
+      "y",
+      "children_x"
     ]
   },
   "51": {
@@ -205,7 +208,10 @@
     "hash": "269e8e82",
     "diagram": "autograd_forward",
     "highlight": [
-      "c"
+      "x",
+      "uop",
+      "y",
+      "children_x"
     ]
   },
   "52": {
@@ -722,7 +728,8 @@
     "hash": "a35d1040",
     "diagram": "train_step",
     "highlight": [
-      "forward"
+      "forward",
+      "cache"
     ]
   },
   "163": {
@@ -730,7 +737,8 @@
     "hash": "38c0a0e0",
     "diagram": "train_step",
     "highlight": [
-      "forward"
+      "forward",
+      "cache"
     ]
   },
   "164": {
@@ -738,7 +746,7 @@
     "hash": "99351782",
     "diagram": "train_step",
     "highlight": [
-      "forward"
+      "walk"
     ]
   },
   "165": {
@@ -746,7 +754,7 @@
     "hash": "be0a656b",
     "diagram": "train_step",
     "highlight": [
-      "forward"
+      "walk"
     ]
   },
   "166": {
@@ -754,7 +762,7 @@
     "hash": "cf335203",
     "diagram": "train_step",
     "highlight": [
-      "forward"
+      "gpt_call"
     ]
   },
   "167": {
@@ -762,7 +770,7 @@
     "hash": "141e9312",
     "diagram": "train_step",
     "highlight": [
-      "loss"
+      "probs"
     ]
   },
   "168": {
@@ -770,7 +778,7 @@
     "hash": "303b9e5f",
     "diagram": "train_step",
     "highlight": [
-      "loss"
+      "nll"
     ]
   },
   "169": {
@@ -778,7 +786,8 @@
     "hash": "ff81af9b",
     "diagram": "train_step",
     "highlight": [
-      "loss"
+      "nll",
+      "mean"
     ]
   },
   "170": {
@@ -786,7 +795,7 @@
     "hash": "26414bbb",
     "diagram": "train_step",
     "highlight": [
-      "loss"
+      "mean"
     ]
   },
   "173": {
@@ -802,7 +811,7 @@
     "hash": "bb970483",
     "diagram": "train_step",
     "highlight": [
-      "update"
+      "lr"
     ]
   },
   "177": {
@@ -818,7 +827,7 @@
     "hash": "ba400611",
     "diagram": "train_step",
     "highlight": [
-      "update"
+      "moments"
     ]
   },
   "179": {
@@ -826,7 +835,7 @@
     "hash": "78d2fc0a",
     "diagram": "train_step",
     "highlight": [
-      "update"
+      "moments"
     ]
   },
   "180": {
@@ -834,7 +843,7 @@
     "hash": "b032277a",
     "diagram": "train_step",
     "highlight": [
-      "update"
+      "bias"
     ]
   },
   "181": {
@@ -846,7 +855,7 @@
     "hash": "2ddff7c2",
     "diagram": "train_step",
     "highlight": [
-      "update"
+      "apply"
     ]
   },
   "183": {
@@ -854,7 +863,7 @@
     "hash": "868bc78c",
     "diagram": "train_step",
     "highlight": [
-      "update"
+      "zero"
     ]
   },
   "185": {

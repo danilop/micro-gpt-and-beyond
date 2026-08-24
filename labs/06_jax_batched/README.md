@@ -25,8 +25,8 @@ Compare this to the PyTorch batched version. The JAX forward pass is still writt
 ```python
 def forward_single(params, input_ids, pad_mask):
     T = input_ids.shape[0]
-    tok_emb = params['wte'][input_ids]       # (T, D), not (B, T, D)
-    pos_emb = params['wpe'][jnp.arange(T)]
+    tok_emb = params["wte"][input_ids]  # (T, D), not (B, T, D)
+    pos_emb = params["wpe"][jnp.arange(T)]
     x = rmsnorm(tok_emb + pos_emb)
     ...
 ```
@@ -63,7 +63,7 @@ def train_step(params, m_state, v_state, batch, step, lr):
 This is the change that matters most in this lab. The natural way to pad a batch is to the longest sequence in it:
 
 ```python
-max_len = max(len(s) for s in sequences)     # 6 in one batch, 11 in the next...
+max_len = max(len(s) for s in sequences)  # 6 in one batch, 11 in the next...
 ```
 
 Under `jit`, that is a trap. XLA compiles per input shape, so a batch of `(32, 6)` and a batch of `(32, 11)` are different programs, and each new longest-name-in-batch triggers another trace and compile. `05_jax` shows the single-example version of the same problem: one name per step, twelve compilations.

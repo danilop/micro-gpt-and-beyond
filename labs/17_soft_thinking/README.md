@@ -29,8 +29,8 @@ Note that "hard" here means **sampling**, not argmax. The code calls `torch.mult
 The concept token is computed as:
 
 ```python
-soft_probs = softmax(logits / T)             # (vocab_size,)
-concept_token = soft_probs @ embed_table      # (n_embd,)
+soft_probs = softmax(logits / T)  # (vocab_size,)
+concept_token = soft_probs @ embed_table  # (n_embd,)
 ```
 
 This is a point in the same n_embd-dimensional space as regular token embeddings, but instead of representing a single discrete token, it represents a blend. If the model is 80% confident about 'a' and 20% about 'e', the concept token sits somewhere between the embeddings for 'a' and 'e', carrying both possibilities forward.

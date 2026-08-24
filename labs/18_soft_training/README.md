@@ -24,7 +24,7 @@ Concept tokens are weighted averages of many embeddings, and they don't look lik
 The fix is to gradually introduce concept tokens during training:
 
 ```python
-mix = step / num_steps    # 0 -> 1 over training
+mix = step / num_steps  # 0 -> 1 over training
 
 # Model's own soft predictions (detached)
 soft_embeds = softmax(logits / T) @ embed_table

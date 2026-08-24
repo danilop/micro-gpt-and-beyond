@@ -31,8 +31,8 @@ Let's walk through `main.py`. The model architecture (RMSNorm, multi-head attent
 ### 1. The Tokenizer
 
 ```python
-uchars = sorted(set(''.join(docs)))
-MASK = len(uchars)     # the "noise" state
+uchars = sorted(set("".join(docs)))
+MASK = len(uchars)  # the "noise" state
 PAD = len(uchars) + 1  # fills unused positions
 vocab_size = len(uchars) + 2
 ```
@@ -54,9 +54,9 @@ Lab 03's `CausalSelfAttention` masks future positions so each token only sees th
 The architecture is otherwise identical: same embedding, same RMSNorm, same multi-head attention, same MLP with ReLU. Key hyperparameter differences:
 
 ```python
-n_layer = 2       # diffusion needs depth to gather scattered clues
+n_layer = 2  # diffusion needs depth to gather scattered clues
 num_steps = 3000
-batch_size = 32   # critical for diffusion
+batch_size = 32  # critical for diffusion
 ```
 
 ### 3. Training: Noise Instead of Next-Token Prediction

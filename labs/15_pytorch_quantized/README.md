@@ -27,8 +27,8 @@ class QuantizedLinear(nn.Module):
         weight = fp32_linear.weight.data
         scale = weight.abs().max() / 127.0
         weight_int8 = torch.round(weight / scale).to(torch.int8)
-        self.register_buffer('weight_int8', weight_int8)
-        self.register_buffer('scale', torch.tensor(scale))
+        self.register_buffer("weight_int8", weight_int8)
+        self.register_buffer("scale", torch.tensor(scale))
 
     def forward(self, x):
         weight_fp32 = self.weight_int8.to(x.dtype) * self.scale

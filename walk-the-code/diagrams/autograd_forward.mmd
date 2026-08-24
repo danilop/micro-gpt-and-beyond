@@ -1,5 +1,11 @@
+%% Two paths, because the Value class builds the graph both ways: binary ops
+%% record two children, unary ops record one. The original binary ids are
+%% unchanged so existing highlights still resolve.
 graph TD
-    a[a: Value] --> op[Operation +, *, ...]
+    a[a: Value] --> op[Binary op: + or *]
     b[b: Value] --> op
     op --> c[c: Value]
     c --> children_ab[children = a, b]
+    x[x: Value] --> uop[Unary op: ** log exp relu]
+    uop --> y[y: Value]
+    y --> children_x[children = x]

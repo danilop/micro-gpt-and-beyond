@@ -16,7 +16,7 @@ BPE starts with a character vocabulary and iteratively merges the most frequent 
 
 ```python
 for i in range(NUM_MERGES):
-    counts = count_pairs(corpus)       # count all adjacent pairs
+    counts = count_pairs(corpus)  # count all adjacent pairs
     best_pair = max(counts, key=counts.get)  # find most frequent
     corpus = merge_pair(corpus, best_pair, new_id)  # replace everywhere
 ```

@@ -22,9 +22,9 @@ The rotation frequencies follow a geometric schedule:
 ```python
 def precompute_freqs(dim, max_len):
     i = torch.arange(0, dim, 2, dtype=torch.float32)
-    theta = 1.0 / (10000.0 ** (i / dim))       # different freq per pair
+    theta = 1.0 / (10000.0 ** (i / dim))  # different freq per pair
     positions = torch.arange(max_len, dtype=torch.float32)
-    angles = torch.outer(positions, theta)       # (max_len, dim//2)
+    angles = torch.outer(positions, theta)  # (max_len, dim//2)
     return torch.cos(angles), torch.sin(angles)
 ```
 

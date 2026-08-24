@@ -16,15 +16,16 @@ Every forward operation has a matching backward function. Here's RMSNorm as an e
 
 ```python
 def rmsnorm_fwd(x):
-    ms = np.mean(x ** 2, axis=-1, keepdims=True)
+    ms = np.mean(x**2, axis=-1, keepdims=True)
     scale = 1.0 / np.sqrt(ms + 1e-5)
     out = x * scale
     return out, (x, scale, ms)
 
+
 def rmsnorm_bwd(dout, cache):
     x, scale, ms = cache
     D = x.shape[-1]
-    dx = dout * scale - x * scale ** 3 * np.sum(dout * x, axis=-1, keepdims=True) / D
+    dx = dout * scale - x * scale**3 * np.sum(dout * x, axis=-1, keepdims=True) / D
     return dx
 ```
 
@@ -48,7 +49,7 @@ The `backward()` function walks the computation graph in reverse, layer by layer
 
 ```python
 # Attention scores backward: att = Q_h @ K_h^T / sqrt(d)
-dQ_h = datt @ K_h           # (nh, n, hd)
+dQ_h = datt @ K_h  # (nh, n, hd)
 dK_h = datt.transpose(0, 2, 1) @ Q_h  # (nh, n, hd)
 ```
 
