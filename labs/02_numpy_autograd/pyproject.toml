@@ -1,7 +1,7 @@
 [project]
-name = "02-numpy-manual-backprop"
+name = "02-numpy-autograd"
 version = "0.1.0"
-description = "microGPT in NumPy with hand-written backpropagation"
+description = "microGPT in NumPy with an array-level autograd engine"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

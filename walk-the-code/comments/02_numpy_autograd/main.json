@@ -1,0 +1,751 @@
+{
+  "2": {
+    "text": "The whole lab in one sentence. Same model as version 01, same autograd design, with an array where the scalar used to be.",
+    "hash": "34899dc9",
+    "important": true
+  },
+  "4": {
+    "text": "Read this as a controlled experiment. Architecture, weights, data order, and training schedule are all held fixed, so anything you observe comes from the change in representation.",
+    "hash": "45d6cbc7"
+  },
+  "6": {
+    "text": "A 16x16 matrix multiply in version 01 costs 256 Value objects and 256 trips through the interpreter. Here it costs one object and one call into BLAS.",
+    "hash": "6685f0c9"
+  },
+  "10": {
+    "text": "If you understood version 01's Value class, you already understand most of this file. The topological sort and the reverse walk are unchanged.",
+    "hash": "bbfe3ace"
+  },
+  "12": {
+    "text": "This is worth noticing early: RMSNorm and softmax are not built into either engine. They are ordinary functions, and the graph differentiates them for free.",
+    "hash": "0b677ea9"
+  },
+  "16": {
+    "text": "Reverse-mode autodiff is old. What changed over the decades is not the algorithm but the granularity it is applied at, and the hardware underneath.",
+    "hash": "838dcc07"
+  },
+  "25": {
+    "text": "The speed claim in this lab is measured, not asserted. Every step prints its own wall clock so you can check the number on your own machine.",
+    "hash": "b483fd50"
+  },
+  "29": {
+    "text": "math is here for a single sqrt in the attention scaling. Everything else numeric goes through NumPy.",
+    "hash": "b67c9dde"
+  },
+  "31": {
+    "text": "Python's random shuffles the documents; NumPy's generator initializes the weights. Two sources, seeded separately, both fixed.",
+    "hash": "7e18ed42"
+  },
+  "34": {
+    "text": "The only third-party import in the file. Everything else is standard library.",
+    "hash": "6f11581d"
+  },
+  "36": {
+    "text": "Same seed as version 01, so the document order matches and the loss curves can be compared step for step.",
+    "hash": "f0726c6e"
+  },
+  "37": {
+    "text": "NumPy keeps its own generator. Seeding it separately means the weights are reproducible no matter what else consumes randomness.",
+    "hash": "80f20623"
+  },
+  "43": {
+    "text": "The one function in this file with no counterpart in version 01. Broadcasting is what arrays add over scalars, and this is the price paid for it on the backward pass.",
+    "hash": "9c500911",
+    "important": true
+  },
+  "44": {
+    "text": "Read this docstring before the body. The rule is simple: whatever the forward pass copied, the backward pass adds back up.",
+    "hash": "5088e438"
+  },
+  "46": {
+    "text": "Scalars are shape-free, so version 01 never met this problem. It appears the moment a value can have a shape.",
+    "hash": "c7f8a129"
+  },
+  "47": {
+    "text": "A concrete case from this file: rmsnorm multiplies an (n, D) activation by an (n, 1) scale. NumPy quietly copies that column D times.",
+    "hash": "64650dc7"
+  },
+  "48": {
+    "text": "Each of those D copies contributes to the loss, so each produces a gradient, and the true gradient at the original element is their sum.",
+    "hash": "9cdf3862"
+  },
+  "50": {
+    "text": "First case: broadcasting can add leading axes that the original array never had. Sum them away entirely.",
+    "hash": "2ac064bc"
+  },
+  "51": {
+    "text": "axis=0 repeatedly, until the number of dimensions matches again.",
+    "hash": "d4cfc763"
+  },
+  "52": {
+    "text": "Second case: an axis of length 1 that was stretched to length n. Here the axis survives, so keepdims is required.",
+    "hash": "48a266ba"
+  },
+  "53": {
+    "text": "The guard matters. If the axis was already the right size, nothing was stretched and nothing should be summed.",
+    "hash": "fcedcd75"
+  },
+  "54": {
+    "text": "keepdims=True preserves the (n, 1) shape, so the result lines up with the array whose gradient this is.",
+    "hash": "46115aee"
+  },
+  "55": {
+    "text": "The returned gradient now has exactly the shape of the tensor it belongs to, which is the invariant every backward closure relies on.",
+    "hash": "3a500929"
+  },
+  "58": {
+    "text": "The heart of the lab. Compare it side by side with version 01's Value: same responsibilities, one different design decision.",
+    "hash": "51f2b9a5",
+    "important": true
+  },
+  "61": {
+    "text": "Version 01 can store a plain number per child, because for scalars the chain rule is always multiplication.",
+    "hash": "c466ffc7"
+  },
+  "63": {
+    "text": "For arrays that breaks down. There is no number you can multiply dC by to get dA when C = A @ B.",
+    "hash": "84a09230"
+  },
+  "64": {
+    "text": "So the design changes: each operation captures what it needs in a closure, which is executed later during the backward walk.",
+    "hash": "de5bc1bc",
+    "important": true
+  },
+  "68": {
+    "text": "__slots__ removes the per-object dict. With a few dozen nodes per step it barely matters, but it echoes version 01's use of the same trick.",
+    "hash": "8df18f51"
+  },
+  "70": {
+    "text": "children defaults to empty, which is exactly what a parameter or a constant needs.",
+    "hash": "8f5ef0af"
+  },
+  "71": {
+    "text": "Everything is float64. Mixed precision is a later concern; correctness comes first.",
+    "hash": "647592a4"
+  },
+  "72": {
+    "text": "The gradient buffer is allocated with the node and zeroed. After backward it holds d(loss)/d(this array), element for element.",
+    "hash": "5266788d"
+  },
+  "73": {
+    "text": "The edges of the graph. Holding references to the children is what keeps the whole forward pass alive until backward has run.",
+    "hash": "29b8f3e4"
+  },
+  "74": {
+    "text": "The closure that pushes this node's gradient into its children. Leaves keep the no-op, since they have nowhere to push to.",
+    "hash": "10f290cb"
+  },
+  "78": {
+    "text": "Addition, the simplest case, and the one that shows the broadcasting problem most clearly.",
+    "hash": "28fd4a4e"
+  },
+  "79": {
+    "text": "Same coercion trick as version 01: a bare number or array becomes a constant node so the rest of the method has one thing to handle.",
+    "hash": "c5a051ec"
+  },
+  "80": {
+    "text": "The forward value is computed immediately. Autograd here is eager, like PyTorch and unlike a graph you compile ahead of time.",
+    "hash": "5bcf1691"
+  },
+  "82": {
+    "text": "The closure captures self, other, and out by reference. When it runs later, out.grad has already been filled in by whatever consumed this node.",
+    "hash": "fa3b43ec"
+  },
+  "85": {
+    "text": "d(a + b)/da is 1, so the gradient passes straight through. The only work is undoing any broadcasting that happened on the way in.",
+    "hash": "21394a0f"
+  },
+  "86": {
+    "text": "Accumulate with += rather than assign. A node used twice, as the residual stream is, receives a gradient from each use.",
+    "hash": "d90e3b23"
+  },
+  "88": {
+    "text": "Attaching the closure after out exists is what lets it close over out.",
+    "hash": "6de7d269"
+  },
+  "91": {
+    "text": "Multiplication, elementwise. Note that this is not matrix multiplication, which gets its own method below.",
+    "hash": "46d3836f"
+  },
+  "93": {
+    "text": "NumPy broadcasts here too, which is why both gradients go through unbroadcast.",
+    "hash": "7f645977"
+  },
+  "97": {
+    "text": "The product rule: d(a*b)/da = b. Version 01 stores exactly this as a number; here it is an array of the same shape.",
+    "hash": "4f8b7b74"
+  },
+  "103": {
+    "text": "Matrix multiplication, where the scalar shortcut finally becomes impossible. There is no local derivative to multiply by, only another matmul.",
+    "hash": "1479f109",
+    "important": true
+  },
+  "104": {
+    "text": "No coercion here. Multiplying by a raw array would need a shape check, and every use in this file has a Tensor on both sides.",
+    "hash": "83685062"
+  },
+  "107": {
+    "text": "Worth deriving once on paper if you have not. For C = A @ B, dA = dC @ B^T and dB = A^T @ dC, which is the identity every framework builds on.",
+    "hash": "3e4ce674"
+  },
+  "108": {
+    "text": "swapaxes(-1, -2) rather than .T so the same code covers 2D weight matrices and the 3D per-head arrays attention produces.",
+    "hash": "233c9ba8"
+  },
+  "110": {
+    "text": "Shapes check out: (n, V) @ (V, D) gives (n, D), which is the shape of self.",
+    "hash": "fdac651d"
+  },
+  "111": {
+    "text": "And (D, n) @ (n, V) gives (D, V), the shape of other. Getting the transposes right is the entire content of a matmul backward.",
+    "hash": "2c2eeaa1"
+  },
+  "116": {
+    "text": "These four follow version 01's pattern exactly: give the forward value and the local derivative, and let a shared helper build the node.",
+    "hash": "e80dbd5a"
+  },
+  "119": {
+    "text": "One helper serving four operations. Version 01 achieves the same compression by passing local_grads into the Value constructor.",
+    "hash": "ff3ad832"
+  },
+  "123": {
+    "text": "The elementwise chain rule, in one line. Every operation below reduces to this.",
+    "hash": "16774e2a"
+  },
+  "128": {
+    "text": "Powers cover more than they look: -0.5 gives the inverse square root in rmsnorm, and -1 gives division.",
+    "hash": "62a80578"
+  },
+  "129": {
+    "text": "The familiar d(x^k)/dx = k*x^(k-1), computed eagerly on the whole array.",
+    "hash": "61768ad7"
+  },
+  "131": {
+    "text": "Logarithm, used once, in the cross-entropy loss.",
+    "hash": "d0e32d47"
+  },
+  "132": {
+    "text": "d(log x)/dx = 1/x. The 1e-10 added before this call in loss_fn is what keeps the division finite.",
+    "hash": "53d7e517"
+  },
+  "134": {
+    "text": "ReLU, the only nonlinearity in the model.",
+    "hash": "bcafc4e4"
+  },
+  "135": {
+    "text": "The derivative is a boolean array, which NumPy treats as 0 and 1. Gradient flows where the input was positive and stops where it was not.",
+    "hash": "1b117b1d"
+  },
+  "137": {
+    "text": "Exponentiation, used by softmax.",
+    "hash": "cdb5d9f4"
+  },
+  "138": {
+    "text": "Computed once and reused as both the value and its own derivative, which saves a second pass over the array.",
+    "hash": "48345e78"
+  },
+  "141": {
+    "text": "These four have no equivalent in version 01. A scalar has no shape to change, so it needs no reshape and no transpose.",
+    "hash": "e5fcbb3f",
+    "important": true
+  },
+  "143": {
+    "text": "Summation, which turns many numbers into fewer. Its gradient does the opposite.",
+    "hash": "45551f63"
+  },
+  "144": {
+    "text": "keepdims is threaded through because the model relies on it to keep (n, 1) shapes for broadcasting.",
+    "hash": "44e00af7"
+  },
+  "147": {
+    "text": "Every element that fed the sum influenced the result equally, so every element receives the same gradient back.",
+    "hash": "efa0212b"
+  },
+  "150": {
+    "text": "If the axis was dropped on the way forward, it has to be put back before the gradient can be broadcast to the original shape.",
+    "hash": "70279d07"
+  },
+  "152": {
+    "text": "broadcast_to is the mirror image of unbroadcast, which is the sense in which sum and broadcast are dual operations.",
+    "hash": "92ab93ec"
+  },
+  "157": {
+    "text": "Reshape moves no data, only the interpretation of it.",
+    "hash": "54add6a2"
+  },
+  "161": {
+    "text": "So its gradient moves no data either. Reshape back to the original shape and you are done.",
+    "hash": "a6730f54"
+  },
+  "166": {
+    "text": "Transpose, needed by multi-head attention to give each head its own view of the sequence.",
+    "hash": "e029f94e"
+  },
+  "170": {
+    "text": "argsort of a permutation gives the inverse permutation, which undoes the forward transpose in one step.",
+    "hash": "c0234bc8"
+  },
+  "175": {
+    "text": "Indexing, which the embedding tables need. Its gradient is the operation most people have to think hardest about.",
+    "hash": "f8611c80",
+    "important": true
+  },
+  "176": {
+    "text": "The forward direction is a gather: pick these rows out of the table.",
+    "hash": "9e5e234d"
+  },
+  "179": {
+    "text": "The backward direction is a scatter-add, and the distinction matters. Plain fancy-index assignment keeps only the last write.",
+    "hash": "738087b3"
+  },
+  "180": {
+    "text": "The name 'anna' contains 'n' twice, so the same embedding row is read twice and must receive both gradients.",
+    "hash": "5416568d"
+  },
+  "181": {
+    "text": "np.add.at is the accumulating form. It is slower than +=, and it is the only correct choice here.",
+    "hash": "d30c67ac"
+  },
+  "186": {
+    "text": "Nothing below is a primitive. Each one is written in terms of the operations above, exactly as version 01 does.",
+    "hash": "7a2659ae"
+  },
+  "188": {
+    "text": "Mean is sum divided by a count, so it needs no gradient rule of its own.",
+    "hash": "3067e631"
+  },
+  "190": {
+    "text": "Multiplying by a constant reuses __mul__, which already knows how to differentiate.",
+    "hash": "c0717a83"
+  },
+  "193": {
+    "text": "Only used once, to transpose lm_head. Restricted to 2D on purpose, since the 3D cases go through transpose with explicit axes.",
+    "hash": "4220403c"
+  },
+  "196": {
+    "text": "The remaining operators are one-liners built on add, mul, and pow, in the same spirit as version 01's set.",
+    "hash": "048a9053"
+  },
+  "208": {
+    "text": "Division as multiplication by a reciprocal. One line, and its gradient comes from __pow__ and __mul__ for free.",
+    "hash": "88d61a68"
+  },
+  "211": {
+    "text": "The backward pass in full. Fifteen lines, and character for character it is version 01's implementation.",
+    "hash": "9fb958b2",
+    "important": true
+  },
+  "212": {
+    "text": "The ordering requirement: a node must not push its gradient until every consumer of that node has contributed to it.",
+    "hash": "ee55237f"
+  },
+  "216": {
+    "text": "topo collects nodes in dependency order, visited stops the walk revisiting shared nodes such as the residual stream.",
+    "hash": "8390546b"
+  },
+  "218": {
+    "text": "Depth-first post-order. Children are appended before their parent, so the list ends with this node.",
+    "hash": "21dfafa8"
+  },
+  "219": {
+    "text": "id() rather than the node itself, because Tensor defines no __hash__ and comparing arrays for equality would not do what is wanted here.",
+    "hash": "0f4df2a3"
+  },
+  "221": {
+    "text": "Recursion over the children is what makes this post-order, and post-order is what makes reversal correct.",
+    "hash": "d0ea5988"
+  },
+  "225": {
+    "text": "The graph for one training step of this model holds a few dozen nodes. Version 01's holds tens of thousands.",
+    "hash": "b48c2d1e"
+  },
+  "226": {
+    "text": "The seed of the whole backward pass: d(loss)/d(loss) is 1.",
+    "hash": "697df0ee"
+  },
+  "227": {
+    "text": "Reversed post-order visits every consumer of a node before the node itself, which is precisely the guarantee the closures need.",
+    "hash": "b4c822b0",
+    "important": true
+  },
+  "228": {
+    "text": "Each call adds this node's contribution to its children. After the loop, every parameter's .grad is complete.",
+    "hash": "b94d37a3"
+  },
+  "231": {
+    "text": "Leaves need a backward that does nothing. A module-level function rather than a lambda keeps ruff quiet and costs one allocation for the whole program.",
+    "hash": "ea19f46a"
+  },
+  "238": {
+    "text": "The dataset is shared across labs, so every version trains on the same names.",
+    "hash": "5ac9686d"
+  },
+  "242": {
+    "text": "Downloaded on first run only. After that the file on disk is used.",
+    "hash": "5e579f27"
+  },
+  "245": {
+    "text": "About 32,000 names, one per line.",
+    "hash": "2f367d0b"
+  },
+  "246": {
+    "text": "Shuffled with the same seed as version 01, so both labs see documents in the same order.",
+    "hash": "c8f1cb86"
+  },
+  "249": {
+    "text": "Character-level tokenization. The vocabulary is whatever letters appear in the data.",
+    "hash": "5f7ca3bb"
+  },
+  "250": {
+    "text": "One extra token, BOS, marks both the start and the end of a name. Reusing it for both is what lets the model decide when to stop.",
+    "hash": "476ca504"
+  },
+  "251": {
+    "text": "27 tokens: 26 letters plus BOS. Small enough that the whole model fits in 4192 parameters.",
+    "hash": "0a38d2ba"
+  },
+  "257": {
+    "text": "Sixteen dimensions. Real models use thousands, and nothing about the algorithm changes.",
+    "hash": "f6d4f4da"
+  },
+  "258": {
+    "text": "Four heads over 16 dimensions gives 4 dimensions per head.",
+    "hash": "e804f3b9"
+  },
+  "259": {
+    "text": "A single transformer block. Depth is the one axis this lab does not explore.",
+    "hash": "cbfe55b3"
+  },
+  "260": {
+    "text": "Sixteen tokens of context, which is longer than the longest name in the dataset.",
+    "hash": "ecfd6b0a"
+  },
+  "264": {
+    "text": "Every parameter is a Tensor, which means every parameter is a graph node with a .grad ready to be filled.",
+    "hash": "b8a4d5c2"
+  },
+  "265": {
+    "text": "Gaussian initialization at 0.08. Larger than GPT-2's 0.02, which suits a model this small.",
+    "hash": "46386e66"
+  },
+  "268": {
+    "text": "This is the payoff of making parameters graph nodes. There is no separate gradient dictionary to keep in step with the parameter dictionary.",
+    "hash": "4397d875"
+  },
+  "270": {
+    "text": "The token embedding table: one row of 16 numbers per vocabulary entry.",
+    "hash": "1d2b3b0e"
+  },
+  "271": {
+    "text": "The position embedding table, learned rather than sinusoidal, following GPT-2.",
+    "hash": "9e0343da"
+  },
+  "272": {
+    "text": "The output projection. Kept separate from wte here, though many models tie the two together.",
+    "hash": "e360918b"
+  },
+  "275": {
+    "text": "Query, key, and value projections, each square at (16, 16).",
+    "hash": "13ecaa6e"
+  },
+  "279": {
+    "text": "The MLP expands to 4x width, which is the ratio GPT-2 uses and almost everything since has kept.",
+    "hash": "5da1e1f1"
+  },
+  "282": {
+    "text": "4192 parameters in total. Small enough to inspect by hand, large enough to learn plausible names.",
+    "hash": "6f794558"
+  },
+  "288": {
+    "text": "The structural point of the whole lab. There is no backward pass in this section, and nothing here has to be kept in step with one.",
+    "hash": "3c5839d7",
+    "important": true
+  },
+  "291": {
+    "text": "RMSNorm in two lines. Compare it with version 01's scalar version, which is the same formula over lists.",
+    "hash": "a111052e"
+  },
+  "292": {
+    "text": "The mean square across the feature axis. keepdims gives (n, 1), which will broadcast against (n, D) on the next line.",
+    "hash": "08729bc0"
+  },
+  "293": {
+    "text": "The broadcast that unbroadcast exists to handle. This one line is why that function is in the file.",
+    "hash": "72ec59e3",
+    "important": true
+  },
+  "296": {
+    "text": "Softmax, also written as a plain function, also differentiated by the engine rather than by hand.",
+    "hash": "677e7aec"
+  },
+  "297": {
+    "text": "Subtracting the row maximum prevents exp from overflowing and cancels out of the result exactly.",
+    "hash": "92c1929e"
+  },
+  "299": {
+    "text": "Taken from .data, so the subtraction never enters the graph. Version 01 does the same, for the same reason.",
+    "hash": "31c00a51"
+  },
+  "300": {
+    "text": "Normalize so each row sums to 1. __truediv__ turns this into a multiply by a reciprocal, which the engine already differentiates.",
+    "hash": "95c89814"
+  },
+  "303": {
+    "text": "The forward pass, start to finish, in under thirty lines.",
+    "hash": "c4107404"
+  },
+  "305": {
+    "text": "Sequence length varies by name, so nothing here is padded to a fixed size.",
+    "hash": "5c7c1d9c"
+  },
+  "306": {
+    "text": "Token identity plus position. Indexing wte is the gather whose gradient is the scatter-add above.",
+    "hash": "83f1636a",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "wte",
+      "wpe",
+      "add_emb"
+    ]
+  },
+  "307": {
+    "text": "Not redundant, despite appearing right before another normalization. The residual path carries gradient back to this point.",
+    "hash": "5f37a221",
+    "diagram": "transformer_embed",
+    "highlight": [
+      "norm_in"
+    ]
+  },
+  "309": {
+    "text": "One layer here, but the loop is written for many. Nothing else in the file would need to change.",
+    "hash": "12ede0d6"
+  },
+  "311": {
+    "text": "The residual stream. Saving it is a plain Python reference, and the engine handles the fact that x now has two consumers.",
+    "hash": "cbdfcbc3"
+  },
+  "312": {
+    "text": "Pre-norm placement, normalizing before the block rather than after, which is what makes deep transformers trainable.",
+    "hash": "44dd4cef"
+  },
+  "313": {
+    "text": "One reshape and one transpose give every head its own (n, hd) view without copying the data.",
+    "hash": "bd6437cb"
+  },
+  "314": {
+    "text": "Queries: what each position is looking for.",
+    "hash": "71087dfa",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "Q"
+    ]
+  },
+  "315": {
+    "text": "Keys: what each position offers.",
+    "hash": "50151305",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "K"
+    ]
+  },
+  "316": {
+    "text": "Values: what each position contributes once it has been attended to.",
+    "hash": "de05eefa",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "V"
+    ]
+  },
+  "318": {
+    "text": "Every query against every key, scaled by 1/sqrt(head_dim) to keep the scores in a range where softmax stays sensitive.",
+    "hash": "fd751fef",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "scores"
+    ]
+  },
+  "319": {
+    "text": "Causality, implemented as an addition. Because addition already has a gradient rule, the mask needs no special handling anywhere.",
+    "hash": "64719797",
+    "important": true
+  },
+  "321": {
+    "text": "exp(-1e9) underflows to zero, so masked positions get exactly zero weight, and softmax's own gradient sends zero back through them.",
+    "hash": "d9493da6",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "mask",
+      "softmax"
+    ]
+  },
+  "323": {
+    "text": "Weight the values, then undo the head split. Concatenation of heads is a transpose and a reshape, both of which the engine can differentiate.",
+    "hash": "6e37dbef",
+    "diagram": "transformer_attn",
+    "highlight": [
+      "attn_out"
+    ]
+  },
+  "324": {
+    "text": "Project back to model width and rejoin the residual stream.",
+    "hash": "f626eff3",
+    "diagram": "transformer_out",
+    "highlight": [
+      "wo",
+      "res1"
+    ]
+  },
+  "327": {
+    "text": "A second residual branch, saved the same way as the first.",
+    "hash": "cbdfcbc3"
+  },
+  "328": {
+    "text": "Expand to 4x, apply ReLU. The whole MLP is one line because there is no backward to write for it.",
+    "hash": "e8cc1768",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc1",
+      "relu"
+    ]
+  },
+  "329": {
+    "text": "Contract back to model width and add the residual.",
+    "hash": "a610c2aa",
+    "diagram": "transformer_mlp",
+    "highlight": [
+      "fc2",
+      "res2"
+    ]
+  },
+  "331": {
+    "text": "Project the final hidden state to vocabulary logits. .T goes through transpose, so lm_head gets its gradient like any other parameter.",
+    "hash": "952a450d",
+    "diagram": "transformer_logits",
+    "highlight": [
+      "lm_head",
+      "logits"
+    ]
+  },
+  "334": {
+    "text": "The loss, in four lines. Version 01 computes it per position in a Python loop; here it is one pass over an (n, V) array.",
+    "hash": "6d479bfa"
+  },
+  "336": {
+    "text": "Each position predicts the next token, so a name of length k yields k training signals from one forward pass.",
+    "hash": "3d9da8cd"
+  },
+  "337": {
+    "text": "Softmax over the vocabulary turns logits into a probability for every possible next character.",
+    "hash": "b6692f18"
+  },
+  "338": {
+    "text": "Fancy indexing pulls out the probability the model assigned to the token that actually came next. Its gradient is __getitem__'s scatter-add.",
+    "hash": "7249f03a"
+  },
+  "339": {
+    "text": "Negative log likelihood, averaged over positions. This single Tensor is the root of the graph.",
+    "hash": "4a524d8e"
+  },
+  "345": {
+    "text": "Identical hyperparameters to version 01, which is what makes the loss curves comparable.",
+    "hash": "dca02c26"
+  },
+  "346": {
+    "text": "Adam's moment buffers are plain arrays, not Tensors. The optimizer is bookkeeping, and none of it belongs on the graph.",
+    "hash": "0be5498f"
+  },
+  "352": {
+    "text": "A thousand steps, one document each. Enough to learn the shape of a name.",
+    "hash": "f105aa30"
+  },
+  "353": {
+    "text": "Timing every step is deliberate. The lab's central claim is about speed, so the lab measures it.",
+    "hash": "d3a38dbe",
+    "diagram": "compare_foundations",
+    "highlight": [
+      "B2"
+    ]
+  },
+  "357": {
+    "text": "BOS on both ends, so the model learns both how names start and when to stop.",
+    "hash": "cb3b27db"
+  },
+  "359": {
+    "text": "Gradients accumulate with +=, so they must be cleared before each step. PyTorch's zero_grad() exists for exactly this reason.",
+    "hash": "35980cc8"
+  },
+  "360": {
+    "text": "fill(0.0) reuses the existing buffer rather than allocating a new one, which is what zeroing a gradient means in every framework.",
+    "hash": "0bb6175e"
+  },
+  "362": {
+    "text": "The forward pass, which also builds the graph. There is no separate cache to populate.",
+    "hash": "bbd9219c"
+  },
+  "363": {
+    "text": "One line, and every one of the 4192 parameters ends up with a gradient. This is what versions 01 and 02 both earn the right to write.",
+    "hash": "ec0802e1",
+    "important": true,
+    "diagram": "compare_foundations",
+    "highlight": [
+      "C2"
+    ]
+  },
+  "365": {
+    "text": "Linear decay to zero. Large steps early, small steps late.",
+    "hash": "41b5546c"
+  },
+  "367": {
+    "text": "Adam over whole arrays. Version 01 runs this same arithmetic in a Python loop over 4192 scalars, which is a fair share of its runtime.",
+    "hash": "f3597a8e"
+  },
+  "371": {
+    "text": "The update itself. Scale the smoothed gradient by the smoothed magnitude, so every parameter moves at a comparable rate.",
+    "hash": "704527fb"
+  },
+  "373": {
+    "text": "Wall clock for the whole step: forward, backward, and optimizer together.",
+    "hash": "7a95ac23"
+  },
+  "376": {
+    "text": "Averaged over ten steps, because sequence length varies with the name and single steps are noisy.",
+    "hash": "70a08754"
+  },
+  "379": {
+    "text": "Watch both numbers. The loss should track version 01 exactly; the time should not.",
+    "hash": "c7866456"
+  },
+  "381": {
+    "text": "The number to compare against version 01 on the same machine. Roughly two orders of magnitude separates them.",
+    "hash": "ae6df4fc",
+    "important": true
+  },
+  "386": {
+    "text": "Below 1 sharpens the distribution toward likely characters, above 1 flattens it.",
+    "hash": "7eca5b76"
+  },
+  "389": {
+    "text": "Twenty names, generated one character at a time.",
+    "hash": "64d836c5"
+  },
+  "391": {
+    "text": "Stop at block_size even if BOS never arrives, which bounds the loop.",
+    "hash": "ab05dc73"
+  },
+  "392": {
+    "text": "Only the last position predicts the next token. .data steps off the graph, since inference needs no gradients.",
+    "hash": "ec8fd858"
+  },
+  "393": {
+    "text": "Wrapping in a fresh Tensor builds a throwaway one-node graph. A framework would use no_grad here; at this scale the waste is not worth a mechanism.",
+    "hash": "8b0367ce"
+  },
+  "394": {
+    "text": "Sampling rather than argmax. Always taking the most likely character produces the same name every time.",
+    "hash": "40884532"
+  },
+  "395": {
+    "text": "BOS as the stop signal, which is what training taught it to emit at the end of a name.",
+    "hash": "41a35c11"
+  }
+}

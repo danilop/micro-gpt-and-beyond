@@ -1,6 +1,6 @@
 graph TD
     A1["Lab 01: scalar values"] --> B1["Forward: Python loops,<br/>one number at a time"]
-    B1 --> C1["Backward: automatic,<br/>walk the computation graph"]
+    B1 --> C1["Backward: walk the graph,<br/>multiply by a local derivative"]
     A2["Lab 02: NumPy arrays"] --> B2["Forward: one matrix multiply per layer,<br/>lab prints its own ms/step"]
-    B2 --> C2["Backward: ~80 lines by hand,<br/>44 of them gradient arithmetic"]
+    B2 --> C2["Backward: walk the same graph,<br/>each node runs a closure"]
     C1 -.->|same maths| C2

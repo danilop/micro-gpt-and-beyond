@@ -1,10 +1,10 @@
 # Understanding LLMs by Building One: PyTorch
 
-Same architecture as versions 01 and 02, but now PyTorch handles the tensors *and* the gradients. This is where you see how much boilerplate disappears when you let a framework do the differentiation.
+Same architecture as versions 01 and 02, but now the autograd engine comes from a library rather than from the file you are reading. This is where you see what a framework adds once the differentiation itself is familiar.
 
 ## Why this version exists
 
-After writing every gradient by hand in version 02, this version shows what you get in return for adopting PyTorch: the same model, the same training loop, the same results, but the entire backward pass is replaced by a single call to `loss.backward()`.
+Versions 01 and 02 build their own autograd, so `loss.backward()` here should already look familiar. What PyTorch adds is everything around it: layers that carry their own parameters, fused kernels, optimizers, device placement, and a backward pass that is someone else's job to keep correct.
 
 ## What makes it interesting
 
@@ -27,17 +27,17 @@ class Block(nn.Module):
         return x
 ```
 
-Compare this to the 150-line forward+backward in version 02. The architecture is identical (RMSNorm, multi-head attention with causal mask, ReLU MLP, residual connections) but expressed declaratively.
+Version 02 writes the same architecture (RMSNorm, multi-head attention with causal mask, ReLU MLP, residual connections) as bare functions over arrays. Here each piece is an `nn.Module` that owns its weights.
 
-### Autograd replaces hand-written gradients
+### The same autograd, written by someone else
 
-The entire backward pass from version 02 (RMSNorm backward, softmax backward, attention backward, MLP backward, embedding gradients) collapses to:
+Version 02's engine is about 120 lines: a `Tensor` class with eleven primitives and a topological walk. PyTorch's is tens of thousands, spread over C++ kernels and dispatch layers, and the call site is unchanged:
 
 ```python
 loss.backward()
 ```
 
-PyTorch records every operation during the forward pass and automatically applies the chain rule in reverse. The gradients it computes are mathematically identical to the ones we wrote by hand.
+PyTorch records every operation during the forward pass and applies the chain rule in reverse, exactly as version 02 does. The difference is what it records into: fused kernels, multiple dtypes, and any device you have.
 
 ### Weight initialization
 
@@ -77,7 +77,7 @@ with torch.no_grad():
 ## What you learn here
 
 - How `nn.Module` organizes a transformer into composable pieces
-- The relationship between manual gradients (02) and autograd (this version)
+- What a framework adds on top of an autograd engine you have already built yourself (02)
 - PyTorch idioms: `F.cross_entropy`, `torch.multinomial`, parameter groups, LR scheduling
 - Why the forward pass alone fully defines the model, since the backward pass is derived automatically
 

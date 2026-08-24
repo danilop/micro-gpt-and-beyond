@@ -9,7 +9,7 @@ The progression goes from raw first principles to framework-powered GPU code, mo
 ```
 labs/
   01_pure_python/            Karpathy's original code. Zero dependencies. Scalar autograd.
-  02_numpy_manual_backprop/  NumPy arrays, but every gradient still written by hand.
+  02_numpy_autograd/         NumPy arrays. Same autograd idea, one node per array.
   03_pytorch/                PyTorch autograd takes over. Same model, ~30 lines shorter.
   04_pytorch_batched/        Mini-batches, padding, masking. Training at scale.
   05_jax/                    Functional style. Pure functions, explicit state, JIT compilation.
@@ -41,7 +41,7 @@ The [interactive web tutorial](https://danilop.github.io/micro-gpt-and-beyond/) 
 
 | Chapter | Labs | Theme |
 |---------|------|-------|
-| **Foundations** | 01, 02 | Scalar autograd and manual backprop — see every gradient |
+| **Foundations** | 01, 02 | Scalar autograd, then array autograd — see every gradient |
 | **Frameworks** | 03–08 | PyTorch, JAX, MLX — same model, three paradigms, single and batched |
 | **Tokenization & Architecture** | 09, 10, 11 | BPE, RoPE, GQA — the upgrades behind LLaMA and Mistral |
 | **Inference Optimization** | 12, 13 | KV cache and sampling strategies — the basics of fast decoding |
@@ -58,7 +58,7 @@ Every version trains the same architecture (a character-level transformer with R
 |---------|----------|---------|----------|----------|
 | **Foundations** | | | | |
 | 01 pure Python | hand-built scalar engine | no | no | CPU (slow) |
-| 02 NumPy | none, manual backward pass | yes | no | CPU |
+| 02 NumPy | hand-built array engine | yes | no | CPU |
 | **Frameworks** | | | | |
 | 03 PyTorch | automatic | yes | no | CPU |
 | 04 PyTorch batched | automatic | yes | yes (32) | CPU |
@@ -195,7 +195,7 @@ The soft thinking and soft training labs explore **preserving the full output di
 | # | Lab | Framework | Dependencies | Pure Python |
 |---|-----|-----------|--------------|-------------|
 | 01 | Pure Python | None | None | Yes |
-| 02 | NumPy manual backprop | NumPy | numpy | No |
+| 02 | NumPy autograd | NumPy | numpy | No |
 | 03 | PyTorch | PyTorch | numpy, torch | No |
 | 04 | PyTorch batched | PyTorch | numpy, torch | No |
 | 05 | JAX | JAX | jax | No |
@@ -291,7 +291,7 @@ python labs/21_paged_attention/main.py
 All other labs are managed with [uv](https://docs.astral.sh/uv/) and have their own `pyproject.toml`:
 
 ```bash
-cd labs/02_numpy_manual_backprop
+cd labs/02_numpy_autograd
 uv run python main.py
 ```
 

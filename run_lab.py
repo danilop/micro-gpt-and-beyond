@@ -18,7 +18,7 @@ PYTHON = sys.executable
 
 LABS = {
     "01": ("labs/01_pure_python", [PYTHON, "microgpt.py"]),
-    "02": ("labs/02_numpy_manual_backprop", ["uv", "run", "python", "main.py"]),
+    "02": ("labs/02_numpy_autograd", ["uv", "run", "python", "main.py"]),
     "03": ("labs/03_pytorch", ["uv", "run", "python", "main.py"]),
     "04": ("labs/04_pytorch_batched", ["uv", "run", "python", "main.py"]),
     "05": ("labs/05_jax", ["uv", "run", "python", "main.py"]),
@@ -47,7 +47,7 @@ LABS = {
 def list_labs():
     print("Available labs:\n")
     print("  01  pure_python            Zero dependencies, scalar autograd")
-    print("  02  numpy_manual_backprop  NumPy arrays, hand-written gradients")
+    print("  02  numpy_autograd         NumPy arrays, array-level autograd")
     print("  03  pytorch                PyTorch autograd")
     print("  04  pytorch_batched        Mini-batches, padding, masking")
     print("  05  jax                    Functional style, pure functions")

@@ -40,8 +40,11 @@ jobs:
         run: uv tool install "walk-the-code @ git+https://github.com/danilop/walk-the-code"
       # Catches stale annotations after a reformat, out-of-range line numbers,
       # missing diagrams, and highlight targets that no longer resolve.
+      # --strict is what makes a stale annotation fail rather than warn: the
+      # comments are keyed by line number, so editing a lab silently detaches
+      # every annotation below the edit and the tutorial would ship wrong.
       - name: wtc-validate
-        run: wtc-validate walk-the-code/config.json
+        run: wtc-validate walk-the-code/config.json --strict
       # Catches the failure that shipped once already: the bundle filename
       # changing under the deploy step.
       - name: wtc-build produces data/units.json
@@ -80,7 +83,7 @@ jobs:
           - 01_pure_python
           - 09_bpe_tokenizer
           - 21_paged_attention
-          - 02_numpy_manual_backprop
+          - 02_numpy_autograd
           - 03_pytorch
           - 05_jax
     steps:
