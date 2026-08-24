@@ -415,6 +415,11 @@ print(
     f"({paged.utilization():.0%} slot utilization)"
 )
 assert name_c == name_p, f"Outputs differ: {name_c} vs {name_p}"
+# The README quotes these utilizations. Assert the band rather than the number,
+# so a change that moves them fails here instead of quietly making the README
+# wrong. Bands, not equalities, because the sampled name length can shift.
+assert 0.20 < cache_c.utilization() < 0.45, f"contiguous utilization {cache_c.utilization():.0%} left the band the README describes"
+assert 0.50 < paged.utilization() < 0.80, f"paged utilization {paged.utilization():.0%} left the band the README describes"
 print("  -> identical output, paged allocates only what's needed")
 
 # ---------------------------------------------------------------------------
@@ -477,6 +482,10 @@ print(f"free list: {sorted(demo.free_blocks)}  (blocks are handed out from the e
 print(f"slot utilization: {demo.utilization():.1%}")
 print(f"internal fragmentation: {alloc_slots - used_slots} of {alloc_slots} slots unused ({waste_frac:.1%})")
 print(f"  -> bounded by block_size - 1 = {demo.block_size - 1} tokens per sequence per layer, never worse")
+# That bound is the lab's central claim, so check it rather than print it: only
+# the last block of each sequence, in each layer, can be partly empty.
+max_waste = len(demo.block_tables) * demo.n_layers * (demo.block_size - 1)
+assert alloc_slots - used_slots <= max_waste, f"waste of {alloc_slots - used_slots} slots exceeds the bound of {max_waste}"
 
 # Free a sequence and watch its physical blocks come back for reuse. This is
 # the fragmentation story: a freed block is usable by any future sequence,

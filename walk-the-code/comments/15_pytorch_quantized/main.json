@@ -527,7 +527,11 @@
     "text": "Run the same benchmark suite on the INT8 model to compare size and speed against the original FP32 baseline.",
     "hash": "82b004f1"
   },
-  "281": {
+  "276": {
+    "text": "Size reduction is the one claim in this lab that does not depend on the machine, so it is the one worth asserting. The speed figure is deliberately left unguarded, because it is a property of the host rather than of quantization.",
+    "hash": "a70ebb09"
+  },
+  "287": {
     "text": "Size and speed are the easy numbers. The one that decides whether you can ship a quantized model is how far the weights moved, so measure it per layer instead of asserting that INT8 is 'close enough'.",
     "important": true,
     "diagram": "quant_compress",
@@ -537,15 +541,15 @@
     ],
     "hash": "2d16fc4f"
   },
-  "282": {
+  "288": {
     "text": "Report <code>max|W|</code>, the scale, the worst absolute error, and that error as a percentage of the layer's largest weight. The percentage is the portable column: it should come out the same for every layer, and if it does not, something is wrong with the scale.",
     "hash": "a163a2eb"
   },
-  "284": {
+  "290": {
     "text": "Grab the FP32 weights by module name before quantizing, so each quantized layer can be compared against the exact tensor it came from. Names line up because <code>quantize_model</code> replaces children in place.",
     "hash": "5018477a"
   },
-  "290": {
+  "296": {
     "text": "Round-trip the INT8 weights back through the scale and compare with the original. This is the error the model actually sees at inference rather than a theoretical bound, since the forward pass performs this same dequantization on every call.",
     "important": true,
     "diagram": "quant_inference",
@@ -555,58 +559,58 @@
     ],
     "hash": "c19114c3"
   },
-  "291": {
+  "297": {
     "text": "Take the worst element, not the mean. An average error would be reassuring and useless: what breaks a quantized model is the outlier weight, which is exactly why production schemes go per-channel.",
     "hash": "c595274e"
   },
-  "294": {
+  "300": {
     "text": "Every layer prints at about <code>0.394%</code> of its own <code>max|W|</code>. The constancy is the point: symmetric per-tensor quantization has a fixed relative cost, and the differences between layers are entirely differences in weight range.",
     "hash": "67aa7ce8"
   },
-  "296": {
+  "302": {
     "text": "The measured numbers match the closed form: rounding to a grid of step <code>scale</code> bounds the error at <code>scale/2 = max|W|/254</code>, which is where the 0.4% comes from. Theory and measurement agreeing is the cheapest sanity check available.",
     "hash": "dc74dba8"
   },
-  "303": {
+  "309": {
     "text": "Weight error is only interesting if it reaches the predictions. Per-token cross-entropy on names the model never trained on is the standard way to ask that, and it is the comparison this lab previously promised without making.",
     "important": true,
     "hash": "0a60c193"
   },
-  "311": {
+  "317": {
     "text": "<code>reduction=\"sum\"</code> with an explicit token count, rather than averaging per name. Otherwise short names would count as much as long ones and the figure would drift with the length distribution instead of the weights.",
     "hash": "147bb2a1"
   },
-  "317": {
+  "323": {
     "text": "Training walked <code>docs[0:num_steps]</code>, so everything past that index is genuinely unseen. A held-out set carved out of the same shuffle costs nothing and is the difference between a loss number and a memorization check.",
     "hash": "87190294"
   },
-  "319": {
+  "325": {
     "text": "The same names scored under the INT8 model. Both models see identical inputs in identical order, so the delta is attributable to the rounded weights and nothing else.",
     "important": true,
     "hash": "9d862b8e"
   },
-  "322": {
+  "328": {
     "text": "The delta comes out around <code>+0.0001</code> nats, roughly six thousandths of a percent. That answers 'does INT8 hurt this model' with a number and a sign rather than a shrug.",
     "hash": "061e1b33"
   },
-  "323": {
+  "329": {
     "text": "The sample lists below match exactly, and the lab declines to treat that as evidence of zero error: the perturbation is simply too small to flip any of these sampling decisions. The loss delta is the measurement; identical samples are a coincidence of temperature and vocabulary size.",
     "hash": "272ca8fa"
   },
-  "327": {
+  "333": {
     "text": "Side-by-side comparison loop for FP32 and INT8 samples. Each model will be sampled under the same random seed so differences come from the weights, not different random draws.",
     "hash": "3f78e613"
   },
-  "328": {
+  "334": {
     "text": "Reset the RNG before sampling each model so FP32 and INT8 draw the same random numbers; otherwise the two sample lists would differ for reasons unrelated to quantization.",
     "hash": "7e7dcf46",
     "important": true
   },
-  "330": {
+  "336": {
     "text": "Generate 10 samples from the current model under that fixed seed.",
     "hash": "828817a8"
   },
-  "331": {
+  "337": {
     "text": "Decode and print each generated name.",
     "hash": "2a0d1a6c"
   }

@@ -293,6 +293,10 @@ print("\n--- Attention operation counts (Q*K multiply-adds, counted exactly) ---
 print(f"  Naive (full recompute):  {ops_naive:,} ops")
 print(f"  KV cache (incremental):  {ops_cached:,} ops")
 print(f"  Reduction:               {ops_naive / ops_cached:.1f}x fewer attention operations")
+# The README builds an argument on this ratio, so guard the band it belongs to.
+assert 3.5 < ops_naive / ops_cached < 5.5, (
+    f"op reduction {ops_naive / ops_cached:.1f}x left the band the README describes"
+)
 
 # Reconcile that measured reduction with the closed form, because they differ
 # and the reason is worth one line: the formula is evaluated at T = block_size,

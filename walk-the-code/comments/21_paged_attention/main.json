@@ -1229,16 +1229,24 @@
     "text": "Assert outputs match, the cache strategy must not affect model output, only memory efficiency.",
     "hash": "39a4c2fa"
   },
-  "418": {
+  "421": {
+    "text": "The README quotes this utilization. Asserting the band keeps the two in step, so a change that moves the number fails here instead of quietly making the documentation wrong.",
+    "hash": "29dd1209"
+  },
+  "422": {
+    "text": "Paging allocates on demand, so its utilization is far higher than contiguous pre-allocation for the same sequence. That contrast is the lab's headline, and it is checked rather than described.",
+    "hash": "dc0f0858"
+  },
+  "423": {
     "text": "The payoff in one line: same name, a fraction of the reservation. Where the KV lives changed; what the model computed did not.",
     "hash": "dd0c7e75"
   },
-  "427": {
+  "432": {
     "text": "One sequence in isolation cannot show fragmentation: its blocks come off the free list in order and look contiguous, so the block table appears to be pointless indirection. Two sequences growing in lockstep, which is what a real server does, is where it earns its existence.",
     "important": true,
     "hash": "b5314f0c"
   },
-  "430": {
+  "435": {
     "text": "The block table is the entire idea of paging, so print it rather than describe it. This dump used to be computed and never shown, which meant the lab's headline data structure was invisible.",
     "important": true,
     "diagram": "paged_block_table",
@@ -1258,55 +1266,55 @@
     },
     "hash": "9a320986"
   },
-  "432": {
+  "437": {
     "text": "One entry per sequence, then one row per layer, because the mapping is per (sequence, layer), and nothing forces two layers of the same sequence into the same physical blocks.",
     "hash": "8dffc3ce"
   },
-  "434": {
+  "439": {
     "text": "Each layer keeps its own list of physical blocks. The lists are independent, which is why a real server's block table is much bigger than the token count suggests.",
     "hash": "8c78fb42"
   },
-  "436": {
+  "441": {
     "text": "Walk the list in logical order. The index is the logical block; the value is wherever in the pool it happens to live.",
     "hash": "661bc48a"
   },
-  "437": {
+  "442": {
     "text": "Reconstruct which token positions this logical block covers, so the printed mapping can be checked against the sequence by hand.",
     "hash": "e0145377"
   },
-  "439": {
+  "444": {
     "text": "Slack only exists in the last block, since every earlier block is full by construction. That is the structural reason internal fragmentation stays bounded rather than proportional.",
     "hash": "0c746186"
   },
-  "441": {
+  "446": {
     "text": "Print logical block, physical block, the token range and the refcount together. The refcount column is what makes the prefix-sharing and copy-on-write sections below readable at a glance.",
     "hash": "6d9733f3"
   },
-  "447": {
+  "452": {
     "text": "Internal fragmentation, measured rather than asserted: slots allocated minus slots actually holding a token.",
     "hash": "2c672528"
   },
-  "449": {
+  "454": {
     "text": "Allocated slots = blocks in the tables x block size. Counting from the tables rather than from the free list means shared blocks are counted once per sharer, which is the right denominator for a per-sequence waste figure.",
     "hash": "438ab5f7"
   },
-  "450": {
+  "455": {
     "text": "Used slots = tokens x layers. One slot per (position, layer) holds that position's K and V together, so there is no factor of two here and the figure is directly comparable with <code>allocated</code> above.",
     "hash": "109c7b60"
   },
-  "454": {
+  "459": {
     "text": "A deliberately tiny pool of 8 blocks, so the free list is short enough to print and follow. The aim here is visibility rather than starvation.",
     "hash": "35e8a081"
   },
-  "455": {
+  "460": {
     "text": "7 tokens at 4 per block means 2 blocks with one slot left over. Chosen so the last block is partially filled, because a perfectly packed example would hide the fragmentation bound.",
     "hash": "89978d7f"
   },
-  "456": {
+  "461": {
     "text": "9 tokens means 3 blocks with three slots left over. Two sequences with different lengths and different slack is the minimum needed to make the block table say something.",
     "hash": "b811ac5e"
   },
-  "461": {
+  "466": {
     "text": "One token of A, then one of B, then repeat. The interleaving is the experiment: the two sequences' allocations alternate in the free list, so neither ends up with contiguous physical blocks.",
     "important": true,
     "diagram": "paged_block_table",
@@ -1325,48 +1333,52 @@
     },
     "hash": "13106526"
   },
-  "463": {
+  "468": {
     "text": "A real forward pass, not a stub. The allocations below are produced by the model actually caching K and V, which is why the event log is worth trusting.",
     "hash": "e08fab3f"
   },
-  "467": {
+  "472": {
     "text": "The allocation log, in the order it happened. Read it next to the block tables below: A and B alternate, so A's two blocks are not adjacent and never could have been.",
     "hash": "ce891eae"
   },
-  "471": {
+  "476": {
     "text": "And the resulting logical-to-physical mapping. This is the artefact the lab exists to produce: an OS page table for KV cache, small enough to read in full.",
     "hash": "49a2a16c"
   },
-  "475": {
+  "480": {
     "text": "Blocks in use out of the pool. The contiguous strategy would have reserved the full context window for each sequence regardless of how long the names turned out.",
     "hash": "2fb80560"
   },
-  "476": {
+  "481": {
     "text": "The free list, printed so the recycling demonstration below can be checked against it. Blocks are handed out with <code>pop()</code> from the end, which is why the ids descend rather than ascend, a detail worth knowing before reading the event log.",
     "hash": "d1c39630"
   },
-  "477": {
+  "482": {
     "text": "Slot utilization across the blocks actually in use. Compare with the single-sequence figure above: two sequences sharing a pool do better, because the waste is per-sequence and the pool is not.",
     "hash": "accf383f"
   },
-  "478": {
+  "483": {
     "text": "The measured waste, and the honest version of the PagedAttention claim: internal fragmentation is confined to the last block of each sequence, so it stays bounded however long the sequence grows.",
     "hash": "a31b4117"
   },
-  "479": {
+  "484": {
     "text": "And the bound itself: at most <code>block_size - 1</code> slots per sequence per layer, however wrong the length guess was. With vLLM's 16-token blocks and requests of hundreds of tokens the same bound is a rounding error; with 4-token blocks and 5-token names it is visible.",
     "important": true,
     "hash": "c78258ea"
   },
-  "484": {
+  "488": {
+    "text": "The bound is the central claim of PagedAttention: only the last block of each sequence, in each layer, can be partly empty. Checking it costs one line and turns a claim in prose into a property of the run.",
+    "hash": "da41a5c4"
+  },
+  "493": {
     "text": "Remember which physical blocks A held, so we can check whether a later sequence gets them back.",
     "hash": "aa6d0904"
   },
-  "485": {
+  "494": {
     "text": "Snapshot the free list before the release, because the interesting thing is the difference.",
     "hash": "c0700c21"
   },
-  "486": {
+  "495": {
     "text": "Release A. This is the other half of the fragmentation story: a freed block is usable by <em>any</em> future sequence of <em>any</em> length, because nothing has to be contiguous.",
     "important": true,
     "diagram": "paged_block_table",
@@ -1382,79 +1394,79 @@
     },
     "hash": "0fb51bfb"
   },
-  "487": {
+  "496": {
     "text": "Free list before and after, side by side. A's blocks come back individually, scattered wherever they were.",
     "hash": "b60aeb64"
   },
-  "488": {
+  "497": {
     "text": "A shorter name next, so the recycled blocks are being reused at a different size than they were allocated for. A contiguous allocator would have to care; this one cannot tell.",
     "hash": "0a06d159"
   },
-  "489": {
+  "498": {
     "text": "Clear the event log first so the next print shows only C's allocations, not the whole history.",
     "hash": "6559b0e3"
   },
-  "493": {
+  "502": {
     "text": "C's allocation events. Compare the physical block ids against A's list above.",
     "hash": "f14b2fb9"
   },
-  "496": {
+  "505": {
     "text": "Which physical blocks C ended up with.",
     "hash": "d3b5c8b3"
   },
-  "497": {
+  "506": {
     "text": "The recycling, stated as a set intersection rather than a claim: C is literally running in the blocks A vacated.",
     "hash": "d444172b"
   },
-  "498": {
+  "507": {
     "text": "And the free list is back where it started, which is what \"no external fragmentation\" looks like when you print it.",
     "hash": "712ca0a2"
   },
-  "503": {
+  "512": {
     "text": "Section header for prefix sharing demo.",
     "hash": "f4276e9f"
   },
-  "505": {
+  "514": {
     "text": "Create a paged cache with plenty of blocks for the prefix sharing demo.",
     "hash": "be6b931d"
   },
-  "506": {
+  "515": {
     "text": "Tokenize a short prefix \"an\", simulates a shared system prompt.",
     "hash": "8567ea96"
   },
-  "507": {
+  "516": {
     "text": "Register the prefix sequence in the paged cache's page table, setting up the block mappings that will be shared with other sequences.",
     "hash": "1c560de7"
   },
-  "508": {
+  "517": {
     "text": "Run each prefix token through the model to populate the KV cache.",
     "hash": "ab44833d"
   },
-  "509": {
+  "518": {
     "text": "Forward pass stores K,V in the cache at each position.",
     "hash": "4cc86119"
   },
-  "511": {
+  "520": {
     "text": "Look up the prefix sequence's length in the cache to verify all tokens were stored correctly before sharing.",
     "hash": "a694702e"
   },
-  "512": {
+  "521": {
     "text": "Count how many blocks the prefix occupies.",
     "hash": "0329ff25"
   },
-  "513": {
+  "522": {
     "text": "Print how many tokens and physical blocks the prefix occupies, showing the baseline cost that sharing will amortize.",
     "hash": "59ee2d75"
   },
-  "515": {
+  "524": {
     "text": "Spawn three new sequences that will share the prefix's physical blocks, demonstrating zero-copy KV reuse.",
     "hash": "f57956b8"
   },
-  "516": {
+  "525": {
     "text": "For each of the three new sequences, share the prefix blocks and then generate a unique continuation.",
     "hash": "27f6c56a"
   },
-  "517": {
+  "526": {
     "text": "Share the prefix's physical blocks with the new sequence, zero data copying, just page table duplication.",
     "hash": "74ed5870",
     "diagram": "paged_block_table",
@@ -1464,31 +1476,31 @@
       "block"
     ]
   },
-  "518": {
+  "527": {
     "text": "Report how many blocks were shared (should match the prefix's block count).",
     "hash": "c486335f"
   },
-  "519": {
+  "528": {
     "text": "Show that sharing adds zero new block allocations.",
     "hash": "88479d50"
   },
-  "520": {
+  "529": {
     "text": "Compare: without sharing, we'd need N copies of the prefix blocks.",
     "hash": "eeff9752"
   },
-  "522": {
+  "531": {
     "text": "The one physical block the prefix occupies. Everything below is about how many sequences can point at it at once.",
     "hash": "82cc276b"
   },
-  "523": {
+  "532": {
     "text": "Four sequences, one block. The refcount is the mechanism, and printing it is the only way to see that sharing actually happened rather than being described.",
     "hash": "67f28dff"
   },
-  "524": {
+  "533": {
     "text": "All four block tables in one line, each holding the same physical block id. Identical entries, four independent sequences.",
     "hash": "e35c83af"
   },
-  "535": {
+  "544": {
     "text": "Sharing is only half the mechanism; the other half is what happens when a sharer writes. This section makes copy-on-write actually fire, with refcounts printed before and after, instead of leaving the branch in <code>append</code> as untested code.",
     "important": true,
     "diagram": "paged_virtual",
@@ -1503,92 +1515,92 @@
     },
     "hash": "8dca9d33"
   },
-  "536": {
+  "545": {
     "text": "req_0's block table before the write: the shared physical block, same as everyone else's.",
     "hash": "e4884b59"
   },
-  "537": {
+  "546": {
     "text": "And its refcount before the write. This is the number that has to change if the mechanism works.",
     "hash": "307baa4c"
   },
-  "538": {
+  "547": {
     "text": "Count the free blocks first, so we can show how many the write consumed. The expected answer is exactly one, the writer's private copy, rather than one per sharer.",
     "hash": "5cf2bc98"
   },
-  "539": {
+  "548": {
     "text": "A token the shared prefix does not continue with. Divergence is the trigger; a sharer that never writes never pays.",
     "hash": "f9aefa98"
   },
-  "540": {
+  "549": {
     "text": "One more token for req_0, landing in the <em>same</em> logical block it shares with three other sequences. That write cannot happen in place, so <code>append</code> clones first.",
     "important": true,
     "hash": "33183eea"
   },
-  "541": {
+  "550": {
     "text": "Read the block table back after the write. A different physical block id here is the proof that the clone happened.",
     "hash": "e8f7a080"
   },
-  "542": {
+  "551": {
     "text": "The block table now points at a different physical block, and that difference is the proof the clone happened. The new id came off the free list, so it sits wherever the pool had a spare block, next door here only because this pool is fresh and blocks are popped from the end.",
     "hash": "8caa6fc1"
   },
-  "543": {
+  "552": {
     "text": "The original's refcount dropped by one. The sharers that did not write are unaffected and unaware.",
     "hash": "14527540"
   },
-  "544": {
+  "553": {
     "text": "And the clone has refcount 1: req_0 now owns it privately, so its next write in this block will not clone again.",
     "hash": "488f7e02"
   },
-  "545": {
+  "554": {
     "text": "One block allocated by the whole operation. Copy-on-write charges the divergence to the sequence that caused it, which is why a shared system prompt stays shared for every request that follows it verbatim.",
     "hash": "7f5a233b"
   },
-  "546": {
+  "555": {
     "text": "req_1 and req_2 still point at the original block, unchanged. Print it rather than assume it.",
     "hash": "13bd7502"
   },
-  "547": {
+  "556": {
     "text": "Assert the clone actually happened. Without this, a refactor that broke the refcount check would leave the printed narrative intact and the mechanism silently dead.",
     "hash": "27b0c202"
   },
-  "548": {
+  "557": {
     "text": "And assert the refcount was decremented. These two lines are the difference between demonstrating copy-on-write and describing it.",
     "hash": "6b8d966b"
   },
-  "549": {
+  "558": {
     "text": "The property that makes prefix sharing usable in production: the cost of divergence is paid once, by the diverging request, and not by the sharers.",
     "hash": "278fbb35"
   },
-  "567": {
+  "576": {
     "text": "Print a section header before the final batch of generated names to visually separate it from the comparison experiments.",
     "hash": "73d0f5a2"
   },
-  "568": {
+  "577": {
     "text": "Large paged cache pool for generating many names.",
     "hash": "dacbe77a"
   },
-  "569": {
+  "578": {
     "text": "Generate 20 names to show the model's learned character patterns, each using its own paged cache sequence.",
     "hash": "64d836c5"
   },
-  "570": {
+  "579": {
     "text": "Unique seed per sample for variety.",
     "hash": "5cbe30ba"
   },
-  "571": {
+  "580": {
     "text": "Generate using the paged cache, each sample gets its own sequence ID.",
     "hash": "f0d82937"
   },
-  "572": {
+  "581": {
     "text": "Decode token IDs to characters.",
     "hash": "61c24734"
   },
-  "573": {
+  "582": {
     "text": "Display each generated name on its own line so we can visually inspect the character-level patterns the model learned.",
     "hash": "f9d6f741"
   },
-  "574": {
+  "583": {
     "text": "Free the sequence's blocks back to the pool, memory is recycled for the next sample.",
     "hash": "cd77d0d5"
   }

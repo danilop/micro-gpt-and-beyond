@@ -668,86 +668,90 @@
     "important": true,
     "hash": "2feb3d1a"
   },
-  "300": {
+  "297": {
+    "text": "The README builds an argument on this ratio, so the lab checks the band it belongs to rather than trusting the prose to stay in step. A band, not an equality: the exact figure depends on how long the sampled names come out.",
+    "hash": "7b889fc7"
+  },
+  "304": {
     "text": "Evaluate the closed form at <code>T = block_size</code> so it can be reconciled with the measured count. The two disagree, and the reason is worth a line rather than a hand-wave.",
     "hash": "8d29f04a"
   },
-  "301": {
+  "305": {
     "text": "Average decode steps per name, measured rather than assumed. These names stop on BOS after about 5.8 steps, so generation never reaches position 16 and the formula's <code>T = 16</code> was never the right input.",
     "hash": "9b87c396"
   },
-  "304": {
+  "308": {
     "text": "Naive: sum of t^2 for t=1..T = T(T+1)(2T+1)/6. Cubic growth.",
     "hash": "2187acfc"
   },
-  "305": {
+  "309": {
     "text": "Cached: sum of t for t=1..T = T(T+1)/2. Quadratic growth.",
     "hash": "d4da27bf"
   },
-  "306": {
+  "310": {
     "text": "The ratio grows linearly with sequence length, longer sequences benefit more from caching.",
     "hash": "e0bd336a"
   },
-  "307": {
+  "311": {
     "text": "Print measured against theoretical and then explain the gap, instead of quietly reporting whichever is more flattering. <code>4.3x</code> versus <code>11.0x</code> is not an error in either number.",
     "hash": "749af005"
   },
-  "310": {
+  "314": {
     "text": "Re-evaluate the same <code>(2T+1)/3</code> at the observed 5.8 steps and it lands on <code>4.2x</code>, right where the counter did. The saving grows with sequence length, so a corpus of six-letter names sees the very small end of it.",
     "hash": "b8b1562a"
   },
-  "317": {
+  "321": {
     "text": "End-to-end wall clock, reported because the reader will want it and then immediately qualified. This ratio has been seen anywhere from below 1.00x to a few x on the same code, because it moves with machine load, which is a fact about the benchmark rather than about the cache.",
     "important": true,
     "hash": "065ccd28"
   },
-  "320": {
+  "324": {
     "text": "Labelled 'not a speedup figure' in the output itself. Twenty six-letter names on a 16-dimensional model is a measurement of dispatch overhead with a little attention arithmetic hidden inside it.",
     "hash": "02a9bfef"
   },
-  "321": {
+  "325": {
     "text": "Rather than explaining away an unhelpful number, the lab says what the number is measuring and then fixes the benchmark below. That is the more useful lesson: the optimization was fine, the experiment was wrong.",
     "hash": "3d6d8803"
   },
-  "360": {
+  "364": {
     "text": "A time budget rather than a repetition count. No single count serves this table: a cached call is microseconds, where five reps measure mostly noise, while a naive call at T = 2048 can take a large fraction of a second by itself.",
     "important": true,
     "hash": "22606f69"
   },
-  "365": {
+  "369": {
     "text": "Take the fastest of many runs, not the mean. Anything else sharing the CPU can only ever make a call slower, so the mean measures the machine's mood while the minimum measures the code.",
     "hash": "62c12b1d"
   },
-  "367": {
+  "371": {
     "text": "Seed the running minimum at infinity so the first iteration always wins, and count the reps so the table can show how much evidence is behind each cell.",
     "hash": "f9d71c34"
   },
-  "369": {
+  "373": {
     "text": "Repeat until the budget is spent, subject to a floor and a ceiling. A cell that lands on the floor did so because one call already costs more than the whole budget: fine when that call is tens of milliseconds, a reason to distrust the number when it is microseconds.",
     "hash": "6520fd23"
   },
-  "372": {
+  "376": {
     "text": "One timer around one call, then keep the smallest. Loop overhead sits outside the measured region, so it cannot contaminate the number the way an outer average would.",
     "hash": "e03a352b"
   },
-  "377": {
+  "381": {
     "text": "The second defence: median across independent runs, so one throttled run cannot set the reported number. Minimum <em>within</em> a run, median <em>across</em> runs.",
     "important": true,
     "hash": "b35f14a9"
   },
-  "379": {
+  "383": {
     "text": "One untimed call per path first. The first allocation of a large tensor and the first pass through cold caches are one-time costs, and whichever path is measured first would otherwise absorb them.",
     "hash": "80e02c2a"
   },
-  "384": {
+  "388": {
     "text": "The section that finally demonstrates the effect: measure the one thing that actually shrinks &mdash; the attention module for a single decode step &mdash; on synthetic tensors, so nothing about training or weights is in the way.",
     "hash": "c66c6b70"
   },
-  "388": {
+  "392": {
     "text": "A fresh attention module on random activations is enough, because timing depends on tensor shapes rather than on trained weights. Reusing the trained model would have tied this benchmark to <code>block_size = 16</code>, which is precisely the length where the effect is invisible.",
     "hash": "292d4ab7"
   },
-  "391": {
+  "395": {
     "text": "T = 64, 256, 1024, 2048. Sweeping the context length is what turns a single ambiguous ratio into a curve, and a curve you can see the shape of is worth more than any one timing.",
     "important": true,
     "diagram": "kv_naive",
@@ -764,11 +768,11 @@
     },
     "hash": "cb2206f7"
   },
-  "392": {
+  "396": {
     "text": "The naive input: the whole prefix, re-projected and re-attended from scratch, giving a <code>T x T</code> score matrix.",
     "hash": "62a39529"
   },
-  "393": {
+  "397": {
     "text": "The cached input is exactly one position. This is the asymmetry the whole lab is about, one row of queries against the full history instead of <code>T</code> of them.",
     "diagram": "kv_cached",
     "highlight": [
@@ -777,37 +781,37 @@
     ],
     "hash": "737ae7c0"
   },
-  "394": {
+  "398": {
     "text": "A synthetic cache of the right shape stands in for a real one. What is being timed is the <code>1 x T</code> attention and the cache concatenation, and neither cares whether the stored keys are meaningful.",
     "hash": "12b6ff78"
   },
-  "398": {
+  "402": {
     "text": "Best-of-N for the naive step: recompute Q, K, V for the whole prefix and run a T x T attention.",
     "hash": "26a7ba59"
   },
-  "399": {
+  "403": {
     "text": "Best-of-N for the cached step: one position's Q, K, V against the cached prefix, a 1 x T attention.",
     "hash": "36a01ced"
   },
-  "402": {
+  "406": {
     "text": "Print the measured ratio next to the theoretical <code>T</code>. On this box it climbs from under 2x at T = 64 to several hundred times at T = 2048, the right shape and comfortably short of theory.",
     "hash": "ae12fcdd"
   },
-  "406": {
+  "410": {
     "text": "The curve grows with T because naive attention is <code>T x T</code> against the cache's <code>1 x T</code>. It stays under the theoretical <code>T</code> because the projections and the fixed per-call overhead do not shrink at all.",
     "hash": "49d31ec2"
   },
-  "414": {
+  "418": {
     "text": "Both columns time work that grows with T, so both must grow with T. The lab <em>checks</em> that instead of asserting it &mdash; an earlier version of this benchmark reported a cached time that fell from 342.9 us at T = 1024 to 259.1 us at T = 2048, which is impossible, and nothing in the output flagged it.",
     "important": true,
     "hash": "2d50d920"
   },
-  "447": {
+  "451": {
     "text": "At 2048 context <code>(2T+1)/3</code> is <code>1366x</code> fewer attention operations, and the next sentence exists to stop that being read as a 1366x speedup. Projections, MLP, and the memory traffic reading the cache back do not shrink by that factor.",
     "important": true,
     "hash": "49215ff1"
   },
-  "451": {
+  "455": {
     "text": "The end-to-end win is large enough that no serving system ships without the cache, and it stays smaller than the operation count, bounded by whatever does not get cheaper. Past a few thousand tokens decode is memory-bound rather than compute-bound, so the bound is real rather than pedantic.",
     "hash": "3d690202"
   }

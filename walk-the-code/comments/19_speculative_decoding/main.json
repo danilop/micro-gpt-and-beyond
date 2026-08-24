@@ -957,131 +957,135 @@
     "text": "The other side of the ledger: the draft forwards are extra work that did not exist in the baseline. Speculative decoding is a trade, not a free lunch.",
     "hash": "71cee8fd"
   },
-  "430": {
+  "432": {
+    "text": "The forward-pass reduction is the only number here that transfers to a GPU, so it is the one the lab guards. Wall clock is left unchecked on purpose: at this scale it measures Python overhead, and a test on it would fail with background load rather than with a real regression.",
+    "hash": "640ad09a"
+  },
+  "436": {
     "text": "Three acceptance figures from the same run, printed together on purpose. Papers quote whichever one flatters the method, and they can differ by tens of points on identical data.",
     "important": true,
     "hash": "e4685524"
   },
-  "431": {
+  "437": {
     "text": "Alpha: accepted over evaluated. Independent of K, so this is the number you can compare across papers.",
     "hash": "dd8ad50f"
   },
-  "432": {
+  "438": {
     "text": "Mean accepted run of a K=4 window. Compare it against K to see how much of the speculation budget the draft model is actually earning.",
     "hash": "24ebcf93"
   },
-  "433": {
+  "439": {
     "text": "Window utilization: accepted over all K proposals. Lower than alpha by construction, because everything after the first rejection is counted as proposed and never evaluated.",
     "hash": "88204ac6"
   },
-  "438": {
+  "444": {
     "text": "The measured per-forward-pass costs, not an estimate from parameter counts. This is the line that explains the wall clock below.",
     "hash": "dcb16fee"
   },
-  "439": {
+  "445": {
     "text": "The arbitrage the whole technique depends on. At this scale the cost ratio and the parameter ratio have come apart completely, because both models are dominated by per-call Python and dispatch overhead rather than arithmetic. In production that ratio is 10-100x, which is where the reported 2-3x speedups come from.",
     "important": true,
     "hash": "0c2ae797"
   },
-  "444": {
+  "450": {
     "text": "The wall clock, reported as a ratio rather than a \"speedup\" because on this box it comes out below 1.00. Printing an unflattering measurement is the point: the forward-pass reduction is real and transfers, the wall clock is a property of this CPU and this interpreter.",
     "hash": "49c34122"
   },
-  "448": {
+  "454": {
     "text": "Token counts should be similar, the distribution is mathematically identical.",
     "hash": "a4d7def5"
   },
-  "462": {
+  "468": {
     "text": "The headline claim of this lab is that the output distribution is unchanged. A speedup number does not test that at all, so test it directly.",
     "important": true,
     "hash": "5055074b"
   },
-  "463": {
+  "469": {
     "text": "500 samples per arm. Enough that the noise floor below is a stable reference, small enough to run on a CPU in the same script.",
     "hash": "91415064"
   },
-  "466": {
+  "472": {
     "text": "A 27-bin character histogram is a crude summary of a distribution over strings, but it is a statistic both arms must agree on if the accept/reject math is right.",
     "hash": "92e4737f"
   },
-  "475": {
+  "481": {
     "text": "Total variation distance: the largest disagreement any event can show between two distributions. Zero means identical, one means disjoint support.",
     "hash": "1cab3591"
   },
-  "480": {
+  "486": {
     "text": "Autoregressive run A, the reference sample from the target model alone.",
     "hash": "ace9a6e4"
   },
-  "481": {
+  "487": {
     "text": "Autoregressive run B, from the same model with the same settings. This second run is the essential part: two finite samples from one distribution already differ, and without that reference \"the distributions match\" is unfalsifiable, since any small difference can be waved away.",
     "important": true,
     "hash": "fe029885"
   },
-  "482": {
+  "488": {
     "text": "And the speculative sample, drawn the same way and at the same size, so the only difference between it and A is the decoding algorithm.",
     "hash": "ba973bb2"
   },
-  "492": {
+  "498": {
     "text": "Three histograms from the three runs, ready to be compared pairwise.",
     "hash": "a154a135"
   },
-  "493": {
+  "499": {
     "text": "AR versus AR: the noise floor. This is how far apart two samples from the <em>same</em> distribution land at this sample size, and it is the yardstick everything else is measured against.",
     "hash": "d0a8ca84"
   },
-  "494": {
+  "500": {
     "text": "AR versus speculative: the number under test. On its own it means nothing, and it becomes evidence only when divided by the floor above.",
     "hash": "845f5eef"
   },
-  "496": {
+  "502": {
     "text": "Print the floor first and label it, so the reader cannot mistake the measured distance for an absolute error.",
     "hash": "8d306211"
   },
-  "498": {
+  "504": {
     "text": "The ratio is the actual verdict. Around 1x means the speculative sample is no further from an autoregressive sample than another autoregressive sample would be.",
     "hash": "ad82c010"
   },
-  "500": {
+  "506": {
     "text": "Two noise floors is a deliberately loose threshold, and both branches print. A check whose failure branch is unreachable is not a check, so the failure text is written out in full and left in the file.",
     "hash": "b8e4e0e9"
   },
-  "510": {
+  "516": {
     "text": "State the limits of the test in the output rather than in a comment. Two summary statistics at n=500 can fail to detect a real difference; they cannot prove there is none. The proof lives in Leviathan et al. (2023), and this is a sanity check on the implementation of it.",
     "hash": "3b0676e9"
   },
-  "548": {
+  "554": {
     "text": "Show actual generated names from each method.",
     "hash": "a3e3e588"
   },
-  "549": {
+  "555": {
     "text": "Iterate over all three approaches.",
     "hash": "8ed9bbcc"
   },
-  "550": {
+  "556": {
     "text": "The names generated by standard autoregressive decoding with the full target model, our quality baseline.",
     "hash": "a0559c23"
   },
-  "551": {
+  "557": {
     "text": "The names generated by speculative decoding, which should match the target's distribution exactly despite being faster.",
     "hash": "5f7b3a2f"
   },
-  "552": {
+  "558": {
     "text": "Names from the small draft model alone. Faster but lower quality, included to show the quality gap that speculative decoding bridges.",
     "hash": "ddc013ad"
   },
-  "554": {
+  "560": {
     "text": "Print which generation method produced the following names so we can compare quality across approaches.",
     "hash": "a3b8d2cf"
   },
-  "555": {
+  "561": {
     "text": "Show the first 10 samples from each method.",
     "hash": "5da4a4c3"
   },
-  "556": {
+  "562": {
     "text": "Decode token IDs back to characters and print.",
     "hash": "2a0d1a6c"
   },
-  "557": {
+  "563": {
     "text": "Visual separator between the three methods' output blocks for cleaner readability in the terminal.",
     "hash": "525d5133"
   }

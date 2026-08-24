@@ -421,11 +421,17 @@ print("\n--- results ---\n")
 
 # Lead with the forward-pass count. That is the metric that transfers: on a GPU
 # with a real model the target forward dominates everything, so cutting target
-# forwards from 5.0 to 2.3 per name is the win. Wall clock on a CPU at this
+# forwards from roughly five to roughly two per name is the win. Wall clock at this
 # scale measures Python overhead, not the algorithm.
 print(f"target forward passes per name: {avg_target_fwd:.1f} (speculative) vs {avg_auto_tokens:.1f} (autoregressive)")
 print(f"  -> {avg_auto_tokens / avg_target_fwd:.2f}x fewer target forward passes")
 print(f"draft forward passes per name:  {avg_draft_fwd:.1f} (the extra work that buys the reduction)")
+# The forward-pass reduction is the claim the README leads with, and the only
+# number here that transfers to a GPU. Guard it; wall clock is deliberately not
+# guarded, because at this scale it measures the machine.
+assert avg_target_fwd * 1.5 < avg_auto_tokens, (
+    f"target forward reduction fell to {avg_auto_tokens / avg_target_fwd:.2f}x, below what the README claims"
+)
 print()
 print("acceptance, three ways (they are not the same number):")
 print(f"  per-token acceptance rate alpha: {alpha:.1%}  (accepted / evaluated)")

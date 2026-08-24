@@ -270,6 +270,12 @@ print(
 print(
     f"size: {fp32_size / int8_size:.2f}x smaller | speed: {int8_time / fp32_time - 1:+.1%} vs FP32 (dequantizing on every forward costs time; the exact figure is machine-dependent)"
 )
+# The size reduction is this lab's whole claim, and unlike the timing it does
+# not depend on the machine. Guard the band the README describes; the speed
+# figure is deliberately left unguarded, because it is a property of the host.
+assert 3.0 < fp32_size / int8_size < 4.0, (
+    f"size reduction {fp32_size / int8_size:.2f}x left the band the README describes"
+)
 print("\nNote: This implementation prioritizes memory savings.")
 print("Production systems use INT8 kernels for both size and speed benefits.")
 
