@@ -55,12 +55,12 @@ minimum is at T=256, and by T=1024 the cost has climbed back to 27.45 us/token,
 several times the minimum.
 Reading only the endpoints ("46.2 down to 27.4") makes it look like a monotone
 improvement, and it is not. The left arm falls because the fixed per-call
-overhead — Python, dispatch, kernel launch — is amortised over more tokens. The
+overhead (Python, dispatch, kernel launch) is amortised over more tokens. The
 right arm rises because the quadratic attention term has taken over: attention
 is 3.5% of prefill FLOPs at T=8 but 82.4% at T=1024, so past a few hundred
 tokens every extra token costs more than the one before it. Those two effects
 are what make the curve turn, and the turning point is where this model prefills
-most efficiently — a number the endpoints cannot tell you.
+most efficiently, a number the endpoints cannot tell you.
 
 This means you can use different GPU types: compute-dense GPUs for prefill, bandwidth-optimized GPUs for decode. Or even different numbers, since one prefill GPU can feed several decode GPUs.
 
@@ -94,14 +94,14 @@ In this lab the handoff is a thread-safe queue carrying the same tensors, so it
 would otherwise be free. `KV_TRANSFER_COST_MS` charges 0.5 ms per prompt token
 inside the handoff, which lands in the disaggregated TTFT (23 ms total across
 the 12 requests). Raise it and the advantage shrinks; the lab prints the value
-that would erase it completely — **~2.41 ms/token**, against the 0.5 ms/token
+that would erase it completely, **~2.41 ms/token**, against the 0.5 ms/token
 it currently charges. That is a much narrower margin than the naive arithmetic
 suggests, and the reason is the denominator. Dividing the 47.6 ms average TTFT
 gain by the mean prompt length (3.8 tokens) would put the break-even in the
 low tens of ms/token, but the handoff runs *inline on the prefill worker*, so
 raising its per-token cost delays a request by every prompt token queued ahead
 of it, not just its own. The right denominator is the mean cumulative prompt
-length — mean prompt-tokens-ahead-of-you, 24.9 tokens here — and dividing by
+length, the mean prompt-tokens-ahead-of-you of 24.9 tokens here, and dividing by
 that much larger number is what brings the break-even down to 2.41 ms/token.
 
 The simulated phase costs (5 ms per prompt token for prefill, 3 ms per decode

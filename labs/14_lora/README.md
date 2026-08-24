@@ -43,7 +43,7 @@ This means we're not losing expressiveness by constraining the update to low ran
 
 The centrepiece is a **rank ablation**: how small can the adapter get before it stops working?
 
-The lab pre-trains a 4,192-parameter microGPT on all 32,033 names, then fine-tunes it towards a phonetic style — names whose consonants all come from `{m, n, r}`, so `emmerie`, `amena`, `normani`, `manami`. That filter leaves 1,092 of the 32,033 names. The style is easy to check by eye and easy to score automatically, which is what makes an ablation possible at all.
+The lab pre-trains a 4,192-parameter microGPT on all 32,033 names, then fine-tunes it towards a phonetic style, names whose consonants all come from `{m, n, r}`, so `emmerie`, `amena`, `normani`, `manami`. That filter leaves 1,092 of the 32,033 names. The style is easy to check by eye and easy to score automatically, which is what makes an ablation possible at all.
 
 It then fine-tunes four different adapter configurations for 500 steps each, plus a full fine-tuning control, and scores each one on the fraction of 200 generated names that match the target style. Measured:
 
@@ -56,7 +56,7 @@ It then fine-tunes four different adapter configurations for 500 steps each, plu
 | rank 4, alpha 16 | 256 | 5.8% | 4.00 | 185/200, 92% | ok |
 | full fine-tuning | 512 | 12.2% | — | 160/200, 80% | n/a |
 
-**Rank 1 already gets you there.** Sixty-four trainable parameters — one vector pair per adapted matrix, 1.5% of the model — take the style rate from 17% to 85%. Rank 2 and rank 4 add a few points for two and four times the adapter. Most of the distance is covered at r=1.
+**Rank 1 already gets you there.** Sixty-four trainable parameters, one vector pair per adapted matrix at 1.5% of the model, take the style rate from 17% to 85%. Rank 2 and rank 4 add a few points for two and four times the adapter. Most of the distance is covered at r=1.
 
 That is the LoRA paper's central empirical claim, reproduced small enough to read in one screen: the useful part of a fine-tuning update has low intrinsic rank, so a very small r goes a long way.
 
@@ -75,7 +75,7 @@ def inject_lora(module, rank, alpha=None, targets=("wq", "wv")):
             inject_lora(child, rank=rank, alpha=alpha, targets=targets)
 ```
 
-`wk`, `wo`, and both MLP matrices keep their plain `nn.Linear` and stay frozen. This follows Hu et al., who found `wq` + `wv` sufficient for most tasks — and it is why the rank-1 adapter is 64 parameters rather than the 288 it would take to wrap every `nn.Linear` in the block.
+`wk`, `wo`, and both MLP matrices keep their plain `nn.Linear` and stay frozen. This follows Hu et al., who found `wq` + `wv` sufficient for most tasks, and it is why the rank-1 adapter is 64 parameters rather than the 288 it would take to wrap every `nn.Linear` in the block.
 
 The wrapper itself:
 
@@ -94,7 +94,7 @@ class LoRALinear(nn.Module):
         return self.base(x) + (x @ self.lora_A.T) @ self.lora_B.T * self.scaling
 ```
 
-`scaling` is `alpha / rank`. When `alpha` is left at `None` it defaults to `rank`, so scaling is exactly 1.0 and the term does nothing — which is the case for three of the four adapter rows. The `rank 4, alpha 16` row exists so the factor is actually exercised: scaling becomes 4.0, the adapter's contribution is multiplied by four, and the result moves. Without that row the docstring would be advertising a mechanism the lab never runs.
+`scaling` is `alpha / rank`. When `alpha` is left at `None` it defaults to `rank`, so scaling is exactly 1.0 and the term does nothing, which is the case for three of the four adapter rows. The `rank 4, alpha 16` row exists so the factor is actually exercised: scaling becomes 4.0, the adapter's contribution is multiplied by four, and the result moves. Without that row the docstring would be advertising a mechanism the lab never runs.
 
 The freeze is not taken on trust either. Every configuration asserts it:
 
@@ -122,7 +122,7 @@ with torch.no_grad():
     merged.weight.copy_(child.base.weight + child.scaling * child.lora_B @ child.lora_A)
 ```
 
-The merged model is structurally identical to the original: same size, same architecture, no extra layers, zero runtime overhead. The lab verifies this rather than asserting it — it regenerates from the merged model with the same seed and checks the names come out character-identical. Every row of the table above reports `ok`.
+The merged model is structurally identical to the original: same size, same architecture, no extra layers, zero runtime overhead. The lab verifies this rather than asserting it: it regenerates from the merged model with the same seed and checks the names come out character-identical. Every row of the table above reports `ok`.
 
 ## Multiple adapters
 

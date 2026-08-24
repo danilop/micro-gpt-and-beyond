@@ -8,3 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Tool caches
+# ruff writes .ruff_cache/.gitignore containing "*", so this is belt and
+# braces: it keeps the directory ignored even if that inner file is lost.
+.ruff_cache/
+
+# macOS
+.DS_Store

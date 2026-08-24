@@ -15,7 +15,7 @@ In PyTorch, you move tensors between CPU and GPU with `.to(device)`. In MLX, the
 ```python
 input_ids = mx.array(tokens[:n])   # lives in unified memory
 logits = model(input_ids)           # computed on GPU
-loss_val = loss_val.item()          # read on CPU — no copy needed
+loss_val = loss_val.item()          # read on CPU, no copy needed
 ```
 
 This is a fundamental hardware difference on Apple Silicon, and MLX is designed around it.
@@ -48,7 +48,7 @@ def train_step(input_ids, targets):
 train_step = mx.compile(train_step, inputs=state, outputs=state)
 ```
 
-`inputs` and `outputs` declare the state the step reads and writes but does not take as arguments — the model parameters and the optimizer moments. Without them, the compiled function would capture stale values.
+`inputs` and `outputs` declare the state the step reads and writes but does not take as arguments, the model parameters and the optimizer moments. Without them, the compiled function would capture stale values.
 
 And like `jit`, `mx.compile` specialises on input shapes. Here `n = min(block_size, len(tokens) - 1)` changes with the name, so the loop separates the two kinds of step and prints both averages:
 

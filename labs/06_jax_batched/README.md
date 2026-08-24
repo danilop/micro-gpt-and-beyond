@@ -4,7 +4,7 @@ Same architecture as `05_jax`, but with mini-batch training, and this is where J
 
 ## Why this version exists
 
-In PyTorch (04), batching means rewriting your model to handle `(B, T, ...)` tensors, adding padding logic, and threading mask arguments through every layer. In JAX, you write the forward pass for one example and let `vmap` do the rest. This version shows that difference — and, because everything is jitted, it is also the right place to learn that `jit` compiles per input shape.
+In PyTorch (04), batching means rewriting your model to handle `(B, T, ...)` tensors, adding padding logic, and threading mask arguments through every layer. In JAX, you write the forward pass for one example and let `vmap` do the rest. This version shows that difference, and because everything is jitted it is also the right place to learn that `jit` compiles per input shape.
 
 ## What makes it interesting
 
@@ -25,7 +25,7 @@ Compare this to the PyTorch batched version. The JAX forward pass is still writt
 ```python
 def forward_single(params, input_ids, pad_mask):
     T = input_ids.shape[0]
-    tok_emb = params['wte'][input_ids]       # (T, D) — not (B, T, D)
+    tok_emb = params['wte'][input_ids]       # (T, D), not (B, T, D)
     pos_emb = params['wpe'][jnp.arange(T)]
     x = rmsnorm(tok_emb + pos_emb)
     ...
@@ -81,7 +81,7 @@ compilations of train_step: 1 (padding to the static block_size)
   steps 2..1000: 9.42 ms mean, max 48.34 ms
 ```
 
-One compile instead of nine. After the first step there are no compilation spikes at all — a 12-letter name arriving at step 300 changes nothing, because the shape it lands in was already compiled. (The `max` above is ordinary scheduling noise, not a trace.)
+One compile instead of nine. After the first step there are no compilation spikes at all: a 12-letter name arriving at step 300 changes nothing, because the shape it lands in was already compiled. (The `max` above is ordinary scheduling noise, not a trace.)
 
 The cost is real but small: a batch whose longest name is five characters still does arithmetic over all 16 columns. Static shapes are usually worth that, which is why production pipelines bucket sequences or pad to fixed lengths rather than to whatever arrived.
 
@@ -114,7 +114,7 @@ Like the PyTorch batched version, this uses a bigger model to make batching wort
 | Batch size | 1 | 32 |
 | Training steps | 1000 | 1000 |
 
-### Loss masking — the mask that actually does the work
+### Loss masking: the mask that actually does the work
 
 The loss function uses a `target_mask` to ignore padded positions, the same idea as PyTorch's `ignore_index=-100`, but done explicitly with a mask since JAX doesn't have a built-in convention. This one is essential: the dummy target at padded positions is `0`, which is a real character, so without the mask the model would be trained to predict `'a'` after the end of every short name.
 

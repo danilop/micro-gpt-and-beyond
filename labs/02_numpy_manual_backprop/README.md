@@ -54,13 +54,13 @@ dK_h = datt.transpose(0, 2, 1) @ Q_h  # (nh, n, hd)
 
 ### Caching strategy
 
-The forward pass stores everything the backward pass needs in a `cache` dict: activations, the post-softmax attention weights (`att_probs`, not the pre-softmax scores — `softmax_bwd` is written in terms of the probabilities), and the RMSNorm scale factors. This is the same memory-vs-compute tradeoff that every deep learning framework makes: store activations during the forward pass so you don't have to recompute them during backward.
+The forward pass stores everything the backward pass needs in a `cache` dict: activations, the post-softmax attention weights (`att_probs`, not the pre-softmax scores, since `softmax_bwd` is written in terms of the probabilities), and the RMSNorm scale factors. This is the same memory-vs-compute tradeoff that every deep learning framework makes: store activations during the forward pass so you don't have to recompute them during backward.
 
 ## What you learn here
 
 - How to derive matrix-level gradients for every transformer operation
 - The cache/checkpoint pattern that all autograd systems use internally
-- Why autograd exists: `backward()` here is ~80 lines, 44 of them gradient arithmetic, for a one-layer model — after writing that you'll appreciate `loss.backward()`
+- Why autograd exists: `backward()` here is ~80 lines, 44 of them gradient arithmetic, for a one-layer model, and after writing that you'll appreciate `loss.backward()`
 - The exact relationship between the scalar chain rule (01) and the matrix chain rule (this version)
 
 ## Run
@@ -73,6 +73,6 @@ Trains for 1000 steps and generates 20 names.
 
 ### About speed
 
-The training loop prints wall-clock `ms/step` and a mean at the end, because the interesting claim here — "vectorized NumPy beats a Python loop over scalars" — is worth measuring rather than asserting. This version does exactly the same math as `01_pure_python`, but each matrix multiply happens once in C over a whole array instead of once per scalar in the interpreter.
+The training loop prints wall-clock `ms/step` and a mean at the end, because the interesting claim here, that "vectorized NumPy beats a Python loop over scalars", is worth measuring rather than asserting. This version does exactly the same math as `01_pure_python`, but each matrix multiply happens once in C over a whole array instead of once per scalar in the interpreter.
 
 The size of the gap depends on your CPU and on which BLAS your NumPy is linked against, so no fixed multiplier is quoted here. Time version 01 the same way on the same machine if you want the ratio for your hardware. For reference, the machine this was written on prints 0.8-0.9 ms/step for the NumPy version.

@@ -80,7 +80,7 @@ Note `jax.tree.map` rather than a Python `for k in params` loop. The optimizer a
 JAX doesn't have a global random state. Every random operation requires an explicit key, and you split keys to get new ones:
 
 ```python
-key = jax.random.key(42)            # typed key — the modern API
+key = jax.random.key(42)            # typed key, the modern API
 keys = jax.random.split(key, num_param_tensors)
 ```
 
@@ -115,7 +115,7 @@ Compare this to PyTorch's `optimizer.step()` which mutates parameters in-place. 
 
 ### jit compiles per shape, and this lab shows you where
 
-Everyone repeats that "the first JAX call is slow, then it's fast". That is only half true, and this lab is a good place to see the other half. `jit` specializes on the *shape* of its inputs, and here the input length is `n = min(block_size, len(tokens) - 1)`, which depends on the name. Names in the corpus run from 2 to 15 characters, so `n` ranges over 14 values, and each new one triggers a fresh trace and compile — at step 1, but also at step 156, and step 184, and later.
+Everyone repeats that "the first JAX call is slow, then it's fast". That is only half true, and this lab is a good place to see the other half. `jit` specializes on the *shape* of its inputs, and here the input length is `n = min(block_size, len(tokens) - 1)`, which depends on the name. Names in the corpus run from 2 to 15 characters, so `n` ranges over 14 values, and each new one triggers a fresh trace and compile, at step 1 but also at step 156, and step 184, and later.
 
 So the training loop times each step and announces new shapes:
 
@@ -129,7 +129,7 @@ distinct sequence lengths: 12 -> 12 traces of the same train_step
   cached-shape steps:         0.64 ms mean
 ```
 
-Three orders of magnitude between a compiling step and a cached one, and 12 of them in a 1000-step run. That is the single most common performance surprise in JAX. The fix is to make shapes static — pad everything to one fixed length — which is exactly what `06_jax_batched` does.
+Three orders of magnitude between a compiling step and a cached one, and 12 of them in a 1000-step run. That is the single most common performance surprise in JAX. The fix is to make shapes static by padding everything to one fixed length, which is exactly what `06_jax_batched` does.
 
 ## What you learn here
 

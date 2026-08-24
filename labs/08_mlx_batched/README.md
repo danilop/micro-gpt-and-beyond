@@ -4,7 +4,7 @@ Same architecture as `07_mlx`, scaled up with mini-batch training on Apple Silic
 
 ## Why this version exists
 
-Labs 04, 06 and 08 solve the same problem — turn a one-sequence model into a batched one — with the three tools the three frameworks give you:
+Labs 04, 06 and 08 solve the same problem, turning a one-sequence model into a batched one, with the three tools the three frameworks give you:
 
 | | how the batch dimension appears |
 |---|---|
@@ -22,7 +22,7 @@ MLX has `mx.vmap`, and it composes with `nn.value_and_grad` and `mx.compile`, so
 
 ```python
 def forward_single(self, idx, pad_mask):
-    # idx: (T,), pad_mask: (T,) — no batch dimension anywhere below this point
+    # idx: (T,), pad_mask: (T,), no batch dimension anywhere below this point
     T = idx.shape[0]
     tok_emb = self.wte(idx)
     ...
@@ -32,7 +32,7 @@ def __call__(self, idx, pad_mask=None):
     return mx.vmap(self.forward_single, in_axes=(0, 0))(idx, pad_mask)
 ```
 
-`in_axes=(0, 0)` maps over axis 0 of `idx` and of `pad_mask`. The parameters come from `self`, are captured by the closure, and are shared across the batch — that is what `in_axes=None` states explicitly in the JAX version.
+`in_axes=(0, 0)` maps over axis 0 of `idx` and of `pad_mask`. The parameters come from `self`, are captured by the closure, and are shared across the batch, which is what `in_axes=None` states explicitly in the JAX version.
 
 Attention therefore keeps the `(nh, T, T)` shapes from `07_mlx` instead of growing to `(B, nh, T, T)`:
 
@@ -43,7 +43,7 @@ att = mx.where(causal, -1e9, att)
 att = mx.where(pad_mask[None, None, :], -1e9, att)
 ```
 
-Is the readable version also the slower one? The lab measures that rather than asserting it. `forward_batched` in `main.py` is the same computation with the batch axis written out by hand, sharing the same parameters, and the run prints two things about it: the largest logit difference between the two paths (zero on the CPU-only build used here — same operations, same order), and the best of 20 timed forward passes each way. On this build the two came out within a couple of percent of each other, and the verdict line the lab prints is computed from the gap it just measured, not remembered from another machine. Run it on your Mac and it will tell you what the transform costs there.
+Is the readable version also the slower one? The lab measures that rather than asserting it. `forward_batched` in `main.py` is the same computation with the batch axis written out by hand, sharing the same parameters, and the run prints two things about it: the largest logit difference between the two paths (zero on the CPU-only build used here, the same operations in the same order), and the best of 20 timed forward passes each way. On this build the two came out within a couple of percent of each other, and the verdict line the lab prints is computed from the gap it just measured, not remembered from another machine. Run it on your Mac and it will tell you what the transform costs there.
 
 ### Lazy evaluation and mx.compile
 
@@ -66,7 +66,7 @@ Then, once per step:
 mx.eval(state)
 ```
 
-That call is not there to fetch the loss — `loss_val.item()` already forces the loss, since you cannot read a Python float out of an unevaluated graph. It is there because nothing downstream reads the *parameters* or the optimizer moments, so without it the graph of pending updates would keep growing for the whole run. `mx.eval` bounds it at one step.
+That call is not there to fetch the loss, since `loss_val.item()` already forces the loss, since you cannot read a Python float out of an unevaluated graph. It is there because nothing downstream reads the *parameters* or the optimizer moments, so without it the graph of pending updates would keep growing for the whole run. `mx.eval` bounds it at one step.
 
 Because `mx.compile` specialises on input shapes, and `make_batch` pads to the longest sequence in each batch, the shape changes from step to step. The loop counts it:
 
@@ -77,7 +77,7 @@ distinct batch shapes seen: 9 (compile = True)
   each shape first seen at step: [0, 1, 4, 10, 11, 15, 79, 304, 532]
 ```
 
-Nine shapes, nine traces. Do not read the first-vs-repeat gap as the price of tracing, though — run the same file with `use_compile = False` and the gap is still there (93.87 against 84.02 ms), with nothing being traced at all. That last printed line is why: six of the nine shapes turn up in the first sixteen steps, so "first-time shape" is largely a synonym for "early step", when nothing is warm yet. `06_jax_batched` shows the fix for the shape churn anyway — pad to a fixed length and there is only one shape to compile.
+Nine shapes, nine traces. Do not read the first-vs-repeat gap as the price of tracing, though: run the same file with `use_compile = False` and the gap is still there (93.87 against 84.02 ms), with nothing being traced at all. That last printed line is why: six of the nine shapes turn up in the first sixteen steps, so "first-time shape" is largely a synonym for "early step", when nothing is warm yet. `06_jax_batched` shows the fix for the shape churn anyway: pad to a fixed length and there is only one shape to compile.
 
 Set `use_compile = False` and compare. On the CPU-only Linux build these numbers came from, uncompiled repeated-shape steps averaged 84.02 ms against 80.04 ms compiled: close to a wash at this batch size, because the per-operation dispatch overhead that compilation removes is small next to 32 sequences worth of matmuls. `07_mlx`, whose steps are around a millisecond, gets 2.5x from the same call on the same build (2.77 ms uncompiled against 1.12 ms compiled). Measure it on your own hardware rather than believing either number.
 
@@ -115,11 +115,11 @@ Padding is always appended, never interleaved with real tokens. Two masks come o
 
 That contrast is the useful lesson: two lines that look like the same defensive measure, one carrying all the weight and one carrying none.
 
-There is also no `nan_to_num`-style guard after the softmax, and none is needed. The mask value is `-1e9`, not `-inf`, so even a fully masked row would come out uniform rather than NaN — and no row can be fully masked anyway, since row 0 always keeps position 0, which is `BOS`.
+There is also no `nan_to_num`-style guard after the softmax, and none is needed. The mask value is `-1e9`, not `-inf`, so even a fully masked row would come out uniform rather than NaN, and no row can be fully masked anyway, since row 0 always keeps position 0, which is `BOS`.
 
 ## What you learn here
 
-- `mx.vmap`, and that MLX has the same "write for one, run for many" transform JAX does — including how to check it against a hand-written batch dimension for both output and speed
+- `mx.vmap`, and that MLX has the same "write for one, run for many" transform JAX does, including how to check it against a hand-written batch dimension for both output and speed
 - How padding and masking work with MLX's array API, and which of the two masks actually does anything
 - `mx.eval` as a bound on the pending graph, and `mx.compile` as MLX's `jit`, per-shape specialisation included
 - The practical tradeoff: MLX's API familiarity plus functional transforms, on Apple hardware

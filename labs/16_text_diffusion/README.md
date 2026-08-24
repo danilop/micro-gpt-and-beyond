@@ -49,7 +49,7 @@ class BidirectionalSelfAttention(nn.Module):
         att = F.softmax(att, dim=-1)  # no causal mask!
 ```
 
-Lab 03's `CausalSelfAttention` masks future positions so each token only sees the past. `BidirectionalSelfAttention` has no mask — every position attends to every other. This lets the model use context from both sides to fill in the blanks.
+Lab 03's `CausalSelfAttention` masks future positions so each token only sees the past. `BidirectionalSelfAttention` has no mask, so every position attends to every other. This lets the model use context from both sides to fill in the blanks.
 
 The architecture is otherwise identical: same embedding, same RMSNorm, same multi-head attention, same MLP with ReLU. Key hyperparameter differences:
 
@@ -81,7 +81,7 @@ The MASK zeroing follows [MDLM](https://github.com/kuleshov-group/mdlm)'s `_subs
 
 ### 4. Why Batching Is Critical
 
-Unlike the autoregressive labs (03, 04) which work fine with batch_size=1, diffusion **needs batching**. With a single sample, each gradient is based on one random masking pattern — far too noisy for the model to learn. Batching averages over 32 different mask patterns per step, giving stable gradients. This was the single biggest factor in getting the model to produce plausible names.
+Unlike the autoregressive labs (03, 04) which work fine with batch_size=1, diffusion **needs batching**. With a single sample, each gradient is based on one random masking pattern, far too noisy for the model to learn. Batching averages over 32 different mask patterns per step, giving stable gradients. This was the single biggest factor in getting the model to produce plausible names.
 
 ### 5. Inference: Names Emerge From Noise
 
@@ -110,9 +110,9 @@ Three techniques improve generation quality:
 
 - **Confidence-based remasking**: instead of randomly re-corrupting predictions, the model keeps the tokens it's most sure about and reconsiders the rest. This is the same `low_confidence` strategy used in [LLaDA's inference code](https://github.com/ML-GSAI/LLaDA/blob/main/generate.py) and originally introduced by [MaskGIT](https://arxiv.org/abs/2202.04200).
 - **Temperature annealing**: high temperature early on encourages exploration when everything is uncertain, low temperature at the end sharpens the final choices. The formula is `0.3 + 0.5 * t` with `t` the cosine schedule's mask fraction, so it starts at exactly 0.8 and the `0.3` is an asymptote it never reaches: the last step's temperature is 0.349 at 16 steps, 0.398 at 8 and 0.491 at 4. The fewer steps you take, the less the anneal has time to cool.
-- **Cosine schedule**: instead of linearly decreasing the noise level, a cosine curve spends more of its steps in the middle range where the name's structure is being decided. Note that the target is `block_size * s` — a fraction of the *whole sequence*, not of whatever is masked right now. Anchoring it on the sequence is what lets the schedule set the pace; anchor it on the current mask count and it collapses to one token per step regardless of the curve.
+- **Cosine schedule**: instead of linearly decreasing the noise level, a cosine curve spends more of its steps in the middle range where the name's structure is being decided. Note that the target is `block_size * s`, a fraction of the *whole sequence* rather than of whatever is masked right now. Anchoring it on the sequence is what lets the schedule set the pace; anchor it on the current mask count and it collapses to one token per step regardless of the curve.
 
-  There is a second constraint next to the schedule: `len(confidences) - 1`, a floor that forces every step to commit at least one position so the loop cannot stall. Which of the two binds is a property of the step count, and at the top of the sweep it is the floor. With 16 steps for 16 positions there is nothing else it could be — 16 positions over 16 steps is one per step by arithmetic — so the 16-step arm is *not* a demonstration of the schedule driving anything, and the parallel-decoding saving there is zero. The lab prints the per-step commit counts for each arm, and says so explicitly when every step committed exactly one:
+  There is a second constraint next to the schedule: `len(confidences) - 1`, a floor that forces every step to commit at least one position so the loop cannot stall. Which of the two binds is a property of the step count, and at the top of the sweep it is the floor. With 16 steps for 16 positions there is nothing else it could be, since 16 positions over 16 steps is one per step by arithmetic, so the 16-step arm is *not* a demonstration of the schedule driving anything, and the parallel-decoding saving there is zero. The lab prints the per-step commit counts for each arm, and says so explicitly when every step committed exactly one:
 
   ```
   --- inference: 16 denoising steps ---
@@ -128,7 +128,7 @@ Three techniques improve generation quality:
   The 8- and 4-step arms are where the schedule actually sets the pace.
 
 At 8 steps over a 16-position sequence, the schedule commits 1, 1, 1, 2, 3, 2, 3, 3
-positions — slow while everything is uncertain, several at a time once the structure
+positions, slow while everything is uncertain, several at a time once the structure
 is settled. Sketched below on the first 8 of the 16 positions, with the mask count
 being what is masked *going into* that step (so most of the remaining masks live in
 the 8 positions that are off-screen to the right):
@@ -151,7 +151,7 @@ Lab 03's GPT works with a single layer because the causal mask provides a strong
 
 ### Batch size 32
 
-This is the single most important difference from the autoregressive labs. In autoregressive training, every position contributes to the loss, giving a stable gradient even from one sample. In diffusion, only masked positions contribute, and the masking is random — so each single-sample gradient points in a different noisy direction. Batching averages 32 gradients per step, smoothing out the noise. Without it, the model produces gibberish.
+This is the single most important difference from the autoregressive labs. In autoregressive training, every position contributes to the loss, giving a stable gradient even from one sample. In diffusion, only masked positions contribute, and the masking is random, so each single-sample gradient points in a different noisy direction. Batching averages 32 gradients per step, smoothing out the noise. Without it, the model produces gibberish.
 
 ### 3000 steps
 
@@ -173,11 +173,11 @@ The input embeddings (`wte`) and output projection (`lm_head`) share the same ma
 | Attention | Causal (each token sees only past) | Bidirectional (each token sees all others) |
 | Special tokens | BOS (start/end marker) | MASK (noise) + PAD (fixed-length padding) |
 | Sequence length | Variable (generate until BOS) | Fixed (model learns to predict PAD) |
-| Batch size | 1 (works fine) | 32 (critical — single-sample is too noisy) |
+| Batch size | 1 (works fine) | 32 (critical, single-sample is too noisy) |
 | Layers | 1 | 2 (diffusion needs depth for message-passing) |
 | Loss masking | All positions | Only masked positions (MASK logit suppressed) |
 | Noise schedule | — | Log-uniform (importance sampling) |
-| Inference passes | ~7 (mean name length is 6.1 characters, plus the terminal BOS) | 16 / 8 / 4 (a dial — though 16 steps over 16 positions saves nothing) |
+| Inference passes | ~7 (mean name length is 6.1 characters, plus the terminal BOS) | 16 / 8 / 4 (a dial, though 16 steps over 16 positions saves nothing) |
 | Inference strategy | Sampling with temperature | Confidence remasking + temperature annealing |
 | Weight tying | No | Yes (wte = lm_head) |
 
@@ -199,7 +199,7 @@ Autoregressive generation is the dominant paradigm for language models. GPT, LLa
 
 For text, diffusion is still catching up. But it has structural advantages: parallel generation (several positions per forward pass, not one), bidirectional context (no "reversal curse" because the model sees the whole sequence), and natural support for editing (re-mask and re-generate any part).
 
-The step-count sweep at the end of the run is where that advantage becomes concrete, and where its price shows up too. At 16 steps the names are clean (`rina`, `saria`, `kalan`, `jaria`, `jamie`) but the run costs one forward pass per position, exactly like left-to-right decoding — that arm is the quality reference, not the speed result. The saving starts at 8 steps, where they begin to fray, and at 4 they are mostly mush. Fewer steps means more positions committed per pass with less information about their neighbours — and a 6.8K-parameter model has very little slack. How few steps you can get away with is exactly the question production diffusion LMs are trying to answer.
+The step-count sweep at the end of the run is where that advantage becomes concrete, and where its price shows up too. At 16 steps the names are clean (`rina`, `saria`, `kalan`, `jaria`, `jamie`) but the run costs one forward pass per position, exactly like left-to-right decoding, so that arm is the quality reference, not the speed result. The saving starts at 8 steps, where they begin to fray, and at 4 they are mostly mush. Fewer steps means more positions committed per pass with less information about their neighbours, and a 6.8K-parameter model has very little slack. How few steps you can get away with is exactly the question production diffusion LMs are trying to answer.
 
 ### Why the generated names aren't as good as lab 03's
 

@@ -25,7 +25,7 @@ Each merge creates one new token and shortens every sequence where that pair app
 
 ### Special tokens are not merge candidates
 
-`count_pairs` skips any pair touching BOS, and that one filter is what makes the rest of the lab work. BOS is the most frequent token in the corpus — two per name — so leaving it in the candidate set makes the top merges `n`+`<BOS>`, `a`+`<BOS>`, `<BOS>`+`a` and so on. The end-of-name marker gets glued onto letters, a standalone BOS almost never survives encoding, and the model loses its only way to say "the name ends here": every sample then runs to the length cap and comes out as a 30-character run-on. Real tokenizers exclude special tokens from merges for exactly this reason.
+`count_pairs` skips any pair touching BOS, and that one filter is what makes the rest of the lab work. BOS is the most frequent token in the corpus, at two per name, so leaving it in the candidate set makes the top merges `n`+`<BOS>`, `a`+`<BOS>`, `<BOS>`+`a` and so on. The end-of-name marker gets glued onto letters, a standalone BOS almost never survives encoding, and the model loses its only way to say "the name ends here": every sample then runs to the length cap and comes out as a 30-character run-on. Real tokenizers exclude special tokens from merges for exactly this reason.
 
 ### Compression, measured honestly
 
@@ -35,7 +35,7 @@ The headline number is **characters per token**, computed with the BOS delimiter
 
 To show how tokenization affects sequence modeling, the lab trains a simple bigram model (a transition probability table, no neural network) with both tokenizations. With BPE, each bigram step spans more than one character, so a one-step-of-history model effectively reaches further back into the string. Against that, the BPE table is 227x227 estimated from the same 32,033 names, so it is much sparser. The lab measures which effect wins.
 
-The measurement is **bits per character**, and the choice of metric is the real lesson. Per-token perplexity — the usual language-model number — is not comparable across two different tokenizations. The two models are answering different questions: "which of 27 letters comes next?" versus "which of 227 chunks comes next?". A coarser vocabulary predicts rarer events, so its per-token perplexity is larger even when it describes the text better. The denominators do not match.
+The measurement is **bits per character**, and the choice of metric is the real lesson. Per-token perplexity, the usual language-model number, is not comparable across two different tokenizations. The two models are answering different questions: "which of 27 letters comes next?" versus "which of 227 chunks comes next?". A coarser vocabulary predicts rarer events, so its per-token perplexity is larger even when it describes the text better. The denominators do not match.
 
 Bits per character shares a denominator. Both models assign a probability to the same underlying string, so divide the total bits each needs for the corpus by the corpus's character count. The lab prints both figures and they disagree in direction, which is the point: this is why papers comparing models with different tokenizers report bits-per-character or bits-per-byte.
 

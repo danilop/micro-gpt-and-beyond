@@ -45,7 +45,7 @@ Parameter counts and cache sizes, both exact:
 
 The **ratio** column is the part that transfers. Raw byte counts from a 16-dimension model are meaningless on their own, but 1.00x / 0.50x / 0.25x holds at any scale, because the cache is linear in `n_kv_head`. LLaMA 2 70B's 8-of-64 configuration is 0.125x by the same arithmetic.
 
-Two caveats on that cache column. It is an analytic figure — fp16, batch 1, a full `block_size` context — not an observed one, because nothing in this lab actually caches anything. Building a real KV cache is lab 12. And the `avg loss` column is a trailing average over the last 100 steps rather than a final-step loss, since at batch size 1 a single step's loss depends mostly on which name it landed on. Even averaged, the three numbers are a tie; read them as "all three still learn to spell names".
+Two caveats on that cache column. It is an analytic figure, fp16 with batch 1 and a full `block_size` context, rather than an observed one, because nothing in this lab actually caches anything. Building a real KV cache is lab 12. And the `avg loss` column is a trailing average over the last 100 steps rather than a final-step loss, since at batch size 1 a single step's loss depends mostly on which name it landed on. Even averaged, the three numbers are a tie; read them as "all three still learn to spell names".
 
 ## The key implementation trick
 
@@ -78,7 +78,7 @@ class FlexAttention(nn.Module):
 
 When `n_kv_head == n_head`, `repeats == 1` and nothing is repeated, giving you standard MHA. When `n_kv_head == 1`, every KV vector is broadcast to all query heads, which is MQA. Anything in between is GQA. `repeat_interleave` maps KV head `j` onto query heads `j*r` through `(j+1)*r-1`, so the groups are contiguous.
 
-That `repeat_interleave` is the clearest way to write the expansion and the worst way to run it: it materialises `repeats` identical copies of K and V, giving back the memory saving for the duration of the forward pass. Production kernels avoid it — PyTorch's `scaled_dot_product_attention` with `enable_gqa=True`, and FlashAttention's GQA support, index the shared KV head directly from each query head. Same maths, no copies.
+That `repeat_interleave` is the clearest way to write the expansion and the worst way to run it: it materialises `repeats` identical copies of K and V, giving back the memory saving for the duration of the forward pass. Production kernels avoid it: PyTorch's `scaled_dot_product_attention` with `enable_gqa=True`, and FlashAttention's GQA support, index the shared KV head directly from each query head, with the same maths and no copies.
 
 ## What you learn here
 

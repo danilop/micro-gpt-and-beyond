@@ -6,7 +6,7 @@ Same architecture as version 03 (PyTorch), but learned positional embeddings are
 
 Learned positional embeddings (like `wpe` in version 03) have two problems:
 
-1. **They have a hard ceiling.** A model trained with `block_size=16` has 16 rows in its position table, so position 16 does not exist. Feed it a longer sequence and it raises `IndexError` — the lab does exactly that and prints the exception.
+1. **They have a hard ceiling.** A model trained with `block_size=16` has 16 rows in its position table, so position 16 does not exist. Feed it a longer sequence and it raises `IndexError`, and the lab does exactly that and prints the exception.
 2. **They lose relative information.** The model has to *learn* that position 5 and position 7 are two apart. This relationship is not built into the representation, so the model must discover it from data.
 
 RoPE removes the ceiling outright and builds relative position into the representation. Every modern large language model (LLaMA, Mistral, GPT-NeoX, Gemma) uses it.
@@ -28,7 +28,7 @@ def precompute_freqs(dim, max_len):
     return torch.cos(angles), torch.sin(angles)
 ```
 
-Note that `max_len` here is `4 * block_size`, not `block_size`. There is no table to size, only a formula, so precomputing positions the model never trains on costs nothing — and it is what makes the length test below possible.
+Note that `max_len` here is `4 * block_size`, not `block_size`. There is no table to size, only a formula, so precomputing positions the model never trains on costs nothing, and it is what makes the length test below possible.
 
 ### Applying the rotation
 
@@ -68,15 +68,15 @@ Unlike `wpe`, RoPE adds zero trainable parameters. The rotation frequencies are 
 
 **Claim two: it stays accurate.** This lab cannot settle it, and says so. Comparing chunks at their true positions against the same chunks re-based to positions 0–15 controls for content, and the average gap comes out at -0.0004 nats. That is not evidence that RoPE extrapolates, for two reasons the lab prints rather than glosses.
 
-First, the re-based pass loses more than position: it also throws away everything before the chunk, so the gap mixes the position effect with a context effect. The lab measures the context term separately, with position held fixed — predict the last 16 targets twice, once from the real history and once with everything older than 16 tokens swapped for a neighbouring sequence's, same absolute positions and same targets either way. That prices all far context at +0.0213 nats. The per-chunk gaps are ±0.03, the same order — and the confound has a sign: losing context can only make the re-based column worse, which flatters the true-position column. So the gaps understate the position cost by roughly their own size. Correct for it by hand and the average moves from -0.0004 to around +0.02 nats, which is under 1% of a 2.75-nat loss.
+First, the re-based pass loses more than position: it also throws away everything before the chunk, so the gap mixes the position effect with a context effect. The lab measures the context term separately, with position held fixed: predict the last 16 targets twice, once from the real history and once with everything older than 16 tokens swapped for a neighbouring sequence's, same absolute positions and same targets either way. That prices all far context at +0.0213 nats. The per-chunk gaps are ±0.03, the same order, and the confound has a sign: losing context can only make the re-based column worse, which flatters the true-position column. So the gaps understate the position cost by roughly their own size. Correct for it by hand and the average moves from -0.0004 to around +0.02 nats, which is under 1% of a 2.75-nat loss.
 
-Second, +0.0213 nats against a loss of 2.7496 is the real point: a 1-layer, 16-dimension model on a corpus of independent names has almost no long-range structure to lose, so a test at this scale has nothing at stake and cannot fail. The lab's verdict threshold is that measured confound rather than a hand-picked epsilon — an effect smaller than the noise it is measured against has not been observed.
+Second, +0.0213 nats against a loss of 2.7496 is the real point: a 1-layer, 16-dimension model on a corpus of independent names has almost no long-range structure to lose, so a test at this scale has nothing at stake and cannot fail. The lab's verdict threshold is that measured confound rather than a hand-picked epsilon: an effect smaller than the noise it is measured against has not been observed.
 
 (The tempting shortcut is to justify "nothing at stake" with the 0.0002-nat gap the lab prints between the full pass and the windowed pass. That gap is not a measure of context: it changes context and position together, which is exactly the confusion being untangled. Hence the separate probe.)
 
 At real scale fixed-base RoPE does degrade past its trained span, which is why length extension is its own research area: YaRN rescales the base frequency, and NTK-aware interpolation or fine-tuning at the target length are the other standard answers.
 
-The per-chunk table is also a small lesson in controls. Raw loss rises monotonically down the chunks (2.6428, 2.7545, 2.8516), which looks like extrapolation damage and is not — chunk 0 starts on a name boundary and the others start mid-name. Only the difference against the re-based column means anything, and chunk 0 must read exactly +0.0000 for the method to be trustworthy.
+The per-chunk table is also a small lesson in controls. Raw loss rises monotonically down the chunks (2.6428, 2.7545, 2.8516), which looks like extrapolation damage but is not, since chunk 0 starts on a name boundary and the others start mid-name. Only the difference against the re-based column means anything, and chunk 0 must read exactly +0.0000 for the method to be trustworthy.
 
 ### The comparison is set up so the two models really do start equal
 

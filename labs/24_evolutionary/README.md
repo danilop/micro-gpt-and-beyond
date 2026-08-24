@@ -40,7 +40,7 @@ split in a form that is easy to inspect.
 Per-generation best in a representative run: 2.5289, **2.4547**, 2.5023, 2.4553,
 2.4881, 2.5103. The search peaks at generation 2 and then regresses, so the best
 member of the final population (2.4718, at 1,400 steps) is *not* the best model
-found — the winner is a generation-2 model with only 400 steps on it. A
+found: the winner is a generation-2 model with only 400 steps on it. A
 best-ever archive keeps the peak, and the lab reports from the archive.
 
 ### The reported number is selected on the number reported
@@ -48,7 +48,7 @@ best-ever archive keeps the peak, and the lab reports from the archive.
 There is a bias in the headline that the ledger below does not fix. Fitness is
 validation loss on the first 200 names of the validation split. Selection,
 mutation, the best-ever archive and the random-search control all rank models by
-that one number — and then the lab reports that same number as the quality of
+that one number, and then the lab reports that same number as the quality of
 the winner. The reported loss is a minimum over dozens of noisy evaluations of
 the same statistic, so it is optimistically biased: part of the gap to the
 baseline is genuine configuration quality, and part of it is the luckiest draw
@@ -58,9 +58,9 @@ configuration is any better than the others. The random-search arm is a minimum
 over its own 48 evaluations too, so *that* comparison is at least symmetric; the
 comparison against the single baseline run is not.
 
-The clean version costs almost nothing here. Split three ways — train, a search
+The clean version costs almost nothing here. Split three ways: train, a search
 split that fitness scores against, and a final split nothing in the loop ever
-sees — and report the winner on the third. This lab is one line away from it
+sees, and report the winner on the third. This lab is one line away from it
 already: `val_size` is 1,000 names but fitness only ever reads the first
 `VAL_SAMPLES` = 200, so the remaining 800 are untouched by the search and would
 serve as an honest held-out set for the winner. Until that number is printed,
