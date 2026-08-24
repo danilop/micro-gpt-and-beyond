@@ -57,11 +57,11 @@ Entropy only measures the benefit, how much of the distribution survives into th
 
 | Mode | Concept H (max 3.30) | Sample NLL | Adjacent-dup rate |
 |---|---|---|---|
-| Hard (standard decoding) | 0.000 | 1.8667 | 1.9% |
-| Soft T=0.5 (mild blend) | 1.706 | 2.0875 | 11.0% |
-| Soft T=1.0 (moderate blend) | 2.509 | 2.1113 | 12.6% |
-| Soft T=2.0 (diffuse blend) | 2.995 | 2.2805 | 20.8% |
-| Real held-out names (500) | — | 2.4001 | 4.9% |
+| Hard (standard decoding) | 0.00 | ~1.87 | ~2% |
+| Soft T=0.5 (mild blend) | ~1.7 | ~2.09 | ~11% |
+| Soft T=1.0 (moderate blend) | ~2.5 | ~2.11 | ~13% |
+| Soft T=2.0 (diffuse blend) | ~3.0 | ~2.28 | ~21% |
+| Real held-out names (500) | — | ~2.40 | ~5% |
 
 "Sample NLL" is the per-token negative log-likelihood of each row's generated names, scored under the same model on the ordinary hard path. It answers "would the model itself have written this?". Read it as a trend down the column, where higher means the output has drifted away from what the model was trained on, rather than as pass/fail against the real-names row. Sampling runs at temperature 0.5, which sharpens the output, so every generated row scores below real names whether it has drifted or not; the reference row is there to give the numbers a scale, not a threshold.
 

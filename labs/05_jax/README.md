@@ -122,13 +122,13 @@ Everyone repeats that "the first JAX call is slow, then it's fast". That is only
 So the training loop times each step and announces new shapes:
 
 ```
-step    1 | new sequence length n= 7 -> XLA trace #1 |  1400.8 ms
-step   31 | new sequence length n=11 -> XLA trace #8 |  1518.0 ms
-step  184 | new sequence length n= 3 -> XLA trace #10 |  1472.9 ms
+step    1 | new sequence length n= 7 -> XLA trace #1  |  ~1400 ms
+step   31 | new sequence length n=11 -> XLA trace #8  |  ~1500 ms
+step  184 | new sequence length n= 3 -> XLA trace #10 |  ~1470 ms
 ...
 distinct sequence lengths: 12 -> 12 traces of the same train_step
-  first-time-shape steps:   1375.5 ms mean (compilation included)
-  cached-shape steps:         0.64 ms mean
+  first-time-shape steps:   ~1400 ms mean (compilation included)
+  cached-shape steps:         well under 1 ms mean
 ```
 
 Three orders of magnitude between a compiling step and a cached one, and 12 of them in a 1000-step run. That is the single most common performance surprise in JAX. The fix is to make shapes static by padding everything to one fixed length, which is exactly what `06_jax_batched` does.

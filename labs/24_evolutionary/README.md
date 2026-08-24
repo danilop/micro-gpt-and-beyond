@@ -37,10 +37,9 @@ split in a form that is easy to inspect.
 
 ### The best model of the run is archived, not assumed
 
-Per-generation best in a representative run: 2.5289, **2.4547**, 2.5023, 2.4553,
-2.4881, 2.5103. The search peaks at generation 2 and then regresses, so the best
-member of the final population (2.4718, at 1,400 steps) is *not* the best model
-found: the winner is a generation-2 model with only 400 steps on it. A
+Per-generation best in a representative run rises and falls rather than
+descending: it bottoms out at generation 2 and drifts back up afterwards, so the
+best member of the final population is *not* the best model found: the winner is a generation-2 model with only 400 steps on it. A
 best-ever archive keeps the peak, and the lab reports from the archive.
 
 ### The reported number is selected on the number reported
@@ -71,25 +70,25 @@ of how good the model is.
 
 Evolution spends `POP_SIZE × NUM_GENERATIONS × STEPS_PER_GEN` plus the final
 children's training: **10,600 steps** against the single baseline's **500**.
-That is 21x the compute, so "evolved beats baseline by +0.2675" is mostly a
+That is 21x the compute, so the headline "evolved beats baseline" is mostly a
 statement about budget. The lab therefore prints three numbers:
 
-| Comparison | Measured | What it means |
+| Comparison | Roughly | What it means |
 |---|---|---|
-| evolved vs 500-step baseline | +0.2675 | not a fair comparison, 21x the compute |
-| config advantage at matched budget | +0.1082 | both configs from scratch, val loss every 200 steps to 1,200 |
-| evolved vs equal-budget random search | +0.0792 | what selection and mutation bought over 48 random configs |
+| evolved vs 500-step baseline | ~0.27 better | not a fair comparison, 21x the compute |
+| config advantage at matched budget | ~0.11 better | both configs from scratch, val loss every 200 steps to 1,200 |
+| evolved vs equal-budget random search | ~0.08 better | what selection and mutation bought over 48 random configs |
 
 The configuration evolution found is genuinely better. It is better by about
-0.11, not 0.27.
+0.1, not 0.3.
 
 The matched-budget delta is a best-of-curve difference, and the curves it comes
 from do not descend cleanly:
 
 ```
           config      200      400      600      800     1000     1200
-        baseline   2.6410   2.5805   2.6796   2.5828   2.5856   2.7694
-         evolved   2.5413   2.4769   2.5166   2.4723   2.4801   2.4824
+        baseline     ~2.64    ~2.58    ~2.68    ~2.58    ~2.59    ~2.77
+         evolved     ~2.54    ~2.48    ~2.52    ~2.47    ~2.48    ~2.48
 ```
 
 Both wobble, and the baseline ends at its worst checkpoint. That is not
@@ -116,8 +115,8 @@ away.
 Distinct architectures per generation in the same run: 7, 6, 4, 3, 4, 2, and
 every member of the final population has the same parameter count (14,528). Once
 the population is one size, mutation is only shuffling learning rate and head
-count. The population average also degrades (2.5702 to 2.6011 across six
-generations), because every fresh architecture pays a restart cost. Neither of
+count. The population average also degrades slightly across the six generations,
+because every fresh architecture pays a restart cost. Neither of
 those facts is fatal to the lesson, but a lab that printed only the best-of-run
 number would hide both.
 

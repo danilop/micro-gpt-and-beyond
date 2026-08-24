@@ -75,14 +75,14 @@ Because `mx.compile` specialises on input shapes, and `make_batch` pads to the l
 
 ```
 distinct batch shapes seen: 9 (compile = True)
-  first-time-shape steps:   100.83 ms mean
-  repeated-shape steps:      80.04 ms mean
+  first-time-shape steps:    ~100 ms mean
+  repeated-shape steps:       ~80 ms mean
   each shape first seen at step: [0, 1, 4, 10, 11, 15, 79, 304, 532]
 ```
 
-Nine shapes, nine traces. Do not read the first-vs-repeat gap as the price of tracing, though: run the same file with `use_compile = False` and the gap is still there (93.87 against 84.02 ms), with nothing being traced at all. That last printed line is why: six of the nine shapes turn up in the first sixteen steps, so "first-time shape" is largely a synonym for "early step", when nothing is warm yet. `06_jax_batched` shows the fix for the shape churn anyway: pad to a fixed length and there is only one shape to compile.
+Nine shapes, nine traces. Do not read the first-vs-repeat gap as the price of tracing, though: run the same file with `use_compile = False` and the gap is still there, with nothing being traced at all. That last printed line is why: six of the nine shapes turn up in the first sixteen steps, so "first-time shape" is largely a synonym for "early step", when nothing is warm yet. `06_jax_batched` shows the fix for the shape churn anyway: pad to a fixed length and there is only one shape to compile.
 
-Set `use_compile = False` and compare. On the CPU-only Linux build these numbers came from, uncompiled repeated-shape steps averaged 84.02 ms against 80.04 ms compiled: close to a wash at this batch size, because the per-operation dispatch overhead that compilation removes is small next to 32 sequences worth of matmuls. `07_mlx`, whose steps are around a millisecond, gets 2.5x from the same call on the same build (2.77 ms uncompiled against 1.12 ms compiled). Measure it on your own hardware rather than believing either number.
+Set `use_compile = False` and compare. On the CPU-only Linux build these numbers came from, uncompiled and compiled repeated-shape steps came out within a few percent of each other: close to a wash at this batch size, because the per-operation dispatch overhead that compilation removes is small next to 32 sequences worth of matmuls. `07_mlx`, whose steps are around a millisecond, gets roughly 2.5x from the same call on the same build. Measure it on your own hardware rather than believing either number.
 
 ### Scaled up
 

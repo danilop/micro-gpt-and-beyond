@@ -38,9 +38,9 @@ Parameter counts and cache sizes, both exact:
 
 ```
       kv_heads  KV proj   total  cache B  vs MHA  avg loss
-  MHA        4      512    4192     1024   1.00x    2.2769
-  GQA        2      256    3936      512   0.50x    2.2875
-  MQA        1      128    3808      256   0.25x    2.2843
+  MHA        4      512    4192     1024   1.00x      ~2.28
+  GQA        2      256    3936      512   0.50x      ~2.29
+  MQA        1      128    3808      256   0.25x      ~2.28
 ```
 
 The **ratio** column is the part that transfers. Raw byte counts from a 16-dimension model are meaningless on their own, but 1.00x / 0.50x / 0.25x holds at any scale, because the cache is linear in `n_kv_head`. LLaMA 2 70B's 8-of-64 configuration is 0.125x by the same arithmetic.

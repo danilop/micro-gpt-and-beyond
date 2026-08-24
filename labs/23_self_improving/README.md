@@ -52,9 +52,9 @@ improvement could just be 1,800 extra training steps.
 
 Every round prints quality, unique fraction of 200 samples, the most-repeated
 name with its count, and novelty. In a representative run the filtered arm
-moved quality by **+0.3955** while the unique fraction fell from **96.0% to
-46.5%**, with one name (`kanan`) accounting for **97 of 200 samples**. The
-control reached only **+0.1572**, so the self-generated data really is doing
+moved quality by roughly **+0.4** while the unique fraction fell from around
+**96% to under 50%**, with a single name accounting for nearly half of the 200
+samples. The control reached only about **+0.16**, so the self-generated data really is doing
 work on the metric. The metric is simply not measuring the thing that broke.
 
 That is Goodhart's law in a file you can read in one sitting. The verifier

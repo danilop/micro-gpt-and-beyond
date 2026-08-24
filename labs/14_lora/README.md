@@ -47,16 +47,16 @@ The lab pre-trains a 4,192-parameter microGPT on all 32,033 names, then fine-tun
 
 It then fine-tunes four different adapter configurations for 500 steps each, plus a full fine-tuning control, and scores each one on the fraction of 200 generated names that match the target style. Measured:
 
-| Config | Trainable | % of model | scaling | Soft names | Merge |
+| Config | Trainable | % of model | scaling | Soft names (n=200) | Merge |
 |---|---|---|---|---|---|
-| base (no fine-tuning) | 0 | 0.0% | — | 34/200, 17% | — |
-| **rank 1** | **64** | **1.5%** | 1.00 | **170/200, 85%** | ok |
-| rank 2 | 128 | 3.0% | 1.00 | 176/200, 88% | ok |
-| rank 4 | 256 | 5.8% | 1.00 | 181/200, 90% | ok |
-| rank 4, alpha 16 | 256 | 5.8% | 4.00 | 185/200, 92% | ok |
-| full fine-tuning | 512 | 12.2% | — | 160/200, 80% | n/a |
+| base (no fine-tuning) | 0 | 0.0% | — | ~17% | — |
+| **rank 1** | **64** | **1.5%** | 1.00 | **~85%** | ok |
+| rank 2 | 128 | 3.0% | 1.00 | ~88% | ok |
+| rank 4 | 256 | 5.8% | 1.00 | ~90% | ok |
+| rank 4, alpha 16 | 256 | 5.8% | 4.00 | ~92% | ok |
+| full fine-tuning | 512 | 12.2% | — | ~80% | n/a |
 
-**Rank 1 already gets you there.** Sixty-four trainable parameters, one vector pair per adapted matrix at 1.5% of the model, take the style rate from 17% to 85%. Rank 2 and rank 4 add a few points for two and four times the adapter. Most of the distance is covered at r=1.
+**Rank 1 already gets you there.** Sixty-four trainable parameters, one vector pair per adapted matrix at 1.5% of the model, take the style rate from roughly 17% to roughly 85%. Rank 2 and rank 4 add a few points for two and four times the adapter. Most of the distance is covered at r=1.
 
 That is the LoRA paper's central empirical claim, reproduced small enough to read in one screen: the useful part of a fine-tuning update has low intrinsic rank, so a very small r goes a long way.
 

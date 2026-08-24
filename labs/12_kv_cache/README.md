@@ -71,13 +71,13 @@ That 4.3x does not match the 11.0x the closed form gives for T=16, and the reaso
 
 ```
        T       naive      cached   measured   theory     reps n/c
-      64     167.9us      96.9us       1.7x      64x   2301/2500
-     256     631.5us     107.6us       5.9x     256x    666/2500
-    1024   19729.8us     141.6us     139.4x    1024x     26/2258
-    2048   95327.6us     224.0us     425.5x    2048x     25/1664
+      64      ~170us       ~97us       ~2x       64x   2301/2500
+     256      ~630us      ~108us       ~6x      256x    666/2500
+    1024       ~20ms      ~142us     ~140x     1024x     26/2258
+    2048       ~95ms      ~224us     ~425x     2048x     25/1664
 ```
 
-(One run on a 2-core Linux box. Absolute microseconds depend on the machine; the shape of the last two columns does not.)
+(One run on a 2-core Linux box, rounded. Absolute times depend heavily on the machine; the shape of the last two columns does not, and that shape is the point.)
 
 Both timed columns measure work that grows with T, so both must grow with T, and `main.py` checks that rather than asserting it, printing a warning if the machine was too busy for the trend to survive. An earlier version of this benchmark used too few repetitions and reported a *cached* time that fell as T rose, which is impossible; the fix was to make the sample count adequate and visible, not to reword the paragraph underneath it.
 

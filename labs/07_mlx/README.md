@@ -56,11 +56,11 @@ And like `jit`, `mx.compile` specialises on input shapes. Here `n = min(block_si
 
 ```
 distinct sequence lengths seen: 12 (compile = True)
-  first-time-shape steps:     4.87 ms mean
-  repeated-shape steps:       1.15 ms mean
+  first-time-shape steps:     ~4.9 ms mean
+  repeated-shape steps:       ~1.2 ms mean
 ```
 
-Set `use_compile = False` at the top of the training section and run it again. On the machine this was written on the same two numbers came out at 4.17 ms and 3.23 ms: without compilation there is nothing special about a new shape, and every step costs about three times as much.
+Set `use_compile = False` at the top of the training section and run it again. On the machine this was written on the two numbers converged, at roughly 4 ms and 3 ms: without compilation there is nothing special about a new shape, and every step costs around three times as much.
 
 So compilation is worth it here, and the tracing bill is a few milliseconds per distinct shape rather than the seconds `05_jax` pays for XLA. Still, the shape sensitivity is the same lesson, and the same fix applies: pad to a fixed length and there is only one program to compile, as `06_jax_batched` does.
 

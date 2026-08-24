@@ -72,13 +72,13 @@ So `make_batch` here pads to the static `block_size` instead, and the loop count
 
 ```
 step    1 | new input shape (32, 16) -> XLA trace #1
-step    1 / 1000 | loss 3.6608 | 1731.90 ms
-step   10 / 1000 | loss 2.4799 |    9.10 ms
+step    1 / 1000 | loss 3.66 | ~1730 ms
+step   10 / 1000 | loss 2.48 |    ~9 ms
 ...
 compilations of train_step: 1 (padding to the static block_size)
   in-batch max_len values seen: 9 -> that many compilations if we padded dynamically
-  first step: 1731.9 ms (trace + compile)
-  steps 2..1000: 9.42 ms mean, max 48.34 ms
+  first step: ~1730 ms (trace + compile)
+  steps 2..1000: ~9 ms mean, with occasional outliers several times that
 ```
 
 One compile instead of nine. After the first step there are no compilation spikes at all: a 12-letter name arriving at step 300 changes nothing, because the shape it lands in was already compiled. (The `max` above is ordinary scheduling noise, not a trace.)

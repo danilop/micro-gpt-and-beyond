@@ -63,14 +63,14 @@ The 2×2 above is qualitative: four columns of plausible-looking names. It does 
 
 | Model | Hard inputs | Soft inputs | Gap |
 |---|---|---|---|
-| Standard-trained | 2.3892 | 2.6501 | +0.2609 |
-| Soft-trained | 2.4699 | 2.6082 | +0.1384 |
+| Standard-trained | ~2.39 | ~2.65 | ~+0.26 |
+| Soft-trained | ~2.47 | ~2.61 | ~+0.14 |
 
-Read the two gaps, not the two best numbers. The curriculum does what it advertises: the penalty for feeding soft inputs drops from +0.2609 to +0.1384 nats, a 47% reduction.
+Read the two gaps, not the two best numbers. The curriculum does what it advertises: the penalty for feeding soft inputs roughly halves.
 
 Both columns are teacher-forced: the concept tokens are computed from the real name, not from a prefix the model generated itself. That is deliberate, since it keeps the two columns scoring the same targets so their difference isolates the input representation, but it also means the soft column is the friendlier of the two soft conditions. Free-running soft decoding compounds the drift, because each concept token is built from a prefix that is already soft. Read the soft numbers as a lower bound on the gap at inference.
 
-It is not free. On hard inputs the soft-trained model is *worse*, 2.4699 against 2.3892. Both models start from identical weights and walk the same names in the same order, so the curriculum is what caused that. Why it costs this much is a separate question the two numbers do not settle: capacity spent on reading blended embeddings, and simply taking fewer gradient steps on clean inputs as `mix` climbs to 1.0, both predict the same sign. The single best cell in the table is still standard-trained on hard inputs.
+It is not free. On hard inputs the soft-trained model is *worse* by around 0.08 nats. Both models start from identical weights and walk the same names in the same order, so the curriculum is what caused that. Why it costs this much is a separate question the two numbers do not settle: capacity spent on reading blended embeddings, and simply taking fewer gradient steps on clean inputs as `mix` climbs to 1.0, both predict the same sign. The single best cell in the table is still standard-trained on hard inputs.
 
 That tradeoff is the lesson. Soft training buys robustness to soft inputs and pays for it on hard inputs, and whether that is a good deal depends entirely on which one you deploy with. A version of this lab that only printed the soft-input column would look like a clean win and would be misleading.
 
@@ -78,7 +78,7 @@ That tradeoff is the lesson. Soft training buys robustness to soft inputs and pa
 
 The 2×2 also reports the Shannon entropy of the distribution that builds each next input, `softmax(logits / soft_temp)`, the quantity soft decoding actually changes. Both hard rows come out at exactly 0, because hard decoding feeds one embedding and there is no distribution to measure.
 
-Under soft decoding, the soft-trained model's concept tokens are slightly *more* spread than the standard-trained model's: 2.68 against 2.52 nats. If you expected soft training to produce the most confident, lowest-entropy predictions, that expectation is not what happens here. Entropy measures how much of the distribution flows forward, not how well the model uses it. The held-out gap above is the metric that answers the actual question.
+Under soft decoding, the soft-trained model's concept tokens are slightly *more* spread than the standard-trained model's, by around 0.15 nats. If you expected soft training to produce the most confident, lowest-entropy predictions, that expectation is not what happens here. Entropy measures how much of the distribution flows forward, not how well the model uses it. The held-out gap above is the metric that answers the actual question.
 
 ## What you learn here
 

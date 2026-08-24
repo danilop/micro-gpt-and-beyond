@@ -8,7 +8,7 @@ The dimensions come from version 04 (64-dim embeddings, 4 heads, 2 layers, 102,7
 
 After training a model in PyTorch (version 03), you often want to deploy it somewhere with limited memory or compute. Quantization shrinks the weights by storing them as INT8 plus a scale factor instead of FP32.
 
-Be clear about what this lab does and does not show. It measures a real size reduction: 0.397 MB down to 0.114 MB, 3.48x smaller. It does **not** show a speedup, and it is not supposed to: the forward pass here dequantizes INT8 back to FP32 and then runs an ordinary FP32 matmul, so INT8 comes out slower than FP32. How much slower is a property of the machine and the moment, not a constant: over eleven quiet runs on the 2-core CPU container this was last measured on, FP32 took 4.9-5.7 ms/sample and INT8 6.2-7.1 ms/sample, so **+13% to +38%, median +26%**. Read the number your own run prints, not this one. Speed requires INT8 GEMM kernels that do the arithmetic in integers, which this lab deliberately does not implement. Size savings are the honest result; the speed claim belongs to TensorRT and friends.
+Be clear about what this lab does and does not show. It measures a real size reduction: roughly 0.4 MB down to roughly 0.11 MB, about 3.5x smaller. It does **not** show a speedup, and it is not supposed to: the forward pass here dequantizes INT8 back to FP32 and then runs an ordinary FP32 matmul, so INT8 comes out slower than FP32. How much slower is a property of the machine and the moment, not a constant: on the 2-core CPU container this was last measured on, INT8 came out roughly a quarter to a third slower than FP32 across a dozen quiet runs. Read the numbers your own run prints, not these. Speed requires INT8 GEMM kernels that do the arithmetic in integers, which this lab deliberately does not implement. Size savings are the honest result; the speed claim belongs to TensorRT and friends.
 
 ## What makes it interesting
 
@@ -48,8 +48,8 @@ This is symmetric quantization:
 The script measures model size and inference speed with a unified `benchmark()` function that saves the state dict, measures file size, warms the model up, and times sample generation. Both timing runs reseed the sampler immediately before generating, so FP32 and INT8 draw the same sampling decisions and therefore run the same number of forward passes on the same-length sequences. Without that, the "comparison" would be comparing two different workloads. The warmup matters for the same reason: FP32 is timed first, so without it FP32 pays for one-time setup (thread pool, kernel selection, cold caches) that INT8 does not.
 
 For this model (102,784 parameters), the measured results:
-- FP32: 0.397 MB
-- INT8: 0.114 MB (28.7% of original, 3.48x smaller)
+- FP32: about 0.4 MB
+- INT8: about 0.11 MB, a bit under 30% of the original, so roughly 3.5x smaller
 
 The reduction approaches 25% (4× compression) as the proportion of Linear layer parameters increases. Embeddings aren't quantized in this implementation, which is why it's not exactly 25%.
 
@@ -61,35 +61,35 @@ Rounding weights onto a 256-value grid is lossy, so the lab measures how lossy. 
 
 ```
   layer                     max|W|      scale max abs err  as % of max|W|
-  layers.0.attn.wq         0.64917   5.11e-03    2.56e-03          0.394%
+  layers.0.attn.wq            ~0.65   ~5.1e-03    ~2.6e-03           ~0.39%
   ...
-  lm_head                  0.81480   6.42e-03    3.20e-03          0.393%
+  lm_head                     ~0.81   ~6.4e-03    ~3.2e-03           ~0.39%
 ```
 
-Every layer lands at 0.394% of its own largest weight, and that is not a coincidence. Symmetric per-tensor quantization maps `[-max|W|, +max|W|]` onto `[-127, +127]`, so the grid step is `scale = max|W|/127` and rounding can be off by at most `scale/2 = max|W|/254`, which is 0.394%. The measurement confirms the bound rather than discovering something new, which is exactly what you want from an error check.
+Every layer lands at the same percentage of its own largest weight, and that is not a coincidence. Symmetric per-tensor quantization maps `[-max|W|, +max|W|]` onto `[-127, +127]`, so the grid step is `scale = max|W|/127` and rounding can be off by at most `scale/2 = max|W|/254`, which is about 0.39%. The measurement confirms the bound rather than discovering something new, which is exactly what you want from an error check.
 
 The reason to state it as a percentage of `max|W|` is that this is per-tensor quantization's weakness: one outlier weight stretches the grid for every other weight in the same tensor. Per-channel quantization exists because of this, and LLM.int8() exists because at transformer scale the outliers are much worse than they are here.
 
 Weight error only matters if it reaches the output, so the lab also measures per-token cross-entropy on 2,000 names the model never trained on:
 
 ```
-    FP32: 2.4003
-    INT8: 2.4004  (+0.0001, +0.006%)
+    FP32: ~2.4003
+    INT8: ~2.4004  (a difference in the fourth decimal place)
 ```
 
-A 0.006% loss increase for a 3.48x size reduction is the whole argument for quantization in one line.
+A loss increase that small, for roughly 3.5x less memory, is the whole argument for quantization in one line.
 
 ### Inference speed comparison
 
-**Important**: this implementation does not just fail to speed up, it measurably slows down. Dequantizing on every forward pass costs more than the FP32 baseline. On the 2-core CPU container used to write this, eleven quiet runs measured 4.9-5.7 ms/sample FP32 against 6.2-7.1 ms/sample INT8: **+13% to +38%, median +26%**.
+**Important**: this implementation does not just fail to speed up, it measurably slows down. Dequantizing on every forward pass costs more than the FP32 baseline. On the 2-core CPU container used to write this, a dozen quiet runs put INT8 roughly a quarter to a third slower than FP32.
 
-Treat that spread as the result, and treat it as one machine's, not a law. This is a 100K-parameter model on CPU timed for a few seconds, so the ratio is noisy: a loaded machine pushed it past +100%, and one cold first-ever run in a fresh container reported INT8 as *faster*, because the FP32 arm is timed first and absorbed the process's warm-up cost (which is why `benchmark()` now warms each model up before timing). What is structural is the direction, since an extra dequantize per matmul cannot be free. The benefit here is entirely **memory**: 3.48x smaller.
+Treat that spread as the result, and treat it as one machine's, not a law. This is a 100K-parameter model on CPU timed for a few seconds, so the ratio is noisy: a loaded machine roughly doubled the gap, and one cold first-ever run in a fresh container reported INT8 as *faster*, because the FP32 arm is timed first and absorbed the process's warm-up cost (which is why `benchmark()` now warms each model up before timing). What is structural is the direction, since an extra dequantize per matmul cannot be free. The benefit here is entirely **memory**: roughly 3.5x smaller.
 
 Production quantization systems (TensorRT, ONNX Runtime, PyTorch native) use specialized INT8 kernels that operate directly on INT8 data, achieving both memory savings and 2-4× speed improvements on large models.
 
 ### Output quality
 
-The script generates 10 samples from both FP32 and INT8 models with the same seed. On this model they come out byte-identical. That is a pleasant result, but read it carefully: identical samples do not mean zero error. The weights really did move, up to 3.2e-3 in absolute terms or 0.39% of the layer's largest weight, and the logits really did shift; the shift is just too small to flip any of these `torch.multinomial` draws. The held-out loss delta above is the number that actually quantifies the damage.
+The script generates 10 samples from both FP32 and INT8 models with the same seed. On this model they come out byte-identical. That is a pleasant result, but read it carefully: identical samples do not mean zero error. The weights really did move, by a few thousandths in absolute terms or about 0.39% of the layer's largest weight, and the logits really did shift; the shift is just too small to flip any of these `torch.multinomial` draws. The held-out loss delta above is the number that actually quantifies the damage.
 
 If outputs diverge significantly, it means the model is sensitive to precision. For production, you'd use more sophisticated quantization schemes:
 - **Per-channel quantization**: Different scale factors per output channel (better accuracy)
@@ -124,10 +124,10 @@ uv run python main.py
 ```
 
 Trains for 1000 steps, quantizes the model, then reports:
-- Model size reduction: 0.397 MB to 0.114 MB, 3.48x
+- Model size reduction: roughly 0.4 MB to roughly 0.11 MB, about 3.5x
 - Inference time, seeded identically and warmed up for both models: INT8 slower (+13% to +38% across runs on the machine this was written on, but read your own run)
-- Per-layer quantization error, `max|W - dequant(W)|`, ~0.394% of `max|W|` everywhere
-- Held-out per-token loss on 2,000 unseen names: 2.4003 (FP32) vs 2.4004 (INT8)
+- Per-layer quantization error, `max|W - dequant(W)|`, about 0.39% of `max|W|` everywhere
+- Held-out per-token loss on 2,000 unseen names: identical to three decimal places between FP32 and INT8
 - 10 samples from each version, which come out identical
 
 ## Why quantization matters
