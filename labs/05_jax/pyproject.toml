@@ -3,7 +3,7 @@ name = "05-jax"
 version = "0.1.0"
 description = "microGPT in JAX — functional style with JIT compilation"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "jax>=0.11.1",
 ]

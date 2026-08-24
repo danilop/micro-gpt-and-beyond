@@ -3,7 +3,7 @@ name = "23-self-improving"
 version = "0.1.0"
 description = "Self-improving model via iterative self-training"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "numpy>=2.5.2",
     "torch>=2.13.0",

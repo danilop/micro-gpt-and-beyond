@@ -3,7 +3,7 @@ name = "17-soft-thinking"
 version = "0.1.0"
 description = "microGPT with soft thinking (concept tokens) in PyTorch"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "numpy>=2.5.2",
     "torch>=2.13.0",

@@ -1,5 +1,5 @@
 [tool.ruff]
-target-version = "py313"
+target-version = "py314"
 line-length = 120
 exclude = ["01_pure_python"]
 
@@ -58,7 +58,7 @@ ignore-words-list = "uchars,amin,numer,dout,nin"
 [tool.ty]
 
 [tool.ty.environment]
-python-version = "3.13"
+python-version = "3.14"
 
 [tool.ty.src]
 exclude = ["01_pure_python"]
