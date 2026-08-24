@@ -22,7 +22,7 @@ labs/
   12_kv_cache/               KV cache for inference. THE fundamental decoding optimization.
   13_sampling/               Sampling strategies: greedy, temperature, top-k, top-p, min-p.
   14_lora/                   LoRA. Parameter-efficient fine-tuning with low-rank adapters.
-  15_pytorch_quantized/      INT8 quantization for inference. FP32 to INT8, 4x smaller, faster.
+  15_pytorch_quantized/      INT8 quantization for inference. FP32 to INT8, about 3.5x smaller, not faster.
   16_text_diffusion/         Masked diffusion model (MDLM/LLaDA). Names emerge from noise.
   17_soft_thinking/          Concept tokens preserve the full output distribution at inference.
   18_soft_training/          Soft input curriculum closes the train-test gap for concept tokens.
@@ -93,7 +93,7 @@ Beyond the framework comparisons, the labs extend the base model with **modern a
 
 The text diffusion lab takes a different path: instead of autoregressive (left-to-right) generation, it uses a **masked diffusion model** (MDLM/LLaDA). Names emerge from pure noise, all [MASK] tokens, through iterative unmasking. It keeps the same small-transformer scale as the PyTorch labs, but swaps in bidirectional attention and a different training objective.
 
-The quantization lab shows how to deploy efficiently: **INT8 quantization** compresses a trained model from 32-bit floats to 8-bit integers, reducing size by ~4x. The educational implementation demonstrates the size tradeoff directly and explains why production kernels also translate that compression into inference speedups.
+The quantization lab shows how to deploy efficiently: **INT8 quantization** compresses a trained model from 32-bit floats to 8-bit integers, reducing size by about 3.5x. Size is the only thing it buys here. The forward pass dequantizes INT8 back to FP32 before every matmul, so the quantized model runs slower than the FP32 one it came from, and the lab measures by how much. Three conditions turn INT8 into a speedup, and none of them hold at this scale: kernels that keep the arithmetic in integers instead of dequantizing (TensorRT, ONNX Runtime, oneDNN), hardware with an INT8 path to run them on (NVIDIA tensor cores, AVX-512 VNNI on x86, dot-product instructions on ARM), and a model big enough that reading weights out of memory, not the arithmetic, is what takes the time. At 100K parameters the dequantize overhead costs more than the bandwidth it saves. Memory is the case that needs none of this, since 8 bits is often what decides whether a model fits at all.
 
 Several labs explore **inference optimization**, the techniques used by production systems like vLLM, FlashAttention, and TensorRT-LLM. Speculative decoding uses a small draft model to propose tokens while a larger target model verifies them in one pass. FlashAttention restructures attention to stay in fast on-chip memory. PagedAttention applies OS-style virtual memory paging to KV caches. Disaggregated serving splits prefill and decode onto separate workers, eliminating head-of-line blocking.
 
@@ -133,7 +133,7 @@ The soft thinking and soft training labs explore **preserving the full output di
 
 **Fine-tuning and deployment?** Check out:
 - `14_lora` for parameter-efficient fine-tuning with low-rank adapters
-- `15_pytorch_quantized` to compress models 4x for production
+- `15_pytorch_quantized` to compress models about 3.5x for production
 
 **Interested in diffusion?** Go straight to:
 - `16_text_diffusion` for a fundamentally different generative paradigm
