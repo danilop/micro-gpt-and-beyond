@@ -1,5 +1,5 @@
 """
-microGPT — Speculative decoding edition.
+microGPT: Speculative decoding edition.
 
 Same architecture as the PyTorch version (03/16), but demonstrating
 speculative decoding: a small "draft" model guesses multiple tokens ahead,
@@ -7,7 +7,7 @@ then the larger "target" model verifies them all in a single forward pass.
 The output distribution is mathematically identical to the target model alone.
 
 This is the #1 technique used in production inference systems (vLLM,
-TensorRT-LLM, SGLang) because autoregressive decoding is memory-bound —
+TensorRT-LLM, SGLang) because autoregressive decoding is memory-bound:
 each token requires reading all model weights but does very little compute.
 """
 
@@ -43,7 +43,7 @@ vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # ---------------------------------------------------------------------------
-# Model — two sizes: a small draft model and a larger target model
+# Model: two sizes, a small draft model and a larger target model
 # ---------------------------------------------------------------------------
 block_size = 16  # maximum sequence length
 
@@ -137,8 +137,8 @@ device = "cpu"
 # Draft model: small, fast, less accurate
 draft_cfg = {"n_embd": 32, "n_head": 4, "n_layer": 1}
 # Target model: larger and better quality. It is 7.1x the draft's parameter count
-# (102,784 vs 14,528), but do NOT translate that into a per-forward-pass cost
-# ratio — the two are unrelated at this scale, where Python and dispatch overhead
+# (102,784 vs 14,528), but do not translate that into a per-forward-pass cost
+# ratio, since the two are unrelated at this scale, where Python and dispatch overhead
 # dominate the arithmetic. The measured ratio is printed further down.
 target_cfg = {"n_embd": 64, "n_head": 4, "n_layer": 2}
 
@@ -233,7 +233,7 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
     # evaluated = tokens the target actually made an accept/reject decision on.
     #             These differ: after the first rejection the rest of the window
     #             is thrown away unexamined, so accepted/drafted is "how much of
-    #             the draft window survived" (a K-dependent quantity) and NOT the
+    #             the draft window survived" (a K-dependent quantity) rather than the
     #             per-token acceptance rate alpha from the literature.
     # accepted / evaluated is alpha. accepted / target_fwd is the mean accepted
     # run length per round, which is what determines the speedup.
@@ -258,14 +258,14 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
 
             stats["drafted"] += len(draft_probs_list)
 
-            # Step 2: Target model scores ALL positions in one forward pass
+            # Step 2: Target model scores all positions in one forward pass
             # This is the key efficiency win: one forward pass instead of K
             target_probs = get_probs(target, draft_tokens)  # (T, V)
             stats["target_fwd"] += 1
 
             # Step 3: Accept/reject each drafted token
             n_accepted = 0
-            # Snapshot the prefix length BEFORE the loop: `tokens` grows as we
+            # Snapshot the prefix length before the loop: `tokens` grows as we
             # accept, so reading len(tokens) inside the loop would drift by +i
             # and verify token i against the wrong target row.
             base_len = len(tokens)
@@ -320,7 +320,7 @@ def generate_speculative(draft, target, max_len=block_size, K=4):
                     break  # restart drafting from the new position
 
             else:
-                # All K tokens accepted — sample one bonus token from target
+                # All K tokens accepted, so sample one bonus token from target
                 bonus_pos = len(tokens) - 1 - row_offset
                 if bonus_pos < target_probs.shape[0]:
                     bonus_probs = target_probs[bonus_pos]
@@ -422,7 +422,7 @@ print("\n--- results ---\n")
 
 # Lead with the forward-pass count. That is the metric that transfers: on a GPU
 # with a real model the target forward dominates everything, so cutting target
-# forwards from 5.0 to 2.3 per name IS the win. Wall clock on a CPU at this
+# forwards from 5.0 to 2.3 per name is the win. Wall clock on a CPU at this
 # scale measures Python overhead, not the algorithm.
 print(f"target forward passes per name: {avg_target_fwd:.1f} (speculative) vs {avg_auto_tokens:.1f} (autoregressive)")
 print(f"  -> {avg_auto_tokens / avg_target_fwd:.2f}x fewer target forward passes")
@@ -434,7 +434,7 @@ print(f"  mean accepted run per round:     {accepted_per_round:.2f} tokens of K=
 print(f"  draft window utilisation:        {window_use:.1%}  (accepted / all K proposals)")
 print("  alpha is the literature's metric and is K-independent. Window utilisation")
 print("  falls as K grows simply because more of the window goes unexamined after")
-print("  the first rejection — it is not a property of the draft model alone.")
+print("  the first rejection, and it is not a property of the draft model alone.")
 print()
 print(f"measured cost per forward pass: draft {draft_ms:.3f} ms, target {target_ms:.3f} ms")
 print(f"  -> target is {target_ms / draft_ms:.2f}x the draft's cost, against a {102784 / 14528:.1f}x parameter ratio.")
@@ -449,17 +449,17 @@ print("  target forward, when a target forward is this cheap.")
 print(f"avg tokens generated: {avg_auto_tokens:.1f} (auto) vs {avg_spec_tokens:.1f} (spec)")
 
 # ---------------------------------------------------------------------------
-# Distributional check — is it actually lossless?
+# Distributional check: is it actually lossless?
 # ---------------------------------------------------------------------------
 # The headline claim of this lab is that speculative decoding samples from the
-# TARGET model's distribution exactly. A speedup number does not test that at
+# target model's distribution exactly. A speedup number does not test that at
 # all, so test it: draw a large sample autoregressively, a large sample
 # speculatively, and compare summary statistics.
 #
 # The essential part is the noise floor. Two independent autoregressive runs also
 # differ from each other, because each is a finite sample from the same
 # distribution. Without that reference number, "the distributions match" is
-# unfalsifiable — any small difference can be waved away. So run AR twice.
+# unfalsifiable, since any small difference can be waved away. So run AR twice.
 print("\n--- distributional check: is it really lossless? ---\n")
 n_dist = 500
 
@@ -528,7 +528,7 @@ nearly the same time as generating 1, because the bottleneck is reading weights
 In production (7B-70B models on GPUs), speculative decoding achieves:
   - 2-3x speedup with a well-matched draft model
   - Higher acceptance rates with better draft models (EAGLE, Medusa)
-  - Zero quality loss — the output distribution is mathematically identical
+  - Zero quality loss: the output distribution is mathematically identical
 
 None of that happens here, and the reason is in the numbers above rather than in
 a hand-wave. The whole technique is an arbitrage on the draft/target cost ratio,

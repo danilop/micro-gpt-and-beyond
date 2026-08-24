@@ -151,7 +151,7 @@
     "hash": "4584ac61"
   },
   "98": {
-    "text": "Queries: always full heads. Shape: (B, n_head, T, head_dim).",
+    "text": "Queries always use the full head count, with shape (B, n_head, T, head_dim).",
     "hash": "c1bb875a"
   },
   "99": {
@@ -168,7 +168,7 @@
     "important": true
   },
   "110": {
-    "text": "Repeat each KV head so every query head in its group has a key to match against. This is the clearest way to write the expansion and the worst way to run it: <code>repeat_interleave</code> allocates, materializing <code>repeats</code> identical copies of K and V and handing back the memory saving for the duration of the forward pass. Production kernels never do this — <code>scaled_dot_product_attention</code> with <code>enable_gqa=True</code>, and FlashAttention's GQA support, index the shared KV head straight from each query head instead, so the cache saving survives and this per-pass copy disappears.",
+    "text": "Repeat each KV head so every query head in its group has a key to match against. This is the clearest way to write the expansion and the worst way to run it: <code>repeat_interleave</code> allocates, materializing <code>repeats</code> identical copies of K and V and handing back the memory saving for the duration of the forward pass. Production kernels never do this. <code>scaled_dot_product_attention</code> with <code>enable_gqa=True</code>, and FlashAttention's GQA support, index the shared KV head straight from each query head instead, so the cache saving survives and this per-pass copy disappears.",
     "diagram": "gqa_compare",
     "highlight": [
       "q_gqa"
@@ -355,7 +355,7 @@
   },
   "180": {
     "text": "MHA is the no-sharing baseline: four query heads, four KV heads, and therefore the largest KV cache. It gives maximum per-head freedom, but also maximum memory cost.",
-    "hash": "46cb8003",
+    "hash": "2566bfcc",
     "diagram": "gqa_compare",
     "highlight": [
       "q_mha"
@@ -363,7 +363,7 @@
   },
   "181": {
     "text": "GQA is the compromise: the four query heads are still there, but they now flow through just two shared KV groups. That cuts cache size in half without collapsing all heads onto one shared memory.",
-    "hash": "73e4025f",
+    "hash": "3827cc0b",
     "diagram": "gqa_compare",
     "highlight": [
       "q_gqa"
@@ -371,7 +371,7 @@
   },
   "182": {
     "text": "MQA pushes sharing to the limit: all four query heads read from the same single KV head. It is the cheapest in memory, but also the most aggressive loss of KV diversity.",
-    "hash": "eeea829c",
+    "hash": "62fa0380",
     "diagram": "gqa_compare",
     "highlight": [
       "q_mqa"
@@ -454,11 +454,11 @@
     "hash": "a668b5fa"
   },
   "220": {
-    "text": "Count total parameters. Fewer KV heads means smaller <code>wk</code> and <code>wv</code>, which is a real but modest saving — the interesting number is the cache, not this one.",
+    "text": "Count total parameters. Fewer KV heads means smaller <code>wk</code> and <code>wv</code>, a real but modest saving; the interesting number is the cache rather than this one.",
     "hash": "3ba34a25"
   },
   "227": {
-    "text": "Arithmetic, not a measurement: nothing in this lab caches anything, that is lab 12. It is the size the cache <em>would</em> have at fp16, batch 1, a full <code>block_size</code> context — which is the figure that matters in production, where the KV cache is what fills the GPU.",
+    "text": "Arithmetic rather than a measurement, since nothing in this lab caches anything, which is lab 12's job. It is the size the cache <em>would</em> have at fp16, batch 1 and a full <code>block_size</code> context, which is the figure that matters in production, where the KV cache is what fills the GPU.",
     "important": true,
     "diagram": "gqa_compare",
     "highlight": [
@@ -529,11 +529,11 @@
     "hash": "d9e59d7e"
   },
   "263": {
-    "text": "One hundred steps, the same window for every variant, fixed before the numbers were looked at. Averaging the tail does not turn this into a quality ranking, but it does stop it being pure noise.",
+    "text": "One hundred steps, the same window for every variant, fixed before the numbers were looked at. Averaging the tail keeps this out of pure noise, though it still falls short of a quality ranking.",
     "hash": "db630cad"
   },
   "264": {
-    "text": "The trailing average, not the final step's loss. At batch size one the last step mostly reports which name it happened to land on, and reading that single value used to hand the win to MQA — a ranking produced by sampling noise rather than by architecture.",
+    "text": "The trailing average rather than the final step's loss. At batch size one the last step mostly reports which name it happened to land on, and reading that single value used to hand the win to MQA, a ranking produced by sampling noise rather than by architecture.",
     "important": true,
     "hash": "1f5a2547"
   },
@@ -542,7 +542,7 @@
     "hash": "bcc788f2"
   },
   "267": {
-    "text": "Generate sample names from this variant so the loss column has something qualitative beside it. All three produce name-shaped output, which is again the point — sharing KV heads did not break anything.",
+    "text": "Generate sample names from this variant so the loss column has something qualitative beside it. All three produce name-shaped output, which is again the point: sharing KV heads did not break anything.",
     "hash": "3da05715"
   },
   "274": {
@@ -554,11 +554,11 @@
     "hash": "99f1d42d"
   },
   "278": {
-    "text": "KV projection parameters for this variant — the <code>wk</code> and <code>wv</code> weight matrices. Distinct from the cache estimate above: this is what the model stores on disk, the cache is what inference allocates per request.",
+    "text": "KV projection parameters for this variant, the <code>wk</code> and <code>wv</code> weight matrices. These are distinct from the cache estimate above: this is what the model stores on disk, while the cache is what inference allocates per request.",
     "hash": "0c2c323d"
   },
   "281": {
-    "text": "The cache column printed as a ratio to MHA. <code>1.00x</code> / <code>0.50x</code> / <code>0.25x</code> is exactly what you get at any scale, because the cache is linear in <code>n_kv_head</code> — LLaMA 2 70B runs 8 KV heads against 64 query heads for 0.125x.",
+    "text": "The cache column printed as a ratio to MHA. <code>1.00x</code> / <code>0.50x</code> / <code>0.25x</code> is exactly what you get at any scale, because the cache is linear in <code>n_kv_head</code>; LLaMA 2 70B runs 8 KV heads against 64 query heads for 0.125x.",
     "important": true,
     "diagram": "gqa_compare",
     "highlight": {

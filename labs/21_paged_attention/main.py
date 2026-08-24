@@ -1,5 +1,5 @@
 """
-microGPT — PagedAttention edition.
+microGPT: PagedAttention edition.
 
 Same architecture as the pure-Python version (01), but demonstrating two
 KV cache strategies for inference: contiguous (wasteful) and paged (efficient).
@@ -58,7 +58,7 @@ vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # ---------------------------------------------------------------------------
-# Model — reuse Lab 01's Value autograd + GPT architecture
+# Model: reuse Lab 01's Value autograd and GPT architecture
 # ---------------------------------------------------------------------------
 n_embd = 16  # embedding dimension
 n_head = 4  # number of attention heads
@@ -199,7 +199,7 @@ class PagedKVCache:
     """
     Paged KV cache (PagedAttention / vLLM concept).
     Allocate fixed-size blocks on demand. A block table maps logical positions
-    to physical block IDs — just like page tables in an operating system.
+    to physical block ids, just like page tables in an operating system.
     """
 
     def __init__(self, total_blocks, n_layers, dims, block_size_tokens=BLOCK_SIZE_TOKENS):
@@ -418,7 +418,7 @@ assert name_c == name_p, f"Outputs differ: {name_c} vs {name_p}"
 print("  -> identical output, paged allocates only what's needed")
 
 # ---------------------------------------------------------------------------
-# The block table — the whole point of paging, so print it
+# The block table, the whole point of paging, so print it
 # ---------------------------------------------------------------------------
 # One sequence in isolation cannot show fragmentation: its blocks come out of
 # the free list in order and look contiguous. Two sequences allocating in
@@ -479,7 +479,7 @@ print(f"internal fragmentation: {alloc_slots - used_slots} of {alloc_slots} slot
 print(f"  -> bounded by block_size - 1 = {demo.block_size - 1} tokens per sequence per layer, never worse")
 
 # Free a sequence and watch its physical blocks come back for reuse. This is
-# the fragmentation story: a freed block is usable by ANY future sequence,
+# the fragmentation story: a freed block is usable by any future sequence,
 # whatever length it needs, because nothing has to be contiguous.
 a_blocks = sorted({b for layer_blocks in demo.block_tables["A"].values() for b in layer_blocks})
 freed_before = sorted(demo.free_blocks)
@@ -498,7 +498,7 @@ print(f"  -> 'C' got physical blocks {c_blocks}; recycled from 'A': {sorted(set(
 print(f"free list now: {sorted(demo.free_blocks)}")
 
 # ---------------------------------------------------------------------------
-# Prefix sharing — shared system prompt
+# Prefix sharing: shared system prompt
 # ---------------------------------------------------------------------------
 print("\n--- prefix sharing (shared system prompt) ---\n")
 
@@ -516,7 +516,7 @@ n_shared = 3
 for i in range(n_shared):
     shared = prefix_cache.share_prefix("prefix", f"req_{i}", prefix_len)
     print(f"  req_{i}: shared {shared} blocks (zero-copy)")
-print(f"blocks: {used_blk} total — sharing adds zero new allocations")
+print(f"blocks: {used_blk} total, sharing adds zero new allocations")
 print(f"without sharing: {used_blk * (1 + n_shared)} blocks ({used_blk} x {1 + n_shared})")
 
 shared_phys = prefix_cache.block_tables["prefix"][0][0]
@@ -527,7 +527,7 @@ print("  " + ", ".join(f"{sid}->{prefix_cache.block_tables[sid][0]}" for sid in 
 # Copy-on-write, actually firing
 # ---------------------------------------------------------------------------
 # Sharing is only half the mechanism. The other half is what happens when a
-# sharer writes. req_0 now generates one more token, which lands in the SAME
+# sharer writes. req_0 now generates one more token, which lands in the same
 # logical block it is sharing with three other sequences. The write cannot
 # happen in place, so append() clones the block first (refcount > 1), points
 # req_0's block table at the copy, and drops the original's refcount. Exactly
@@ -562,7 +562,7 @@ the memory numbers; vLLM reports 2-4x higher serving throughput as a result.
 """)
 
 # ---------------------------------------------------------------------------
-# Inference — generate names (using paged KV cache)
+# Inference: generate names (using paged KV cache)
 # ---------------------------------------------------------------------------
 print("--- inference (paged KV cache) ---")
 final_cache = PagedKVCache(total_blocks=128, n_layers=n_layer, dims=n_embd)

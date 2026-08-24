@@ -1,5 +1,5 @@
 """
-microGPT — Masked Diffusion Language Model (PyTorch).
+microGPT: Masked Diffusion Language Model (PyTorch).
 
 Instead of generating names left-to-right like a GPT, names emerge from pure
 noise -- all [MASK] tokens -- through iterative unmasking. Same transformer
@@ -42,13 +42,13 @@ print(f"num docs: {len(docs)}")
 
 # MASK replaces BOS, PAD handles fixed-length sequences
 uchars = sorted(set("".join(docs)))
-MASK = len(uchars)  # [MASK] — the "noise" state that the model learns to denoise
-PAD = len(uchars) + 1  # [PAD] — fills unused positions in fixed-length sequences
+MASK = len(uchars)  # [MASK], the "noise" state that the model learns to denoise
+PAD = len(uchars) + 1  # [PAD], which fills unused positions in fixed-length sequences
 vocab_size = len(uchars) + 2
 print(f"vocab size: {vocab_size}")
 
 # ---------------------------------------------------------------------------
-# Model — bidirectional transformer (no causal mask)
+# Model: bidirectional transformer (no causal mask)
 # ---------------------------------------------------------------------------
 n_embd = 16  # embedding dimension
 n_head = 4  # number of attention heads
@@ -67,7 +67,7 @@ class RMSNorm(nn.Module):
 
 
 class BidirectionalSelfAttention(nn.Module):
-    """Every position attends to every other — no causal mask."""
+    """Every position attends to every other, with no causal mask."""
 
     def __init__(self):
         super().__init__()
@@ -122,7 +122,7 @@ class MicroDiffusion(nn.Module):
         self.norm_in = RMSNorm(n_embd)
         self.layers = nn.ModuleList([Block() for _ in range(n_layer)])
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
-        # Weight tying — same matrix for input embeddings and output projection
+        # Weight tying: same matrix for input embeddings and output projection
         self.lm_head.weight = self.wte.weight
         self.apply(self._init_weights)
 
@@ -150,8 +150,8 @@ print(f"num params: {sum(p.numel() for p in model.parameters())}")
 
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, betas=(0.85, 0.99), eps=1e-8)
 num_steps = 3000
-batch_size = 32  # diffusion needs batching — single-sample gradients are too noisy
-print(f"batch size: {batch_size} (diffusion needs batching — single-sample gradients are too noisy)")
+batch_size = 32  # diffusion needs batching, since single-sample gradients are too noisy
+print(f"batch size: {batch_size} (diffusion needs batching, since single-sample gradients are too noisy)")
 
 for step in range(num_steps):
     # Build a batch of (clean, noisy) pairs, each with its own random masking
@@ -180,7 +180,7 @@ for step in range(num_steps):
         noisy_batch.append(noisy)
         mask_batch.append(is_masked)
 
-    # Forward pass — predict clean tokens from noisy input
+    # Forward pass: predict clean tokens from noisy input
     input_ids = torch.tensor(noisy_batch, device=device)  # (B, block_size)
     targets = torch.tensor(clean_batch, device=device)  # (B, block_size)
     mask = torch.tensor(mask_batch, device=device)  # (B, block_size)
@@ -202,11 +202,11 @@ for step in range(num_steps):
         print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
 
 # ---------------------------------------------------------------------------
-# Inference — iterative denoising from all-MASK to clean names
+# Inference: iterative denoising from all-MASK to clean names
 # ---------------------------------------------------------------------------
 # The step count is a dial, not a constant, and it is the whole reason to care
 # about diffusion: with fewer steps than tokens, several positions commit in the
-# same forward pass. Left-to-right decoding has no such dial — it always costs
+# same forward pass. Left-to-right decoding has no such dial, and it always costs
 # one forward pass per token. Note that the first arm below (16 steps for 16
 # positions) is not that saving: it cannot commit more than one position per
 # step on average, and the run reports that it does not.
@@ -216,7 +216,7 @@ def denoise(num_denoise_steps):
     """Generate one name by iterative unmasking. Returns (name, passes, commits)."""
     seq = [MASK] * block_size  # start from pure noise
     passes = 0
-    commits = []  # positions committed per step — the schedule, as measured
+    commits = []  # positions committed per step, the schedule as measured
 
     for step_i in range(num_denoise_steps, 0, -1):
         # Cosine schedule: `t` is the fraction of positions masked going into
@@ -240,7 +240,7 @@ def denoise(num_denoise_steps):
 
         # Commit the most confident predictions and re-mask the rest, so the
         # number left masked is what the schedule asked for. Anchoring on
-        # block_size — not on how many happen to be masked right now — is what
+        # block_size, rather than on how many happen to be masked right now, is what
         # lets the schedule set the pace; the `- 1` floor guarantees every step
         # commits at least one position. Which of the two binds depends on the
         # step count: with as many steps as positions the floor wins every time,
@@ -279,6 +279,6 @@ with torch.no_grad():
 
 print(
     "\nFewer steps means more positions committed per pass, so generation gets cheaper"
-    "\nand — at this scale — visibly worse. How few steps you can get away with is the"
+    "\nand, at this scale, visibly worse. How few steps you can get away with is the"
     "\ncentral question in diffusion language models."
 )

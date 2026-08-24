@@ -1,5 +1,5 @@
 """
-microGPT — Disaggregated serving edition.
+microGPT: Disaggregated serving edition.
 
 Same model as lab 03/12, but demonstrating disaggregated (split) inference:
 the prefill phase (process the prompt, compute-bound) and the decode phase
@@ -202,7 +202,7 @@ torch.set_grad_enabled(False)  # inference only from here
 
 # Part 1: Measure prefill vs decode profiles
 print("\n" + "=" * 70)
-print("PART 1: PREFILL vs DECODE — different compute profiles")
+print("PART 1: PREFILL vs DECODE: different compute profiles")
 print("=" * 70)
 
 
@@ -312,7 +312,7 @@ cost traces a U: {per_token[8]:.1f} us/token at T=8, down to a minimum of
 {per_token[best_T]:.1f} us/token at T={best_T}, then back up to {per_token[1024]:.1f} us/token at T=1024.
 Quoting only the endpoints ({per_token[8]:.1f} -> {per_token[1024]:.1f}) would make that look monotone.
 The left arm falls because at short prompts almost all of the time is fixed
-per-call overhead — Python, dispatch, kernel launch — not arithmetic, and that
+per-call overhead (Python, dispatch, kernel launch) rather than arithmetic, and that
 overhead is amortised over more tokens as T grows. The right arm rises because
 the O(T^2) attention term overtakes the amortisation. That is why the earlier version of this table, measured at prompt
 lengths of 2 to 12 tokens, came out flat and could not support any claim about
@@ -340,12 +340,12 @@ temperature = 0.5  # in (0, 1], control the "creativity" of generated text, low 
 # The simulated phase costs. They are deliberately in the milliseconds: on a
 # loaded host time.sleep() overshoots by around a millisecond, so a simulation
 # built on 0.3 ms sleeps measures OS scheduling noise instead of the cost model
-# it wrote down. Only the RATIOS between these three numbers matter.
+# it wrote down. Only the ratios between these three numbers matter.
 PREFILL_COST_MS = 5.0  # ms per prompt token (simulated)
 DECODE_COST_MS = 3.0  # ms per decode step (simulated)
 # The one cost disaggregation adds that colocated serving does not pay: the KV
 # cache has to move from the prefill worker to the decode worker. In this lab
-# the handoff is a tuple of the same tensors on a queue — no copy at all — so
+# the handoff is a tuple of the same tensors on a queue, with no copy at all, so
 # without an explicit charge the simulation would tell you the transfer is
 # free, and then the closing text would tell you it costs 1.1 ms. Charge it.
 # Sweep this value upward and disaggregation eventually stops paying; the
@@ -362,7 +362,7 @@ class Request:
     first_token_time: float = 0.0
     finish_time: float = 0.0
     generated_tokens: list = field(default_factory=list)
-    # Each request carries its OWN sampling RNG. The global torch RNG is not
+    # Each request carries its own sampling RNG. The global torch RNG is not
     # usable here: the disaggregated arm samples from two threads, so the
     # interleaving decides who draws which number and the generated names
     # change from run to run. With a per-request generator, both strategies
@@ -411,9 +411,9 @@ def sample_token(logits, rng):
     return torch.multinomial(F.softmax(logits[0, -1] / temperature, dim=-1), 1, generator=rng).item()
 
 
-# Strategy 1: Colocated — one worker does both prefill and decode (FIFO).
+# Strategy 1: Colocated, one worker does both prefill and decode (FIFO).
 #
-# Be clear about what this baseline is and is not. It is ONE worker running
+# Be clear about what this baseline is and is not. It is one worker running
 # strict FIFO: a request's prefill and its entire decode finish before the next
 # request is looked at. It has no continuous batching, so it is the weakest
 # reasonable baseline, and part of the speedup measured below is simply the
@@ -438,7 +438,7 @@ def serve_colocated(requests):
     return results
 
 
-# Strategy 2: Disaggregated — separate prefill and decode workers
+# Strategy 2: Disaggregated, separate prefill and decode workers
 def serve_disaggregated(requests):
     decode_queue, lock = deque(), threading.Lock()
     results, results_lock = [], threading.Lock()
@@ -465,10 +465,10 @@ def serve_disaggregated(requests):
         # active maps request id -> that request's in-flight decode state.
         active = {}
         while True:
-            # Sample the completion flag BEFORE draining the queue. If we read
+            # Sample the completion flag before draining the queue. If we read
             # it afterwards, prefill could append its last request and set the
             # flag in the window between the drain and the check, and we would
-            # exit having silently dropped that request — which would then make
+            # exit having silently dropped that request, which would then make
             # zip(results_coloc, results_disagg) misalign every pair after it.
             prefill_finished = prefill_done.is_set()
             with lock:
@@ -539,7 +539,7 @@ for rc, rd in zip(results_coloc, results_disagg):
 
 # One Name column, not two. Each request samples from its own torch.Generator,
 # so both strategies produce byte-identical output and there is nothing to
-# compare there — which is the point: disaggregation is a scheduling change,
+# compare there, which is the point: disaggregation is a scheduling change,
 # not a change to what the model says. Two "Name" columns side by side would
 # invite the reader to compare thread-scheduling noise.
 print(f"\n  Output identical across strategies: {mismatches == 0} ({mismatches} mismatches)")
@@ -557,7 +557,7 @@ print(f"  Total:     colocated {t_c * 1000:.1f} ms  |  disaggregated {t_d * 1000
 avg_plen = sum(len(r.prompt) for r in results_coloc) / len(results_coloc)
 gain_ms = (avg_c - avg_d) * 1000
 # The handoff runs inline on the prefill worker, so raising its per-token cost
-# delays a request by every prompt token queued AHEAD of it, not just its own.
+# delays a request by every prompt token queued ahead of it, not just its own.
 # The right denominator is therefore the mean cumulative prompt length, which is
 # far larger than the mean prompt length -- and makes the break-even far closer.
 _cum, _cums = 0, []
@@ -593,11 +593,11 @@ The two phases of LLM inference have different hardware profiles:
   Prefill: compute-bound (T tokens in parallel, O(T^2)). Wants more ALUs, FP8.
   Decode:  memory-bound (1 token/step, reads all weights). Wants high BW, HBM3e.
 
-PROBLEM — colocated serving (one GPU does both):
+PROBLEM: colocated serving (one GPU does both):
   [====PREFILL req0====][dec 0][dec 0]...[==PREFILL req1==][dec 1]...
                                           ^ decode 1 blocked by prefill 1!
 
-SOLUTION — disaggregate prefill and decode onto separate workers:
+SOLUTION: disaggregate prefill and decode onto separate workers:
   Prefill GPU:  [==PREFILL 0==][==PREFILL 1==][PREFILL 2]
   Decode GPU:   [dec 0][dec 0][dec 1][dec 0]...  <- starts right after handoff
 
@@ -611,7 +611,7 @@ Production systems:
   - Mooncake (Moonshot AI, 2024): KV cache transfer over RDMA
 
 The KV cache transfer is the key engineering challenge. For Llama 3 70B at
-8K context, ~1 GB transfers over NVLink (900 GB/s) in ~1.1 ms — small next to
+8K context, ~1 GB transfers over NVLink (900 GB/s) in ~1.1 ms, small next to
 the prefill time it unblocks, but not free, and it is the cost colocated
 serving never pays. This lab charges KV_TRANSFER_COST_MS per prompt token in
 the handoff so the cost appears in the disaggregated TTFT instead of only in

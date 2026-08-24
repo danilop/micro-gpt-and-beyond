@@ -1,5 +1,5 @@
 """
-microGPT — MLX edition.
+microGPT: MLX edition.
 
 A framework port of the same decoder-only GPT architecture from
 "Attention Is All You Need" (Vaswani et al., 2017),

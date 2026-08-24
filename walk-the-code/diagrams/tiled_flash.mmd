@@ -1,9 +1,24 @@
+%% palette: cheap = fast on-chip memory, costly = slow off-chip memory
 graph TD
-    t_load[Load one Q tile into SRAM] --> t_loop[For each K,V tile]
-    t_loop --> t_kv[Load the K,V tile into SRAM]
-    t_kv --> t_scores[Block QK scores]
-    t_scores --> t_mask[Apply the causal mask<br/>inside the tile]
-    t_mask --> t_compute[Online softmax update]
-    t_compute --> t_accum[Rescale and accumulate<br/>the output tile]
+    subgraph sram[SRAM: fast, on-chip. Nothing here grows with N]
+        t_scores[Block QK scores]
+        t_mask[Apply the causal mask<br/>inside the tile]
+        t_compute[Online softmax update]
+        t_accum[Rescale and accumulate<br/>the output tile]
+    end
+    t_load[Load one Q tile into SRAM]
+    t_loop[For each K,V tile]
+    t_kv[Load the K,V tile into SRAM]
+    t_write[Normalize and write<br/>the tile to HBM]
+    t_load --> t_loop
+    t_loop --> t_kv
+    t_kv --> t_scores
+    t_scores --> t_mask
+    t_mask --> t_compute
+    t_compute --> t_accum
     t_accum -->|next tile| t_loop
-    t_accum -->|after the last tile| t_write[Normalize and write<br/>the tile to HBM]
+    t_accum -->|after the last tile| t_write
+    classDef cheap fill:#1f3d2e,stroke:#3fb950,color:#e6edf3
+    classDef costly fill:#4a2c2a,stroke:#f0883e,color:#e6edf3
+    class t_scores,t_mask,t_compute,t_accum cheap
+    class t_write costly

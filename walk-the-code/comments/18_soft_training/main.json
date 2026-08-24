@@ -104,7 +104,7 @@
     "hash": "b39e14b0"
   },
   "68": {
-    "text": "RMSNorm: rescale by inverse root-mean-square. Simpler and faster than LayerNorm.",
+    "text": "RMSNorm rescales by the inverse root-mean-square, which is simpler and faster than LayerNorm.",
     "hash": "69fade3d"
   },
   "69": {
@@ -394,7 +394,7 @@
     "hash": "4b0d3973"
   },
   "161": {
-    "text": "This model has no dropout and no batch norm, so <code>eval()</code> changes nothing here. It is called anyway because it is the habit you want in every model that does have them — the same note lab 17 makes about the same line.",
+    "text": "This model has no dropout and no batch norm, so <code>eval()</code> changes nothing here. It is called anyway because it is the habit you want in every model that does have them, the same note lab 17 makes about the same line.",
     "hash": "45bf010c"
   },
   "162": {
@@ -461,12 +461,12 @@
     "hash": "aa93a434"
   },
   "185": {
-    "text": "The concept token: probability-weighted average of ALL token embeddings. Instead of picking one token, this continuous blend carries information about the model's full belief distribution. A soft \"a\" that's 30% \"b\" encodes richer context than a hard \"a\" alone.",
+    "text": "The concept token: a probability-weighted average of every token embedding. Instead of picking one token, this continuous blend carries information about the model's full belief distribution. A soft \"a\" that is 30% \"b\" encodes richer context than a hard \"a\" alone.",
     "hash": "e1a0c30a",
     "important": true
   },
   "186": {
-    "text": "Entropy of <code>soft_probs</code> — the distribution that actually builds the next input — not of the sampling distribution above. The sampling distribution is identical in all four cells of the comparison, so reporting it would make the table read flat no matter what the curriculum did.",
+    "text": "Entropy of <code>soft_probs</code>, the distribution that actually builds the next input, rather than of the sampling distribution above. The sampling distribution is identical in all four cells of the comparison, so reporting it would make the table read flat no matter what the curriculum did.",
     "important": true,
     "diagram": "soft_soft_path",
     "highlight": [
@@ -485,7 +485,7 @@
     "hash": "0a157942"
   },
   "197": {
-    "text": "The measurement the lab exists for. Everything above is qualitative — names that look plausible, entropies that behave — and this is the first thing that can actually confirm or refute the claim that soft training closes the train-test gap.",
+    "text": "The measurement the lab exists for. Everything above is qualitative, names that look plausible and entropies that behave, and this is the first thing that can actually confirm or refute the claim that soft training closes the train-test gap.",
     "important": true,
     "hash": "0c8f379e"
   },
@@ -767,7 +767,7 @@
     "hash": "9e3829cc"
   },
   "315": {
-    "text": "Average entropy for this sample. Neither direction is 'better': this measures how much of the distribution flows forward, not whether the model can use it. The hard rows are zero by construction and the soft rows are wider — that is a description of the decoder, not a score.",
+    "text": "Average entropy for this sample. Neither direction is 'better': this measures how much of the distribution flows forward rather than whether the model can use it. The hard rows are zero by construction and the soft rows are wider, which describes the decoder rather than scoring it.",
     "hash": "8eb7b603"
   },
   "316": {
@@ -779,7 +779,7 @@
     "hash": "5416cee6"
   },
   "318": {
-    "text": "Print each name with its concept-token entropy against the <code>ln(27)</code> ceiling. The soft-trained model under soft decoding comes out <em>highest</em> here, around 2.68 against the standard model's 2.52 — more spread, not less, which is the opposite of what a 'more confident model' story would predict.",
+    "text": "Print each name with its concept-token entropy against the <code>ln(27)</code> ceiling. The soft-trained model under soft decoding comes out <em>highest</em> here, around 2.68 against the standard model's 2.52, so more spread rather than less, which is the opposite of what a 'more confident model' story would predict.",
     "important": true,
     "hash": "ea51a505"
   },
@@ -806,7 +806,7 @@
     "hash": "44b400b2"
   },
   "346": {
-    "text": "Hard inputs: ground-truth embeddings, exactly what teacher forcing optimizes. <code>2.3892</code> for the standard model against <code>2.4699</code> for the soft-trained one — the curriculum costs something here.",
+    "text": "Hard inputs: ground-truth embeddings, exactly what teacher forcing optimizes. <code>2.3892</code> for the standard model against <code>2.4699</code> for the soft-trained one, so the curriculum costs something here.",
     "hash": "755ab663"
   },
   "347": {
@@ -819,7 +819,7 @@
     "hash": "cac9023f"
   },
   "354": {
-    "text": "Read the two gaps, not the two best cells. The soft-input penalty falls from <code>+0.2609</code> to <code>+0.1384</code> nats, roughly a 47% reduction — the curriculum working as advertised, measured rather than asserted.",
+    "text": "Read the two gaps rather than the two best cells. The soft-input penalty falls from <code>+0.2609</code> to <code>+0.1384</code> nats, roughly a 47% reduction, which is the curriculum working as advertised and measured rather than asserted.",
     "important": true,
     "hash": "b079bf29"
   },
@@ -828,7 +828,7 @@
     "hash": "0d02632b"
   },
   "366": {
-    "text": "The honest shape of the result — robustness to soft inputs bought at a price on hard ones — and the conclusion left where it belongs: with whichever decoder you actually deploy.",
+    "text": "The honest shape of the result, robustness to soft inputs bought at a price on hard ones, with the conclusion left where it belongs: with whichever decoder you actually deploy.",
     "hash": "cf5d33b4"
   }
 }

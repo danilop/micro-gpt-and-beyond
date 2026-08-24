@@ -1,5 +1,5 @@
 """
-microGPT — Grouped-Query Attention (GQA/MQA) edition.
+microGPT: Grouped-Query Attention (GQA/MQA) edition.
 
 Shows the progression from Multi-Head Attention (MHA) → Multi-Query Attention
 (MQA) → Grouped-Query Attention (GQA). The key idea: KV heads can be shared
@@ -102,10 +102,10 @@ class FlexAttention(nn.Module):
         # Expand KV heads to match Q heads by repeating. This is the clearest way
         # to write it and the worst way to run it: the expansion materialises
         # `repeats` identical copies of K and V, throwing away the memory saving
-        # for the duration of the forward pass. Production kernels never do this
-        # — PyTorch's scaled_dot_product_attention with enable_gqa=True, and
+        # for the duration of the forward pass. Production kernels never do this:
+        # PyTorch's scaled_dot_product_attention with enable_gqa=True, and
         # FlashAttention's GQA support, index the shared KV head directly from
-        # each query head instead. Same maths, no copies.
+        # each query head instead, with the same maths and no copies.
         if self.repeats > 1:
             k = k.repeat_interleave(self.repeats, dim=1)  # (B, n_head, T, hd)
             v = v.repeat_interleave(self.repeats, dim=1)  # (B, n_head, T, hd)
@@ -177,9 +177,9 @@ num_steps = 1000
 temperature = 0.5  # in (0, 1], control the "creativity" of generated text, low to high
 
 variants = [
-    ("MHA", n_head),  # 4 KV heads — standard multi-head attention
-    ("GQA", 2),  # 2 KV heads — grouped-query attention
-    ("MQA", 1),  # 1 KV head  — multi-query attention
+    ("MHA", n_head),  # 4 KV heads, standard multi-head attention
+    ("GQA", 2),  # 2 KV heads, grouped-query attention
+    ("MQA", 1),  # 1 KV head, multi-query attention
 ]
 
 
@@ -222,7 +222,7 @@ for variant_name, n_kv_head in variants:
 
     # KV cache size. This is arithmetic, not a measurement: there is no KV cache
     # in this lab at all (that is lab 12). It is the size the cache *would* have
-    # at fp16, batch 1, a full block_size context — which is the number that
+    # at fp16, batch 1, a full block_size context, which is the number that
     # matters in production, where the cache is what fills the GPU.
     kv_cache_bytes = n_kv_head * head_dim * block_size * 2 * 2 * n_layer
     print(
@@ -281,8 +281,8 @@ for variant_name, n_kv_head, num_params, kv_cache, avg_loss in results:
         f"{kv_cache:>8} {kv_cache / mha_cache:>6.2f}x {avg_loss:>9.4f}"
     )
 print("""
-  The cache ratio is the transferable number. Raw bytes here are absurd — this
-  model is 16-dimensional — but 1.00x / 0.50x / 0.25x is exactly what you get at
+  The cache ratio is the transferable number. Raw bytes here are absurd, since this
+  model is 16-dimensional, but 1.00x / 0.50x / 0.25x is exactly what you get at
   any scale, because the cache is linear in n_kv_head. LLaMA 2 70B runs 8 KV
   heads against 64 query heads: 0.125x. And note this is arithmetic, not a
   measurement: nothing in this lab actually caches anything (that is lab 12).
@@ -292,5 +292,5 @@ print("""
   noise, and whichever variant happens to come out lowest, that is not evidence.
   Read the loss column as "all three still learn to spell names", nothing more.
   The claim that GQA holds quality while cutting the cache is real, and it comes
-  from Ainslie et al. (2023) uptraining 64-head checkpoints on real corpora —
+  from Ainslie et al. (2023) uptraining 64-head checkpoints on real corpora,
   not from anything printed above.""")

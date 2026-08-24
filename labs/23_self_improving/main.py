@@ -1,5 +1,5 @@
 """
-microGPT — Self-improving model edition.
+microGPT: Self-improving model edition.
 
 A tiny character-level GPT that iteratively improves itself by generating
 candidate outputs, scoring them with a verifiable quality function, and
@@ -67,7 +67,7 @@ vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # ---------------------------------------------------------------------------
-# Held-out split — the verifier must not read the model's training data
+# Held-out split: the verifier must not read the model's training data
 # ---------------------------------------------------------------------------
 # The original version of this lab built the bigram verifier from the same
 # corpus the model trained on, so a high "quality" score could simply mean the
@@ -82,9 +82,9 @@ train_set = set(train_docs)  # used to measure novelty (is the name actually new
 print(f"train docs: {len(train_docs)}, held-out docs (verifier only): {len(heldout_docs)}")
 
 # ---------------------------------------------------------------------------
-# Quality scorer — the "verifier" that decides which self-generations to keep
+# Quality scorer: the "verifier" that decides which self-generations to keep
 # ---------------------------------------------------------------------------
-# We build a bigram model from REAL names the model never trains on (the
+# We build a bigram model from real names the model never trains on (the
 # held-out split). This serves as a ground-truth quality signal: generated
 # names that match real-name statistics score higher. In STaR, the verifier
 # checks logical correctness; here it checks "does this look like a real name?"
@@ -289,8 +289,8 @@ def evaluate_quality(names):
 # ---------------------------------------------------------------------------
 # Average quality is a per-name statistic, so it is blind to two failure modes
 # that matter more than the score itself:
-#   diversity — a collapsed model emits the same high-scoring string forever
-#   novelty   — a model can score well by parroting its training corpus
+#   diversity: a collapsed model emits the same high-scoring string forever
+#   novelty:   a model can score well by parroting its training corpus
 # Both are one line of Python each. Printing them next to the quality score is
 # the difference between "the loop worked" and "the loop found a shortcut".
 
@@ -327,7 +327,7 @@ print(f"initial training: {initial_steps} steps, avg loss {avg_loss:.4f}")
 
 # Snapshot the freshly trained weights. Every arm of the experiment below
 # starts from exactly these weights, so the arms differ only in what data they
-# retrain on — not in where they started.
+# retrain on, not in where they started.
 initial_state = copy.deepcopy(model.state_dict())
 
 # Generate baseline samples
@@ -379,7 +379,7 @@ def run_arm(keep_fraction, mix_ratio, label):
         # Step 1: Generate candidates
         candidates = generate_names(arm_model, SAMPLES_PER_ROUND)
 
-        # Step 2: Score and filter — keep the best `keep_fraction` of them
+        # Step 2: Score and filter, keeping the best `keep_fraction` of them
         scored = [(name, score_name(name, bigram_lp, default_lp_ctx, default_lp_unk)) for name in candidates]
         scored.sort(key=lambda x: x[1], reverse=True)
         n_keep = max(1, int(len(scored) * keep_fraction))
@@ -388,7 +388,7 @@ def run_arm(keep_fraction, mix_ratio, label):
 
         # Step 3: Mix self-generated data with real data for retraining.
         # mix_ratio sets how many retraining steps see a self-generated name
-        # (45 of 300 with the defaults), and that is usually FEWER than the
+        # (45 of 300 with the defaults), and that is usually fewer than the
         # number of names we kept (60). So we sample the self-generated slots
         # uniformly from the whole kept set. Walking `kept` in score order
         # instead would silently use only the top 15% and discard the rest.
@@ -405,26 +405,28 @@ def run_arm(keep_fraction, mix_ratio, label):
         # Step 4: Retrain on mixed data
         avg_loss = train_on_data(arm_model, mixed_data, RETRAIN_STEPS, base_lr=5e-3, verbose=False)
 
-        # Step 5: Evaluate — quality, plus the two things quality cannot see
+        # Step 5: Evaluate quality, plus the two things quality cannot see
         post_names = generate_names(arm_model, EVAL_SAMPLES)
         post_quality = evaluate_quality(post_names)
         unique_frac, top_name, top_count = diversity_stats(post_names)
         novel_frac = novelty(post_names)
 
-        stats.append({
-            "round": round_idx + 1,
-            "candidates": len(candidates),
-            "kept": n_keep,
-            "slots": n_self,
-            "distinct_fed": len(set(self_slots)),
-            "all_quality": all_quality,
-            "post_quality": post_quality,
-            "unique": unique_frac,
-            "top_name": top_name,
-            "top_count": top_count,
-            "novel": novel_frac,
-            "avg_loss": avg_loss,
-        })
+        stats.append(
+            {
+                "round": round_idx + 1,
+                "candidates": len(candidates),
+                "kept": n_keep,
+                "slots": n_self,
+                "distinct_fed": len(set(self_slots)),
+                "all_quality": all_quality,
+                "post_quality": post_quality,
+                "unique": unique_frac,
+                "top_name": top_name,
+                "top_count": top_count,
+                "novel": novel_frac,
+                "avg_loss": avg_loss,
+            }
+        )
 
         # The "slots" figure is how many of the RETRAIN_STEPS steps see a
         # self-generated name, and "distinct" is how many different names those
@@ -444,13 +446,13 @@ def run_arm(keep_fraction, mix_ratio, label):
 print(f"\nthree arms, {NUM_ROUNDS} rounds each, identical seeds and identical step budgets")
 print(f"every round: generate {SAMPLES_PER_ROUND}, filter, retrain {RETRAIN_STEPS} steps, evaluate {EVAL_SAMPLES}\n")
 
-print(f"arm 1 — FILTERED: keep top {KEEP_TOP_FRACTION:.0%} of self-generations, mix {MIX_RATIO:.0%} into retraining")
+print(f"arm 1, FILTERED: keep top {KEEP_TOP_FRACTION:.0%} of self-generations, mix {MIX_RATIO:.0%} into retraining")
 filtered_model, filtered_stats = run_arm(KEEP_TOP_FRACTION, MIX_RATIO, "filtered  ")
 
-print("\narm 2 — UNFILTERED: keep ALL self-generations (the naive loop), same mix ratio")
+print("\narm 2, UNFILTERED: keep every self-generation (the naive loop), same mix ratio")
 unfiltered_model, unfiltered_stats = run_arm(1.0, MIX_RATIO, "unfiltered")
 
-print("\narm 3 — CONTROL: real data only (MIX_RATIO = 0), same seeds and same step budget")
+print("\narm 3, CONTROL: real data only (MIX_RATIO = 0), same seeds and same step budget")
 control_model, control_stats = run_arm(KEEP_TOP_FRACTION, 0.0, "control   ")
 
 # ===========================================================================
@@ -486,10 +488,10 @@ print(f"final quality:     {final_quality:.4f}   (unique {final_unique:.1%})")
 print(f"total improvement: {total_improvement:+.4f}   (unique fraction {final_unique - baseline_unique:+.1%})")
 
 # ---------------------------------------------------------------------------
-# The honest comparison: three arms, quality AND diversity
+# The honest comparison: three arms, quality and diversity
 # ---------------------------------------------------------------------------
 print(f"\n{'=' * 60}")
-print("THREE ARMS, SIDE BY SIDE — quality and diversity")
+print("THREE ARMS, SIDE BY SIDE: quality and diversity")
 print("=" * 60)
 print("\nquality after each round (higher is better):")
 print(f"{'Round':>5s}  {'filtered':>10s}  {'unfiltered':>10s}  {'control':>10s}")
@@ -572,7 +574,7 @@ in the filter, it is what the filter does.
 
 The control arm (real data only, same seeds, same step budget) reached
 {control_quality:.4f} vs the filtered arm's {final_quality:.4f}, so the
-self-generated data is doing real work on the metric — the problem is not that
+self-generated data is doing real work on the metric, and the problem is not that
 the loop does nothing, it is that the metric it improves is incomplete.
 
 The per-round quality trajectory is also not monotonic. Do not expect a clean
@@ -590,9 +592,9 @@ Fixes that would make this loop trustworthy, none of them implemented here:
 # Explanation
 # ===========================================================================
 print(f"""
-{'=' * 60}
+{"=" * 60}
 HOW SELF-IMPROVEMENT WORKS
-{'=' * 60}
+{"=" * 60}
 
 The self-improvement loop has four steps per round:
 
@@ -604,7 +606,7 @@ The self-improvement loop has four steps per round:
 
 Keeping only VERIFIED good outputs reduces the risk of collapse. Naive
 self-training (keeping all outputs) lets the model amplify its own errors.
-The quality filter mitigates this — though it does not fully prevent mode
+The quality filter mitigates this, though it does not fully prevent mode
 collapse, and the numbers above show it did not prevent it here either.
 Diversity controls, quality thresholds, and revert-on-regression would
 strengthen the loop further.

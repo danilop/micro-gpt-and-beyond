@@ -1,10 +1,26 @@
+%% palette: cheap = shared between sequences without copying
 graph TD
-    seq[Sequence<br/>+ layer] --> table[Block table]
-    free[Free<br/>blocks] --> table
-    table --> append[Append<br/>token]
-    append --> block[Physical<br/>block]
-    read[Read<br/>history] --> block
-    share[Share<br/>prefix] --> table
+    subgraph logical[Logical: one table per sequence and layer]
+        seq[Sequence<br/>+ layer]
+        table[Block table]
+    end
+    subgraph pool[Physical: one shared block pool]
+        free[Free<br/>blocks]
+        block[Physical<br/>block]
+        slot[Slot]
+        kv[Stored<br/>K,V]
+    end
+    append[Append<br/>token]
+    read[Read<br/>history]
+    share[Share<br/>prefix]
+    seq --> table
+    free --> table
+    table --> append
+    append --> block
+    read --> block
+    share --> table
     share -. shared mapping .-> block
-    block --> slot[Slot]
-    slot --> kv[Stored<br/>K,V]
+    block --> slot
+    slot --> kv
+    classDef cheap fill:#1f3d2e,stroke:#3fb950,color:#e6edf3
+    class share cheap

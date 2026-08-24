@@ -584,7 +584,7 @@
     "hash": "ebc3cb95"
   },
   "299": {
-    "text": "<code>no_grad</code> plus <code>copy_</code> writes into the tensor <code>nn.Linear</code> already allocated. Assigning <code>merged.weight = nn.Parameter(expr)</code> instead would drag the adapter's autograd graph into the new parameter — the same trap as any other 'compute a weight, then install it'.",
+    "text": "<code>no_grad</code> plus <code>copy_</code> writes into the tensor <code>nn.Linear</code> already allocated. Assigning <code>merged.weight = nn.Parameter(expr)</code> instead would drag the adapter's autograd graph into the new parameter, the same trap as any other 'compute a weight, then install it'.",
     "hash": "d4f61231"
   },
   "300": {
@@ -623,7 +623,7 @@
     "hash": "ba8d14e2"
   },
   "313": {
-    "text": "The rate that goes in the summary table is measured over 200 names, not 20. Twenty samples cannot tell an 80% rate from a 90% one, and comparing rates across ranks is the entire point of the ablation — so the eyeball sample and the measurement are deliberately different sizes.",
+    "text": "The rate that goes in the summary table is measured over 200 names rather than 20. Twenty samples cannot tell an 80% rate from a 90% one, and comparing rates across ranks is the entire point of the ablation, so the eyeball sample and the measurement are deliberately different sizes.",
     "important": true,
     "hash": "8852c4ed"
   },
@@ -640,7 +640,7 @@
     "hash": "949d1dcb"
   },
   "319": {
-    "text": "Score 200 names from the untouched base model. <code>quiet=True</code> keeps them out of the transcript — they exist to produce a rate, not to be read.",
+    "text": "Score 200 names from the untouched base model. <code>quiet=True</code> keeps them out of the transcript, since they exist to produce a rate rather than to be read.",
     "hash": "4bbef7e5"
   },
   "320": {
@@ -660,138 +660,138 @@
     "text": "Recompute the scaling here so it can be printed in the summary table. Seeing <code>1.00</code> on three rows and <code>4.00</code> on the fourth is what makes the alpha row legible as a variable rather than a typo.",
     "hash": "8a1f1797"
   },
-  "338": {
-    "text": "Print rank, alpha, and the resulting scaling together. <code>alpha=16</code> at rank 4 multiplies the adapter's contribution by four — a coarse knob that interacts with the learning rate, and the reason real implementations expose it.",
-    "hash": "5935ce4e"
+  "339": {
+    "text": "Print rank, alpha and the resulting scaling together. <code>alpha=16</code> at rank 4 multiplies the adapter's contribution by four, a coarse knob that interacts with the learning rate and the reason real implementations expose it.",
+    "hash": "181145bc"
   },
-  "342": {
+  "344": {
     "text": "Restore a fresh copy of the pre-trained base model for each rank so experiments are independent.",
     "hash": "40b7fcd9"
   },
-  "344": {
+  "346": {
     "text": "Freeze every parameter in the base model. Only the LoRA matrices (injected next) will be trainable.",
     "hash": "c56d812a"
   },
-  "348": {
+  "350": {
     "text": "Inject LoRA adapters into query and value projections of each transformer layer.",
     "hash": "b9774c64"
   },
-  "351": {
+  "353": {
     "text": "Recount parameters &mdash; total grows slightly because of the LoRA matrices added on top of the frozen base.",
     "hash": "fff12737"
   },
-  "352": {
+  "354": {
     "text": "Count only the trainable parameters (the LoRA A and B matrices).",
     "hash": "a6121c6f"
   },
-  "354": {
+  "356": {
     "text": "Safety check: assert that every base parameter is frozen. If this fails, something went wrong with the freeze.",
     "hash": "f5d57942"
   },
-  "358": {
+  "360": {
     "text": "Walk the model tree to find all LoRA-wrapped layers and display their dimensions.",
     "hash": "f32525cb"
   },
-  "367": {
+  "369": {
     "text": "Print each adapter's factorization: the full weight W(d_out x d_in) is adapted by tiny matrices A(rank x d_in) and B(d_out x rank). Their product B@A has the same shape as W but uses far fewer parameters.",
     "hash": "11e75a73"
   },
-  "370": {
+  "372": {
     "text": "Print the total adapter parameter count, its percentage of total model params, and confirm the base model is fully frozen.",
     "hash": "66bc5188"
   },
-  "373": {
+  "375": {
     "text": "Collect only the LoRA parameters for the optimizer &mdash; base weights are excluded.",
     "hash": "320761bc"
   },
-  "374": {
+  "376": {
     "text": "Fresh Adam optimizer for fine-tuning, operating only on the tiny LoRA parameter set.",
     "hash": "e1b6c784"
   },
-  "375": {
+  "377": {
     "text": "Fine-tuning loop: 500 steps on the soft-name subset. Same <code>train_step</code> as pre-training, but gradients only flow into the LoRA matrices.",
     "hash": "bb777943"
   },
-  "376": {
+  "378": {
     "text": "Cycle through only the soft-consonant names for fine-tuning.",
     "hash": "7807be38"
   },
-  "383": {
+  "385": {
     "text": "Generate the 20 printed samples under a fixed seed, the same seed used for every row and later reused to verify the merge. The marker column makes the style shift visible without reading any percentages.",
     "hash": "6142c52c"
   },
-  "385": {
+  "387": {
     "text": "Score 200 fresh names against the same rule that built <code>ft_docs</code>. Rank 1 takes the soft-name rate from 17% to 85% on 64 trainable parameters, and it takes 200 samples to say that with a straight face.",
     "important": true,
     "hash": "fd5a19c8"
   },
-  "390": {
+  "392": {
     "text": "Merge LoRA adapters back into the base weights so the model is a standard <code>nn.Linear</code> again.",
     "hash": "398ebef7"
   },
-  "392": {
+  "394": {
     "text": "Generate from the merged model silently and verify every name matches the LoRA output exactly &mdash; merging is exact, not an approximation.",
     "hash": "975b0162"
   },
-  "395": {
+  "397": {
     "text": "After merging, the parameter count should equal the original base model &mdash; all LoRA overhead is gone.",
     "hash": "af663ce9"
   },
-  "411": {
+  "413": {
     "text": "The control that makes the headline claim checkable. 'LoRA matches full fine-tuning' is repeated everywhere and can only be assessed with the baseline sitting in the same table, trained on the same data for the same number of steps.",
     "important": true,
     "hash": "f1e95572"
   },
-  "413": {
+  "415": {
     "text": "Freeze everything first, then unfreeze exactly the two matrices the adapters were attached to. Fine-tuning the whole model instead would change two things at once and answer a different question.",
     "hash": "0545e136"
   },
-  "418": {
-    "text": "<code>wq</code> and <code>wv</code> — the same targets <code>inject_lora</code> defaults to. Same layers, same steps, same learning rate: the only difference left is the low-rank constraint.",
+  "420": {
+    "text": "<code>wq</code> and <code>wv</code>, the same targets <code>inject_lora</code> defaults to. Same layers, same steps and same learning rate, so the only difference left is the low-rank constraint.",
     "hash": "51c22649"
   },
-  "422": {
+  "424": {
     "text": "512 trainable parameters against rank 1's 64, and 12.2% of the model against 1.5%. Full-rank updates on the same two matrices, so this is the generous version of the baseline, not a straw man.",
     "hash": "4de61a83"
   },
-  "435": {
+  "439": {
     "text": "Scored the same way as every LoRA row: same seed, same 200 samples, same rule. It reaches 80%, slightly <em>below</em> rank 1's 85%.",
     "hash": "16ec26c8"
   },
-  "444": {
+  "448": {
     "text": "Print the base rate at the top of the table for context. Every percentage below it is a distance travelled from 17%, not an absolute score.",
     "hash": "8be03e1e"
   },
-  "446": {
+  "450": {
     "text": "State the sample size in the output. A rate quoted without its denominator invites the reader to over-read a two-point difference, and two of the rows here are within that margin.",
     "hash": "bf6b9ace"
   },
-  "448": {
+  "452": {
     "text": "The columns chosen to make the tradeoff readable: how many parameters moved, what fraction of the model that is, the scaling factor in play, and the rate that resulted.",
     "hash": "949fa5de"
   },
-  "452": {
-    "text": "One row per configuration. The shape to read is diminishing returns — most of the distance from 17% is covered at rank 1, and rank 2, rank 4, and the alpha row each add a few points.",
-    "hash": "3e31840b"
+  "459": {
+    "text": "One row per configuration. The shape to read is diminishing returns: most of the distance from 17% is covered at rank 1, and rank 2, rank 4 and the alpha row each add a few points.",
+    "hash": "137aeba4"
   },
-  "454": {
+  "462": {
     "text": "The full fine-tuning row printed in the same units as the LoRA rows, with <code>n/a</code> in the merge column because there is no adapter to fold away.",
     "important": true,
     "hash": "00cb799d"
   },
-  "464": {
-    "text": "Rank 1 is the headline: one vector pair per adapted matrix, 64 parameters, 1.5% of the model. That is the LoRA paper's central empirical finding — the useful part of a fine-tuning update has low intrinsic rank — reproduced at a scale you can read in one screen.",
+  "472": {
+    "text": "Rank 1 is the headline: one vector pair per adapted matrix, 64 parameters, 1.5% of the model. That reproduces the LoRA paper's central empirical finding, that the useful part of a fine-tuning update has low intrinsic rank, at a scale you can read in one screen.",
     "hash": "b4ba019f"
   },
-  "471": {
+  "479": {
     "text": "The alpha row gets its own paragraph because a knob that is never turned may as well not exist. Scaling 4.0 reaches 92% here, but the honest reading is 'within noise of the other high ranks', not 'alpha helps'.",
     "hash": "c8a794d3"
   },
-  "476": {
+  "484": {
     "text": "Read the full fine-tuning row as a tie, not a LoRA win. At 200 samples a rate near 85% carries roughly two and a half points of sampling error, so 85% against 80% supports 'at least as good' and nothing stronger.",
     "hash": "79fb090c"
   },
-  "485": {
+  "493": {
     "text": "<code>merge = 'ok'</code> means character-identical names from the merged and adapter models on the same seed. That is the claim about zero serving overhead, verified rather than asserted.",
     "hash": "46810742"
   }

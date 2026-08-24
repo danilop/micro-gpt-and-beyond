@@ -1,14 +1,12 @@
-graph TD
-    subgraph pre[Prefill Lane]
-        direction TB
-        d_pre1[Prefill worker]
-        d_pre2[Compute full prompts]
-        d_pre1 --> d_pre2
-    end
-    subgraph dec[Decode Lane]
-        direction TB
-        d_dec0[Decode worker]
-        d_dec1[Keep decoding<br/>active requests]
-        d_dec0 --> d_dec1
-    end
-    d_pre2 -. KV handoff .-> d_dec0
+gantt
+    title Disaggregated, two workers: prefill and decode overlap
+    dateFormat X
+    axisFormat %s
+    section Prefill worker
+    req 0 prefill (long prompt)  :d1, 0, 6
+    req 1 prefill                :d2, 6, 2
+    section Decode worker
+    req 0 decode                 :d3, 7, 4
+    req 1 decode                 :d4, 9, 4
+    section Request 1
+    waiting for prefill          :crit, d5, 0, 6

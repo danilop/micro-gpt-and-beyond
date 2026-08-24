@@ -1,8 +1,8 @@
 """
-microGPT — NumPy edition with manual backpropagation.
+microGPT: NumPy edition with manual backpropagation.
 
 Same architecture as the pure-Python version, but using NumPy arrays for
-vectorized math. Every gradient is derived and coded by hand — no autograd.
+vectorized math. Every gradient is derived and coded by hand, with no autograd.
 This is what PyTorch computes for you behind the scenes.
 
 The transformer architecture follows "Attention Is All You Need" (Vaswani et
@@ -52,7 +52,7 @@ vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # ---------------------------------------------------------------------------
-# Parameters — plain NumPy arrays + matching gradient arrays
+# Parameters: plain NumPy arrays plus matching gradient arrays
 # ---------------------------------------------------------------------------
 n_embd = 16  # embedding dimension
 n_head = 4  # number of attention heads

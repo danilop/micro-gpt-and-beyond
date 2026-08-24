@@ -125,75 +125,75 @@
     "hash": "75a3bda0"
   },
   "85": {
-    "text": "Zero the PAD row after initialization. JAX arrays are immutable, so <code>.at[i].set(...)</code> returns a new array rather than writing in place — the functional counterpart of lab 04's <code>with torch.no_grad()</code> block.",
+    "text": "Zero the PAD row after initialization. JAX arrays are immutable, so <code>.at[i].set(...)</code> returns a new array rather than writing in place, which is the functional counterpart of lab 04's <code>with torch.no_grad()</code> block.",
     "hash": "408c658f"
   },
   "86": {
     "text": "Resume filling the parameter dict. It is split into two statements only because <code>wte</code> has to exist before its PAD row can be zeroed on the line above.",
-    "hash": "ec55f1ce"
+    "hash": "d2888f2f"
   },
-  "87": {
+  "88": {
     "text": "Position embeddings give the model a sense of order. Each position in the sequence has its own learned vector.",
     "hash": "421775bd"
   },
-  "88": {
+  "89": {
     "text": "Output head, maps to real vocab only (27 tokens, no PAD).",
     "hash": "bfbdb21f"
   },
-  "90": {
+  "92": {
     "text": "Per-layer weight matrices, 2 layers now.",
     "hash": "7eac16bb"
   },
-  "91": {
+  "93": {
     "text": "Weight matrix that projects the input into query vectors for the attention mechanism.",
     "hash": "744e082e"
   },
-  "92": {
+  "94": {
     "text": "Weight matrix that produces key vectors for positions to be matched against queries.",
     "hash": "8f66406c"
   },
-  "93": {
+  "95": {
     "text": "Weight matrix that produces value vectors carrying content to be mixed by attention.",
     "hash": "dd3c9960"
   },
-  "94": {
+  "96": {
     "text": "Project the concatenated multi-head output back into the embedding space.",
     "hash": "0e3a5701"
   },
-  "95": {
+  "97": {
     "text": "First MLP weight matrix that expands the representation to 4x the embedding dimension for richer nonlinear transformations.",
     "hash": "7a881554"
   },
-  "96": {
+  "98": {
     "text": "Second MLP weight matrix that compresses back to the original embedding dimension.",
     "hash": "622fbba9"
   },
-  "98": {
+  "100": {
     "text": "Sum up all array sizes in the parameter tree to report the total trainable parameter count.",
     "hash": "2496c8a8"
   },
-  "105": {
+  "107": {
     "text": "RMSNorm, same function as lab 05.",
     "hash": "a111052e"
   },
-  "106": {
+  "108": {
     "text": "Compute the mean of squared values along the last axis for RMS normalization.",
     "hash": "22eb3d30"
   },
-  "107": {
+  "109": {
     "text": "Divide by the root-mean-square to normalize the input, keeping direction but stabilizing scale.",
     "hash": "3e2b4921"
   },
-  "110": {
-    "text": "Forward pass for a SINGLE sequence. This is the key insight: you write the simplest possible code for one example, and <code>vmap</code> handles batching. Compare lab 04 where the entire forward pass was rewritten for (B, T, C) shapes.",
+  "112": {
+    "text": "Forward pass for a single sequence. This is the key insight: you write the simplest possible code for one example and let <code>vmap</code> handle batching. Compare lab 04, where the entire forward pass was rewritten for (B, T, C) shapes.",
     "hash": "9ac5e756",
     "important": true
   },
-  "117": {
+  "119": {
     "text": "Sequence length from the single example.",
     "hash": "4ebaabe5"
   },
-  "118": {
+  "120": {
     "text": "Token embeddings, single sequence, no batch dimension.",
     "hash": "baa93e8e",
     "diagram": "transformer_embed",
@@ -201,7 +201,7 @@
       "wte"
     ]
   },
-  "119": {
+  "121": {
     "text": "Position embeddings tell the model where each token sits. Without these, the model could not distinguish token order.",
     "hash": "a406ebd2",
     "diagram": "transformer_embed",
@@ -209,7 +209,7 @@
       "wpe"
     ]
   },
-  "120": {
+  "122": {
     "text": "Combine token and position embeddings and normalize before entering the transformer.",
     "hash": "47ae49f7",
     "diagram": "transformer_embed",
@@ -217,7 +217,7 @@
       "norm_in"
     ]
   },
-  "122": {
+  "124": {
     "text": "Iterate through each transformer layer. With two layers now, the model builds progressively richer representations.",
     "hash": "12ede0d6",
     "diagram": "transformer_block",
@@ -240,15 +240,15 @@
       ]
     }
   },
-  "123": {
+  "125": {
     "text": "Save the current hidden state for the residual connection after attention.",
     "hash": "80347633"
   },
-  "124": {
+  "126": {
     "text": "Normalize the input before passing it to the attention sub-layer for stable training.",
     "hash": "a74b6bd4"
   },
-  "126": {
+  "128": {
     "text": "Q projection, operates on (T, D), not (B, T, D). No batch handling needed in the model code.",
     "hash": "1056b809",
     "diagram": "transformer_attn",
@@ -256,7 +256,7 @@
       "Q"
     ]
   },
-  "127": {
+  "129": {
     "text": "Project the normalized input into key vectors that other positions will query against.",
     "hash": "f4f4493b",
     "diagram": "transformer_attn",
@@ -264,7 +264,7 @@
       "K"
     ]
   },
-  "128": {
+  "130": {
     "text": "Project the normalized input into value vectors carrying content to aggregate.",
     "hash": "17880181",
     "diagram": "transformer_attn",
@@ -272,19 +272,19 @@
       "V"
     ]
   },
-  "130": {
+  "132": {
     "text": "Multi-head reshape, for a single sequence.",
     "hash": "df614008"
   },
-  "131": {
+  "133": {
     "text": "Reshape keys into separate attention heads, matching the same multi-head pattern as queries.",
     "hash": "1dd65e2e"
   },
-  "132": {
+  "134": {
     "text": "Reshape values into separate attention heads for parallel processing across heads.",
     "hash": "9006a076"
   },
-  "134": {
+  "136": {
     "text": "Compute scaled dot-product attention scores between all query-key pairs.",
     "hash": "2760e5ac",
     "diagram": "transformer_attn",
@@ -292,15 +292,15 @@
       "scores"
     ]
   },
-  "136": {
+  "138": {
     "text": "Build an upper-triangular boolean mask that blocks attention to future positions.",
     "hash": "f4c5c560"
   },
-  "137": {
+  "139": {
     "text": "Set future positions to a large negative value so softmax gives them zero weight.",
     "hash": "2a0e0121"
   },
-  "147": {
+  "149": {
     "text": "Blocking attention to PAD keys, and worth being honest: in this configuration it does nothing. Padding is appended, never interleaved, and the causal mask already stops position <em>t</em> from looking past <em>t</em>, so every key a real query can reach is real. The line only touches pad <em>query</em> rows, which <code>target_mask</code> later multiplies by zero. It becomes load-bearing with left-padding, bidirectional attention, or several documents packed into one row.",
     "important": true,
     "diagram": "transformer_attn",
@@ -310,15 +310,15 @@
     ],
     "hash": "f75e6296"
   },
-  "152": {
-    "text": "Softmax over the masked scores. Note there is no NaN guard here and none is needed: masking with <code>-1e9</code> rather than <code>-inf</code> means even a hypothetical fully masked row would come out uniform instead of NaN — and no row can be fully masked anyway, since row 0 always keeps position 0, which is BOS.",
+  "154": {
+    "text": "Softmax over the masked scores. There is no NaN guard here and none is needed: masking with <code>-1e9</code> rather than <code>-inf</code> means even a hypothetical fully masked row would come out uniform instead of NaN, and no row can be fully masked anyway, since row 0 always keeps position 0, which is BOS.",
     "diagram": "transformer_attn",
     "highlight": [
       "softmax"
     ],
     "hash": "422707f3"
   },
-  "154": {
+  "156": {
     "text": "Multiply attention weights by value vectors to produce the attention sub-layer output.",
     "hash": "e619ae46",
     "diagram": "transformer_attn",
@@ -326,11 +326,11 @@
       "attn_out"
     ]
   },
-  "155": {
+  "157": {
     "text": "Transpose attention heads back and concatenate them into the full embedding dimension.",
     "hash": "c8e5b2a6"
   },
-  "156": {
+  "158": {
     "text": "Project the concatenated multi-head output and add the residual connection in one expression. This completes the attention sub-layer.",
     "hash": "0e1aab77",
     "diagram": "transformer_out",
@@ -339,15 +339,15 @@
       "res1"
     ]
   },
-  "159": {
+  "161": {
     "text": "Save the hidden state before the MLP for the second residual connection in this block.",
     "hash": "f761c238"
   },
-  "160": {
+  "162": {
     "text": "Normalize before the feed-forward network, following the pre-norm transformer pattern.",
     "hash": "37eaf652"
   },
-  "161": {
+  "163": {
     "text": "Multiply by the expansion weights to widen the representation for richer transformations.",
     "hash": "be2c0fba",
     "diagram": "transformer_mlp",
@@ -355,7 +355,7 @@
       "fc1"
     ]
   },
-  "162": {
+  "164": {
     "text": "Apply ReLU activation to introduce nonlinearity between the two MLP linear layers.",
     "hash": "60f71222",
     "diagram": "transformer_mlp",
@@ -363,7 +363,7 @@
       "relu"
     ]
   },
-  "163": {
+  "165": {
     "text": "Contract the MLP back to embedding dimension and add the residual. This completes the second sub-layer of the transformer block.",
     "hash": "5af80337",
     "diagram": "transformer_mlp",
@@ -371,7 +371,7 @@
       "fc2"
     ]
   },
-  "165": {
+  "167": {
     "text": "Final logits over the real vocabulary.",
     "hash": "80bece53",
     "diagram": "transformer_logits",
@@ -380,16 +380,16 @@
       "logits"
     ]
   },
-  "174": {
-    "text": "THE magic line. <code>vmap(forward_single, in_axes=(None, 0, 0))</code> creates a batched version automatically. <code>None</code> means params are shared (not batched); <code>0</code> means batch along the first axis for inputs and masks. This one line replaces all of lab 04's manual batch reshaping.",
+  "176": {
+    "text": "The line that does the batching. <code>vmap(forward_single, in_axes=(None, 0, 0))</code> derives a batched version automatically, where <code>None</code> means params are shared rather than batched and <code>0</code> means batch along the first axis for inputs and masks. This one line replaces all of lab 04's manual batch reshaping.",
     "hash": "33d95e5b",
     "important": true
   },
-  "177": {
+  "179": {
     "text": "Batched loss function. The forward pass is already batched thanks to <code>vmap</code>.",
     "hash": "ee5f8a69"
   },
-  "182": {
+  "184": {
     "text": "Call the vmap'd forward, returns (B, T, V) logits from (B, T) inputs.",
     "hash": "6dbc0b8f",
     "diagram": "batch_train",
@@ -398,23 +398,23 @@
       "logits"
     ]
   },
-  "183": {
+  "185": {
     "text": "Log-softmax is more numerically stable than computing softmax then taking the log separately, avoiding potential underflow issues.",
     "hash": "557f67de"
   },
-  "184": {
+  "186": {
     "text": "Unpack batch, time, vocab dimensions.",
     "hash": "6fd1445a"
   },
-  "186": {
+  "188": {
     "text": "Gather log-probs for target tokens using advanced indexing. Fancy indexing: for each batch and position, grab the log-prob of the correct target.",
     "hash": "630d9e02"
   },
-  "188": {
+  "190": {
     "text": "Zero out padding positions so they don't affect the loss.",
     "hash": "04bbd9c3"
   },
-  "189": {
+  "191": {
     "text": "Average only over real (non-padded) tokens. Dividing by <code>sum(target_mask)</code> ensures short sequences aren't penalized relative to long ones.",
     "hash": "3ed652fa",
     "diagram": "batch_train",
@@ -422,20 +422,20 @@
       "loss"
     ]
   },
-  "196": {
+  "198": {
     "text": "Same Adam hyperparameters as every other lab: lr=0.01, betas=(0.85, 0.99). Consistency makes it easy to compare across frameworks.",
     "hash": "dca02c26"
   },
-  "197": {
+  "199": {
     "text": "First moment state, zeros matching param shapes.",
     "hash": "80e52b37"
   },
-  "198": {
+  "200": {
     "text": "Second moment state tracks the magnitude of recent gradients per parameter, enabling Adam's adaptive learning rate behavior.",
     "hash": "37945346"
   },
-  "206": {
-    "text": "The whole step as one pure function: state in, state out. Functionally identical to lab 05's <code>train_step</code>, which is the point — <code>vmap</code> changed the model, not the training machinery.",
+  "208": {
+    "text": "The whole step as one pure function: state in, state out. It is functionally identical to lab 05's <code>train_step</code>, which is the point, since <code>vmap</code> changed the model and left the training machinery alone.",
     "important": true,
     "diagram": "train_step",
     "highlight": {
@@ -453,12 +453,12 @@
     },
     "hash": "f38bf879"
   },
-  "207": {
+  "209": {
     "text": "Unpack the four arrays inside the jitted function. Passing the batch as one tuple keeps the call site short and lets <code>jit</code> treat the whole thing as a single pytree argument.",
     "hash": "273a3052"
   },
-  "208": {
-    "text": "One call for the loss and every gradient. <code>value_and_grad</code> rather than <code>grad</code> because the backward pass computes the loss on its way through, so asking for both costs nothing extra — and it differentiates straight through the <code>vmap</code>.",
+  "210": {
+    "text": "One call for the loss and every gradient. <code>value_and_grad</code> rather than <code>grad</code> because the backward pass computes the loss on its way through, so asking for both costs nothing extra, and it differentiates straight through the <code>vmap</code>.",
     "important": true,
     "diagram": "train_step",
     "highlight": [
@@ -468,23 +468,23 @@
     ],
     "hash": "305ea750"
   },
-  "209": {
+  "211": {
     "text": "First moment update via <code>jax.tree.map</code>, which replaces the <code>for k in params</code> loop earlier labs used. Same arithmetic per leaf, but now it lives inside the compiled program instead of between compiled calls.",
     "hash": "fadc389f"
   },
-  "210": {
+  "212": {
     "text": "Second moment: the moving average of squared gradients that gives Adam its per-parameter step size.",
     "hash": "edcf2f9f"
   },
-  "211": {
+  "213": {
     "text": "Bias correction for the first moment, which starts at zero and would otherwise hold the early steps back.",
     "hash": "a0b8e369"
   },
-  "212": {
+  "214": {
     "text": "The same correction for the second moment. Both are scalars, computed once and broadcast across every leaf.",
     "hash": "56049725"
   },
-  "214": {
+  "216": {
     "text": "The update itself, mapped over three trees at once. Nothing is mutated; fresh arrays come out and the old ones stop being referenced.",
     "diagram": "train_step",
     "highlight": [
@@ -492,16 +492,16 @@
     ],
     "hash": "9578538a"
   },
-  "219": {
+  "221": {
     "text": "Return the complete new state alongside the loss. The caller rebinds all four names, which is the whole of \"functional optimizer\" in practice.",
     "hash": "2a09e3f5"
   },
-  "225": {
+  "227": {
     "text": "Batch construction, and the one place this lab genuinely departs from lab 04: it pads to the <em>static</em> <code>block_size</code> rather than to whatever the longest sequence in this particular batch happens to be.",
     "important": true,
     "hash": "b170f5cb"
   },
-  "242": {
+  "244": {
     "text": "Gather batch_size documents from the dataset, cycling through with modular indexing to cover the full training set.",
     "hash": "84e051fc",
     "diagram": "batch_prep",
@@ -510,23 +510,23 @@
       "tokenize"
     ]
   },
-  "244": {
+  "246": {
     "text": "Convert each document's characters into integer token IDs that the model can process.",
     "hash": "0f605b9f"
   },
-  "245": {
+  "247": {
     "text": "Wrap each name with beginning-of-sequence tokens to mark the start and end boundaries.",
     "hash": "9fe8ad12"
   },
-  "248": {
+  "250": {
     "text": "Truncate to the maximum context length. Most names are short enough, but this guard prevents overflow.",
     "hash": "fd45d40a"
   },
-  "251": {
-    "text": "Not used to pad anything — only to record what dynamic padding <em>would</em> have chosen, so the loop below can count the compilations this lab avoids.",
+  "253": {
+    "text": "This records what dynamic padding <em>would</em> have chosen without padding anything, so the loop below can count the compilations this lab avoids.",
     "hash": "e5c557b2"
   },
-  "252": {
+  "254": {
     "text": "The decision that makes the whole run compile once. A constant width means a constant input shape, and a constant input shape means <code>jit</code> traces <code>train_step</code> exactly one time.",
     "important": true,
     "diagram": "batch_prep",
@@ -535,19 +535,19 @@
     ],
     "hash": "4ff2ca77"
   },
-  "253": {
+  "255": {
     "text": "For each sequence, create aligned input tokens, target tokens, padding masks, and target masks, all padded to the same length.",
     "hash": "4fa495a3"
   },
-  "255": {
+  "257": {
     "text": "The actual number of real tokens in this sequence (before padding). Used to know where real data ends and padding begins.",
     "hash": "0db31bea"
   },
-  "256": {
+  "258": {
     "text": "Real tokens, then PAD out to the fixed width. A batch of five-character names still runs all 16 columns; wasted arithmetic is the price of a static shape, and it is usually the right trade.",
     "hash": "966577aa"
   },
-  "257": {
+  "259": {
     "text": "Targets shifted by one, with 0 as a dummy filler. 0 is a real character, so it is <code>target_mask</code> below and not this array that keeps padding out of the loss.",
     "diagram": "batch_prep",
     "highlight": [
@@ -555,7 +555,7 @@
     ],
     "hash": "a48d6658"
   },
-  "258": {
+  "260": {
     "text": "The attention padding mask, True where padded. Redundant under right-padding plus causal masking, kept because the code shape is what you meet in real training scripts.",
     "diagram": "batch_prep",
     "highlight": [
@@ -563,68 +563,68 @@
     ],
     "hash": "311f8c06"
   },
-  "259": {
+  "261": {
     "text": "The mask that actually does the work: 1.0 on real positions, 0.0 on padding, multiplied into the per-token loss so padded positions contribute neither loss nor gradient.",
     "hash": "beadc609"
   },
-  "265": {
-    "text": "Pack the four lists into JAX arrays, each of shape <code>(B, block_size)</code> — the same shape on every single step of the run.",
+  "267": {
+    "text": "Pack the four lists into JAX arrays, each of shape <code>(B, block_size)</code>, the same shape on every single step of the run.",
     "hash": "e05d3923"
   },
-  "266": {
+  "268": {
     "text": "Input token IDs, real tokens followed by PAD.",
     "hash": "a29e7c2c"
   },
-  "267": {
+  "269": {
     "text": "Target tokens, shifted by one, with dummy values at padded positions that the target mask will zero out.",
     "hash": "9ac951df"
   },
-  "268": {
+  "270": {
     "text": "The boolean mask handed to attention to mark padded positions.",
     "hash": "c53615cf"
   },
-  "269": {
+  "271": {
     "text": "The float mask that weights the loss, so padded positions contribute zero to the gradient.",
     "hash": "374ae4ae"
   },
-  "271": {
+  "273": {
     "text": "Return the batch plus the length dynamic padding would have used. The second value is purely instrumentation for the counter below.",
     "hash": "2e569d56"
   },
-  "277": {
+  "279": {
     "text": "Record the shapes actually fed to <code>train_step</code>. Because of the static padding above there will only ever be one.",
     "important": true,
     "hash": "ee1f9acb"
   },
-  "278": {
+  "280": {
     "text": "And the shapes the obvious implementation would have produced, so the comparison is measured rather than argued.",
     "hash": "533204e6"
   },
-  "279": {
+  "281": {
     "text": "Per-step wall-clock times, which is what makes the single compilation visible: one very slow step and then a flat line.",
     "hash": "6c95ad85"
   },
-  "281": {
+  "283": {
     "text": "Iterate over training steps, processing a batch of 32 names per step.",
     "hash": "53f56939"
   },
-  "282": {
+  "284": {
     "text": "Build the batch and collect the length dynamic padding would have used for it.",
     "hash": "7c9fe8ab"
   },
-  "283": {
+  "285": {
     "text": "Book the counterfactual shape. Nine distinct in-batch maximum lengths turn up over the run, which is nine compilations avoided.",
     "hash": "ea0ffdc2"
   },
-  "285": {
+  "287": {
     "text": "Ask whether this shape is new before recording it. The answer is only ever yes on the first step.",
     "hash": "aeaa0890"
   },
-  "288": {
+  "290": {
     "text": "Start the clock. Step 1 will carry the trace-and-compile cost; nothing after it will.",
     "hash": "d5030329"
   },
-  "289": {
+  "291": {
     "text": "One compiled program: forward pass over the batch, gradients, and the Adam update.",
     "diagram": "batch_train",
     "highlight": [
@@ -635,100 +635,100 @@
     ],
     "hash": "8ff11c9d"
   },
-  "290": {
+  "292": {
     "text": "The decayed learning rate arrives as an argument, not as a captured Python float. A constant baked into the trace would change every step, and every change would be a fresh compilation.",
     "hash": "6917d1db"
   },
-  "293": {
+  "295": {
     "text": "JAX dispatch is asynchronous, so block before reading the clock. Otherwise the timing measures how fast work can be queued.",
     "hash": "bbdc33a2"
   },
-  "294": {
+  "296": {
     "text": "Store the step time. Comparing element 0 with the mean of the rest is the whole experiment.",
     "hash": "17d7454f"
   },
-  "296": {
+  "298": {
     "text": "This fires exactly once, at step 1. In lab 05 the same print fired twelve times, scattered through training.",
     "hash": "ecd4dee7"
   },
-  "299": {
+  "301": {
     "text": "Print the loss periodically so we can monitor whether the model is learning.",
     "hash": "cf37956f"
   },
-  "304": {
+  "306": {
     "text": "The payoff line: one compilation of <code>train_step</code> for the entire run, because the input shape never moved.",
     "important": true,
     "hash": "819ffb42"
   },
-  "305": {
+  "307": {
     "text": "And the counterfactual: nine different in-batch maximum lengths, so padding to the longest sequence per batch would have meant nine traces of the same function. Lab 08 does exactly that, and prints the same nine.",
     "hash": "6b508ead"
   },
-  "306": {
-    "text": "The first step, carrying trace and compile. Seconds, not milliseconds — the cost is real, it is just paid once.",
+  "308": {
+    "text": "The first step, carrying trace and compile. It costs seconds rather than milliseconds, a real price that is paid only once.",
     "hash": "1495cc01"
   },
-  "307": {
+  "309": {
     "text": "Every other step, with the maximum alongside the mean so a hidden recompilation could not hide inside an average.",
     "hash": "fc07e5c4"
   },
-  "312": {
+  "314": {
     "text": "Temperature 0.5 makes generation more conservative: the model favors high-confidence predictions, producing more typical-sounding names.",
     "hash": "7eca5b76"
   },
-  "314": {
+  "316": {
     "text": "Generation needs randomness too, so inference threads its own key. Nothing is ambient in JAX, not even at sampling time.",
     "hash": "5ec01137"
   },
-  "315": {
+  "317": {
     "text": "Generate 20 brand-new names by sampling from the model's learned distribution.",
     "hash": "64d836c5"
   },
-  "316": {
+  "318": {
     "text": "Begin each generated name with the beginning-of-sequence token as the initial prompt.",
     "hash": "5c52ddc4"
   },
-  "317": {
+  "319": {
     "text": "Generate one character at a time, up to the maximum sequence length. Each step feeds all generated tokens through the model.",
     "hash": "ab05dc73"
   },
-  "318": {
+  "320": {
     "text": "Convert tokens to JAX array.",
     "hash": "0d550c2a"
   },
-  "319": {
+  "321": {
     "text": "No padding during single-sequence inference, all False mask.",
     "hash": "e170fe2d"
   },
-  "320": {
+  "322": {
     "text": "Use <code>forward_single</code> directly, no need for <code>vmap</code> when generating one sequence at a time.",
     "hash": "3eb16371"
   },
-  "321": {
+  "323": {
     "text": "Grab the logits for the last generated position and divide by temperature. Lower temperature makes the distribution sharper.",
     "hash": "083e8501"
   },
-  "322": {
+  "324": {
     "text": "Split PRNG key for this sampling step.",
     "hash": "cfab9592"
   },
-  "323": {
+  "325": {
     "text": "Draw one token from the probability distribution to continue generating the name.",
     "hash": "113060e6"
   },
-  "324": {
+  "326": {
     "text": "When the model predicts BOS, it signals the name is complete, so we stop generating.",
     "hash": "41a35c11"
   },
-  "326": {
+  "328": {
     "text": "Append the newly sampled token to the growing sequence for the next forward pass.",
     "hash": "a1ca669a"
   },
-  "327": {
+  "329": {
     "text": "Map each token ID back to its character, skipping the leading BOS, to produce the generated name as a readable string.",
     "hash": "b4368128"
   },
-  "328": {
+  "330": {
     "text": "Print the finished name. These names were invented by the model from statistical patterns it learned during training.",
     "hash": "f9d6f741"
   }

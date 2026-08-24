@@ -139,7 +139,7 @@
     "hash": "dc9e475c"
   },
   "92": {
-    "text": "RMSNorm forward, returns both the output AND a cache of intermediate values. The backward pass needs these cached values to compute gradients.",
+    "text": "RMSNorm forward, returning both the output and a cache of intermediate values. The backward pass needs those cached values to compute gradients.",
     "hash": "87079c9d",
     "important": true
   },
@@ -156,7 +156,7 @@
     "hash": "d19b7485"
   },
   "97": {
-    "text": "Return the output AND the cache. This is the key pattern: forward stores everything backward will need.",
+    "text": "Return the output together with the cache, following the key pattern that the forward pass stores everything the backward pass will need.",
     "hash": "b286ffe5",
     "important": true
   },
@@ -187,7 +187,7 @@
     "hash": "d19587bf"
   },
   "111": {
-    "text": "Normalize to get probabilities. Each row sums to 1.",
+    "text": "Normalize to get probabilities, so that each row sums to 1.",
     "hash": "7eafe78b"
   },
   "114": {
@@ -208,7 +208,7 @@
     "hash": "47db8817"
   },
   "121": {
-    "text": "The mask is 1 where input was positive, 0 elsewhere. This IS the ReLU derivative.",
+    "text": "The mask is 1 where the input was positive and 0 elsewhere, which is exactly the ReLU derivative.",
     "hash": "885306a8"
   },
   "122": {
@@ -369,7 +369,7 @@
     ]
   },
   "181": {
-    "text": "Cache EVERYTHING the attention backward pass needs. Eleven values, this is the price of manual backprop.",
+    "text": "Cache everything the attention backward pass needs, eleven values in total, which is the price of doing backprop by hand.",
     "hash": "648b77a3"
   },
   "184": {

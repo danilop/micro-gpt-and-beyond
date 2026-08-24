@@ -173,7 +173,7 @@
     "hash": "455ce6c1"
   },
   "87": {
-    "text": "Apply the causal mask by element-wise selection: future positions get a large negative score so softmax leaves them almost no weight. Note <code>-1e9</code> rather than <code>-inf</code> — finite, so a row that somehow lost every key would come out uniform instead of NaN.",
+    "text": "Apply the causal mask by element-wise selection: future positions get a large negative score, so softmax leaves them almost no weight. Note <code>-1e9</code> rather than <code>-inf</code>, which stays finite, so a row that somehow lost every key would come out uniform instead of NaN.",
     "diagram": "transformer_attn",
     "highlight": [
       "mask"
@@ -374,7 +374,7 @@
     "hash": "15299a22"
   },
   "144": {
-    "text": "Re-initialize every weight to N(0, 0.08) so this lab starts where all the others do. <code>nn.Module.apply</code> maps a function over every parameter array in place — MLX has it, just as PyTorch does, and it is the idiomatic hook for re-initializing, casting or quantizing a whole model.",
+    "text": "Re-initialize every weight to N(0, 0.08) so this lab starts where all the others do. <code>nn.Module.apply</code> maps a function over every parameter array in place, in MLX just as in PyTorch, and it is the idiomatic hook for re-initializing, casting or quantizing a whole model.",
     "important": true,
     "hash": "3b035bca"
   },
@@ -387,7 +387,7 @@
     "hash": "dca02c26"
   },
   "151": {
-    "text": "Loss function takes the MODEL as its first argument, this is how MLX's <code>value_and_grad</code> knows which parameters to differentiate.",
+    "text": "The loss function takes the model as its first argument, which is how MLX's <code>value_and_grad</code> knows which parameters to differentiate.",
     "hash": "57a973e1",
     "important": true
   },
@@ -396,7 +396,7 @@
     "hash": "a11c998f"
   },
   "154": {
-    "text": "Manual log-softmax: <code>logits - logsumexp(logits)</code>. More numerically stable than <code>log(softmax(x))</code>.",
+    "text": "Manual log-softmax, <code>logits - logsumexp(logits)</code>, which is more numerically stable than <code>log(softmax(x))</code>.",
     "hash": "e8b01f5c"
   },
   "155": {
@@ -450,7 +450,7 @@
     "hash": "f105aa30"
   },
   "188": {
-    "text": "Count the distinct sequence lengths, because each one is another trace. This is lab 05's shape-recompilation story in MLX form, and lab 06's fix — pad everything to one static width — would work here unchanged.",
+    "text": "Count the distinct sequence lengths, because each one is another trace. This is lab 05's shape-recompilation story in MLX form, and lab 06's fix of padding everything to one static width would work here unchanged.",
     "hash": "1b5ed628"
   },
   "189": {
@@ -486,7 +486,7 @@
     "hash": "e403e181"
   },
   "204": {
-    "text": "Linear learning-rate decay, same schedule as every other lab. The learning rate lives in the optimizer state that the compiled step captured, so changing it here is picked up without forcing a retrace — which is exactly why it is an <code>mx.array</code> and not a Python float.",
+    "text": "Linear learning-rate decay, the same schedule as every other lab. The learning rate lives in the optimizer state that the compiled step captured, so changing it here is picked up without forcing a retrace, which is exactly why it is an <code>mx.array</code> and not a Python float.",
     "hash": "1f5c0a82"
   },
   "206": {
@@ -512,7 +512,7 @@
     "hash": "0863851d"
   },
   "213": {
-    "text": "MLX is lazy, so the update above is only a graph so far. <code>loss_val.item()</code> further down does force the loss — this call is not what \"gets the number\". It is here to bound the graph: without it the pending work would keep accumulating step after step until scheduling and memory dominate the run.",
+    "text": "MLX is lazy, so the update above is only a graph so far. <code>loss_val.item()</code> further down does force the loss, so this call is not what \"gets the number\". Its job is to bound the graph: without it the pending work would keep accumulating step after step until scheduling and memory dominate the run.",
     "important": true,
     "hash": "c8e3dc6b"
   },

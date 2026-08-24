@@ -1,11 +1,11 @@
 """
-microGPT with LoRA — parameter-efficient fine-tuning.
+microGPT with LoRA: parameter-efficient fine-tuning.
 
 Pre-trains a standard microGPT on all names, then fine-tunes with LoRA
-(Low-Rank Adaptation) on a filtered subset — names whose consonants are
+(Low-Rank Adaptation) on a filtered subset, names whose consonants are
 all drawn from {m, n, r} (e.g., emma, aria, naomi, aurora). This creates a
 distinct phonetic style that is easy to inspect in the generated samples. Only the small
-LoRA matrices are trained — the base model stays frozen. Demonstrates:
+LoRA matrices are trained, while the base model stays frozen. Demonstrates:
   - Freezing base weights and injecting low-rank adapters
   - Training a small fraction of parameters to shift the output distribution
   - Merging LoRA weights back into the base model (zero runtime overhead)
@@ -16,7 +16,7 @@ Reference:
 
 This implementation follows the core LoRA algorithm from Hu et al. (2021),
 including the alpha/rank scaling factor. For simplicity, adapters are
-injected only on the query and value projections (wq, wv) — the original
+injected only on the query and value projections (wq, wv), because the original
 paper found this subset sufficient for most tasks.
 """
 
@@ -222,7 +222,7 @@ def train_step(model, optimizer, doc, step, num_steps, base_lr=1e-2):
 
 
 # ===========================================================================
-# Phase 1: Pre-train base model on ALL names
+# Phase 1: Pre-train base model on all names
 # ===========================================================================
 print("\n" + "=" * 60)
 print("PHASE 1: Pre-training base model on all names")
@@ -248,13 +248,13 @@ base_names = generate(model, n_samples=10, label="base")
 base_state = copy.deepcopy(model.state_dict())
 
 # ===========================================================================
-# Phase 2: Create fine-tuning target — "soft" names (consonants ⊆ {m, n, r})
+# Phase 2: Create the fine-tuning target, "soft" names (consonants ⊆ {m, n, r})
 # ===========================================================================
 vowels = set("aeiou")
 soft_consonants = set("mnr")
 ft_docs = [d for d in docs if (set(d.lower()) - vowels).issubset(soft_consonants) and len(set(d.lower()) - vowels) >= 1]
 print(f"\n{'=' * 60}")
-print("PHASE 2: Fine-tuning target — 'soft' names (consonants ⊆ {m, n, r})")
+print("PHASE 2: Fine-tuning target, 'soft' names (consonants ⊆ {m, n, r})")
 print(f"{'=' * 60}")
 print(f"filtered dataset: {len(ft_docs)} names (out of {len(docs)} total)")
 print(f"examples: {', '.join(ft_docs[:8])}")
@@ -270,7 +270,7 @@ def is_soft(name):
     Both conditions matter and both are in the ft_docs filter above: every
     consonant must come from {m, n, r}, and there must be at least one. Without
     the second condition an all-vowel string like "aeia" would count as a hit
-    while not being in the fine-tuning distribution at all — the metric and the
+    while not being in the fine-tuning distribution at all, so the metric and the
     training set have to agree or the score means nothing.
     """
     consonants = set(name.lower()) - vowels
@@ -320,14 +320,14 @@ base_soft = sum(1 for n in generate(base_model, n_samples=n_eval, quiet=True) if
 print(f"  -> {base_soft}/{n_eval} soft names ({100.0 * base_soft / n_eval:.0f}%)")
 
 # ===========================================================================
-# Phase 3: Rank ablation — LoRA with rank 1, 2, 4
+# Phase 3: Rank ablation, LoRA with rank 1, 2, 4
 # ===========================================================================
 
 base_total = sum(p.numel() for p in base_model.parameters())
 ft_steps = 500
 results = []  # (label, adapter_params, pct, scaling, soft_count, soft_pct, merge_ok)
 
-# rank, alpha. alpha=None means alpha=rank, i.e. scaling = 1.0, which is what
+# rank and alpha. alpha=None means alpha=rank, i.e. scaling = 1.0, which is what
 # every row except the last one uses. The last row exists so the alpha/rank
 # scaling factor in LoRALinear is exercised at least once instead of being
 # advertised in the docstring and never run.
@@ -335,7 +335,9 @@ for lora_rank, lora_alpha in [(1, None), (2, None), (4, None), (4, 16)]:
     scaling = (lora_alpha if lora_alpha is not None else lora_rank) / lora_rank
     label = f"r{lora_rank}" if lora_alpha is None else f"r{lora_rank} a{lora_alpha}"
     print(f"\n{'=' * 60}")
-    print(f"RANK {lora_rank}, alpha {lora_alpha if lora_alpha is not None else lora_rank} (scaling {scaling:g}): Inject → Fine-tune → Evaluate → Merge")
+    print(
+        f"RANK {lora_rank}, alpha {lora_alpha if lora_alpha is not None else lora_rank} (scaling {scaling:g}): Inject → Fine-tune → Evaluate → Merge"
+    )
     print("=" * 60)
 
     # Restore base model and freeze all weights
@@ -397,7 +399,7 @@ for lora_rank, lora_alpha in [(1, None), (2, None), (4, None), (4, 16)]:
     results.append((label, trainable, pct, scaling, soft_count, soft_pct, merge_ok))
 
 # ===========================================================================
-# Phase 4: Full fine-tuning baseline — same layers, same steps, all weights
+# Phase 4: Full fine-tuning baseline, same layers, same steps, all weights
 # ===========================================================================
 # "LoRA matches full fine-tuning" is the claim everyone repeats. It is only
 # checkable with the baseline sitting next to it, so here it is: unfreeze the
@@ -420,7 +422,9 @@ for layer in full_model.layers:
         w.requires_grad_(True)
         full_params.append(w)
 full_trainable = sum(p.numel() for p in full_params)
-print(f"  trainable: {full_trainable} params ({100.0 * full_trainable / base_total:.1f}% of {base_total}), full-rank updates")
+print(
+    f"  trainable: {full_trainable} params ({100.0 * full_trainable / base_total:.1f}% of {base_total}), full-rank updates"
+)
 
 optimizer = torch.optim.Adam(full_params, lr=1e-2, betas=(0.85, 0.99), eps=1e-8)
 for step in range(ft_steps):
@@ -447,9 +451,13 @@ print(f"  Soft-name rate measured over {n_eval} samples per row.")
 print()
 print(f"  {'config':>9}  {'trainable':>9}  {'% total':>7}  {'scaling':>7}  {'soft':>7}  {'soft%':>5}  {'merge':>5}")
 print(f"  {'-' * 9}  {'-' * 9}  {'-' * 7}  {'-' * 7}  {'-' * 7}  {'-' * 5}  {'-' * 5}")
-print(f"  {'base':>9}  {0:>9}  {0.0:>6.1f}%  {'-':>7}  {str(base_soft) + '/' + str(n_eval):>7}  {100.0 * base_soft / n_eval:>4.0f}%  {'-':>5}")
+print(
+    f"  {'base':>9}  {0:>9}  {0.0:>6.1f}%  {'-':>7}  {str(base_soft) + '/' + str(n_eval):>7}  {100.0 * base_soft / n_eval:>4.0f}%  {'-':>5}"
+)
 for label, ap, pct, sc, count, spct, mo in results:
-    print(f"  {label:>9}  {ap:>9}  {pct:>6.1f}%  {sc:>7.2f}  {str(count) + '/' + str(n_eval):>7}  {spct:>4.0f}%  {'ok' if mo else 'FAIL':>5}")
+    print(
+        f"  {label:>9}  {ap:>9}  {pct:>6.1f}%  {sc:>7.2f}  {str(count) + '/' + str(n_eval):>7}  {spct:>4.0f}%  {'ok' if mo else 'FAIL':>5}"
+    )
 print(
     f"  {'full ft':>9}  {full_trainable:>9}  {100.0 * full_trainable / base_total:>6.1f}%  {'-':>7}"
     f"  {str(full_soft) + '/' + str(n_eval):>7}  {100.0 * full_soft / n_eval:>4.0f}%  {'n/a':>5}"
@@ -470,7 +478,7 @@ fine-tuning update has low intrinsic rank, so a very small r goes a long way.
 
 The alpha row exercises the alpha/rank scaling factor instead of only
 documenting it. alpha=16 at rank 4 gives scaling=4.0, multiplying the adapter's
-contribution by four — a coarse knob that interacts with the learning rate, and
+contribution by four, a coarse knob that interacts with the learning rate, and
 the reason real implementations expose it. Here it reaches {results[3][5]:.0f}%.
 
 The full fine-tuning row is the control that makes the comparison honest. Same

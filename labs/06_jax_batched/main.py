@@ -1,5 +1,5 @@
 """
-microGPT — JAX batched edition.
+microGPT: JAX batched edition.
 
 Same architecture as 05_jax, but with mini-batch training via jax.vmap:
   - Write the forward pass for a single example
@@ -83,10 +83,12 @@ params = {
 }
 # Zero the PAD embedding row so padding tokens contribute nothing
 params["wte"] = params["wte"].at[PAD].set(jnp.zeros(n_embd))
-params.update({
-    "wpe": init_param(next(ki), (block_size, n_embd)),
-    "lm_head": init_param(next(ki), (vocab_size, n_embd)),
-})
+params.update(
+    {
+        "wpe": init_param(next(ki), (block_size, n_embd)),
+        "lm_head": init_param(next(ki), (vocab_size, n_embd)),
+    }
+)
 for i in range(n_layer):
     params[f"l{i}.wq"] = init_param(next(ki), (n_embd, n_embd))
     params[f"l{i}.wk"] = init_param(next(ki), (n_embd, n_embd))
@@ -100,7 +102,7 @@ print(f"num params: {num_params}")
 
 
 # ---------------------------------------------------------------------------
-# Forward pass (single example — vmap will handle the batch)
+# Forward pass (single example; vmap will handle the batch)
 # ---------------------------------------------------------------------------
 def rmsnorm(x):
     ms = jnp.mean(x**2, axis=-1, keepdims=True)
@@ -109,7 +111,7 @@ def rmsnorm(x):
 
 def forward_single(params, input_ids, pad_mask):
     """
-    Forward pass for ONE sequence.
+    Forward pass for one sequence.
     input_ids: (T,) int array
     pad_mask: (T,) bool array, True where padded
     Returns: logits (T, vocab_size)
@@ -147,7 +149,7 @@ def forward_single(params, input_ids, pad_mask):
         att = jnp.where(pad_mask[None, None, :], -1e9, att)
         # No nan_to_num guard needed: masking with -1e9 rather than -inf means
         # even a hypothetical fully masked row softmaxes to a uniform
-        # distribution, not NaN. And no row can be fully masked anyway — row 0
+        # distribution, not NaN. No row can be fully masked anyway, since row 0
         # always keeps position 0, which is BOS.
         att = jax.nn.softmax(att, axis=-1)
 

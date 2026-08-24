@@ -1,5 +1,5 @@
 """
-microGPT — PyTorch edition.
+microGPT: PyTorch edition.
 
 Same algorithm as microgpt.py (pure-Python scalar version), but using PyTorch
 tensors for efficient computation. Every architectural choice is preserved:

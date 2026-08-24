@@ -146,7 +146,7 @@
     "hash": "887b9875"
   },
   "92": {
-    "text": "Takes a padding mask, and takes it unconditionally rather than as an optional keyword — under <code>vmap</code> the caller always has one to give.",
+    "text": "Takes a padding mask, and takes it unconditionally rather than as an optional keyword, because under <code>vmap</code> the caller always has one to give.",
     "hash": "675ebdf8"
   },
   "94": {
@@ -194,7 +194,7 @@
     "hash": "775f0941"
   },
   "112": {
-    "text": "Block attention to PAD keys — and this fill uses <code>-1e9</code>, not <code>-inf</code>. In this configuration the line is inert: padding is appended rather than interleaved, and the causal mask already stops position <em>t</em> from looking past <em>t</em>, so every key a real query can reach is a real token. It only changes pad <em>query</em> rows, which <code>target_mask</code> multiplies by zero. Keep it anyway: left-padding, bidirectional attention or packed documents all make it load-bearing.",
+    "text": "Block attention to PAD keys, filling with <code>-1e9</code> rather than <code>-inf</code>. In this configuration the line is inert: padding is appended rather than interleaved, and the causal mask already stops position <em>t</em> from looking past <em>t</em>, so every key a real query can reach is a real token. It only changes pad <em>query</em> rows, which <code>target_mask</code> multiplies by zero. Keep it anyway, because left-padding, bidirectional attention and packed documents all make it load-bearing.",
     "important": true,
     "diagram": "transformer_attn",
     "highlight": [
@@ -294,7 +294,7 @@
     ]
   },
   "147": {
-    "text": "The full model. Same architecture as lab 07, and still written entirely without a batch dimension — the batch appears only in <code>__call__</code>, where <code>mx.vmap</code> puts it there.",
+    "text": "The full model, the same architecture as lab 07 and still written entirely without a batch dimension. The batch appears only in <code>__call__</code>, where <code>mx.vmap</code> puts it there.",
     "diagram": "transformer_forward",
     "highlight": [
       "wte",
@@ -305,7 +305,7 @@
     "hash": "e94c5dc2"
   },
   "150": {
-    "text": "The embedding table needs a row for PAD, so <code>vocab_size_with_pad</code> here and plain <code>vocab_size</code> for the output head. Unlike lab 04 there is no <code>padding_idx</code> to pass — MLX's <code>nn.Embedding</code> has no such argument, so nothing masks that row's gradient. Harmless in this lab, because the gradient reaching it is exactly zero anyway, but it is a difference and not parity.",
+    "text": "The embedding table needs a row for PAD, hence <code>vocab_size_with_pad</code> here and plain <code>vocab_size</code> for the output head. Unlike lab 04 there is no <code>padding_idx</code> to pass, because MLX's <code>nn.Embedding</code> has no such argument, so nothing masks that row's gradient. It is harmless in this lab, since the gradient reaching it is exactly zero anyway, but it is a difference rather than parity.",
     "hash": "fadfb807"
   },
   "151": {
@@ -325,7 +325,7 @@
     "hash": "1774314d"
   },
   "156": {
-    "text": "The forward pass for a single sequence: <code>(T,)</code> tokens and a <code>(T,)</code> mask in, <code>(T, vocab_size)</code> logits out. Write the simple case, then lift it — the same move lab 06 makes with <code>forward_single</code>, and the opposite of lab 04's hand-written batch shapes.",
+    "text": "The forward pass for a single sequence: <code>(T,)</code> tokens and a <code>(T,)</code> mask in, <code>(T, vocab_size)</code> logits out. Write the simple case and then lift it, the same move lab 06 makes with <code>forward_single</code> and the opposite of lab 04's hand-written batch shapes.",
     "important": true,
     "hash": "3a86573a"
   },
@@ -436,7 +436,7 @@
     "hash": "fd45d40a"
   },
   "226": {
-    "text": "Padded to the longest sequence in <em>this</em> batch, the way lab 04 does it. That means the batch shape moves from step to step and <code>mx.compile</code> traces once per shape — the count printed after training is the bill. Lab 06 shows the fix: pad to a fixed width instead.",
+    "text": "Padded to the longest sequence in <em>this</em> batch, the way lab 04 does it. The batch shape therefore moves from step to step and <code>mx.compile</code> traces once per shape, and the count printed after training is the bill. Lab 06 shows the fix, which is to pad to a fixed width instead.",
     "important": true,
     "diagram": "batch_prep",
     "highlight": [
@@ -459,7 +459,7 @@
     "highlight": []
   },
   "234": {
-    "text": "Targets shifted by one, filled with 0 at padded positions — and 0 is a real character, 'a'. That is precisely why <code>target_mask</code> is not optional here: without it the model would be trained to predict 'a' at every padded position.",
+    "text": "Targets shifted by one, filled with 0 at padded positions, and 0 is a real character, 'a'. That is precisely why <code>target_mask</code> is not optional here: without it the model would be trained to predict 'a' at every padded position.",
     "important": true,
     "diagram": "batch_prep",
     "highlight": [
@@ -637,7 +637,7 @@
     "hash": "3591e91f"
   },
   "312": {
-    "text": "MLX is lazy, so the update above is only a graph. <code>loss_val.item()</code> would force the loss but not the parameters or the optimizer moments — without this line the pending graph would grow for the entire run. It bounds the graph; it is not how the number gets read.",
+    "text": "MLX is lazy, so the update above is only a graph. <code>loss_val.item()</code> would force the loss but not the parameters or the optimizer moments, and without this line the pending graph would grow for the entire run. Its job is to bound the graph rather than to read the number.",
     "important": true,
     "hash": "c8e3dc6b"
   },
@@ -659,7 +659,7 @@
     "hash": "9f98b32f"
   },
   "321": {
-    "text": "Steps that reused one. The gap is much narrower than lab 05's, because MLX's compiler is far cheaper to invoke than XLA's — shape churn is a nuisance here rather than a catastrophe.",
+    "text": "Steps that reused one. The gap is much narrower than lab 05's, because MLX's compiler is far cheaper to invoke than XLA's, so shape churn is a nuisance here rather than a catastrophe.",
     "hash": "024da885"
   },
   "325": {

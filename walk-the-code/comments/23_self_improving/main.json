@@ -1,7 +1,7 @@
 {
   "2": {
     "text": "The title marks this as a self-improvement lab: the base model architecture stays familiar, but the training loop starts consuming its own filtered outputs.",
-    "hash": "8594ed91"
+    "hash": "330deb8b"
   },
   "4": {
     "text": "The core idea: the model generates outputs, scores them for quality, keeps only the best, and retrains on those. This is the generate-evaluate-retrain loop.",
@@ -67,7 +67,7 @@
     "hash": "d8aac61d"
   },
   "22": {
-    "text": "A fixed handcrafted scorer keeps the lab self-contained — no external LLM, no learned judge to debug — and it is built from a held-out split, so a high score cannot just mean the model memorized its own training set.",
+    "text": "A fixed handcrafted scorer keeps the lab self-contained, with no external LLM and no learned judge to debug, and it is built from a held-out split, so a high score cannot just mean the model memorized its own training set.",
     "hash": "6e24321e"
   },
   "25": {
@@ -188,7 +188,7 @@
         2
       ]
     },
-    "hash": "44326a16"
+    "hash": "48defb5b"
   },
   "92": {
     "text": "The limitation that ends up dominating the whole experiment: this verifier scores each name <em>in isolation</em>. It has no opinion about the distribution of names, so a model that emits one very high-scoring string forever earns a great average score. Everything the loop does downstream is a consequence of this one blind spot.",
@@ -216,7 +216,7 @@
     "hash": "a716ce09"
   },
   "103": {
-    "text": "Walk the name as overlapping character pairs. <code>itertools.pairwise</code> yields (a,b), (b,c), (c,d)… — these adjacent pairs are the bigrams whose counts become the verifier.",
+    "text": "Walk the name as overlapping character pairs. <code>itertools.pairwise</code> yields (a,b), (b,c), (c,d) and so on, and these adjacent pairs are the bigrams whose counts become the verifier.",
     "hash": "7c99e098"
   },
   "104": {
@@ -290,7 +290,7 @@
     "hash": "5ba1ac6e"
   },
   "125": {
-    "text": "Walk the name as overlapping character pairs. <code>itertools.pairwise</code> yields (a,b), (b,c), (c,d)… — these adjacent pairs are the bigrams whose counts become the verifier.",
+    "text": "Walk the name as overlapping character pairs. <code>itertools.pairwise</code> yields (a,b), (b,c), (c,d) and so on, and these adjacent pairs are the bigrams whose counts become the verifier.",
     "hash": "7c99e098"
   },
   "126": {
@@ -298,7 +298,7 @@
     "hash": "d987c7de"
   },
   "130": {
-    "text": "A sequence of N tokens contains N-1 bigrams, so that is what we average over. Dividing by the token count instead would quietly shrink every score toward zero, and shrink short names most — a length bias hiding inside the normalizer.",
+    "text": "A sequence of N tokens contains N-1 bigrams, so that is what we average over. Dividing by the token count instead would quietly shrink every score toward zero, and shrink short names most, a length bias hiding inside the normalizer.",
     "hash": "02d5f7de"
   },
   "131": {
@@ -319,7 +319,7 @@
     "hash": "ce354e67"
   },
   "138": {
-    "text": "From here on, the code is a plain small GPT. The lab’s novelty is not architecture; it is what happens after generation.",
+    "text": "From here on the code is a plain small GPT. The lab's novelty lies in what happens after generation.",
     "hash": "5c4688e3"
   },
   "141": {
@@ -577,7 +577,7 @@
     "hash": "3e6e0540"
   },
   "335": {
-    "text": "A baseline sample taken before any self-improvement, so every later round has something to be compared against on all three metrics — quality, diversity and novelty — not just the first.",
+    "text": "A baseline sample taken before any self-improvement, so every later round has something to be compared against on all three metrics, quality, diversity and novelty, rather than only the first.",
     "hash": "d96428ee"
   },
   "336": {
@@ -585,7 +585,7 @@
     "hash": "5cb4ba0b"
   },
   "348": {
-    "text": "Phase 2 is the actual experiment: three arms from identical weights and identical seeds, differing only in what data they retrain on. The point is not to show the loop working; it is to show what the quality metric hides while it rises.",
+    "text": "Phase 2 is the actual experiment: three arms from identical weights and identical seeds, differing only in what data they retrain on. The aim is to show what the quality metric hides while it rises, which takes more than showing the loop working.",
     "important": true,
     "hash": "92acac62"
   },
@@ -598,7 +598,7 @@
     "hash": "96231c9a"
   },
   "353": {
-    "text": "The filtered arm keeps the top 20% by verifier score. Read that as what it is: a distribution-narrowing operator. Top-k selection deliberately throws away the tails, and in this run it is the <em>filtered</em> arm that collapses while the unfiltered arm holds its diversity — the opposite of the folklore.",
+    "text": "The filtered arm keeps the top 20% by verifier score. Read that as what it is: a distribution-narrowing operator. Top-k selection deliberately throws away the tails, and in this run it is the <em>filtered</em> arm that collapses while the unfiltered arm holds its diversity, the opposite of the folklore.",
     "important": true,
     "diagram": "self_improve_collapse",
     "highlight": {
@@ -614,7 +614,7 @@
     "hash": "9b5e0c47"
   },
   "355": {
-    "text": "15% of retraining steps see a self-generated name; the rest stay real. That real-data majority is why the naive arm survives here — at higher mix ratios the unfiltered loop does become the dangerous one. Which arm collapses is a function of this knob, not a law.",
+    "text": "15% of retraining steps see a self-generated name and the rest stay real. That real-data majority is why the naive arm survives here, and at higher mix ratios the unfiltered loop does become the dangerous one. Which arm collapses is a function of this knob rather than a law.",
     "important": true,
     "diagram": "self_improve_mix",
     "highlight": {
@@ -631,7 +631,7 @@
     "hash": "2463540e"
   },
   "358": {
-    "text": "One function, three arms. <code>keep_fraction=0.2, mix_ratio=0.15</code> is the filtered loop this lab teaches; <code>1.0, 0.15</code> is the naive loop that keeps everything; <code>0.2, 0.0</code> is the control that retrains on real data only at the same step budget. The control is what makes the other two interpretable — without it there is no way to tell whether the self-generated data helped or whether 1800 extra training steps would have done the same.",
+    "text": "One function, three arms. <code>keep_fraction=0.2, mix_ratio=0.15</code> is the filtered loop this lab teaches; <code>1.0, 0.15</code> is the naive loop that keeps everything; <code>0.2, 0.0</code> is the control that retrains on real data only at the same step budget. The control is what makes the other two interpretable, since without it there is no way to tell whether the self-generated data helped or whether 1800 extra training steps would have done the same.",
     "important": true,
     "diagram": "self_improve_loop",
     "highlight": {
@@ -686,7 +686,7 @@
   },
   "382": {
     "text": "Step 2: score every candidate with the verifier. This explicit score table is the only thing separating filtered self-training from naive bootstrapping.",
-    "hash": "d661517e"
+    "hash": "8c802af9"
   },
   "383": {
     "text": "Every candidate is paired with a verifier score before any retraining happens. This explicit score table is what separates filtered self-training from naive bootstrapping.",
@@ -721,7 +721,7 @@
     "hash": "627af384"
   },
   "397": {
-    "text": "<code>random.sample</code> draws the slots uniformly and without replacement from the whole kept set. Walking <code>kept</code> in score order instead would silently use only the top 15% of candidates and discard the rest — a second, invisible filter stacked on top of the intended one.",
+    "text": "<code>random.sample</code> draws the slots uniformly and without replacement from the whole kept set. Walking <code>kept</code> in score order instead would silently use only the top 15% of candidates and discard the rest, a second invisible filter stacked on top of the intended one.",
     "important": true,
     "hash": "39081a04"
   },
@@ -730,7 +730,7 @@
     "hash": "1aff971a"
   },
   "402": {
-    "text": "The remaining steps sample uniformly from the real corpus. That anchor is what keeps the model from drifting off the real distribution entirely, and it is also why the control arm exists — real data alone, same budget.",
+    "text": "The remaining steps sample uniformly from the real corpus. That anchor is what keeps the model from drifting off the real distribution entirely, and it is also why the control arm exists: real data alone, same budget.",
     "hash": "643e37d4"
   },
   "403": {
@@ -742,7 +742,7 @@
     "hash": "270d7d18"
   },
   "409": {
-    "text": "Step 5: resample after retraining. This is the only measurement that closes the loop — everything before it describes the data, not the model.",
+    "text": "Step 5: resample after retraining. This is the only measurement that closes the loop, since everything before it describes the data rather than the model.",
     "hash": "af4ff828"
   },
   "410": {
@@ -760,63 +760,63 @@
   },
   "414": {
     "text": "Persist every round's numbers so the loop can be read as a trajectory rather than a before-and-after pair. A non-monotonic trajectory is itself information here.",
-    "hash": "79365d5e"
+    "hash": "7e1669ef"
   },
-  "419": {
+  "420": {
     "text": "How many <em>distinct</em> names ended up in the self-generated slots. When the kept set itself fills with copies of one high-scoring string this collapses even though the slot count does not, which is collapse caught one step upstream of the output.",
     "hash": "0af3749e"
   },
-  "420": {
+  "421": {
     "text": "Store the pre-retraining candidate quality alongside the post-retraining score, so each round shows both ends of itself and a round that went backwards is visible as such.",
     "hash": "8dadc34a"
   },
-  "433": {
+  "435": {
     "text": "The per-round line carries all of it at once: how selective the filter was, how much variety survived into the retraining stream, quality before and after, unique fraction, the most-repeated name with its count, and novelty. Any one of those columns alone tells a misleading story.",
     "important": true,
     "hash": "6d9733f3"
   },
-  "447": {
-    "text": "Arm 1, the filtered loop — the one this lab is nominally teaching and the one that turns out to collapse.",
-    "hash": "ac540672"
+  "449": {
+    "text": "Arm 1, the filtered loop, the one this lab is nominally teaching and the one that turns out to collapse.",
+    "hash": "e101810f"
   },
-  "450": {
+  "452": {
     "text": "Arm 2, the naive loop that keeps every generation. Folklore says this is the dangerous one; at this mix ratio it is the arm that keeps its diversity.",
-    "hash": "e7403b9f"
+    "hash": "ce9d25fe"
   },
-  "453": {
+  "455": {
     "text": "Arm 3, the control: real data only, same seeds, same step budget. Without it, \"quality improved\" cannot be distinguished from \"we trained for another 1800 steps\".",
     "important": true,
-    "hash": "e117916a"
+    "hash": "3cbef217"
   },
-  "460": {
+  "462": {
     "text": "The filtered arm's audit trail, printed in full before the three arms are compared. The per-round table is where the divergence between quality and diversity is easiest to see.",
     "hash": "881d0941"
   },
-  "463": {
+  "465": {
     "text": "Kept count, candidate quality, post-retraining quality, delta against baseline, unique fraction, most-repeated name, novelty. Seven columns because six of them are needed to stop the seventh from lying.",
     "hash": "6d9733f3"
   },
-  "471": {
+  "473": {
     "text": "One row per round. Read left to right: the quality columns improve while the unique column falls and one name's count climbs.",
     "hash": "6d9733f3"
   },
-  "481": {
+  "483": {
     "text": "The last round's score as the headline, since the question is where the loop <em>ended up</em>, not how good its best round looked.",
     "hash": "7c72ce50"
   },
-  "485": {
+  "487": {
     "text": "Final quality and final unique fraction on the same line, deliberately. Reporting the first without the second is exactly the mistake the lab is about.",
     "hash": "01496907"
   },
-  "486": {
+  "488": {
     "text": "Total improvement next to the change in unique fraction. Both signs matter: the metric went up and the diversity went down, in the same run, from the same cause.",
     "hash": "71c414ef"
   },
-  "494": {
+  "496": {
     "text": "Quality per round for all three arms side by side. The filtered arm leads this table, which is precisely why it needs the next one.",
     "hash": "1cb95ec4"
   },
-  "501": {
+  "503": {
     "text": "The same table for the unique fraction, and the one that inverts the conclusion: the filtered arm's diversity falls round after round while the unfiltered and control arms hold roughly steady.",
     "important": true,
     "diagram": "self_improve_collapse",
@@ -828,52 +828,52 @@
     },
     "hash": "52a4994c"
   },
-  "508": {
+  "510": {
     "text": "The final summary row per arm: quality, delta, unique, novel, and the most-repeated name with its count. Four columns and an example, which is the minimum needed to describe what a self-training loop actually did.",
     "hash": "8f29e735"
   },
-  "517": {
+  "519": {
     "text": "Generating final names for side-by-side comparison with baseline. Visually inspecting the names is often more informative than the aggregate score.",
     "hash": "9d4d87bb"
   },
-  "518": {
+  "520": {
     "text": "The baseline names with their scores are the reference point for judging whether the self-improvement loop actually helped.",
     "hash": "8ea079c2"
   },
-  "520": {
+  "522": {
     "text": "Printing each name with its score lets you verify the scorer is sensible: do high-scoring names actually look like real names?",
     "hash": "973cb059"
   },
-  "523": {
+  "525": {
     "text": "A fresh sample from the filtered model, so the collapse is legible as text and not only as a percentage. Twenty names is enough to see the same string several times.",
     "hash": "f4fc0c16"
   },
-  "525": {
+  "527": {
     "text": "The final sample list is the qualitative counterpart to the score table, showing what the evolved generator now tends to produce.",
     "hash": "322a9028"
   },
-  "528": {
+  "530": {
     "text": "Count the distinct names in that final sample. The qualitative and quantitative views should agree, and printing both is how you find out when they do not.",
     "hash": "20954cd1"
   },
-  "531": {
+  "533": {
     "text": "The same sample from the unfiltered model, for contrast. This is the arm that was supposed to degenerate.",
     "hash": "14d4208d"
   },
-  "543": {
+  "545": {
     "text": "Pull out the control and unfiltered endpoints so the closing text can quote all three arms rather than just the one that looks best.",
     "hash": "f2b8db84"
   },
-  "547": {
+  "549": {
     "text": "Which arm ended up least diverse is <em>computed</em>, not asserted. The answer depends on the seed, the scorer and the round count, and hard-coding the expected winner is how a lab ends up teaching the opposite of what it runs.",
     "important": true,
     "hash": "ea7456bb"
   },
-  "553": {
+  "555": {
     "text": "The share of the sample taken by a single name. This is the number that makes \"the metric improved\" and \"the model died\" obviously the same event.",
     "hash": "fa7c964b"
   },
-  "554": {
+  "556": {
     "text": "Goodhart's law, printed with the run's own numbers. The verifier scores names one at a time, so a model that finds one high-scoring string and repeats it beats a model producing many plausible different names. The loop optimized what was measured; the measurement was incomplete.",
     "important": true,
     "diagram": "self_improve_collapse",
@@ -885,22 +885,22 @@
     },
     "hash": "35cd4244"
   },
-  "593": {
+  "595": {
     "text": "The four-step summary: Generate, Score, Filter, Retrain. This is the self-improvement loop in its simplest form.",
-    "hash": "26df4341",
+    "hash": "3866e6df",
     "important": true
   },
-  "605": {
-    "text": "The conventional wisdom, left in and then contradicted by the numbers directly above it. Filtering does reduce the risk of amplifying errors, and it did not prevent mode collapse here — it caused it, because selection pressure toward a narrow optimum is what selection <em>is</em>.",
+  "607": {
+    "text": "The conventional wisdom, left in and then contradicted by the numbers directly above it. Filtering does reduce the risk of amplifying errors, and here it caused mode collapse rather than preventing it, because selection pressure toward a narrow optimum is what selection <em>is</em>.",
     "important": true,
     "hash": "3a058ee0"
   },
-  "617": {
+  "619": {
     "text": "Do not memorize the ordering of the three arms: it moves with the seed, the scorer and the number of rounds. Memorize the habit of printing all three columns, because \"quality went up\" cannot by itself tell you whether the loop learned or narrowed.",
     "important": true,
     "hash": "12ef4688"
   },
-  "622": {
+  "624": {
     "text": "The closing notes tie the toy loop back to real research. The mechanism is simplified, but the control structure is the same.",
     "hash": "06727730"
   }

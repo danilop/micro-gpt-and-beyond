@@ -1,5 +1,11 @@
-graph TD
-    co_pre1[Long prompt prefill]
-    co_pre1 --> co_dec1[Decode request 0]
-    co_dec1 --> co_pre2[Next request waits<br/>for the same worker]
-    co_pre2 --> co_dec2[Only then decode request 1]
+gantt
+    title Colocated, one worker: request 1 cannot start until request 0 is done
+    dateFormat X
+    axisFormat %s
+    section Worker
+    req 0 prefill (long prompt)  :c1, 0, 6
+    req 0 decode                 :c2, 6, 4
+    req 1 prefill                :c3, 10, 2
+    req 1 decode                 :c4, 12, 4
+    section Request 1
+    waiting for the worker       :crit, c5, 0, 10

@@ -131,7 +131,7 @@
     "hash": "a87869a2"
   },
   "90": {
-    "text": "Self-attention WITH KV cache support, the distinction between prefill and decode lives here.",
+    "text": "Self-attention with KV cache support, which is where the distinction between prefill and decode lives.",
     "hash": "c20aaac2"
   },
   "98": {
@@ -177,7 +177,7 @@
     "hash": "49990b2c"
   },
   "107": {
-    "text": "Attention scores: new queries attend to ALL keys (cached + new).",
+    "text": "Attention scores: new queries attend to every key, cached and new alike.",
     "hash": "308b188d"
   },
   "108": {
@@ -193,7 +193,7 @@
     "hash": "bc3bf4e4"
   },
   "111": {
-    "text": "Return output AND the updated cache, the caller decides whether to keep it.",
+    "text": "Return the output and the updated cache, leaving the caller to decide whether to keep it.",
     "hash": "047a8418"
   },
   "114": {
@@ -348,11 +348,7 @@
   "167": {
     "text": "Prefill is the wide, heavy phase: process the whole prompt at once, saturate compute, and prepare the KV state that decode will later consume token by token.",
     "hash": "d62ca2e1",
-    "diagram": "serving_disagg",
-    "highlight": [
-      "d_pre1",
-      "d_pre2"
-    ]
+    "diagram": "serving_disagg"
   },
   "168": {
     "text": "Just a forward pass with no prior cache, all tokens processed together.",
@@ -361,11 +357,7 @@
   "170": {
     "text": "Decode is the opposite shape: one new token, lots of KV reads, very little arithmetic. That mismatch is exactly why colocating it with prefill wastes hardware.",
     "hash": "3e987115",
-    "diagram": "serving_disagg",
-    "highlight": [
-      "d_dec0",
-      "d_dec1"
-    ]
+    "diagram": "serving_disagg"
   },
   "171": {
     "text": "Single token forward pass with position offset.",
@@ -489,7 +481,7 @@
     "hash": "a06d9d30"
   },
   "240": {
-    "text": "Multiply-accumulate counts, with attention broken out as its own quantity. The earlier version of this table counted <em>only</em> attention, which understated prefill by more than an order of magnitude at short prompts and — worse — reported the wrong scaling exponent, because at small T the dense terms dominate completely.",
+    "text": "Multiply-accumulate counts, with attention broken out as its own quantity. The earlier version of this table counted <em>only</em> attention, which understated prefill by more than an order of magnitude at short prompts and, worse, reported the wrong scaling exponent, because at small T the dense terms dominate completely.",
     "important": true,
     "hash": "f88b8b9d"
   },
@@ -604,7 +596,7 @@
     "hash": "7f92f7b7"
   },
   "353": {
-    "text": "The one cost disaggregation adds and colocated serving never pays. In this lab the handoff is a tuple of the same tensors on a queue — literally no copy — so without an explicit charge the simulation would report the transfer as free while the closing text says it costs a millisecond. Charge it, then print the break-even value.",
+    "text": "The one cost disaggregation adds and colocated serving never pays. In this lab the handoff is a tuple of the same tensors on a queue, with no copy at all, so without an explicit charge the simulation would report the transfer as free while the closing text says it costs a millisecond. Charge it, then print the break-even value.",
     "important": true,
     "hash": "27981412"
   },
@@ -675,7 +667,7 @@
     "hash": "1dbe3af3"
   },
   "392": {
-    "text": "Simulate a prefill operation: run the actual model AND sleep to simulate GPU time.",
+    "text": "Simulate a prefill operation: run the actual model, and sleep to stand in for GPU time.",
     "hash": "19b0a7a3"
   },
   "393": {
@@ -687,7 +679,7 @@
     "hash": "2b8797f4"
   },
   "398": {
-    "text": "The prefill-to-decode handoff, modelled as a delay proportional to prompt length — which is how the real thing scales, since the KV cache is per token. In production this is NVLink or RDMA; here it is the only honest way to make a zero-copy tuple pass cost something.",
+    "text": "The prefill-to-decode handoff, modelled as a delay proportional to prompt length, which is how the real thing scales, since the KV cache is per token. In production this is NVLink or RDMA; here it is the only honest way to make a zero-copy tuple pass cost something.",
     "hash": "b9f6898e"
   },
   "400": {
@@ -727,7 +719,7 @@
     "hash": "a5dfa557"
   },
   "421": {
-    "text": "Colocated serving: ONE worker does both prefill AND decode. Processes requests FIFO, a long prefill blocks ALL subsequent requests.",
+    "text": "Colocated serving: one worker does both prefill and decode. Requests are handled FIFO, so a long prefill blocks every request behind it.",
     "hash": "6fe0ce14"
   },
   "422": {
@@ -747,13 +739,9 @@
     "hash": "a3b6daf1"
   },
   "427": {
-    "text": "Prefill the prompt, if this is a LONG prompt, all subsequent requests wait.",
+    "text": "Prefill the prompt. If this one is long, every subsequent request waits.",
     "hash": "3db8c780",
-    "diagram": "serving_colocated",
-    "highlight": [
-      "co_pre1",
-      "co_pre2"
-    ]
+    "diagram": "serving_colocated"
   },
   "428": {
     "text": "Record time-to-first-token, this is terrible for requests stuck behind long prefills.",
@@ -788,7 +776,7 @@
     "hash": "5bd1498c"
   },
   "442": {
-    "text": "Disaggregated serving: SEPARATE prefill and decode workers connected by a queue. Prefill doesn't block decode. The key insight: while one worker prefills a long prompt, the other worker continues decoding in-flight requests.",
+    "text": "Disaggregated serving: separate prefill and decode workers connected by a queue, so prefill does not block decode. The key insight is that while one worker prefills a long prompt, the other keeps decoding in-flight requests.",
     "hash": "326bca13",
     "important": true
   },
@@ -807,11 +795,7 @@
   "448": {
     "text": "The prefill worker owns the wide prompt-processing phase, then hands finished KV state across the queue instead of hanging around to decode tokens itself.",
     "hash": "d7cc4ce6",
-    "diagram": "serving_disagg",
-    "highlight": [
-      "d_pre1",
-      "d_pre2"
-    ]
+    "diagram": "serving_disagg"
   },
   "450": {
     "text": "Wait for each request's arrival time.",
@@ -827,7 +811,7 @@
     "hash": "0bb7d29d"
   },
   "459": {
-    "text": "Record time-to-first-token, now only depends on THIS request's prefill, not previous requests.",
+    "text": "Record time-to-first-token, which now depends only on this request's prefill rather than on the requests before it.",
     "hash": "1655a896"
   },
   "460": {
@@ -835,7 +819,7 @@
     "hash": "e7d43909"
   },
   "461": {
-    "text": "Hand off the prefilled state — request, KV caches, first sampled token, position — over the queue. This tuple is the whole interface between the two workers.",
+    "text": "Hand off the prefilled state over the queue: request, KV caches, first sampled token and position. This tuple is the whole interface between the two workers.",
     "hash": "71363164"
   },
   "462": {
@@ -845,11 +829,7 @@
   "464": {
     "text": "The decode worker lives on the other side of that handoff, interleaving many in-flight requests while the prefill worker keeps chewing through new prompts.",
     "hash": "ce75c89b",
-    "diagram": "serving_disagg",
-    "highlight": [
-      "d_dec0",
-      "d_dec1"
-    ]
+    "diagram": "serving_disagg"
   },
   "466": {
     "text": "A dict mapping request id to that request's in-flight decode state. This is what continuous batching looks like structurally: many requests advance one step each per pass, rather than one request running to completion.",
@@ -873,7 +853,7 @@
     "hash": "6b450cdd"
   },
   "473": {
-    "text": "Sample the completion flag <em>before</em> draining the queue. Read afterwards, prefill could append its last request and set the flag in the window between drain and check, and the loop would exit having silently dropped that request — which then makes the paired comparison misalign every row after it. A one-line reordering, and the reason the result table can be trusted.",
+    "text": "Sample the completion flag <em>before</em> draining the queue. Read afterwards, prefill could append its last request and set the flag in the window between drain and check, and the loop would exit having silently dropped that request, which then makes the paired comparison misalign every row after it. A one-line reordering, and the reason the result table can be trusted.",
     "important": true,
     "hash": "a4905636"
   },
@@ -966,7 +946,7 @@
     "hash": "b7cd0490"
   },
   "501": {
-    "text": "Sort by request id so the two strategies can be zipped row by row, and return the total transfer charge alongside — it feeds the break-even calculation in the results.",
+    "text": "Sort by request id so the two strategies can be zipped row by row, and return the total transfer charge alongside, since it feeds the break-even calculation in the results.",
     "hash": "760d6ad6"
   },
   "505": {
@@ -1072,7 +1052,7 @@
     "hash": "fa7cc413"
   },
   "558": {
-    "text": "The average TTFT advantage in milliseconds — the quantity the transfer cost has to eat before disaggregation stops paying.",
+    "text": "The average TTFT advantage in milliseconds, the quantity the transfer cost has to eat before disaggregation stops paying.",
     "hash": "b219fe5b"
   },
   "567": {

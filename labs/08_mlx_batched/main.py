@@ -1,5 +1,5 @@
 """
-microGPT — MLX batched edition.
+microGPT: MLX batched edition.
 
 Same architecture as 07_mlx, but with mini-batch training:
   - Batches of 32 sequences per step
@@ -90,7 +90,7 @@ class CausalSelfAttention(nn.Module):
         self.wo = nn.Linear(n_embd, n_embd, bias=False)
 
     def __call__(self, x, pad_mask):
-        # x: (T, C) — one sequence, no batch dimension. mx.vmap adds it later.
+        # x: (T, C), one sequence with no batch dimension. mx.vmap adds it later.
         T, C = x.shape
         q = self.wq(x).reshape(T, n_head, head_dim).transpose(1, 0, 2)
         k = self.wk(x).reshape(T, n_head, head_dim).transpose(1, 0, 2)
@@ -112,7 +112,7 @@ class CausalSelfAttention(nn.Module):
         att = mx.where(pad_mask[None, None, :], -1e9, att)
         # No NaN guard is needed: masking with -1e9 rather than -inf means even a
         # fully masked row would softmax to a uniform distribution instead of
-        # NaN. And no row can be fully masked — row 0 always keeps position 0,
+        # NaN. No row can be fully masked anyway, since row 0 always keeps position 0,
         # which is BOS, never PAD.
         att = mx.softmax(att, axis=-1)
 
@@ -172,7 +172,7 @@ class MicroGPT(nn.Module):
 
         Nothing trains through this: it exists so the lab can measure mx.vmap
         against the (B, T, ...) style 04_pytorch_batched writes by hand, on the
-        same parameters and the same batch. Only attention has to be rewritten —
+        same parameters and the same batch. Only attention has to be rewritten, since
         RMSNorm and the MLP are shape-agnostic, so those modules are reused
         as they are, and any difference in output would be a bug in one of them.
         """
@@ -221,7 +221,7 @@ def make_batch(docs, step, batch_size):
 
     # Padded to the longest sequence in this batch, the same way 04_pytorch_batched
     # does it. That means the batch shape changes from step to step, and mx.compile
-    # (like jax.jit) traces once per shape — the printed shape count below shows how
+    # (like jax.jit) traces once per shape, and the printed shape count below shows how
     # many times. 06_jax_batched shows the fix: pad to a fixed length instead.
     max_len = max(len(s) for s in sequences)
     input_ids, target_ids, pad_masks, target_masks = [], [], [], []
@@ -320,17 +320,17 @@ print(f"\ndistinct batch shapes seen: {len(seen_shapes)} (compile = {use_compile
 print(f"  first-time-shape steps: {sum(first_shape_ms) / len(first_shape_ms):8.2f} ms mean")
 print(f"  repeated-shape steps:   {sum(cached_shape_ms) / len(cached_shape_ms):8.2f} ms mean")
 # Do not read that gap as the price of tracing. Run with use_compile = False and it
-# is still there, because new shapes turn up mostly in the first few dozen steps —
+# is still there, because new shapes turn up mostly in the first few dozen steps,
 # so "first-time shape" is largely a synonym for "early step", when nothing is warm.
 print(f"  each shape first seen at step: {sorted(seen_shapes.values())}")
 
 # ---------------------------------------------------------------------------
-# mx.vmap against a hand-written batch dimension — measured, not asserted
+# mx.vmap against a hand-written batch dimension, measured rather than asserted
 # ---------------------------------------------------------------------------
 # The model above is written for one sequence because that reads better. The fair
 # question is what the transform costs, and `forward_batched` is the same
 # computation with the batch axis written out by hand, so the two can be compared
-# on the same weights: first for agreement, then for speed. Forward pass only —
+# on the same weights: first for agreement, then for speed. Forward pass only,
 # that is where the transform lives, and it keeps the comparison free of the
 # optimizer state a training step would mutate.
 bench_ids, _, bench_pmask, _ = make_batch(docs, 0, batch_size)
@@ -342,7 +342,7 @@ def best_forward_ms(forward, reps=20):
     """Fastest of `reps` forward passes over the benchmark batch, in ms.
 
     The minimum, not the mean: anything else sharing the machine can only make a
-    pass slower. mx.eval inside the loop is essential — MLX is lazy, so without
+    pass slower. mx.eval inside the loop is essential: MLX is lazy, so without
     it this would time graph construction and nothing else.
     """
     mx.eval(forward(bench_ids, bench_pmask))  # warm up
@@ -366,7 +366,7 @@ if gap < 0.1:
     print("  sequence and lifting it is a readability win rather than a trade.")
 else:
     slower = "mx.vmap" if ms_vmap > ms_manual else "the hand-written version"
-    print(f"  {slower} is {gap * 100:.1f}% slower on this machine — a real trade at this size,")
+    print(f"  {slower} is {gap * 100:.1f}% slower on this machine, a real trade at this size,")
     print("  not the wash it usually is. Worth re-measuring on the hardware you deploy on.")
 
 # ---------------------------------------------------------------------------

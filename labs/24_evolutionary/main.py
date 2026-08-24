@@ -1,5 +1,5 @@
 """
-microGPT — Evolutionary self-improvement edition.
+microGPT: Evolutionary self-improvement edition.
 
 Instead of improving a single model's outputs (Lab 23), this lab improves the
 model itself through population-based evolution. A population of tiny GPT
@@ -81,7 +81,7 @@ val_size = 1000
 val_docs = docs[:val_size]
 train_docs = docs[val_size:]
 
-# Fitness is evaluated on a fixed PREFIX of the validation split, not all of it.
+# Fitness is evaluated on a fixed prefix of the validation split, not all of it.
 # 200 names is enough to rank models while keeping the search affordable: this
 # lab evaluates ~150 models, so every extra sample costs 150 forward passes.
 VAL_SAMPLES = 200
@@ -213,9 +213,7 @@ def train_model(model, cfg, train_data, num_steps, verbose=False, start_step=0):
     otherwise every generation re-reads the same first STEPS_PER_GEN names and
     "more steps" buys memorisation of a tiny slice rather than more data.
     """
-    optimizer = torch.optim.Adam(
-        model.parameters(), lr=cfg["lr"], betas=(cfg["beta1"], 0.99), eps=1e-8
-    )
+    optimizer = torch.optim.Adam(model.parameters(), lr=cfg["lr"], betas=(cfg["beta1"], 0.99), eps=1e-8)
     total_loss = 0
     for step in range(num_steps):
         doc = train_data[(start_step + step) % len(train_data)]
@@ -274,7 +272,7 @@ def generate_names(model, n_samples=10, temperature=0.5):
 
 
 # ===========================================================================
-# Phase 1: Random baseline — train one random configuration
+# Phase 1: Random baseline, train one random configuration
 # ===========================================================================
 print(f"\n{'=' * 70}")
 print("PHASE 1: Random baseline (single random configuration)")
@@ -288,7 +286,7 @@ baseline_model = build_model(baseline_cfg)
 n_params = sum(p.numel() for p in baseline_model.parameters())
 print(f"params: {n_params}")
 
-# 500 steps is a SMALL budget, and that matters for every comparison below.
+# 500 steps is a small budget, and that matters for every comparison below.
 # The evolutionary run further down spends thousands of steps across its whole
 # population, so "evolved beats this baseline" would mostly be a statement
 # about compute. The results section therefore also compares the two configs
@@ -333,7 +331,7 @@ evolution_steps = 0  # total training steps spent by the whole population
 
 # Global elitism: an archive of the single best model ever evaluated. Without
 # it the "evolved best" is just whatever happens to be in the final
-# population, which is not the same thing as the best the search found —
+# population, which is not the same thing as the best the search found,
 # in this lab the population regularly peaks in a middle generation and then
 # regresses.
 best_ever = {"val_loss": float("inf"), "cfg": None, "model": None, "gen": 0, "steps": 0}
@@ -422,15 +420,17 @@ for gen in range(NUM_GENERATIONS):
             # step), and inherit the parent's accumulated step count with them.
             child_model.load_state_dict(parent["model"].state_dict())
 
-        new_population.append({
-            "id": POP_SIZE * (gen + 1) + i,
-            "cfg": child_cfg,
-            "model": child_model,
-            "val_loss": float("inf"),
-            # A child with a new architecture is untrained: 0 steps. A child
-            # that inherited weights starts where its parent left off.
-            "steps": 0 if arch_changed else parent["steps"],
-        })
+        new_population.append(
+            {
+                "id": POP_SIZE * (gen + 1) + i,
+                "cfg": child_cfg,
+                "model": child_model,
+                "val_loss": float("inf"),
+                # A child with a new architecture is untrained: 0 steps. A child
+                # that inherited weights starts where its parent left off.
+                "steps": 0 if arch_changed else parent["steps"],
+            }
+        )
 
     population = new_population
 
@@ -459,7 +459,7 @@ for member in population:
             }
 
 population.sort(key=lambda m: m["val_loss"])
-final_best = population[0]  # best in the FINAL population
+final_best = population[0]  # best in the final population
 best_evolved = best_ever  # best ever seen, which is what we report
 evolved_val_loss = best_evolved["val_loss"]
 
@@ -480,7 +480,9 @@ print(" Archs/Cfgs = distinct architectures and distinct full configs in the pop
 
 # The best of the final population is not the best of the run. Say so with numbers.
 print(f"\nbest in final population: {final_best['val_loss']:.4f} ({final_best['steps']} steps)")
-print(f"best ever seen:           {best_ever['val_loss']:.4f} (generation {best_ever['gen']}, {best_ever['steps']} steps)")
+print(
+    f"best ever seen:           {best_ever['val_loss']:.4f} (generation {best_ever['gen']}, {best_ever['steps']} steps)"
+)
 gen_best_curve = ", ".join(f"{s['best_loss']:.4f}" for s in generation_stats)
 print(f"per-generation best:      {gen_best_curve}")
 if best_ever["gen"] < NUM_GENERATIONS:
@@ -493,11 +495,11 @@ if best_ever["gen"] < NUM_GENERATIONS:
 # Was any of this fair? The compute ledger
 # ===========================================================================
 print(f"\n{'=' * 70}")
-print("COMPUTE LEDGER — the headline number is mostly budget")
+print("COMPUTE LEDGER: the headline number is mostly budget")
 print("=" * 70)
 
 # Arm A: the same 500-step baseline, but let its config keep training so we can
-# compare configurations at MATCHED per-model budget instead of comparing
+# compare configurations at matched per-model budget instead of comparing
 # 500 steps against a whole population's worth of training.
 MATCHED_STEPS = 1200
 CHECK_EVERY = 200
@@ -536,13 +538,15 @@ print("That delta is the configuration advantage at matched per-model budget.")
 # This is the control that tells you whether selection and mutation earned
 # anything, or whether spending the same compute on independent random configs
 # would have done as well. POP_SIZE x NUM_GENERATIONS configs at STEPS_PER_GEN
-# steps each is slightly LESS compute than the evolutionary run (which also
+# steps each is slightly less compute than the evolutionary run (which also
 # trains the children spawned in the last generation), so the comparison is
 # conservative in evolution's favour.
 # This is the most expensive block in the lab. It is also the only reason the
 # headline number below can be trusted.
 rs_configs = POP_SIZE * NUM_GENERATIONS
-print(f"\nRandom search control: {rs_configs} random configs x {STEPS_PER_GEN} steps = {rs_configs * STEPS_PER_GEN} steps")
+print(
+    f"\nRandom search control: {rs_configs} random configs x {STEPS_PER_GEN} steps = {rs_configs * STEPS_PER_GEN} steps"
+)
 rs_best = {"val_loss": float("inf"), "cfg": None, "model": None}
 for i in range(rs_configs):
     cfg = random_config()
@@ -566,8 +570,12 @@ print(f"random baseline ({BASELINE_STEPS} steps):  val_loss={baseline_val_loss:.
 print(f"evolved best (best ever):     val_loss={evolved_val_loss:.4f} (config: {best_evolved['cfg']})")
 print(f"random search (equal budget): val_loss={rs_best['val_loss']:.4f}")
 improvement = baseline_val_loss - evolved_val_loss
-print(f"\nevolved vs {BASELINE_STEPS}-step baseline:   {improvement:+.4f}  <- NOT a fair comparison, {evolution_steps / BASELINE_STEPS:.0f}x the compute")
-print(f"evolved vs equal-budget search: {rs_best['val_loss'] - evolved_val_loss:+.4f}  <- what evolution bought over random search")
+print(
+    f"\nevolved vs {BASELINE_STEPS}-step baseline:   {improvement:+.4f}  <- NOT a fair comparison, {evolution_steps / BASELINE_STEPS:.0f}x the compute"
+)
+print(
+    f"evolved vs equal-budget search: {rs_best['val_loss'] - evolved_val_loss:+.4f}  <- what evolution bought over random search"
+)
 print(f"config advantage, matched budget: {matched_delta:+.4f}  <- the honest per-config number")
 
 # Generate from both
@@ -610,7 +618,7 @@ if len(final_sizes) == 1 or final_shapes == 1:
         "     low mutation rate collapses a gene pool this small very fast.\n"
         "     A real search needs a diversity floor: forbid duplicate genomes, keep\n"
         "     a fraction of random immigrants, or raise the mutation rate when\n"
-        "     variance drops. None of that is implemented here — measuring it first\n"
+        "     variance drops. None of that is implemented here, and measuring it first\n"
         "     is the point."
     )
 if generation_stats[-1]["avg_loss"] > generation_stats[0]["avg_loss"]:
@@ -626,9 +634,9 @@ if generation_stats[-1]["avg_loss"] > generation_stats[0]["avg_loss"]:
 # Explanation
 # ===========================================================================
 print(f"""
-{'=' * 70}
+{"=" * 70}
 HOW EVOLUTIONARY SELF-IMPROVEMENT WORKS
-{'=' * 70}
+{"=" * 70}
 
 Population Based Training (PBT) evolves model configurations:
 
@@ -676,6 +684,6 @@ population, because the two are frequently not the same model.
 
 At production scale, PBT discovers training schedules that would take
 human researchers weeks of manual tuning. It also runs with populations large
-enough, and mutation rates high enough, that the gene pool survives — which is
+enough, and mutation rates high enough, that the gene pool survives, which is
 exactly the part a toy run at this size cannot show you for free.
 """)

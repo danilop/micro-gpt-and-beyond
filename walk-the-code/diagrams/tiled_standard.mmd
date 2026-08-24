@@ -1,6 +1,15 @@
+%% palette: costly = slow off-chip memory / recomputation / waste
 graph TD
+    subgraph hbm[HBM: slow, off-chip]
+        s_att[Materialize full<br/>N x N score matrix]
+        s_write[Write scores<br/>back to HBM]
+        s_softmax[Read scores, softmax,<br/>write weights]
+    end
     s_qk[Load Q and K<br/>from HBM]
-    s_qk --> s_att[Materialize full<br/>N x N score matrix]
-    s_att --> s_write[Write scores<br/>back to HBM]
-    s_write --> s_softmax[Read scores, softmax,<br/>write weights]
-    s_softmax --> s_out[Read weights and V,<br/>produce output]
+    s_out[Read weights and V,<br/>produce output]
+    s_qk --> s_att
+    s_att --> s_write
+    s_write --> s_softmax
+    s_softmax --> s_out
+    classDef costly fill:#4a2c2a,stroke:#f0883e,color:#e6edf3
+    class s_att,s_write,s_softmax costly

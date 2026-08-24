@@ -1,5 +1,5 @@
 """
-microGPT — Tiled attention edition.
+microGPT: Tiled attention edition.
 
 Same architecture as the PyTorch version (03), but demonstrating three
 attention implementations for inference: standard, online-softmax, and
@@ -34,7 +34,9 @@ import torch.nn.functional as F
 random.seed(42)
 rng = np.random.default_rng(42)
 torch.manual_seed(42)
-torch.set_default_dtype(torch.float64)  # Intentional for this standalone lab (float64 needed for numerical accuracy demos)
+torch.set_default_dtype(
+    torch.float64
+)  # Intentional for this standalone lab (float64 needed for numerical accuracy demos)
 
 # ---------------------------------------------------------------------------
 # Dataset & Tokenizer
@@ -56,7 +58,7 @@ BOS, vocab_size = len(uchars), len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # ---------------------------------------------------------------------------
-# Model (PyTorch — identical architecture to Lab 03)
+# Model (PyTorch, identical architecture to Lab 03)
 # ---------------------------------------------------------------------------
 n_embd, n_head, n_layer, block_size = 16, 4, 1, 16
 head_dim = n_embd // n_head
@@ -178,7 +180,7 @@ def rmsnorm_np(x):
 
 
 # ---------------------------------------------------------------------------
-# Three attention implementations — the core of this lab
+# Three attention implementations, the core of this lab
 # ---------------------------------------------------------------------------
 print("\n--- comparing attention implementations ---\n")
 
@@ -284,7 +286,7 @@ def online_softmax_attention(Q, K, V, seq_len):
             stats["hbm_writes"] += d
 
     # Largest intermediate: a single head_dim accumulator. Nothing NxN, and
-    # nothing that grows with N at all — that is the one thing this buys us.
+    # nothing that grows with N at all, which is the one thing this buys us.
     stats["max_intermediate"] = d * Q.itemsize
     return out, stats
 
@@ -399,7 +401,7 @@ print(
 )
 
 # ---------------------------------------------------------------------------
-# Scaling sweep — the quadratic-vs-linear story needs more than 7 tokens
+# Scaling sweep: the quadratic-vs-linear story needs more than 7 tokens
 # ---------------------------------------------------------------------------
 # The comparison above runs on one short name (seq_len=7) at head_dim=4. That is
 # far too small to show anything about scaling: at head_dim=4 the N*N score
@@ -426,10 +428,7 @@ for N_sweep in (64, 128, 256, 512):
     assert np.max(np.abs(o_std - o_on)) < 1e-12, "online softmax diverged in sweep"
     assert np.max(np.abs(o_std - o_ti)) < 1e-12, "tiled diverged in sweep"
     t_std, t_on, t_ti = hbm_total(s_std), hbm_total(s_on), hbm_total(s_ti)
-    print(
-        f"  {N_sweep:>4}  {t_std:>10d}  {t_on:>10d}  {t_ti:>10d}"
-        f"  {t_ti / t_std:>8.2f}x  {t_on / t_std:>9.2f}x"
-    )
+    print(f"  {N_sweep:>4}  {t_std:>10d}  {t_on:>10d}  {t_ti:>10d}  {t_ti / t_std:>8.2f}x  {t_on / t_std:>9.2f}x")
 
 # The counters above are proxies for traffic. This is the thing you can actually
 # run out of: the largest single array each algorithm has to hold at once.
@@ -443,7 +442,7 @@ for label, stats in [
     print(f"    {label:<40s} {stats['max_intermediate']:>9,d} bytes")
 print(
     "  Standard grows as N^2. The other two are set by head_dim and tile size and do\n"
-    "  not grow with N at all — that is why FlashAttention can run context lengths\n"
+    "  not grow with N at all, which is why FlashAttention can run context lengths\n"
     "  that standard attention cannot fit in memory, whatever the traffic counts say.\n"
 )
 
@@ -472,7 +471,7 @@ print(
     "\n  Two things to read off this table. First, online softmax is a memory-footprint\n"
     "  fix, not a memory-traffic fix: it is 30x WORSE than standard on total HBM ops at\n"
     "  d=128, because it streams all of K and V once per query row. Second, tiling's\n"
-    "  advantage is tile-size dependent — there is no single 'Nx fewer' number.\n"
+    "  advantage is tile-size dependent, so there is no single 'Nx fewer' number.\n"
 )
 
 # ---------------------------------------------------------------------------
@@ -488,7 +487,7 @@ print("""
   HBM (VRAM)    ~80 GB      ~2 TB/s        Standard attention writes N*N matrix here
   CPU DRAM      ~TBs        ~50 GB/s        Model doesn't fit in GPU? Swap here
 
-Standard attention writes the full N*N attention matrix to HBM — 10x slower
+Standard attention writes the full N*N attention matrix to HBM, 10x slower
 memory. FlashAttention tiles the computation so it stays in SRAM, never
 materializing the full matrix. Same math, same forward-pass FLOPs, ~2-4x faster
 on real hardware. (The often-quoted "FlashAttention does extra FLOPs" applies to
@@ -496,7 +495,7 @@ the BACKWARD pass, which recomputes the score tiles instead of storing them.
 The forward pass implemented above does not do any extra arithmetic.)""")
 
 # ---------------------------------------------------------------------------
-# Inference — generate names using tiled attention
+# Inference: generate names using tiled attention
 # ---------------------------------------------------------------------------
 temperature = 0.5  # in (0, 1], control the "creativity" of generated text, low to high
 print("\n--- inference (tiled attention) ---")

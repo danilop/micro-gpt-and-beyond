@@ -1,6 +1,9 @@
+%% palette: costly = capacity reserved but never used
 graph TD
     alloc_c[Reserve max_len slots]
     used[Short request<br/>uses only a few]
     waste[Large unused tail<br/>still stays allocated]
     alloc_c --> used
     alloc_c --> waste
+    classDef costly fill:#4a2c2a,stroke:#f0883e,color:#e6edf3
+    class waste costly

@@ -1,10 +1,10 @@
 """
-microGPT — JAX edition.
+microGPT: JAX edition.
 
 Same decoder-only GPT architecture as the PyTorch version, based on
 "Attention Is All You Need" (Vaswani et al., 2017),
 https://arxiv.org/abs/1706.03762, but expressed in JAX's purely functional
-paradigm — no classes, no mutation, explicit PRNG keys. The functional
+paradigm, with no classes, no mutation and explicit PRNG keys. The functional
 approach reflects the style described in "Compiling machine learning programs
 via high-level tracing" (Frostig et al., 2018),
 https://mlsys.org/Conferences/doc/2018/146.pdf.
@@ -13,7 +13,7 @@ Key differences from the PyTorch version:
   - All parameters are explicit pytrees (no hidden state)
   - Forward pass is a pure function (no side effects)
   - Gradients via jax.value_and_grad (automatic, like PyTorch, but functional)
-  - The whole training step — loss, gradients, Adam — is one jitted function
+  - The whole training step (loss, gradients, Adam) is one jitted function
   - Explicit PRNG key threading, with modern typed keys (jax.random.key)
 
 The training loop also reports where XLA compiles: jit specializes on input
@@ -156,7 +156,7 @@ def loss_fn(params, input_ids, targets):
 
 
 # ---------------------------------------------------------------------------
-# Adam optimizer (functional — no hidden state mutation)
+# Adam optimizer (functional, with no hidden state mutation)
 # ---------------------------------------------------------------------------
 learning_rate, beta1, beta2, eps_adam = 1e-2, 0.85, 0.99, 1e-8
 m_state = jax.tree.map(jnp.zeros_like, params)
@@ -168,14 +168,14 @@ v_state = jax.tree.map(jnp.zeros_like, params)
 # ---------------------------------------------------------------------------
 # Two things worth noticing here.
 #
-# 1. value_and_grad, not grad. jax.grad alone returns only the gradients, so
-#    printing the loss as well would mean running the forward pass twice. The
+# 1. Use value_and_grad rather than grad. jax.grad alone returns only the gradients,
+#    so printing the loss as well would mean running the forward pass twice. The
 #    backward pass already computes the loss on its way through, so
 #    value_and_grad hands it back for free.
 #
 # 2. The optimizer is expressed with jax.tree.map instead of a Python loop over
-#    dict keys. Same arithmetic, but now the whole step — forward, backward and
-#    update — is a single pure function that jit can compile as one XLA program,
+#    dict keys. Same arithmetic, but now the whole step (forward, backward and
+#    update) is a single pure function that jit can compile as one XLA program,
 #    instead of a compiled gradient call surrounded by interpreted Python.
 @jit
 def train_step(params, m_state, v_state, input_ids, targets, step, lr):

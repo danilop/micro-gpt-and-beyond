@@ -1,6 +1,11 @@
+%% palette: frozen = weights that never update, learn = the only trained tensors
 graph TD
     x[Input x] --> base[Frozen W]
     x --> down[A: down-project]
     down --> up[B: up-project]
     base --> add[Wx + BAx]
     up --> add
+    classDef frozen fill:#2a2f38,stroke:#8b949e,color:#e6edf3
+    classDef learn fill:#33285c,stroke:#a371f7,color:#e6edf3
+    class base frozen
+    class down,up learn

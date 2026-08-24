@@ -185,7 +185,7 @@ The soft thinking and soft training labs explore **preserving the full output di
 1. Copy an existing lab directory (e.g., `cp -r labs/03_pytorch labs/99_my_experiment`).
 2. Edit `main.py` in your new directory — modify the model, hyperparameters, or training loop.
 3. Run with `cd labs/99_my_experiment && uv run python main.py` to test changes.
-4. To add your lab to the interactive tutorial, create a YAML annotation file and add an entry to `config.json`.
+4. To add your lab to the interactive tutorial, add an entry to the `units` array in `walk-the-code/config.json` and create an annotation file at `walk-the-code/comments/<lab_id>/<file>.json`.
 5. Use the walk-the-code Edit mode to annotate your code line by line.
 
 ## Reference

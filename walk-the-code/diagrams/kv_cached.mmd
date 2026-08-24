@@ -1,3 +1,4 @@
+%% palette: cheap = reused from cache, costly = computed this step
 graph TD
     c_step1[Reuse cached K,V<br/>for tokens 1..t-1]
     c_new[Compute K,V<br/>for token t]
@@ -6,3 +7,7 @@ graph TD
     c_step1 --> c_step2
     c_new --> c_step2
     c_step2 --> c_stepT
+    classDef cheap fill:#1f3d2e,stroke:#3fb950,color:#e6edf3
+    classDef costly fill:#4a2c2a,stroke:#f0883e,color:#e6edf3
+    class c_step1,c_stepT cheap
+    class c_new costly

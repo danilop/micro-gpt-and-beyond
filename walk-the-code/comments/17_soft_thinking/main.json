@@ -203,7 +203,7 @@
     "hash": "e94c5dc2"
   },
   "119": {
-    "text": "Token embedding table, this does double duty in soft thinking: it maps token IDs to embeddings AND is the table we blend against to create concept tokens.",
+    "text": "Token embedding table, which does double duty in soft thinking: it maps token ids to embeddings, and it is the table we blend against to create concept tokens.",
     "hash": "2a2b79bb"
   },
   "120": {
@@ -231,7 +231,7 @@
     "hash": "e2ce6cde"
   },
   "131": {
-    "text": "The critical change: <code>forward</code> accepts either token IDs OR pre-computed embeddings. This is what enables soft thinking, we can feed in concept tokens (weighted blends) instead of discrete token embeddings.",
+    "text": "The critical change: <code>forward</code> accepts either token ids or pre-computed embeddings. That is what enables soft thinking, since we can feed in concept tokens, meaning weighted blends, instead of discrete token embeddings.",
     "hash": "5a8ff8fb",
     "important": true
   },
@@ -382,7 +382,7 @@
   },
   "189": {
     "text": "Soft decoding: preserve the full distribution as a \"concept token.\"",
-    "hash": "b3811453",
+    "hash": "d0f71dd2",
     "diagram": "soft_soft_path",
     "highlight": [
       "softmax_blend"
@@ -400,7 +400,7 @@
     ]
   },
   "191": {
-    "text": "THE key line: <code>softmax(logits/T) @ embedding_table</code>. This creates a weighted average of ALL token embeddings, where the weights are the model's probabilities. The concept token lives in the same embedding space as regular tokens, but encodes the full uncertainty of what the model \"wanted to say.\"",
+    "text": "The key line: <code>softmax(logits/T) @ embedding_table</code>. This creates a weighted average of every token embedding, where the weights are the model's probabilities. The concept token lives in the same embedding space as regular tokens, but it encodes the full uncertainty of what the model \"wanted to say.\"",
     "hash": "e1a0c30a",
     "diagram": "soft_soft_path",
     "highlight": [
@@ -410,7 +410,7 @@
     ]
   },
   "192": {
-    "text": "Measure the entropy of <code>soft_probs</code> — the distribution that actually builds the next input — not of the sampling distribution. Scoring <code>softmax(logits/temperature)</code> instead was the old bug: that distribution is identical in every row of the table below, so the column read flat and discriminated nothing.",
+    "text": "Measure the entropy of <code>soft_probs</code>, the distribution that actually builds the next input, rather than of the sampling distribution. Scoring <code>softmax(logits/temperature)</code> instead was the old bug: that distribution is identical in every row of the table below, so the column read flat and discriminated nothing.",
     "important": true,
     "diagram": "soft_soft_path",
     "highlight": [
@@ -444,7 +444,7 @@
     "hash": "ccb84469"
   },
   "246": {
-    "text": "Guard the training run so the module can be imported without side effects. Lab 18 does not import it — it duplicates the model and the generation loop, because every lab in this series is meant to run standalone from a single file.",
+    "text": "Guard the training run so the module can be imported without side effects. Lab 18 duplicates the model and the generation loop rather than importing this one, because every lab in this series is meant to run standalone from a single file.",
     "hash": "3412809c"
   },
   "247": {
@@ -520,7 +520,7 @@
     "hash": "f6903af1"
   },
   "275": {
-    "text": "Fifty samples per configuration. Ten get printed for inspection, but the mean entropy, the NLL, and the duplicate rate are all computed over all fifty — three-per-row statistics need more than the handful you can eyeball.",
+    "text": "Fifty samples per configuration. Ten get printed for inspection, but the mean entropy, the NLL and the duplicate rate are all computed over all fifty, since three-per-row statistics need more than the handful you can eyeball.",
     "hash": "c16f0427"
   },
   "276": {
@@ -583,7 +583,7 @@
     "hash": "3702f44c"
   },
   "315": {
-    "text": "The reference row, printed last with no entropy of its own — real names were not generated, so there is no concept token to measure. Their duplicate rate of <code>4.9%</code> is what the T=2.0 row's should be compared against.",
+    "text": "The reference row, printed last with no entropy of its own, because real names were not generated and so there is no concept token to measure. Their duplicate rate of <code>4.9%</code> is what the T=2.0 row's should be compared against.",
     "hash": "03bc051e"
   },
   "317": {
@@ -596,10 +596,10 @@
   },
   "325": {
     "text": "Any adjacent repeated character, not just vowels &mdash; <code>aall</code> repeats a consonant. Both figures in this legend are interpolated from the table above rather than typed in, so the prose cannot drift away from the measurement.",
-    "hash": "0953fdc8"
+    "hash": "5cdbc783"
   },
   "350": {
-    "text": "Higher entropy means more tokens contribute to the concept token — richer information carried forward, and more room to drift off the manifold. Both halves of that sentence are now numbers in the table above rather than an assertion.",
+    "text": "Higher entropy means more tokens contribute to the concept token, carrying richer information forward and leaving more room to drift off the manifold. Both halves of that sentence are now numbers in the table above rather than an assertion.",
     "hash": "f875b77b"
   },
   "354": {

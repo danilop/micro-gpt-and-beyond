@@ -1,5 +1,5 @@
 """
-microGPT — PyTorch batched edition.
+microGPT: PyTorch batched edition.
 
 Same architecture as 03_pytorch, but with proper mini-batch training:
   - Batches of 32 sequences per step
@@ -9,7 +9,7 @@ Same architecture as 03_pytorch, but with proper mini-batch training:
 
 This is what "engineering for efficiency" looks like on top of the same algorithm.
 
-The batched version adds padding, masking, and mini-batch SGD — standard
+The batched version adds padding, masking, and mini-batch SGD, the standard
 engineering for production training.
 
 Reference: "Attention Is All You Need" (Vaswani et al., 2017),
@@ -95,7 +95,7 @@ class CausalSelfAttention(nn.Module):
         # Be honest about what this does *here*: nothing. Padding is always a suffix
         # (right-padding), and the causal mask already stops a query at position t from
         # seeing any key > t. Every key a real query can reach is therefore real, so the
-        # only logits this line changes belong to *pad* queries — whose targets are -100
+        # only logits this line changes belong to *pad* queries, whose targets are -100
         # and dropped by cross_entropy. Run a batch with and without pad_mask and the
         # loss agrees to the last decimal.
         #

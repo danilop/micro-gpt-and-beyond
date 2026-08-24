@@ -21,7 +21,7 @@
     "hash": "b802910c"
   },
   "25": {
-    "text": "The extra conceptual load in this lab is not new math, but how batch structure changes masking, loss computation, and input preparation.",
+    "text": "The extra conceptual load in this lab comes from batch structure rather than from new math: masking, loss computation and input preparation all have to account for it.",
     "hash": "5af419e1"
   },
   "27": {
@@ -174,7 +174,7 @@
     "hash": "5a67aa28"
   },
   "105": {
-    "text": "The padding mask is here for shape, not for effect. Padding is always appended, never interleaved, and the causal mask already stops a query at position <em>t</em> from seeing any key beyond <em>t</em> — so every key a real query can reach is a real token.",
+    "text": "The padding mask is here for shape rather than for effect. Padding is always appended and never interleaved, and the causal mask already stops a query at position <em>t</em> from seeing any key beyond <em>t</em>, so every key a real query can reach is a real token.",
     "hash": "6e5b0338"
   },
   "107": {
@@ -274,7 +274,7 @@
     "hash": "5c9f1363"
   },
   "137": {
-    "text": "MLP doesn't need the mask, it operates position-independently.",
+    "text": "The MLP operates one position at a time, so it needs no mask.",
     "hash": "50e2183f",
     "diagram": "transformer_mlp",
     "highlight": [

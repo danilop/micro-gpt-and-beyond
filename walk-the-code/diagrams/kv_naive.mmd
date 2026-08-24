@@ -1,4 +1,7 @@
+%% palette: costly = work redone from scratch every step
 graph LR
     n_step1["t1: compute K,V for token 1"] --> n_step2["t2: recompute tokens 1..2"]
     n_step2 --> n_stepT["t3: recompute tokens 1..3"]
     n_stepT --> total["Attention work grows<br/>as T^3 / 3"]
+    classDef costly fill:#4a2c2a,stroke:#f0883e,color:#e6edf3
+    class n_step2,n_stepT,total costly

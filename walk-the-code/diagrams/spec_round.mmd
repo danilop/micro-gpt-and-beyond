@@ -1,10 +1,13 @@
-graph TD
-    prefix[Accepted prefix] --> draft[Draft model]
-    draft --> ktokens[Propose K tokens]
-    ktokens --> target["Target scores all K<br/>in one forward pass"]
-    target --> check{Accept each token in turn?}
-    check -->|all K pass| keep[Keep all K drafted tokens]
-    check -->|first rejection| restart["Keep the accepted ones, resample<br/>from max(0, p - q), end the round"]
-    keep --> bonus[Add one bonus token]
-    bonus --> prefix
-    restart --> prefix
+sequenceDiagram
+    participant D as Draft model
+    participant T as Target model
+    loop one speculative round
+        D->>D: propose K tokens from the accepted prefix
+        D->>T: send the K drafted tokens
+        T->>T: score all K positions in one forward pass
+        alt every drafted token passes
+            T-->>D: accept all K, then add one bonus token
+        else first rejection at position i
+            T-->>D: accept i tokens, resample from max(0, p - q)
+        end
+    end

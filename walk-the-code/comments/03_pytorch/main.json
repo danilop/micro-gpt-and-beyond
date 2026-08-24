@@ -8,7 +8,7 @@
     "hash": "de2abade"
   },
   "18": {
-    "text": "The outer training loop still looks familiar. The dramatic difference is not in data loading, but in how much machinery the framework now hides for us.",
+    "text": "The outer training loop still looks familiar. What changes dramatically is how much machinery the framework now hides for us.",
     "hash": "7e18ed42"
   },
   "20": {
@@ -458,7 +458,7 @@
     "hash": "fbede2b3"
   },
   "159": {
-    "text": "THE magic line. <code>loss.backward()</code> computes all gradients automatically. This one call replaces lab 01's entire <code>Value.backward()</code> engine AND lab 02's 80+ lines of hand-derived gradients.",
+    "text": "The pivotal line: <code>loss.backward()</code> computes every gradient automatically. This single call replaces lab 01's entire <code>Value.backward()</code> engine and lab 02's 80-plus lines of hand-derived gradients.",
     "hash": "227fe80d",
     "important": true
   },

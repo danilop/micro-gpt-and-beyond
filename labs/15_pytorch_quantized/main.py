@@ -1,5 +1,5 @@
 """
-microGPT — PyTorch quantized edition.
+microGPT: PyTorch quantized edition.
 
 Same architecture as 03_pytorch, but with INT8 quantization for inference.
 Trains in FP32, quantizes Linear layers to INT8, then measures size, speed,
@@ -180,8 +180,8 @@ print("\n--- quantization ---")
 
 # NOTE: This is a *simulated* quantization for educational purposes.
 # The forward pass dequantizes INT8 weights back to the activation dtype,
-# so it does NOT use actual INT8 GEMM kernels. The benchmark below
-# demonstrates model SIZE savings, not speed improvements.
+# so it does not use actual INT8 GEMM kernels. The benchmark below
+# demonstrates model size savings rather than speed improvements.
 class QuantizedLinear(nn.Module):
     def __init__(self, fp32_linear):
         super().__init__()
@@ -247,7 +247,7 @@ def benchmark(model):
     # one-time setup cost (thread pool, kernel selection, cold caches), and on a
     # cold machine that is large enough to reverse the comparison entirely.
     generate(model, 5)
-    # Seed immediately before generating so both models draw the SAME sampling
+    # Seed immediately before generating so both models draw the same sampling
     # decisions. Without this the two timings run different numbers of forward
     # passes on different-length sequences, and the "comparison" compares nothing.
     torch.manual_seed(1234)
@@ -267,12 +267,14 @@ int8_size, int8_time = benchmark(model_int8)
 print(
     f"INT8: {int8_size:.3f} MB ({int8_size / fp32_size:.1%}), {int8_time:.2f} ms/sample ({int8_time / fp32_time:.1%})"
 )
-print(f"size: {fp32_size / int8_size:.2f}x smaller | speed: {int8_time / fp32_time - 1:+.1%} vs FP32 (dequantizing on every forward costs time; the exact figure is machine-dependent)")
+print(
+    f"size: {fp32_size / int8_size:.2f}x smaller | speed: {int8_time / fp32_time - 1:+.1%} vs FP32 (dequantizing on every forward costs time; the exact figure is machine-dependent)"
+)
 print("\nNote: This implementation prioritizes memory savings.")
 print("Production systems use INT8 kernels for both size and speed benefits.")
 
 # ---------------------------------------------------------------------------
-# Quantization error — what precision actually costs
+# Quantization error: what precision actually costs
 # ---------------------------------------------------------------------------
 # Size and speed are the easy numbers. The one that matters for deployment is
 # how much the weights moved, and whether that moves the model's predictions.
@@ -292,7 +294,7 @@ for name, mod in model_int8.named_modules():
         print(f"  {name:<22s} {wmax:>9.5f} {mod.scale.item():>10.2e} {err:>11.2e} {100 * err / wmax:>14.3f}%")
 print(f"\n  worst layer error: {worst_err:.2e}")
 print("  Symmetric per-tensor INT8 rounds to a grid of step `scale`, so the error is")
-print("  bounded by scale/2 = max|W|/254 — about 0.4% of the largest weight, per layer.")
+print("  bounded by scale/2 = max|W|/254, about 0.4% of the largest weight, per layer.")
 
 
 # Weight error is only interesting if it shows up in the model's predictions.
@@ -319,7 +321,7 @@ print(f"\n  held-out loss on {len(heldout)} unseen names:")
 print(f"    FP32: {fp32_loss:.4f}")
 print(f"    INT8: {int8_loss:.4f}  ({int8_loss - fp32_loss:+.4f}, {100 * (int8_loss - fp32_loss) / fp32_loss:+.3f}%)")
 print("  The sample lists below come out identical, which is a nice result but not")
-print("  evidence of zero error — the perturbation is just too small to flip any of")
+print("  evidence of zero error, since the perturbation is just too small to flip any of")
 print("  these sampling decisions. The loss delta above is the honest measure.")
 
 for label, m in [("FP32", model), ("INT8", model_int8)]:

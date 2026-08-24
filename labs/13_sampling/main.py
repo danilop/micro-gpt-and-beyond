@@ -1,5 +1,5 @@
 """
-microGPT — Sampling Strategies.
+microGPT: Sampling Strategies.
 
 Same microGPT architecture as the PyTorch edition (03), but focused on
 demonstrating how different sampling strategies shape model output.

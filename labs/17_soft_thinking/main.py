@@ -1,5 +1,5 @@
 """
-microGPT — Soft thinking edition.
+microGPT: Soft thinking edition.
 
 Same architecture as the PyTorch version (03), but with soft decoding at
 inference time. Instead of collapsing to a single token at each step, soft
@@ -140,7 +140,7 @@ class MicroGPT(nn.Module):
 
 
 # ---------------------------------------------------------------------------
-# Generation — hard (discrete) or soft (concept token) decoding
+# Generation: hard (discrete) or soft (concept token) decoding
 # ---------------------------------------------------------------------------
 # Lab 18 duplicates the model and this generation function rather than importing
 # them: each lab is meant to run standalone, from a single file, with no
@@ -175,18 +175,18 @@ def generate(model, mode="hard", soft_temp=1.0, temperature=0.5):
         # Next input: discrete embedding or concept token.
         #
         # The entropy we report is the entropy of the distribution that actually
-        # BUILDS the next input, which is the only one soft thinking changes.
+        # builds the next input, which is the only one soft thinking changes.
         # Measuring the sampling distribution softmax(logits/temperature) instead
         # would be measuring the wrong thing: it is the same for every row of the
         # table below, so it would read flat no matter what soft_temp does.
         if mode == "hard":
             next_emb = model.wte(torch.tensor([[token_id]], device=device))
             # Hard decoding feeds exactly one embedding. Its input distribution
-            # is a one-hot delta, so its entropy is exactly 0 — that IS the
+            # is a one-hot delta, so its entropy is exactly 0, and that is the
             # information bottleneck, stated as a number.
             entropies.append(0.0)
         else:
-            # Concept token: probability-weighted blend of ALL token embeddings
+            # Concept token: probability-weighted blend of every token embedding
             soft_probs = F.softmax(logits / soft_temp, dim=-1)
             next_emb = (soft_probs @ model.wte.weight).view(1, 1, -1)
             entropies.append(entropy_of(soft_probs))
@@ -247,7 +247,7 @@ if __name__ == "__main__":
     model = MicroGPT().to(device)
     print(f"num params: {sum(p.numel() for p in model.parameters())}")
 
-    # Training — identical to Lab 03
+    # Training, identical to Lab 03
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, betas=(0.85, 0.99), eps=1e-8)
 
     for step in range(num_steps):
@@ -270,7 +270,7 @@ if __name__ == "__main__":
         if (step + 1) % 10 == 0 or step == 0:
             print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
 
-    # Inference — hard vs. soft decoding at different temperatures
+    # Inference: hard vs. soft decoding at different temperatures
     print("\n--- soft thinking comparison ---\n")
     n_samples = 50
     max_H = math.log(vocab_size)
@@ -303,7 +303,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------
     # Benefit and cost, side by side
     # ---------------------------------------------------------------------
-    # Entropy alone only measures the BENEFIT (how much of the distribution
+    # Entropy alone only measures the benefit (how much of the distribution
     # survives into the next step). On its own it would make T=2.0 look best.
     # The other two columns are the price.
     hot_dup = rows[-1][3]  # the T=2.0 row, the one the prose points at
@@ -320,9 +320,9 @@ if __name__ == "__main__":
               inputs. Read it as a trend down the column: it climbs with soft
               temperature, which is the output drifting away from what the model
               was trained on. Do not read it as pass/fail against the real-names
-              row — the sampling temperature of 0.5 sharpens every generated row,
+              row: the sampling temperature of 0.5 sharpens every generated row,
               so they all score below real names, drift included.
-  dup rate    adjacent repeated characters, of any kind — the stutter visible in
+  dup rate    adjacent repeated characters of any kind, the stutter visible in
               the T=2.0 block above. Real names do this {real_dup:.1%} of the time;
               T=2.0 soft decoding does it {hot_dup / real_dup:.1f}x as often.
 """)
@@ -330,8 +330,8 @@ if __name__ == "__main__":
     print(f"""--- what's happening ---
 
 Standard (hard) decoding collapses the model's rich output distribution to a
-single sampled token ID at every step (sampled, not argmax — see the
-torch.multinomial call above). The next step sees only one embedding — all
+single sampled token id at every step (sampled, not argmax, see the
+torch.multinomial call above). The next step sees only one embedding, and all
 information about what the model "almost said" is discarded.
 
 Soft thinking preserves this information:
@@ -345,10 +345,10 @@ as regular tokens but encodes the model's full uncertainty.
 Temperature (T) controls the softness:
   T -> 0:  concept token = argmax embedding (hard, no benefit)
   T = 1:   standard softmax (moderate blending)
-  T -> inf: uniform weights (noise — all tokens equally blended)
+  T -> inf: uniform weights (noise, all tokens equally blended)
 
 The entropy column shows how "spread" the next-input distribution is. Higher
-entropy means more tokens contribute to the concept token — richer information,
+entropy means more tokens contribute to the concept token, carrying richer information,
 but higher risk of out-of-distribution drift. Max entropy = ln({vocab_size}) = {max_H:.2f}.
 
 The tradeoff in that sentence is not rhetorical: the table above measures both
@@ -359,7 +359,7 @@ takes the form of repetition in particular is not something this lab establishes
 emitted -- but that the output degrades, and degrades in that specific way, is
 measured.
 
-This is training-free — no model weights change. The Soft Thinking paper
+This is training-free, since no model weights change. The Soft Thinking paper
 (Zhang et al., 2025) reports +2.5 pass@1 while using 22% fewer tokens on large
 reasoning models. That is their measurement at their scale, not this lab's.
 """)

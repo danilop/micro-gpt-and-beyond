@@ -28,7 +28,7 @@
     "hash": "84cdb92b"
   },
   "48": {
-    "text": "A small corpus is enough here because the important scaling problem is not training size, but how many requests and prefixes the cache must hold efficiently.",
+    "text": "A small corpus is enough here because the scaling problem that matters is how many requests and prefixes the cache must hold efficiently, rather than the size of the training set.",
     "hash": "5e579f27"
   },
   "49": {
@@ -506,7 +506,7 @@
     "hash": "7f85323e"
   },
   "214": {
-    "text": "Block tables: maps (seq_id, layer) to a list of physical block IDs. <strong>This IS the page table.</strong> Every read and write goes through this indirection, which is what lets a sequence's KV cache live in blocks scattered anywhere in the pool.",
+    "text": "Block tables map (seq_id, layer) to a list of physical block ids. <strong>This is the page table.</strong> Every read and write goes through this indirection, which is what lets a sequence's KV cache live in blocks scattered anywhere in the pool.",
     "hash": "08e19c8a",
     "important": true
   },
@@ -608,7 +608,7 @@
     "hash": "56ece6b4"
   },
   "238": {
-    "text": "Record every allocation as it happens, with sequence, layer, logical block and physical block. This log is printed verbatim further down — the allocation <em>order</em> is the thing that makes interleaved sequences legible, and no summary statistic preserves it.",
+    "text": "Record every allocation as it happens, with sequence, layer, logical block and physical block. This log is printed verbatim further down, because the allocation <em>order</em> is what makes interleaved sequences legible and no summary statistic preserves it.",
     "hash": "c6ad1465"
   },
   "240": {
@@ -616,7 +616,7 @@
     "hash": "3672a53c"
   },
   "242": {
-    "text": "Copy-on-write, and this is the branch that makes prefix sharing safe. If anyone else still points at this block, the write cannot happen in place — exactly the check <code>fork()</code> makes on a shared page.",
+    "text": "Copy-on-write, and this is the branch that makes prefix sharing safe. If anyone else still points at this block, the write cannot happen in place, exactly the check <code>fork()</code> makes on a shared page.",
     "important": true,
     "diagram": "paged_virtual",
     "highlight": {
@@ -817,7 +817,7 @@
     "hash": "4689ba9a"
   },
   "298": {
-    "text": "Point the destination's page table at the SAME physical block. No data copy, both sequences read from identical memory.",
+    "text": "Point the destination's page table at the same physical block. There is no data copy, and both sequences read from identical memory.",
     "hash": "4d4d8ce6",
     "diagram": "paged_virtual",
     "highlight": [
@@ -1182,7 +1182,7 @@
     "hash": "d3136a78"
   },
   "403": {
-    "text": "The slots the sequence actually filled: length x layers x dims x 2, for K and V. Compare it with <code>allocated</code> on the next line — the gap is everything the contiguous strategy reserved for a name that turned out short.",
+    "text": "The slots the sequence actually filled: length x layers x dims x 2, for K and V. Compare it with <code>allocated</code> on the next line, where the gap is everything the contiguous strategy reserved for a name that turned out short.",
     "hash": "72866f45"
   },
   "404": {
@@ -1234,7 +1234,7 @@
     "hash": "dd0c7e75"
   },
   "427": {
-    "text": "One sequence in isolation cannot show fragmentation: its blocks come off the free list in order and look contiguous, so the block table appears to be pointless indirection. Two sequences growing in lockstep — which is what a real server does — is where it earns its existence.",
+    "text": "One sequence in isolation cannot show fragmentation: its blocks come off the free list in order and look contiguous, so the block table appears to be pointless indirection. Two sequences growing in lockstep, which is what a real server does, is where it earns its existence.",
     "important": true,
     "hash": "b5314f0c"
   },
@@ -1259,7 +1259,7 @@
     "hash": "9a320986"
   },
   "432": {
-    "text": "One entry per sequence, then one row per layer, because the mapping is per (sequence, layer) — nothing forces two layers of the same sequence into the same physical blocks.",
+    "text": "One entry per sequence, then one row per layer, because the mapping is per (sequence, layer), and nothing forces two layers of the same sequence into the same physical blocks.",
     "hash": "8dffc3ce"
   },
   "434": {
@@ -1275,7 +1275,7 @@
     "hash": "e0145377"
   },
   "439": {
-    "text": "Slack only exists in the last block — every earlier block is full by construction. That is the structural reason internal fragmentation is bounded rather than proportional.",
+    "text": "Slack only exists in the last block, since every earlier block is full by construction. That is the structural reason internal fragmentation stays bounded rather than proportional.",
     "hash": "0c746186"
   },
   "441": {
@@ -1295,7 +1295,7 @@
     "hash": "109c7b60"
   },
   "454": {
-    "text": "A deliberately tiny pool — 8 blocks — so the free list is short enough to print and follow. Starvation is not the point; visibility is.",
+    "text": "A deliberately tiny pool of 8 blocks, so the free list is short enough to print and follow. The aim here is visibility rather than starvation.",
     "hash": "35e8a081"
   },
   "455": {
@@ -1334,7 +1334,7 @@
     "hash": "ce891eae"
   },
   "471": {
-    "text": "And the resulting logical-to-physical mapping. This is the artefact the lab exists to produce — an OS page table, for KV cache, small enough to read in full.",
+    "text": "And the resulting logical-to-physical mapping. This is the artefact the lab exists to produce: an OS page table for KV cache, small enough to read in full.",
     "hash": "49a2a16c"
   },
   "475": {
@@ -1342,7 +1342,7 @@
     "hash": "2fb80560"
   },
   "476": {
-    "text": "The free list, printed so the recycling demonstration below can be checked against it. Blocks are handed out with <code>pop()</code> from the end, which is why the ids descend rather than ascend — a detail worth knowing before reading the event log.",
+    "text": "The free list, printed so the recycling demonstration below can be checked against it. Blocks are handed out with <code>pop()</code> from the end, which is why the ids descend rather than ascend, a detail worth knowing before reading the event log.",
     "hash": "d1c39630"
   },
   "477": {
@@ -1350,7 +1350,7 @@
     "hash": "accf383f"
   },
   "478": {
-    "text": "The measured waste. This number is the honest version of the PagedAttention claim: paging does not eliminate internal fragmentation, it bounds it.",
+    "text": "The measured waste, and the honest version of the PagedAttention claim: internal fragmentation is confined to the last block of each sequence, so it stays bounded however long the sequence grows.",
     "hash": "a31b4117"
   },
   "479": {
@@ -1470,7 +1470,7 @@
   },
   "519": {
     "text": "Show that sharing adds zero new block allocations.",
-    "hash": "f9d48ee9"
+    "hash": "88479d50"
   },
   "520": {
     "text": "Compare: without sharing, we'd need N copies of the prefix blocks.",
@@ -1512,7 +1512,7 @@
     "hash": "307baa4c"
   },
   "538": {
-    "text": "Count the free blocks first, so we can show how many the write consumed. The expected answer is exactly one — the writer's private copy — not one per sharer.",
+    "text": "Count the free blocks first, so we can show how many the write consumed. The expected answer is exactly one, the writer's private copy, rather than one per sharer.",
     "hash": "5cf2bc98"
   },
   "539": {
@@ -1529,7 +1529,7 @@
     "hash": "e8f7a080"
   },
   "542": {
-    "text": "The block table now points at a different physical block, and that difference is the proof the clone happened. The new id came off the free list, so it sits wherever the pool had a spare block — next door here only because this pool is fresh and blocks are popped from the end.",
+    "text": "The block table now points at a different physical block, and that difference is the proof the clone happened. The new id came off the free list, so it sits wherever the pool had a spare block, next door here only because this pool is fresh and blocks are popped from the end.",
     "hash": "8caa6fc1"
   },
   "543": {

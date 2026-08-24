@@ -2,28 +2,7 @@
   "14": {
     "text": "Speculative decoding keeps ordinary attention math but changes the control flow of inference: guess several tokens, then verify them in bulk.",
     "hash": "b67c9dde",
-    "diagram": "spec_round",
-    "highlight": {
-      "nodes": [
-        "prefix",
-        "draft",
-        "ktokens",
-        "target",
-        "check",
-        "keep",
-        "restart",
-        "bonus"
-      ],
-      "links": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
-      ]
-    }
+    "diagram": "spec_round"
   },
   "15": {
     "text": "Same names task, so the speedup story is about decoding strategy rather than about a different workload.",
@@ -560,26 +539,7 @@
   "206": {
     "text": "The heart of the lab: speculative decoding with draft model <code>draft</code> and target model <code>target</code>. <code>K=4</code> means the draft model guesses 4 tokens ahead.",
     "hash": "dce5929f",
-    "diagram": "spec_round",
-    "highlight": {
-      "nodes": [
-        "draft",
-        "ktokens",
-        "target",
-        "check",
-        "keep",
-        "restart",
-        "bonus"
-      ],
-      "links": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
-      ]
-    }
+    "diagram": "spec_round"
   },
   "231": {
     "text": "Start the sequence with BOS.",
@@ -661,7 +621,7 @@
     "hash": "00687dd2"
   },
   "263": {
-    "text": "The key efficiency win: the target model scores ALL drafted positions in ONE forward pass. Autoregressive decoding would need K separate forward passes. Since inference is memory-bound (reading weights dominates), one pass costs almost the same as K.",
+    "text": "The key efficiency win: the target model scores every drafted position in a single forward pass, where autoregressive decoding would need K separate ones. Since inference is memory-bound, with reading weights dominating, one pass costs almost the same as K.",
     "hash": "d0b3fd8d",
     "diagram": "spec_draft",
     "highlight": [
@@ -740,7 +700,7 @@
     "hash": "16ea5fe1"
   },
   "297": {
-    "text": "Bump the accepted token counter. We'll compare accepted vs. drafted to compute the acceptance rate.",
+    "text": "Bump the accepted token counter, so accepted and drafted can be compared to compute the acceptance rate.",
     "hash": "e613048a"
   },
   "298": {
@@ -822,7 +782,7 @@
     ]
   },
   "322": {
-    "text": "Python for-else: this runs if the loop completed without <code>break</code>, meaning ALL K tokens were accepted.",
+    "text": "Python for-else: this runs if the loop completed without <code>break</code>, meaning every one of the K tokens was accepted.",
     "hash": "675c27cf"
   },
   "324": {
@@ -851,7 +811,7 @@
     ]
   },
   "328": {
-    "text": "A bonus token of BOS is the target's own stop decision, so this path returns rather than falling through. Falling through would discard the stop, redraft from the same prefix, and quietly bias generated names longer — a losslessness bug hiding in the happy path.",
+    "text": "A bonus token of BOS is the target's own stop decision, so this path returns rather than falling through. Falling through would discard the stop, redraft from the same prefix and quietly bias generated names longer, a losslessness bug hiding in the happy path.",
     "important": true,
     "diagram": "spec_verify",
     "highlight": {
@@ -935,7 +895,7 @@
     "hash": "e92b4d90"
   },
   "373": {
-    "text": "One untimed call first. The first forward pass pays for lazy allocation and kernel selection, and folding that into the mean would inflate the smaller model more than the larger one — exactly the comparison we are trying to make.",
+    "text": "One untimed call first. The first forward pass pays for lazy allocation and kernel selection, and folding that into the mean would inflate the smaller model more than the larger one, which is exactly the comparison we are trying to make.",
     "hash": "afb09b22"
   },
   "380": {
@@ -995,7 +955,7 @@
     "hash": "0f59d82c"
   },
   "412": {
-    "text": "Mean accepted run per round — accepted tokens divided by target forward passes. This is the figure that actually determines speedup, because it is how many tokens each expensive target pass buys.",
+    "text": "Mean accepted run per round, meaning accepted tokens divided by target forward passes. This is the figure that actually determines speedup, because it is how many tokens each expensive target pass buys.",
     "hash": "132c214a"
   },
   "413": {
@@ -1087,7 +1047,7 @@
     "hash": "1cab3591"
   },
   "481": {
-    "text": "Autoregressive run A — the reference sample from the target model alone.",
+    "text": "Autoregressive run A, the reference sample from the target model alone.",
     "hash": "ace9a6e4"
   },
   "482": {
@@ -1108,7 +1068,7 @@
     "hash": "d0a8ca84"
   },
   "495": {
-    "text": "AR versus speculative: the number under test. On its own it is meaningless — it only becomes evidence when divided by the floor above.",
+    "text": "AR versus speculative: the number under test. On its own it means nothing, and it becomes evidence only when divided by the floor above.",
     "hash": "845f5eef"
   },
   "497": {

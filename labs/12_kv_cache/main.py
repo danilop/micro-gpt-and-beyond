@@ -1,5 +1,5 @@
 """
-microGPT — KV Cache edition.
+microGPT: KV Cache edition.
 
 Same model as lab 03, but with a KV-cache-aware inference path that avoids
 recomputing Key and Value tensors for already-processed positions. This is
@@ -13,7 +13,7 @@ a T-token generation:
   projections + MLP   naive O(T^2)   cached O(T)
 
 Every "cubic to quadratic" claim in this lab, including the operation counter it
-prints, is about the attention term — the one that dominates at long context and
+prints, is about the attention term, the one that dominates at long context and
 the only one the cache changes asymptotically.
 
 KV caching is a standard inference optimization for autoregressive transformers,
@@ -68,9 +68,9 @@ block_size = 16  # maximum sequence length
 head_dim = n_embd // n_head  # dimension of each head
 
 # ===========================================================================
-# Unified model — supports both standard and KV-cached inference
+# Unified model, supporting both standard and KV-cached inference
 # ===========================================================================
-# One model, two inference paths. When kv_cache=None, attention behaves like
+# One model with two inference paths. When kv_cache=None, attention behaves like
 # standard causal attention (same as lab 03). When kv_cache is provided,
 # only the new positions compute Q/K/V and cached K/V are prepended.
 
@@ -172,7 +172,7 @@ class MicroGPT(nn.Module):
 
 
 # ===========================================================================
-# Training (identical to lab 03 — ignores caches during training)
+# Training (identical to lab 03, ignoring caches during training)
 # ===========================================================================
 device = "cpu"
 model = MicroGPT().to(device)
@@ -203,9 +203,9 @@ for step in range(num_steps):
         print(f"step {step + 1:4d} / {num_steps:4d} | loss {loss.item():.4f}")
 
 # ===========================================================================
-# Inference comparison — naive (no cache) vs KV cache
+# Inference comparison: naive (no cache) vs KV cache
 # ===========================================================================
-# Same model, same weights — two generation strategies.
+# Same model, same weights, two generation strategies.
 temperature = 0.5  # in (0, 1], control the "creativity" of generated text, low to high
 num_samples = 20
 model.eval()
@@ -229,7 +229,7 @@ def generate_naive(num_samples=20):
             T = idx.shape[1]
             total_attn_ops += T * T * n_head
             total_steps += 1
-            logits, _ = model(idx)  # no cache — recomputes everything
+            logits, _ = model(idx)  # no cache, so this recomputes everything
             token_id = sample_token(logits)
             if token_id == BOS:
                 break
@@ -306,16 +306,18 @@ print(f"  Cached total attention:  sum(t   for t=1..T) = T(T+1)/2       = {T * (
 print(f"  Ratio:                   (2T+1)/3 = {(2 * T + 1) / 3:.1f}x")
 print(f"\n  The measured reduction is {ops_naive / ops_cached:.1f}x, not {(2 * T + 1) / 3:.1f}x, and nothing is wrong.")
 print(f"  These names average {avg_steps:.1f} decode steps, not {T}: generation stops on BOS.")
-print(f"  Evaluate the same formula at T = {avg_steps:.1f} and you get {(2 * avg_steps + 1) / 3:.1f}x. The saving grows")
+print(
+    f"  Evaluate the same formula at T = {avg_steps:.1f} and you get {(2 * avg_steps + 1) / 3:.1f}x. The saving grows"
+)
 print("  with sequence length, so a toy corpus of six-letter names sees the small end of it.")
 
 # ---------------------------------------------------------------------------
-# Wall clock, end to end — and why it says the opposite
+# Wall clock, end to end, and why it says the opposite
 # ---------------------------------------------------------------------------
 print("\n--- Wall-clock time, whole generation loop ---")
 print(f"  Naive:    {t_naive * 1000:.1f} ms")
 print(f"  KV cache: {t_cached * 1000:.1f} ms")
-print(f"  Ratio:    {t_naive / t_cached:.2f}x  <- naive time / cached time, NOT a speedup figure")
+print(f"  Ratio:    {t_naive / t_cached:.2f}x  <- naive time / cached time, not a speedup figure")
 print("\n  Do not read that ratio as the value of the KV cache. It is a measurement of")
 print("  Python. One layer, 16 dimensions, six-token names: each forward pass is a few")
 print("  dozen microseconds of tensor arithmetic wrapped in a few hundred microseconds of")
@@ -331,7 +333,7 @@ print("  benchmark instead of explaining away the number.")
 # ---------------------------------------------------------------------------
 # To see the effect, measure the thing the cache changes and nothing else: a
 # single decode step, at a context length a serving system would actually reach.
-# A fresh attention module on random activations is enough — timing depends on
+# A fresh attention module on random activations is enough, since timing depends on
 # tensor shapes, not on trained weights.
 #
 #   naive  = recompute Q,K,V for the whole prefix, run a T x T attention
@@ -405,23 +407,19 @@ print("""
   The speedup grows with T, because naive attention is T x T against the cache's
   1 x T. It stays well short of the theoretical T because the projections and the
   fixed per-call overhead do not shrink at all, and at T = 64 that overhead still
-  swamps everything — which is precisely what the 20-name wall clock above was
+  swamps everything, which is precisely what the 20-name wall clock above was
   measuring. This is the whole reason the operation counter, not the stopwatch, is
   this lab's headline.""")
 
 # Both columns time work that grows with T, so both must grow with T. Check that
 # rather than assert it: if this machine is too busy for the trend to survive,
 # say so here instead of leaving the reader to trust an impossible table.
-noisy = [
-    name
-    for name, col in (("naive", 1), ("cached", 2))
-    if not all(b[col] > a[col] for a, b in pairwise(rows))
-]
+noisy = [name for name, col in (("naive", 1), ("cached", 2)) if not all(b[col] > a[col] for a, b in pairwise(rows))]
 if noisy:
     print(f"""
   NOTE: on this run the {" and ".join(noisy)} column did not increase monotonically
   with T, which cannot be true of work that grows with T. Read that as contention
-  on this machine, not as a property of the code — something else had the CPU
+  on this machine, not as a property of the code, since something else had the CPU
   during the fast rows. Re-run on an idle machine, or raise BENCH_ROUNDS and
   BENCH_BUDGET above, before drawing any conclusion from the table.""")
 else:
@@ -435,7 +433,7 @@ print("WHY KV CACHE MATTERS")
 print("=" * 60)
 print("""
   Cache stores K,V from previous positions. Each new token computes only its
-  own Q,K,V and attends to all cached K,V — no recomputation.
+  own Q,K,V and attends to all cached K,V, with no recomputation.
 
                   Without cache         With cache
   Step 1:         1 x 1  attention      1 x 1  attention
@@ -450,8 +448,8 @@ print("""
   is not a 1366x speedup and the distinction matters: the projections, the MLP,
   and the memory traffic reading the cache back do not shrink by that factor,
   and past a few thousand tokens decode is memory-bound rather than compute-
-  bound. The end-to-end win is large — large enough that no serving system ships
-  without it — but it is smaller than the operation count, and it is bounded by
+  bound. The end-to-end win is large, large enough that no serving system ships
+  without it, but it is smaller than the operation count, and it is bounded by
   whatever does not get cheaper.
 
   A 7B model (32 layers, 32 heads, head_dim 128, fp16) needs 512 KB of cache per

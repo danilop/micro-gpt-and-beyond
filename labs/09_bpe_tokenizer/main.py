@@ -1,5 +1,5 @@
 """
-Understanding LLMs by Building One — BPE Tokenizer
+Understanding LLMs by Building One: BPE Tokenizer
 
 Byte-Pair Encoding from scratch, then a side-by-side comparison of
 character-level vs BPE tokenization on the names dataset. The BPE algorithm
@@ -9,7 +9,7 @@ of Rare Words with Subword Units" (Sennrich, Haddow & Birch, 2016),
 https://arxiv.org/abs/1508.07909. GPT-2 uses byte-level BPE as described in
 "Language Models are Unsupervised Multitask Learners" (Radford et al., 2019).
 
-This lab implements character-level BPE for simplicity — production tokenizers
+This lab implements character-level BPE for simplicity. Production tokenizers
 like GPT's operate on bytes, not characters, use a pre-tokenization regex to
 stop merges crossing word boundaries, and learn a much larger vocabulary
 (50K-100K merges). What this lab does share with them is the core loop (count
@@ -38,7 +38,7 @@ random.shuffle(docs)
 print(f"num docs: {len(docs)}")
 
 # ---------------------------------------------------------------------------
-# Character-level tokenizer (baseline — same as lab 01)
+# Character-level tokenizer (baseline, same as lab 01)
 # ---------------------------------------------------------------------------
 # Every unique character gets an integer id. BOS marks start/end of sequence.
 uchars = sorted(set("".join(docs)))
@@ -64,7 +64,7 @@ def char_decode(ids):
 
 
 # ---------------------------------------------------------------------------
-# BPE tokenizer — trained from scratch
+# BPE tokenizer, trained from scratch
 # ---------------------------------------------------------------------------
 # BPE starts with the character vocabulary and iteratively merges the most
 # frequent adjacent pair into a new token. That counting-and-merging loop is
@@ -74,7 +74,7 @@ def char_decode(ids):
 # The tradeoff: larger vocab = shorter sequences = faster training/inference,
 # but more parameters in the embedding table. At our tiny scale (names),
 # character-level works great. At GPT scale (internet text), BPE with
-# 50K-100K tokens is essential — without it, sequences would be absurdly long.
+# 50K-100K tokens is essential, because without it sequences would be absurdly long.
 print(f"\n{'=' * 60}")
 print("BPE TOKENIZER (training from scratch)")
 print(f"{'=' * 60}")
@@ -99,7 +99,7 @@ def count_pairs(corpus):
     """Count frequency of each adjacent token pair, skipping the BOS delimiter.
 
     This skip is the whole reason the tokenizer works. BOS is a structural
-    marker, not content, and it is the most frequent token in the corpus — two
+    marker, not content, and it is the most frequent token in the corpus, at two
     per name. Let it into the merge candidates and the top merges become
     'n'+'<BOS>', 'a'+'<BOS>', '<BOS>'+'a', ... which glues the end-of-name
     marker onto letters. A standalone BOS then almost never survives encoding,
@@ -146,7 +146,7 @@ vocab_size = base_vocab_size
 # merge table on every decode instead would cost O(vocab) per token, which is
 # the difference between this lab running in seconds and running in minutes.
 token_text = dict(id_to_char)  # 0..25 -> 'a'..'z'
-token_text[BPE_BOS] = ""  # BOS is a delimiter — it decodes to no characters
+token_text[BPE_BOS] = ""  # BOS is a delimiter, so it decodes to no characters
 
 
 def bpe_decode_token(tid):
@@ -248,7 +248,7 @@ print("COMPRESSION STATISTICS (full corpus)")
 print(f"{'=' * 60}")
 
 # Encode the whole corpus once with each tokenizer and reuse it below for the
-# bigram models — encoding is the expensive part of this lab, so do it once.
+# bigram models. Encoding is the expensive part of this lab, so do it once.
 char_corpus = [char_encode(name) for name in docs]
 bpe_corpus = [bpe_encode(name) for name in docs]
 
@@ -275,8 +275,10 @@ print(f"  Avg tokens/name BPE:    {avg_bpe:>10.2f}")
 print("\nContent tokens (BOS delimiters excluded):")
 print(f"  Char content tokens:    {char_content_tokens:>10}")
 print(f"  BPE content tokens:     {bpe_content_tokens:>10}")
-print("\nCharacters per token — the honest compression number:")
-print(f"  Char-level:             {total_chars / char_content_tokens:>10.2f}x  (one token per character, by definition)")
+print("\nCharacters per token, the honest compression number:")
+print(
+    f"  Char-level:             {total_chars / char_content_tokens:>10.2f}x  (one token per character, by definition)"
+)
 print(f"  BPE:                    {chars_per_bpe_token:>10.2f}x  ({NUM_MERGES} merges over a {vocab_size}-token vocab)")
 
 # ---------------------------------------------------------------------------
@@ -297,16 +299,16 @@ for (a, b), new_id in merges.items():
     print(f"{new_id:>5}  {merged_str!r:>12}  '{comp_a}' + '{comp_b}'")
 
 # ---------------------------------------------------------------------------
-# Bigram language model — trained with BOTH tokenizations
+# Bigram language model, trained with both tokenizations
 # ---------------------------------------------------------------------------
 # A bigram model is the simplest language model: P(next_token | current_token).
 # It's just a lookup table of transition counts, normalized to probabilities.
-# No neural network, no autograd — pure counting.
+# Pure counting, with no neural network and no autograd.
 #
 # We train one bigram model on character tokens and one on BPE tokens to show
 # how tokenization affects sequence modeling. With BPE each "step" covers more
 # characters, so a fixed one-step-of-history model reaches further back into
-# the string — but it also has to choose from a 227-token vocabulary using
+# the string, but it also has to choose from a 227-token vocabulary using
 # counts collected from the same 32K names, so the table is far sparser. Which
 # effect wins is an empirical question, and the numbers below answer it.
 print(f"\n{'=' * 60}")
@@ -347,7 +349,7 @@ def sample_bigram(probs, bos_token, max_len=20):
     return tokens
 
 
-# HOW TO COMPARE TWO TOKENIZERS — and how not to.
+# How to compare two tokenizers, and how not to.
 #
 # The usual language-model metric is perplexity per token. Across two different
 # tokenizations it is meaningless. The two models are answering different
@@ -359,7 +361,7 @@ def sample_bigram(probs, bos_token, max_len=20):
 # Bits per character fixes this. Both models assign a probability to the *same*
 # string, so take the total number of bits each one needs to encode the corpus
 # and divide by the number of characters in the corpus. Same numerator units,
-# same denominator, fair comparison — and directly interpretable as "how many
+# same denominator, fair comparison, and directly interpretable as "how many
 # bits of surprise per letter". This is why papers comparing models with
 # different tokenizers report bits-per-character or bits-per-byte.
 def bigram_bits_per_char(probs, encoded_corpus, n_chars):
@@ -389,7 +391,7 @@ char_bpc = bigram_bits_per_char(char_bigram, char_corpus, total_chars)
 char_ll = bigram_log_likelihood(char_bigram, char_corpus)
 print(f"  Vocab size: {char_vocab_size}")
 print(f"  Bits per character:  {char_bpc:.4f}   <- comparable across tokenizers")
-print(f"  Perplexity per token: {math.exp(-char_ll):.2f}   (NOT comparable — different vocab)")
+print(f"  Perplexity per token: {math.exp(-char_ll):.2f}   (not comparable, different vocab)")
 
 # Train BPE bigram
 print("\nTraining BPE bigram...")
@@ -398,7 +400,7 @@ bpe_bpc = bigram_bits_per_char(bpe_bigram, bpe_corpus, total_chars)
 bpe_ll = bigram_log_likelihood(bpe_bigram, bpe_corpus)
 print(f"  Vocab size: {vocab_size}")
 print(f"  Bits per character:  {bpe_bpc:.4f}   <- comparable across tokenizers")
-print(f"  Perplexity per token: {math.exp(-bpe_ll):.2f}   (NOT comparable — different vocab)")
+print(f"  Perplexity per token: {math.exp(-bpe_ll):.2f}   (not comparable, different vocab)")
 
 better = "BPE" if bpe_bpc < char_bpc else "character-level"
 print(f"\n  On bits per character, {better} wins ({min(char_bpc, bpe_bpc):.4f} vs {max(char_bpc, bpe_bpc):.4f}).")
@@ -414,7 +416,7 @@ print("GENERATED NAMES")
 print(f"{'=' * 60}")
 
 # Both samplers stop when they emit a standalone BOS. That only works because
-# BOS was kept out of the merges — otherwise the "name ends here" token would
+# BOS was kept out of the merges, because otherwise the "name ends here" token would
 # have been absorbed into letter pairs and every sample would run to max_len.
 print(f"\nCharacter-level bigram ({char_vocab_size} tokens, {avg_char:.1f} tokens/name incl. BOS):")
 for i in range(10):
@@ -444,7 +446,7 @@ whole tradeoff, and it is why GPT-scale models spend 50K-100K vocab slots.
 
 Quality, measured in bits per character (the only figure comparable across
 tokenizations): character-level {char_bpc:.2f}, BPE {bpe_bpc:.2f}. BPE really does model the
-text better here — one step of BPE history spans {chars_per_bpe_token:.2f} characters, so a
+text better here, since one step of BPE history spans {chars_per_bpe_token:.2f} characters, so a
 one-step model effectively sees further back, and that outweighs its sparser
 {vocab_size}x{vocab_size} transition table estimated from the same {len(docs)} names. Per-token
 perplexity claims the opposite ({math.exp(-char_ll):.1f} vs {math.exp(-bpe_ll):.1f}), which is precisely why that

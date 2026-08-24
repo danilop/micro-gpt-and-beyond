@@ -355,7 +355,7 @@
     ]
   },
   "176": {
-    "text": "<code>argmax</code> = highest probability token. No randomness at all.",
+    "text": "<code>argmax</code> takes the highest-probability token, with no randomness at all.",
     "hash": "12920e23",
     "diagram": "sampling_select",
     "highlight": [
@@ -602,7 +602,7 @@
     "hash": "b0eb5680"
   },
   "263": {
-    "text": "Top-k=10 with T=0.8: 10 candidates. More variety than k=3.",
+    "text": "Top-k=10 with T=0.8 keeps ten candidates, giving more variety than k=3.",
     "hash": "751387a4"
   },
   "264": {

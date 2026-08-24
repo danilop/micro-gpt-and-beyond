@@ -1,5 +1,5 @@
 """
-microGPT — Soft training edition.
+microGPT: Soft training edition.
 
 Builds on Lab 17 (soft thinking): instead of only using concept tokens at
 inference time, this version also uses them during training. A curriculum
@@ -55,7 +55,7 @@ vocab_size = len(uchars) + 1
 print(f"vocab size: {vocab_size}")
 
 # ---------------------------------------------------------------------------
-# Model (same as Lab 17 — supports both token IDs and raw embeddings)
+# Model (same as Lab 17, supporting both token ids and raw embeddings)
 # ---------------------------------------------------------------------------
 n_embd = 16  # embedding dimension
 n_head = 4  # number of attention heads
@@ -146,7 +146,7 @@ class MicroGPT(nn.Module):
 
 
 # ---------------------------------------------------------------------------
-# Generation — hard (discrete) or soft (concept token) decoding
+# Generation: hard (discrete) or soft (concept token) decoding
 # ---------------------------------------------------------------------------
 num_steps = 1000
 temperature = 0.5  # in (0, 1], control the "creativity" of generated text, low to high
@@ -171,7 +171,7 @@ def generate(model, mode="hard", soft_temp=1.0):
             break
         tokens.append(token_id)
 
-        # Report the entropy of the distribution that BUILDS the next input, not
+        # Report the entropy of the distribution that builds the next input, not
         # of the sampling distribution softmax(logits/temperature). The sampling
         # distribution is identical in all four cells of the 2x2 below, so
         # reporting it would make the table read flat regardless of the result.
@@ -233,7 +233,7 @@ def heldout_nll(model, names, soft_inputs=False):
 
 
 # ---------------------------------------------------------------------------
-# Training — standard vs. soft input mixing
+# Training: standard vs. soft input mixing
 # ---------------------------------------------------------------------------
 def train_model(model, name, soft_mix=False):
     """Train with standard teacher forcing, or with soft input curriculum."""
@@ -251,7 +251,7 @@ def train_model(model, name, soft_mix=False):
         if soft_mix and n > 1:
             mix = step / num_steps  # curriculum: 0 -> 1
 
-            # Model's soft predictions (detached — no gradient through this path)
+            # Model's soft predictions (detached, so no gradient flows through this path)
             with torch.no_grad():
                 pred_logits = model(input_ids)
                 soft_embeds = F.softmax(pred_logits / soft_temp, dim=-1) @ model.wte.weight
@@ -331,7 +331,7 @@ print(f"""  Read the entropy column carefully, because it is easy to over-claim 
 """)
 
 # ---------------------------------------------------------------------------
-# Held-out train-test gap — the number the whole lab is about
+# Held-out train-test gap, the number the whole lab is about
 # ---------------------------------------------------------------------------
 # Everything above is qualitative: names that look plausible, entropies that
 # behave. This is the claim: soft training closes the gap between hard inputs
@@ -352,7 +352,7 @@ std_hard, std_soft, std_gap = gaps["standard-trained"]
 sft_hard, sft_soft, sft_gap = gaps["soft-trained"]
 print(f"""
   Read the two gaps, not the two best numbers. Soft training shrinks the penalty
-  for soft inputs from {std_gap:+.4f} to {sft_gap:+.4f} nats, a {100 * (1 - sft_gap / std_gap):.0f}% reduction — that is
+  for soft inputs from {std_gap:+.4f} to {sft_gap:+.4f} nats, a {100 * (1 - sft_gap / std_gap):.0f}% reduction, and that is
   the curriculum working as advertised.
 
   It is not free. On hard inputs the soft-trained model is WORSE:
@@ -372,7 +372,7 @@ print("""--- what's happening ---
 
 Standard training uses teacher forcing: the model always sees perfect
 ground-truth embeddings as input. At inference with soft decoding (Lab 17),
-it encounters concept tokens — weighted blends it never trained on.
+it encounters concept tokens, weighted blends it never trained on.
 This train-test mismatch limits soft decoding's effectiveness.
 
 Soft training fixes this with a curriculum:
@@ -390,6 +390,6 @@ occupy that slot. Position 0 (BOS) always stays ground truth.
 
 This is scheduled sampling with soft tokens: the model gradually learns
 to work with continuous inputs, narrowing the distribution gap between
-training and soft inference — narrowing it, note, not closing it: the
+training and soft inference, narrowing it rather than closing it: the
 table above measures what is left.
 """)

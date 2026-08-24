@@ -167,7 +167,7 @@
     "hash": "3e2b4921"
   },
   "105": {
-    "text": "The forward pass is a PURE FUNCTION: same inputs always produce the same outputs, no side effects. This is what makes <code>jax.grad</code> and <code>jax.jit</code> work, they need mathematical functions, not stateful objects.",
+    "text": "The forward pass is a pure function: the same inputs always produce the same outputs, with no side effects. That is what lets <code>jax.grad</code> and <code>jax.jit</code> work, since they transform mathematical functions rather than stateful objects.",
     "hash": "e8c5a0ca",
     "important": true
   },
@@ -267,7 +267,7 @@
     "hash": "f1a6d28a"
   },
   "129": {
-    "text": "Scaled dot-product attention. Same math, different framework.",
+    "text": "Scaled dot-product attention, the same math as the earlier labs expressed in a different framework.",
     "hash": "2760e5ac",
     "diagram": "transformer_attn",
     "highlight": [
@@ -405,7 +405,7 @@
     "hash": "262bd086"
   },
   "182": {
-    "text": "This is the transformation at the heart of JAX: <code>value_and_grad(loss_fn)</code> is a <em>new function</em> derived from the old one, not a method call on a tape. Using it instead of <code>grad</code> matters because the backward pass already computes the loss on its way through — <code>grad</code> alone would mean a second forward pass just to have a number to print.",
+    "text": "This is the transformation at the heart of JAX: <code>value_and_grad(loss_fn)</code> is a <em>new function</em> derived from the old one rather than a method call on a tape. Using it instead of <code>grad</code> matters because the backward pass already computes the loss on its way through, so <code>grad</code> alone would cost a second forward pass just to have a number to print.",
     "important": true,
     "diagram": "train_step",
     "highlight": [

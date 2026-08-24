@@ -33,11 +33,11 @@
     "hash": "d5458b6a"
   },
   "19": {
-    "text": "One HTTP call and we have our training data. No pip install, no API key.",
+    "text": "One HTTP call gives us the training data, with no package install and no API key.",
     "hash": "a51ad59e"
   },
   "20": {
-    "text": "Each document is one name. Strip whitespace, skip blanks. The model will learn the statistical patterns of how names are spelled.",
+    "text": "Each document is a single name, so the loader strips whitespace and skips blank lines. From these the model learns the statistical patterns of how names are spelled.",
     "hash": "cd97a0e5"
   },
   "21": {
@@ -45,7 +45,7 @@
     "hash": "c8f1cb86"
   },
   "22": {
-    "text": "Quick sanity check. Expect around 32K names.",
+    "text": "A quick sanity check, which should report roughly 32K names.",
     "hash": "08bb2551"
   },
   "25": {
@@ -102,7 +102,7 @@
     ]
   },
   "36": {
-    "text": "Starts at zero because gradients <strong>accumulate</strong>. Consider a simple example: <code>x=2, y=3, z=x*y, loss=z+x</code>. Here <code>x</code> is used twice — once in the multiply and once in the addition — so it receives gradient from both paths. That's why we start at zero and use <code>+=</code> later.",
+    "text": "Starts at zero because gradients <strong>accumulate</strong>. Consider a simple example: <code>x=2, y=3, z=x*y, loss=z+x</code>. Here <code>x</code> is used twice, once in the multiply and once in the addition, so it receives gradient from both paths. That is why we start at zero and use <code>+=</code> later.",
     "hash": "0fe2da8e",
     "diagram": "value_node",
     "highlight": [
@@ -145,7 +145,7 @@
     ]
   },
   "42": {
-    "text": "Addition: result is <code>a + b</code>, and both local gradients are 1 because d(a+b)/da = d(a+b)/db = 1. In our example <code>loss = z + x</code>: loss.grad=1 flows equally to both z and x — each gets 1*1 = 1.",
+    "text": "Addition: result is <code>a + b</code>, and both local gradients are 1 because d(a+b)/da = d(a+b)/db = 1. In our example <code>loss = z + x</code>, the incoming loss.grad=1 flows equally to z and x, so each gets 1*1 = 1.",
     "hash": "160f0cba",
     "important": true
   },
@@ -327,7 +327,7 @@
     ]
   },
   "73": {
-    "text": "The <code>+=</code> is where multi-path gradients merge. In our example: <code>x</code> gets 1 from the addition path AND 3 from the multiply path, so <code>x.grad = 1 + 3 = 4</code>. Check: d(x*y+x)/dx = y+1 = 3+1 = 4. The chain rule works.",
+    "text": "The <code>+=</code> is where multi-path gradients merge. In our example, <code>x</code> gets 1 from the addition path and 3 from the multiply path, so <code>x.grad = 1 + 3 = 4</code>. Check: d(x*y+x)/dx = y+1 = 3+1 = 4. The chain rule works.",
     "hash": "23c1e33a",
     "important": true
   },
@@ -422,7 +422,7 @@
     ]
   },
   "99": {
-    "text": "Subtract the max for numerical stability. Prevents <code>exp()</code> from overflowing. Doesn't change the output probabilities.",
+    "text": "Subtracting the max keeps <code>exp()</code> from overflowing, and it leaves the resulting probabilities unchanged.",
     "hash": "2a265d6f",
     "diagram": "layer_softmax",
     "highlight": [
@@ -499,7 +499,7 @@
     ]
   },
   "111": {
-    "text": "Look up the position embedding. The model needs to know WHERE in the sequence this token sits.",
+    "text": "Look up the position embedding, which is how the model knows where in the sequence this token sits.",
     "hash": "4edecf31",
     "diagram": "transformer_embed",
     "highlight": [
@@ -585,7 +585,7 @@
     "hash": "d31b6346"
   },
   "128": {
-    "text": "Gather this head's key slices from ALL previous tokens (via the cache). This is the \"memory\" the current token attends to.",
+    "text": "Gather this head's key slices from every previous token, via the cache. This is the \"memory\" the current token attends to.",
     "hash": "04788ada"
   },
   "129": {
@@ -949,7 +949,7 @@
     ]
   },
   "199": {
-    "text": "Exit the generation loop. The name is done.",
+    "text": "Exit the generation loop once the name is complete.",
     "hash": "14ebe56a"
   },
   "200": {
