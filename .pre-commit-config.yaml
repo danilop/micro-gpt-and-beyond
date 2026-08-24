@@ -50,3 +50,14 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+
+  # --- walk-the-code: tutorial annotations are keyed by line number, so any
+  # --- edit to a lab can silently detach every annotation below it
+  - repo: local
+    hooks:
+      - id: wtc-validate
+        name: wtc-validate (tutorial annotations)
+        entry: uvx --from "walk-the-code @ git+https://github.com/danilop/walk-the-code" wtc-validate walk-the-code/config.json --strict
+        language: system
+        pass_filenames: false
+        files: ^(labs/|walk-the-code/)
