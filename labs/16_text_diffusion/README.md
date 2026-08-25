@@ -127,57 +127,111 @@ Three techniques improve generation quality:
 
   The 8- and 4-step arms are where the schedule actually sets the pace.
 
-### Watching one name denoise
+### Watching the names denoise
 
-The arms above report where denoising ends up. Before them the lab prints how it
-gets there: one name, 8 steps, the whole 16-position sequence after each step.
+Each arm reports where denoising ends up. It also prints how one name got there:
+the whole 16-position sequence after every step. The name shown is the longest of
+the ten, since a four-letter name spends most of its rows placing `[PAD]` and has
+little else to show.
 
 ```
---- one name, denoised in 8 steps ---
-  `_` = still masked (noise), blank = [PAD], letters = committed
+legend for the tables below: `_` = still masked (noise), `.` = [PAD], letters = committed
 
+--- inference: 16 denoising steps ---
+  positions committed per step: 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+
+  sample 2, step by step:
   step  masked  commit  temp   sequence
      0      16       -     -   |________________|  pure noise
-     1      15       1  0.80   |_______________ |
-     2      14       1  0.79   |______________  |
-     3      13       1  0.76   |_____________   |
-     4      11       2  0.72   |___________     |
-     5       8       3  0.65   |________a       |
-     6       6       2  0.58   |_a___n__a       |
-     7       3       3  0.49   |_a_lani_a       |
-     8       0       3  0.40   |jailanina       |
+     1      15       1  0.80   |_______________.|
+     2      14       1  0.80   |______________..|
+     3      13       1  0.79   |_____________...|
+     4      12       1  0.78   |____________....|
+     5      11       1  0.76   |___________.....|
+     6      10       1  0.74   |__________......|
+     7       9       1  0.72   |_________.......|
+     8       8       1  0.69   |________........|
+     9       7       1  0.65   |_______.........|
+    10       6       1  0.62   |______..........|
+    11       5       1  0.58   |_____...........|
+    12       4       1  0.54   |____a...........|
+    13       3       1  0.49   |_a__a...........|
+    14       2       1  0.45   |_a_ya...........|
+    15       1       1  0.40   |_arya...........|
+    16       0       1  0.35   |sarya...........|
+  result: 'sarya'
 
-  result: 'jailanina'
+--- inference: 8 denoising steps ---
+  positions committed per step: 1,1,1,2,3,2,3,3
+
+  sample 4, step by step:
+  step  masked  commit  temp   sequence
+     0      16       -     -   |________________|  pure noise
+     1      15       1  0.80   |_______________.|
+     2      14       1  0.79   |______________..|
+     3      13       1  0.76   |_____________...|
+     4      11       2  0.72   |___________.....|
+     5       8       3  0.65   |________........|
+     6       6       2  0.58   |______n.........|
+     7       3       3  0.49   |_e_ll_n.........|
+     8       0       3  0.40   |jeallyn.........|
+  result: 'jeallyn'
+
+--- inference: 4 denoising steps ---
+  positions committed per step: 2,3,5,6
+
+  sample 7, step by step:
+  step  masked  commit  temp   sequence
+     0      16       -     -   |________________|  pure noise
+     1      14       2  0.80   |______________..|
+     2      11       3  0.76   |___________.....|
+     3       6       5  0.65   |______e.........|
+     4       0       6  0.49   |hlraine.........|
+  result: 'hlraine'
 ```
 
 A position mid-denoise holds no character, so it needs a glyph exactly one column
 wide or the rows stop lining up. `_` is a slot still waiting to be filled, and it
 sits low enough that the letters appearing around it are what your eye lands on;
 an asterisk would be the wrong way round, louder than the name it is revealing.
-`[PAD]` gets a blank, since the name genuinely ends there. Because every row is
-the same width, **a column that changes is a position committing**, and no column
-ever changes twice: once a position is committed it is final.
+`[PAD]` gets a dot. The finished name simply ends there, so a blank would be the
+honest glyph for the result, but mid-run a committed `[PAD]` is a decision, and the
+model's most confident one. As whitespace it reads as nothing having happened, and
+a row of blanks cannot be counted. Because every row is the same width, **a column
+that changes is a position committing**, and no column ever changes twice: once a
+position is committed it is final.
 
-Three things are worth reading off that table.
+Four things are worth reading off those tables.
 
-**The model decides the length before it decides the letters.** Steps 1 through 4
-commit five positions and every one of them is `[PAD]`; by step 5 all seven are
-placed and the length is settled at nine. Nothing in the training objective asked
-for that ordering. It falls out of confidence-based
-remasking: with everything else still masked there is very little evidence about
-which letter goes where, but plenty about where the name stops, so `[PAD]` is what
-the model is surest of and `[PAD]` is what gets committed first.
+**The model decides the length before it decides the letters.** At 8 steps, the
+five positions committed over steps 1 to 4 are all `[PAD]`, and step 5 places three
+more, so eight of `jeallyn`'s nine `[PAD]`s are down before a single letter is.
+Nothing in the training objective asked for that ordering. It falls out of
+confidence-based remasking: with everything else still masked there is very little
+evidence about which letter goes where, but plenty
+about where the name stops. Positions 11 through 15 are `[PAD]` in essentially
+every name in the training set, which the model can read off the position
+embedding alone, so `[PAD]` is what it is surest of and `[PAD]` is what gets
+committed first.
 
 **Commits accelerate: 1, 1, 1, 2, 3, 2, 3, 3.** That shape is the cosine schedule,
-not this sample; it is the same for every name at 8 steps. Early on, each position
-is being guessed from almost nothing, so the schedule commits one at a time. Once
-enough letters are fixed, the rest are nearly determined by them, and three can
-safely go in one pass. This is the whole economic argument for diffusion decoding.
+and it is the same for every name at 8 steps. `main.py` asserts this, checking each
+of the ten samples against the first. Early on, each position is being guessed from
+almost nothing, so the schedule commits one at a time. Once enough letters are
+fixed, the rest are nearly determined by them, and three can safely go in one pass.
+This is the whole economic argument for diffusion decoding.
 
-**The letters do not arrive left to right.** Step 5 places an `a` at position 9,
-step 6 fills in positions 2 and 6, and only at step 8 does the leading `j` appear.
-A causal model cannot do this; the bidirectional attention from section 2 is what
-lets a position be decided from context on both sides of it.
+**The letters do not arrive left to right.** At 16 steps, `sarya` places its `a` at
+position 4 on step 12, the `a` at position 1 on step 13, then fills positions 3 and
+2, and only on the last step does the leading `s` appear. A causal model cannot do
+this; the bidirectional attention from section 2 is what lets a position be decided
+from context on both sides of it.
+
+**The three tables show where the step count spends its budget.** At 16 steps every
+letter is placed with all its committed neighbours already visible. At 4 steps, step
+4 commits six positions at once with a single `e` to condition on, and the result is
+`hlraine`, which opens on a cluster that starts no name in the training set. The
+degradation in the sample lists is this row.
 
 ## Why These Choices
 
@@ -227,7 +281,7 @@ python run_lab.py 16
 cd 16_text_diffusion && uv run python main.py
 ```
 
-Trains for 3000 steps with batch size 32, then generates 10 names at each of three step counts (16, 8, 4), reporting forward passes and the per-step commit counts for each. The whole run took about 90 seconds on the 2-core CPU container it was last timed on.
+Trains for 3000 steps with batch size 32, then generates 10 names at each of three step counts (16, 8, 4), reporting forward passes, the per-step commit counts, and the full step-by-step denoising of one name for each. The whole run took about 90 seconds on the 2-core CPU container it was last timed on.
 
 ## Why This Matters
 
@@ -235,7 +289,7 @@ Autoregressive generation is the dominant paradigm for language models. GPT, LLa
 
 For text, diffusion is still catching up. But it has structural advantages: parallel generation (several positions per forward pass, not one), bidirectional context (no "reversal curse" because the model sees the whole sequence), and natural support for editing (re-mask and re-generate any part).
 
-The step-count sweep at the end of the run is where that advantage becomes concrete, and where its price shows up too. At 16 steps the names are clean (`rina`, `saria`, `kalan`, `jaria`, `jamie`) but the run costs one forward pass per position, exactly like left-to-right decoding, so that arm is the quality reference, not the speed result. The saving starts at 8 steps, where they begin to fray, and at 4 they are mostly mush. Fewer steps means more positions committed per pass with less information about their neighbours, and a 6.8K-parameter model has very little slack. How few steps you can get away with is exactly the question production diffusion LMs are trying to answer.
+The step-count sweep at the end of the run is where that advantage becomes concrete, and where its price shows up too. At 16 steps the names are clean (`kina`, `sarya`, `kalan`, `jalya`, `jamie`) but the run costs one forward pass per position, exactly like left-to-right decoding, so that arm is the quality reference, not the speed result. The saving starts at 8 steps, where they begin to fray, and at 4 they are mostly mush. Fewer steps means more positions committed per pass with less information about their neighbours, and a 6.8K-parameter model has very little slack. How few steps you can get away with is exactly the question production diffusion LMs are trying to answer.
 
 ### Why the generated names aren't as good as lab 03's
 

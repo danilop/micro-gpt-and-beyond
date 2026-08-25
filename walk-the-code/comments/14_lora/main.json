@@ -300,7 +300,7 @@
     "hash": "e94c5dc2"
   },
   "151": {
-    "text": "Look up a learned embedding vector for each input token to represent its identity.",
+    "text": "A learned embedding table holding one <code>n_embd</code>-dimensional vector per vocabulary token, which is what the model knows about each token's identity.",
     "hash": "2a2b79bb"
   },
   "152": {
@@ -316,7 +316,7 @@
     "hash": "d10311df"
   },
   "155": {
-    "text": "Map the final hidden states to vocabulary-sized logits for predicting the next token.",
+    "text": "The output projection, from <code>n_embd</code> hidden dimensions to one logit per vocabulary token. Declared here, applied at the end of the forward pass.",
     "hash": "1774314d",
     "diagram": "transformer_logits",
     "highlight": [

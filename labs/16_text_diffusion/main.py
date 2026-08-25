@@ -265,14 +265,16 @@ def denoise(num_denoise_steps):
 
 
 # A sequence mid-denoise is not text, so it cannot be printed as text. Two of
-# the sixteen positions hold no character at all: MASK is a position the model
+# the vocabulary's tokens stand for no character: MASK is a position the model
 # has not committed yet, PAD a position it has decided the name does not reach.
 # Both need a glyph exactly one column wide, or the rows stop lining up and the
 # whole point of the display -- reading down a column to see when a position
-# settled -- is lost. `_` reads as a blank waiting to be filled, and it sits low
-# enough that the letters appearing around it are what your eye lands on.
+# settled -- is lost. `_` reads as a slot waiting to be filled. PAD gets a dot,
+# even though the finished name simply ends there: mid-run a committed PAD is a
+# decision, and the model's most confident one. Drawn as whitespace it reads as
+# nothing having happened, and a row of blanks cannot be counted.
 GLYPH_MASK = "_"  # still noise
-GLYPH_PAD = " "  # committed [PAD]: the name ends before this position
+GLYPH_PAD = "."  # committed [PAD]: the name ends before this position
 
 
 def render(seq):
@@ -280,49 +282,61 @@ def render(seq):
     return "".join(GLYPH_MASK if c == MASK else GLYPH_PAD if c == PAD else uchars[c] for c in seq)
 
 
-model.eval()
-with torch.no_grad():
-    # Watch a single name emerge. The arms below report where denoising ends up
-    # after N steps; this reports how it gets there. Every row is the same 16
-    # positions, so a column that changes is a position committing, and a column
-    # never changes twice: a commit is final.
-    trace_steps = 8
-    torch.manual_seed(17)
-    name, _, trace_commits, trace = denoise(trace_steps)
-    print(f"\n--- one name, denoised in {trace_steps} steps ---")
-    print(f"  `{GLYPH_MASK}` = still masked (noise), blank = [PAD], letters = committed\n")
+def print_trace(idx, name, commits, trace):
+    """Print one name's whole run, one row per denoising step.
+
+    Every row is the same block_size positions, so a column that changes is a
+    position committing, and no column ever changes twice: a commit is final.
+    """
+    print(f"\n  sample {idx}, step by step:")
     print(f"  {'step':>4}  {'masked':>6}  {'commit':>6}  {'temp':>4}   sequence")
     print(f"  {0:>4}  {block_size:>6}  {'-':>6}  {'-':>4}   |{render([MASK] * block_size)}|  pure noise")
     for i, (temp, seq) in enumerate(trace, start=1):
-        print(f"  {i:>4}  {seq.count(MASK):>6}  {trace_commits[i - 1]:>6}  {temp:>4.2f}   |{render(seq)}|")
-    print(f"\n  result: {name!r}")
-    # The commit counts are 1,1,1,2,3,2,3,3 here and that shape is the cosine
-    # schedule, not the sample: it barely commits at first, when every position
-    # is still noise and there is nothing to condition on, then accelerates once
-    # enough letters are fixed that the rest are nearly determined. Temperature
-    # falls alongside it, so the early guesses explore and the late ones do not.
-    assert sum(trace_commits) == block_size, "every position must be committed exactly once"
+        print(f"  {i:>4}  {seq.count(MASK):>6}  {commits[i - 1]:>6}  {temp:>4.2f}   |{render(seq)}|")
+    print(f"  result: {name!r}")
+
+
+model.eval()
+with torch.no_grad():
+    # Run the same trained model at three step counts, printing the names each
+    # produces and then the full run of one of them. The three tables are the
+    # experiment: the same 16 positions settled over 16, 8 and 4 passes, with
+    # visibly less context behind each commit as the steps shrink.
+    print(
+        f"\nlegend for the tables below: `{GLYPH_MASK}` = still masked (noise), "
+        f"`{GLYPH_PAD}` = [PAD], letters = committed"
+    )
 
     for num_steps_denoise in (16, 8, 4):
         torch.manual_seed(1234)  # same noise every time, so only the schedule differs
         print(f"\n--- inference: {num_steps_denoise} denoising steps ---")
         total_passes = 0
-        commits = []
+        runs = []  # (index, name, commits, trace) for all ten
         for sample_idx in range(10):
-            name, passes, commits, _ = denoise(num_steps_denoise)
+            name, passes, commits, trace = denoise(num_steps_denoise)
             total_passes += passes
+            # The commit counts follow from block_size and the schedule alone,
+            # never from what was sampled, so one name's pattern has to be every
+            # name's pattern. The lab claims this below; here it checks it.
+            assert not runs or commits == runs[0][2], "the commit schedule must not depend on the sample"
+            runs.append((sample_idx + 1, name, commits, trace))
             print(f"sample {sample_idx + 1:2d}: {name}")
+        schedule = runs[0][2]
         print(f"  {total_passes / 10:.1f} forward passes per name (left-to-right needs up to {block_size})")
-        # The commit counts depend only on block_size and the schedule, not on
-        # sampling, so one sample's pattern is every sample's pattern.
-        print(f"  positions committed per step: {','.join(str(c) for c in commits)}")
-        if max(commits) == 1:
+        print(f"  positions committed per step: {','.join(str(c) for c in schedule)}")
+        if max(schedule) == 1:
             print("  Every step committed exactly one position: with as many steps as")
             print("  positions the `- 1` floor is what sets the pace, not the cosine")
             print("  schedule, and this arm costs the same as left-to-right decoding.")
+        assert sum(schedule) == block_size, "every position must be committed exactly once"
+        # A four-letter name spends most of its rows committing [PAD], so show
+        # the longest of the ten: it has the most letters to show arriving.
+        print_trace(*max(runs, key=lambda r: len(r[1])))
 
 print(
     "\nFewer steps means more positions committed per pass, so generation gets cheaper"
-    "\nand, at this scale, visibly worse. How few steps you can get away with is the"
-    "\ncentral question in diffusion language models."
+    "\nand, at this scale, visibly worse. Read the three tables against each other: the"
+    "\nfewer the steps, the more positions go in per pass with nothing but noise around"
+    "\nthem. How few steps you can get away with is the central question in diffusion"
+    "\nlanguage models."
 )

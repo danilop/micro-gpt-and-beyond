@@ -405,7 +405,7 @@
     "hash": "ab5a8e9a"
   },
   "176": {
-    "text": "A string tag to identify this cache type in printed output and comparisons.",
+    "text": "A tag naming this cache strategy, so the comparison output can say which of the two produced a line.",
     "hash": "09c28910"
   },
   "178": {
@@ -519,7 +519,7 @@
     "hash": "7d8d126d"
   },
   "217": {
-    "text": "A string tag to identify this cache type in printed output and comparisons.",
+    "text": "The same tag on the paged implementation. Both caches expose <code>label</code>, so the comparison code can treat them interchangeably.",
     "hash": "1692297e"
   },
   "219": {
@@ -1178,7 +1178,7 @@
     "hash": "66c3cc8b"
   },
   "402": {
-    "text": "Decode token IDs to characters.",
+    "text": "Decode the contiguous run's token IDs back to characters.",
     "hash": "d3136a78"
   },
   "403": {
@@ -1593,7 +1593,7 @@
     "hash": "f0d82937"
   },
   "581": {
-    "text": "Decode token IDs to characters.",
+    "text": "Decode this sample's token IDs back to characters.",
     "hash": "61c24734"
   },
   "582": {

@@ -575,35 +575,153 @@
   },
   "257": {
     "text": "Sort ascending by confidence, so the least confident predictions are first and are the ones re-masked. The confident ones survive into the next step.",
-    "hash": "90cb2129"
+    "hash": "90cb2129",
+    "diagram": "diffusion_unmasking",
+    "highlight": [
+      "rank"
+    ]
   },
   "259": {
     "text": "Put MASK back, so this position gets another try in the next denoising step.",
-    "hash": "bf9d78a0"
+    "hash": "bf9d78a0",
+    "diagram": "diffusion_unmasking",
+    "highlight": [
+      "remask1"
+    ]
   },
   "261": {
     "text": "Update the sequence with the (partially re-masked) predictions for the next iteration.",
     "hash": "1feca68f"
   },
-  "283": {
-    "text": "Switch to eval mode and disable gradient tracking for inference.",
+  "264": {
+    "text": "Decode by keeping only the character tokens, since <code>MASK</code> and <code>PAD</code> both sit above the alphabet. Four things come back: the name, the forward passes it cost, the positions committed per step, and the full trajectory, so a caller can print the run and not only its result.",
+    "diagram": "diffusion_unmasking",
+    "highlight": [
+      "clean"
+    ],
+    "hash": "26414407"
+  },
+  "267": {
+    "text": "A sequence part-way through denoising is not text, so it cannot be printed as text. Two of the vocabulary's twenty-eight tokens stand for no character: <code>MASK</code> is a position the model has not committed, <code>PAD</code> one it has decided the name does not reach. Both need a glyph exactly one column wide, or the rows stop lining up and reading down a column stops working.",
+    "hash": "5c9096f1"
+  },
+  "276": {
+    "text": "<code>_</code> marks a position still waiting. It sits low enough that the letters appearing around it are what the eye lands on; an asterisk would be louder than the name it is revealing.",
+    "hash": "322ef2fb"
+  },
+  "277": {
+    "text": "<code>.</code> marks a committed <code>[PAD]</code>. The finished name simply ends there, so the result prints nothing, but part-way through the run a committed <code>[PAD]</code> is a decision, and the model's most confident one. As whitespace it reads as nothing having happened, and a row of blanks cannot be counted.",
+    "hash": "bdfbfd4e"
+  },
+  "280": {
+    "text": "One glyph per position, so every row is exactly <code>block_size</code> columns. The fixed width is what lets a reader follow a single position down the table.",
+    "hash": "18f3352f"
+  },
+  "282": {
+    "text": "A committed character prints itself, <code>MASK</code> and <code>PAD</code> print their glyphs. Each of the three branches is one column wide.",
+    "hash": "3fc1223a"
+  },
+  "285": {
+    "text": "Print one name's whole denoising run, one row per step. Every row covers the same sixteen positions, so a column that changes is a position committing, and no column ever changes twice: once committed, a position is final.",
+    "important": true,
+    "diagram": "diffusion_unmasking",
+    "highlight": {
+      "nodes": [
+        "noise",
+        "step1",
+        "rank",
+        "remask1",
+        "clean"
+      ],
+      "links": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "hash": "d6e998ad"
+  },
+  "293": {
+    "text": "Row zero is the starting point, sixteen <code>[MASK]</code> tokens before any forward pass. Every later row is read against this one.",
+    "diagram": "diffusion_unmasking",
+    "highlight": [
+      "noise"
+    ],
+    "hash": "c3c7c6da"
+  },
+  "294": {
+    "text": "Walk the trajectory the denoising loop recorded. Each entry is one forward pass: the temperature it used and the sequence it left behind.",
+    "hash": "bd0698c6"
+  },
+  "295": {
+    "text": "Four numbers and the sequence: how many positions are still masked, how many committed on this step, the temperature, and where all sixteen positions stand. The masked count reaches zero on the last row.",
+    "hash": "a9478ae3"
+  },
+  "299": {
+    "text": "Switch the model to eval mode before generating. Nothing in this architecture behaves differently between train and eval, since there is no dropout and RMSNorm keeps no running statistics, so the call is habit here and costs nothing to keep.",
     "hash": "45bf010c"
   },
-  "284": {
+  "300": {
     "text": "Disable gradient tracking during inference, since we are only sampling.",
     "hash": "d4f61231"
   },
-  "306": {
+  "305": {
+    "text": "Print the glyph legend once, above all three tables, so each table can stay a table.",
+    "hash": "6d9733f3"
+  },
+  "310": {
     "text": "Run the same trained model at three step counts. This is the experiment: 16 steps costs 16 forward passes and produces clean names; 4 steps costs 4 and produces mush. The quality-for-compute trade is the central question in diffusion language models.",
     "hash": "8e0d6277",
     "important": true
   },
-  "307": {
+  "311": {
     "text": "Reset the RNG before each setting so all three runs start from the same random draws. Any difference in the output is then down to the schedule alone, not to luck.",
     "hash": "bc6d08ac"
   },
   "314": {
+    "text": "Keep every sample's full record, because one of them is printed step by step below. Each entry is the sample number, the name, the per-step commit counts, and the trajectory.",
+    "hash": "f5a599b5"
+  },
+  "316": {
+    "text": "One call generates one name from pure noise. Everything this arm reports comes out of these four return values.",
+    "hash": "fe38860f"
+  },
+  "321": {
+    "text": "The commit counts follow from <code>block_size</code> and the cosine schedule alone, never from what was sampled, so all ten names have to share one pattern. The README states this, and the assert is what checks it.",
+    "hash": "7f232945"
+  },
+  "323": {
     "text": "Print each generated name. These emerged from pure noise through iterative unmasking, with no left-to-right constraint.",
     "hash": "f9d6f741"
+  },
+  "324": {
+    "text": "One sample's commit pattern stands for all ten, which the assert above has already established.",
+    "hash": "91769618"
+  },
+  "325": {
+    "text": "Forward passes per name, the cost of this arm. Left-to-right decoding needs one pass per token, so 16 is break-even and anything below it is the saving diffusion is after.",
+    "hash": "d0e401ee"
+  },
+  "326": {
+    "text": "The schedule as measured, one number per step. At 8 steps it reads 1,1,1,2,3,2,3,3: slow while every position is still noise, faster once enough letters are fixed that the rest are nearly determined by them.",
+    "hash": "0b081ed3"
+  },
+  "327": {
+    "text": "Sixteen positions over sixteen steps is one per step by arithmetic, so in that arm the <code>- 1</code> floor sets the pace and the cosine schedule never binds. The run prints that, so no reader is left assuming the schedule was driving.",
+    "hash": "58696fab"
+  },
+  "331": {
+    "text": "Sixteen positions, each committed exactly once. A schedule that stalled or double-committed a position would fail here.",
+    "hash": "c46a9b4c"
+  },
+  "334": {
+    "text": "Show the longest of the ten names. A four-letter name spends most of its rows placing <code>[PAD]</code> and has few letters left to show arriving.",
+    "hash": "b31dfdb0"
+  },
+  "336": {
+    "text": "Close on what the three arms measured. Fewer steps means more positions committed per pass, each with less context around it.",
+    "hash": "6d9733f3"
   }
 }

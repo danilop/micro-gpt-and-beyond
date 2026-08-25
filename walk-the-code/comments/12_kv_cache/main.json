@@ -293,7 +293,7 @@
     "hash": "e94c5dc2"
   },
   "149": {
-    "text": "Look up a learned embedding vector for each input token to represent its identity.",
+    "text": "The token embedding table, one learned <code>n_embd</code>-dimensional vector per vocabulary entry. This declares the table; the lookup happens in the forward pass.",
     "hash": "2a2b79bb"
   },
   "150": {

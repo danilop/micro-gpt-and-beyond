@@ -45,6 +45,13 @@ jobs:
       # every annotation below the edit and the tutorial would ship wrong.
       - name: wtc-validate
         run: wtc-validate walk-the-code/config.json --strict
+      # wtc-validate reports coverage, the important ratio and nothing about
+      # duplicated text, and --strict fails on none of them: it promotes only
+      # hash mismatches to errors. This gates the rest against a checked-in
+      # baseline, so a lab cannot quietly lose annotation coverage and one
+      # sentence cannot sit on two lines that do different things.
+      - name: Annotation coverage and duplicates
+        run: python walk-the-code/check_annotations.py
       # Catches the failure that shipped once already: the bundle filename
       # changing under the deploy step.
       - name: wtc-build produces data/units.json

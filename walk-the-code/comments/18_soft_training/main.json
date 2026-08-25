@@ -152,7 +152,7 @@
     "hash": "d1a077cb"
   },
   "83": {
-    "text": "Mix information across heads by projecting the concatenated output back to embedding dimension.",
+    "text": "Linear projection that recombines the per-head attention outputs into a single embedding-sized vector.",
     "hash": "887b9875"
   },
   "85": {

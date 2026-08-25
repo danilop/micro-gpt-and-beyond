@@ -1,0 +1,98 @@
+{
+  "01_pure_python": {
+    "coverage_pct": 96.3,
+    "important": 17
+  },
+  "02_numpy_autograd": {
+    "coverage_pct": 60.5,
+    "important": 14
+  },
+  "03_pytorch": {
+    "coverage_pct": 79.0,
+    "important": 9
+  },
+  "04_pytorch_batched": {
+    "coverage_pct": 73.1,
+    "important": 4
+  },
+  "05_jax": {
+    "coverage_pct": 70.4,
+    "important": 8
+  },
+  "06_jax_batched": {
+    "coverage_pct": 66.7,
+    "important": 10
+  },
+  "07_mlx": {
+    "coverage_pct": 76.4,
+    "important": 7
+  },
+  "08_mlx_batched": {
+    "coverage_pct": 55.5,
+    "important": 12
+  },
+  "09_bpe_tokenizer": {
+    "coverage_pct": 59.9,
+    "important": 9
+  },
+  "10_rope": {
+    "coverage_pct": 47.0,
+    "important": 13
+  },
+  "11_gqa": {
+    "coverage_pct": 61.7,
+    "important": 7
+  },
+  "12_kv_cache": {
+    "coverage_pct": 54.5,
+    "important": 11
+  },
+  "13_sampling": {
+    "coverage_pct": 59.8,
+    "important": 0
+  },
+  "14_lora": {
+    "coverage_pct": 49.2,
+    "important": 7
+  },
+  "15_pytorch_quantized": {
+    "coverage_pct": 56.0,
+    "important": 8
+  },
+  "16_text_diffusion": {
+    "coverage_pct": 61.5,
+    "important": 11
+  },
+  "17_soft_thinking": {
+    "coverage_pct": 49.2,
+    "important": 10
+  },
+  "18_soft_training": {
+    "coverage_pct": 66.2,
+    "important": 9
+  },
+  "19_speculative_decoding": {
+    "coverage_pct": 67.1,
+    "important": 14
+  },
+  "20_tiled_attention": {
+    "coverage_pct": 63.2,
+    "important": 10
+  },
+  "21_paged_attention": {
+    "coverage_pct": 81.6,
+    "important": 10
+  },
+  "22_disaggregated_serving": {
+    "coverage_pct": 53.7,
+    "important": 13
+  },
+  "23_self_improving": {
+    "coverage_pct": 38.3,
+    "important": 23
+  },
+  "24_evolutionary": {
+    "coverage_pct": 45.7,
+    "important": 27
+  }
+}
