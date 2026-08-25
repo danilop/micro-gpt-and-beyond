@@ -73,8 +73,8 @@ The reason to state it as a percentage of `max|W|` is that this is per-tensor qu
 Weight error only matters if it reaches the output, so the lab also measures per-token cross-entropy on 2,000 names the model never trained on:
 
 ```
-    FP32: ~2.4003
-    INT8: ~2.4004  (a difference in the fourth decimal place)
+    FP32: ~2.406
+    INT8: ~2.407  (about +0.001, roughly +0.04%)
 ```
 
 A loss increase that small, for roughly 3.5x less memory, is the whole argument for quantization in one line.
@@ -89,9 +89,35 @@ Production quantization systems (TensorRT, ONNX Runtime, PyTorch native) use spe
 
 ### Output quality
 
-The script generates 10 samples from both FP32 and INT8 models with the same seed. On this model they come out byte-identical. That is a pleasant result, but read it carefully: identical samples do not mean zero error. The weights really did move, by a few thousandths in absolute terms or about 0.39% of the layer's largest weight, and the logits really did shift; the shift is just too small to flip any of these `torch.multinomial` draws. The held-out loss delta above is the number that actually quantifies the damage.
+The script generates 10 names from each model off the same seed, listed side by side, and it does this for **two** seeds. That second seed is the point of the section.
 
-If outputs diverge significantly, it means the model is sensitive to precision. For production, you'd use more sophisticated quantization schemes:
+```
+--- samples, seed 42: 0 of 10 differ ---
+   #  FP32          INT8
+   1  alilen        alilen
+   2  nanea         nanea
+   ...
+
+--- samples, seed 1: 3 of 10 differ ---
+   #  FP32          INT8
+   1  an            an
+   2  alena         alaha         <- differs
+   3  narera        nare          <- differs
+   4  alys          alaryn        <- differs
+   ...
+```
+
+Seed 42 agrees on all ten, and it would be easy to stop there and conclude that INT8 is free. Seed 1 shows what that conclusion is worth. Nothing differs between the two runs except weights that moved by about 0.39% of their layer's maximum; that is enough to push three of ten `torch.multinomial` draws across a boundary and send the rest of the name somewhere else.
+
+So the lab sweeps seeds and reports the rate, which is the number worth quoting:
+
+```
+  across 40 seeds x 25 names: ~165/1000 differ (~16.5%)
+```
+
+Roughly one name in six. Matching output at a single seed is a small-sample accident, not a property of INT8, and the script asserts the sweep stays in a wide band so the claim cannot quietly rot. The held-out loss delta above is the measure that does not depend on which seed you happened to print.
+
+Narrowing that gap is what the schemes this lab skips are for:
 - **Per-channel quantization**: Different scale factors per output channel (better accuracy)
 - **Asymmetric quantization**: Map `[min, max]` to `[0, 255]` instead of symmetric `[-127, 127]`
 - **Quantization-aware training (QAT)**: Fine-tune with quantization in the loop
@@ -104,6 +130,7 @@ If outputs diverge significantly, it means the model is sensitive to precision. 
 - How to quantify quantization error, both on the weights (`max|W - dequant(W)|`, and why it equals `max|W|/254`) and on the model's output (held-out loss)
 - Why dequantize-to-FP32 quantization saves memory but costs speed, and what a real INT8 kernel would change
 - How to set up a controlled timing comparison (same seed, same workload for both models)
+- Why one seed is not a measurement: identical samples at seed 42 and 16% divergence across 40 seeds are the same model
 - How to implement quantization manually without framework-specific APIs
 
 ## What's not covered (but exists in practice)
@@ -127,8 +154,9 @@ Trains for 1000 steps, quantizes the model, then reports:
 - Model size reduction: roughly 0.4 MB to roughly 0.11 MB, about 3.5x
 - Inference time, seeded identically and warmed up for both models: INT8 slower (+13% to +38% across runs on the machine this was written on, but read your own run)
 - Per-layer quantization error, `max|W - dequant(W)|`, about 0.39% of `max|W|` everywhere
-- Held-out per-token loss on 2,000 unseen names: identical to three decimal places between FP32 and INT8
-- 10 samples from each version, which come out identical
+- Held-out per-token loss on 2,000 unseen names: FP32 and INT8 within about +0.001 of each other
+- 10 names from each version at two seeds, side by side: one seed where they agree, one where they do not
+- Sample divergence swept over 40 seeds: roughly 16% of names differ between FP32 and INT8
 
 ## Why quantization matters
 

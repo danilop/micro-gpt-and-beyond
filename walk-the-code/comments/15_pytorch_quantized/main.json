@@ -593,25 +593,27 @@
     "text": "The delta comes out around <code>+0.0001</code> nats, roughly six thousandths of a percent. That answers 'does INT8 hurt this model' with a number and a sign rather than a shrug.",
     "hash": "061e1b33"
   },
-  "329": {
-    "text": "The sample lists below match exactly, and the lab declines to treat that as evidence of zero error: the perturbation is simply too small to flip any of these sampling decisions. The loss delta is the measurement; identical samples are a coincidence of temperature and vocabulary size.",
-    "hash": "272ca8fa"
+  "343": {
+    "text": "Generates n names from each model off one seed and pairs them up. Sampling both models under the same seed is what makes this a comparison at all: any difference in the output then has to come from the weights.",
+    "hash": "0864cf37"
   },
-  "333": {
-    "text": "Side-by-side comparison loop for FP32 and INT8 samples. Each model will be sampled under the same random seed so differences come from the weights, not different random draws.",
-    "hash": "3f78e613"
-  },
-  "334": {
-    "text": "Reset the RNG before sampling each model so FP32 and INT8 draw the same random numbers; otherwise the two sample lists would differ for reasons unrelated to quantization.",
-    "hash": "7e7dcf46",
+  "352": {
+    "text": "Reset the RNG before each model so FP32 and INT8 draw the identical stream of uniforms out of torch.multinomial. Without this the two lists would differ for reasons that have nothing to do with quantization.",
+    "hash": "1360432e",
     "important": true
   },
-  "336": {
-    "text": "Generate 10 samples from the current model under that fixed seed.",
-    "hash": "828817a8"
+  "357": {
+    "text": "Two seeds, and the second one is the whole point. Seed 42 produces identical lists and seed 1 does not. Printing only the first would invite the reader to conclude that INT8 reproduces FP32 exactly, which is false.",
+    "hash": "162c68f3",
+    "important": true
   },
-  "337": {
-    "text": "Decode and print each generated name.",
-    "hash": "2a0d1a6c"
+  "368": {
+    "text": "Ten names off one seed cannot support a claim either way, so sweep 40 seeds. Roughly one name in six differs. That rate, not either listing above, is the honest summary of what INT8 costs the output.",
+    "hash": "43d8b88b",
+    "important": true
+  },
+  "379": {
+    "text": "Guard the rate the README quotes. It depends on the trained weights, so it moves between machines and torch builds and the band is wide on purpose; what it pins down is that the answer is nowhere near 'identical'.",
+    "hash": "65181581"
   }
 }

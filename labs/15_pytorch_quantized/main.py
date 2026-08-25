@@ -326,12 +326,54 @@ int8_loss = eval_loss(model_int8, heldout)
 print(f"\n  held-out loss on {len(heldout)} unseen names:")
 print(f"    FP32: {fp32_loss:.4f}")
 print(f"    INT8: {int8_loss:.4f}  ({int8_loss - fp32_loss:+.4f}, {100 * (int8_loss - fp32_loss) / fp32_loss:+.3f}%)")
-print("  The sample lists below come out identical, which is a nice result but not")
-print("  evidence of zero error, since the perturbation is just too small to flip any of")
-print("  these sampling decisions. The loss delta above is the honest measure.")
 
-for label, m in [("FP32", model), ("INT8", model_int8)]:
-    torch.manual_seed(42)
-    print(f"\n--- {label} samples ---")
-    for i, s in enumerate(generate(m, 10)):
-        print(f"  {i + 1:2d}: {''.join(uchars[t] for t in s)}")
+# ---------------------------------------------------------------------------
+# Output quality: matching samples are a fact about the seed, not about INT8
+# ---------------------------------------------------------------------------
+# The tempting version of this section prints one seed, shows the two lists
+# matching, and lets the reader conclude that INT8 costs nothing. It does not
+# cost nothing. Seed 42 happens to agree because a rounding error of a few
+# thousandths is not enough to move any of *those* multinomial draws across a
+# boundary; seed 1 lands near enough to a boundary and the names come apart.
+# Both are printed for exactly that reason, and the sweep below says which of
+# the two is the typical case.
+n_show = 10  # names per seed in the side-by-side listings
+
+
+def sample_pair(seed, n):
+    """Generate n names from each model off the same seed, paired for comparison.
+
+    Reseeding before each model is what makes this a comparison: both draw the
+    identical stream of uniforms out of `torch.multinomial`, so any difference
+    in the output came from the weights, not from the sampler.
+    """
+    runs = []
+    for m in (model, model_int8):
+        torch.manual_seed(seed)
+        runs.append(["".join(uchars[t] for t in s) for s in generate(m, n)])
+    return list(zip(*runs))
+
+
+for seed in (42, 1):
+    pairs = sample_pair(seed, n_show)
+    n_diff = sum(a != b for a, b in pairs)
+    print(f"\n--- samples, seed {seed}: {n_diff} of {n_show} differ ---")
+    print(f"  {'#':>2}  {'FP32':<12s}  INT8")
+    for i, (a, b) in enumerate(pairs):
+        print(f"  {i + 1:2d}  {a:<12s}  {b:<12s}{'  <- differs' if a != b else ''}".rstrip())
+
+# Ten names off one seed is far too small to conclude anything, so sweep seeds.
+# This is the number that belongs in the README, not either listing above.
+n_seeds, n_per_seed = 40, 25
+n_diff = sum(a != b for seed in range(n_seeds) for a, b in sample_pair(seed, n_per_seed))
+n_pairs = n_seeds * n_per_seed
+divergence = n_diff / n_pairs
+print(f"\n  across {n_seeds} seeds x {n_per_seed} names: {n_diff}/{n_pairs} differ ({divergence:.1%})")
+print("  So identical output at one seed is a small-sample accident, not a property of")
+print("  INT8. The weights really moved, and they move the sampled name often enough")
+print("  that roughly one in six comes out different. Held-out loss is the measure that")
+print("  does not depend on which seed you happened to print.")
+# Guard the claim the README makes. The rate depends on the trained weights, so
+# it moves between machines and torch builds; the band is wide on purpose, and
+# it is still nowhere near the "identical output" the seed-42 listing suggests.
+assert 0.05 < divergence < 0.40, f"sample divergence {divergence:.1%} left the band the README describes"
