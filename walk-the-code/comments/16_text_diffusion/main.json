@@ -502,11 +502,11 @@
     "hash": "b4fe8ce5",
     "important": true
   },
-  "217": {
+  "222": {
     "text": "Start from pure noise, with every position set to <code>[MASK]</code>. Unlike a GPT there is no prefix to condition on and no left-to-right order, so the whole sequence is refined at once.",
     "hash": "b2fbeb8b"
   },
-  "221": {
+  "227": {
     "text": "Count down from full noise to clean. Each step reduces the noise level.",
     "hash": "26934eb7",
     "diagram": "diffusion_unmasking",
@@ -515,32 +515,32 @@
       "remask1"
     ]
   },
-  "224": {
+  "230": {
     "text": "The cosine schedule. <code>t</code> is the fraction of positions masked going into this step, running from 1.0 (all masked) down toward 0. A cosine spends more of its steps in the middle of the range, where most of the commitment decisions actually happen.",
     "hash": "7ed82316"
   },
-  "225": {
+  "231": {
     "text": "<code>s</code> is the same curve one step further along: the fraction the schedule wants still masked <em>after</em> this step. The gap between <code>t</code> and <code>s</code> is how many positions get committed here.",
     "hash": "228390fe"
   },
-  "226": {
+  "232": {
     "text": "Temperature is tied to the noise level: near 0.8 while most positions are still masked and the model is exploring, falling toward 0.3 as the sequence fills in and choices have to be consistent with what is already committed.",
     "hash": "ccf08d68"
   },
-  "229": {
+  "235": {
     "text": "Count forward passes, because this is the number that matters. One pass can commit several positions here, whereas left-to-right decoding needs one pass per token no matter what.",
     "hash": "5ba9f3c5",
     "important": true
   },
-  "231": {
+  "237": {
     "text": "Copy the current sequence. Masked positions will be overwritten with model predictions; unmasked positions stay as-is.",
     "hash": "0abe4783"
   },
-  "232": {
+  "238": {
     "text": "Track how confident the model is at each masked position. After predicting, the least-confident positions get re-masked for another try.",
     "hash": "a3acef54"
   },
-  "234": {
+  "240": {
     "text": "Only predict for currently masked positions, since unmasked tokens are already decided.",
     "hash": "de76ce4d",
     "diagram": "diffusion_unmasking",
@@ -548,15 +548,15 @@
       "step1"
     ]
   },
-  "236": {
+  "242": {
     "text": "Suppress the <code>[MASK]</code> logit so the model can never predict the mask token itself. This is MDLM's substitution parameterisation: the model only ever proposes real content.",
     "hash": "45e76408"
   },
-  "237": {
+  "243": {
     "text": "Apply temperature scaling before sampling. Low temperature sharpens the distribution, high temperature flattens it.",
     "hash": "db5170aa"
   },
-  "238": {
+  "244": {
     "text": "Sample a token from the probability distribution. Unlike argmax, this preserves diversity.",
     "hash": "347a4cdc",
     "diagram": "diffusion_unmasking",
@@ -564,45 +564,45 @@
       "step1"
     ]
   },
-  "239": {
+  "245": {
     "text": "Record how confident the model is at this position. Confidence decides which predictions get to stay, so the model commits where it is sure and defers where it is not.",
     "hash": "105d0152"
   },
-  "250": {
+  "256": {
     "text": "The heart of the schedule. Keep <code>block_size * s</code> positions masked, so the cosine curve sets the pace rather than the number that happen to be masked right now. The <code>- 1</code> floor guarantees at least one position commits per step, so no forward pass is wasted.",
     "hash": "20b9e202",
     "important": true
   },
-  "251": {
+  "257": {
     "text": "Sort ascending by confidence, so the least confident predictions are first and are the ones re-masked. The confident ones survive into the next step.",
     "hash": "90cb2129"
   },
-  "253": {
+  "259": {
     "text": "Put MASK back, so this position gets another try in the next denoising step.",
     "hash": "bf9d78a0"
   },
-  "255": {
+  "261": {
     "text": "Update the sequence with the (partially re-masked) predictions for the next iteration.",
     "hash": "1feca68f"
   },
-  "260": {
+  "283": {
     "text": "Switch to eval mode and disable gradient tracking for inference.",
     "hash": "45bf010c"
   },
-  "261": {
+  "284": {
     "text": "Disable gradient tracking during inference, since we are only sampling.",
     "hash": "d4f61231"
   },
-  "262": {
+  "306": {
     "text": "Run the same trained model at three step counts. This is the experiment: 16 steps costs 16 forward passes and produces clean names; 4 steps costs 4 and produces mush. The quality-for-compute trade is the central question in diffusion language models.",
     "hash": "8e0d6277",
     "important": true
   },
-  "263": {
+  "307": {
     "text": "Reset the RNG before each setting so all three runs start from the same random draws. Any difference in the output is then down to the schedule alone, not to luck.",
     "hash": "bc6d08ac"
   },
-  "270": {
+  "314": {
     "text": "Print each generated name. These emerged from pure noise through iterative unmasking, with no left-to-right constraint.",
     "hash": "f9d6f741"
   }

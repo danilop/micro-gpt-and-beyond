@@ -213,10 +213,16 @@ for step in range(num_steps):
 
 
 def denoise(num_denoise_steps):
-    """Generate one name by iterative unmasking. Returns (name, passes, commits)."""
+    """Generate one name by iterative unmasking.
+
+    Returns (name, passes, commits, trace), where trace holds the temperature
+    and the full sequence after every step, so a caller can print the run
+    rather than only its result.
+    """
     seq = [MASK] * block_size  # start from pure noise
     passes = 0
     commits = []  # positions committed per step, the schedule as measured
+    trace = []  # (temperature, sequence) after each step, for the step-by-step view
 
     for step_i in range(num_denoise_steps, 0, -1):
         # Cosine schedule: `t` is the fraction of positions masked going into
@@ -253,19 +259,57 @@ def denoise(num_denoise_steps):
                 predicted[i] = MASK
         commits.append(len(confidences) - n_to_remask)
         seq = predicted
+        trace.append((temperature, list(seq)))
 
-    return "".join(uchars[c] for c in seq if c < len(uchars)), passes, commits
+    return "".join(uchars[c] for c in seq if c < len(uchars)), passes, commits, trace
+
+
+# A sequence mid-denoise is not text, so it cannot be printed as text. Two of
+# the sixteen positions hold no character at all: MASK is a position the model
+# has not committed yet, PAD a position it has decided the name does not reach.
+# Both need a glyph exactly one column wide, or the rows stop lining up and the
+# whole point of the display -- reading down a column to see when a position
+# settled -- is lost. `_` reads as a blank waiting to be filled, and it sits low
+# enough that the letters appearing around it are what your eye lands on.
+GLYPH_MASK = "_"  # still noise
+GLYPH_PAD = " "  # committed [PAD]: the name ends before this position
+
+
+def render(seq):
+    """One character per position, so every row is exactly block_size columns."""
+    return "".join(GLYPH_MASK if c == MASK else GLYPH_PAD if c == PAD else uchars[c] for c in seq)
 
 
 model.eval()
 with torch.no_grad():
+    # Watch a single name emerge. The arms below report where denoising ends up
+    # after N steps; this reports how it gets there. Every row is the same 16
+    # positions, so a column that changes is a position committing, and a column
+    # never changes twice: a commit is final.
+    trace_steps = 8
+    torch.manual_seed(17)
+    name, _, trace_commits, trace = denoise(trace_steps)
+    print(f"\n--- one name, denoised in {trace_steps} steps ---")
+    print(f"  `{GLYPH_MASK}` = still masked (noise), blank = [PAD], letters = committed\n")
+    print(f"  {'step':>4}  {'masked':>6}  {'commit':>6}  {'temp':>4}   sequence")
+    print(f"  {0:>4}  {block_size:>6}  {'-':>6}  {'-':>4}   |{render([MASK] * block_size)}|  pure noise")
+    for i, (temp, seq) in enumerate(trace, start=1):
+        print(f"  {i:>4}  {seq.count(MASK):>6}  {trace_commits[i - 1]:>6}  {temp:>4.2f}   |{render(seq)}|")
+    print(f"\n  result: {name!r}")
+    # The commit counts are 1,1,1,2,3,2,3,3 here and that shape is the cosine
+    # schedule, not the sample: it barely commits at first, when every position
+    # is still noise and there is nothing to condition on, then accelerates once
+    # enough letters are fixed that the rest are nearly determined. Temperature
+    # falls alongside it, so the early guesses explore and the late ones do not.
+    assert sum(trace_commits) == block_size, "every position must be committed exactly once"
+
     for num_steps_denoise in (16, 8, 4):
         torch.manual_seed(1234)  # same noise every time, so only the schedule differs
         print(f"\n--- inference: {num_steps_denoise} denoising steps ---")
         total_passes = 0
         commits = []
         for sample_idx in range(10):
-            name, passes, commits = denoise(num_steps_denoise)
+            name, passes, commits, _ = denoise(num_steps_denoise)
             total_passes += passes
             print(f"sample {sample_idx + 1:2d}: {name}")
         print(f"  {total_passes / 10:.1f} forward passes per name (left-to-right needs up to {block_size})")

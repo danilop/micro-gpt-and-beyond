@@ -127,21 +127,57 @@ Three techniques improve generation quality:
 
   The 8- and 4-step arms are where the schedule actually sets the pace.
 
-At 8 steps over a 16-position sequence, the schedule commits 1, 1, 1, 2, 3, 2, 3, 3
-positions, slow while everything is uncertain, several at a time once the structure
-is settled. Sketched below on the first 8 of the 16 positions, with the mask count
-being what is masked *going into* that step (so most of the remaining masks live in
-the 8 positions that are off-screen to the right):
+### Watching one name denoise
+
+The arms above report where denoising ends up. Before them the lab prints how it
+gets there: one name, 8 steps, the whole 16-position sequence after each step.
 
 ```
-Step 8 (t=1.00, temp=0.80): [M]  [M]  [M]  [M]  [M]  [M]  [M]  [M]   16 masked
-Step 6 (t=0.92, temp=0.76): [M]   a   [M]  [M]  [M]  [M]  [M]  [PAD] 14 masked
-Step 4 (t=0.71, temp=0.65):  m    a   [M]   i   [M]  [M]  [PAD][PAD]  11 masked
-Step 2 (t=0.38, temp=0.49):  m    a    r    i    a   [M]  [PAD][PAD]   6 masked
-Step 1 (t=0.20, temp=0.40):  m    a    r    i    a   [M]  [PAD][PAD]   3 masked
-After step 1:                m    a    r    i    a   [PAD][PAD][PAD]   0 masked
-Result:                      maria
+--- one name, denoised in 8 steps ---
+  `_` = still masked (noise), blank = [PAD], letters = committed
+
+  step  masked  commit  temp   sequence
+     0      16       -     -   |________________|  pure noise
+     1      15       1  0.80   |_______________ |
+     2      14       1  0.79   |______________  |
+     3      13       1  0.76   |_____________   |
+     4      11       2  0.72   |___________     |
+     5       8       3  0.65   |________a       |
+     6       6       2  0.58   |_a___n__a       |
+     7       3       3  0.49   |_a_lani_a       |
+     8       0       3  0.40   |jailanina       |
+
+  result: 'jailanina'
 ```
+
+A position mid-denoise holds no character, so it needs a glyph exactly one column
+wide or the rows stop lining up. `_` is a slot still waiting to be filled, and it
+sits low enough that the letters appearing around it are what your eye lands on;
+an asterisk would be the wrong way round, louder than the name it is revealing.
+`[PAD]` gets a blank, since the name genuinely ends there. Because every row is
+the same width, **a column that changes is a position committing**, and no column
+ever changes twice: once a position is committed it is final.
+
+Three things are worth reading off that table.
+
+**The model decides the length before it decides the letters.** Steps 1 through 4
+commit five positions and every one of them is `[PAD]`; by step 5 all seven are
+placed and the length is settled at nine. Nothing in the training objective asked
+for that ordering. It falls out of confidence-based
+remasking: with everything else still masked there is very little evidence about
+which letter goes where, but plenty about where the name stops, so `[PAD]` is what
+the model is surest of and `[PAD]` is what gets committed first.
+
+**Commits accelerate: 1, 1, 1, 2, 3, 2, 3, 3.** That shape is the cosine schedule,
+not this sample; it is the same for every name at 8 steps. Early on, each position
+is being guessed from almost nothing, so the schedule commits one at a time. Once
+enough letters are fixed, the rest are nearly determined by them, and three can
+safely go in one pass. This is the whole economic argument for diffusion decoding.
+
+**The letters do not arrive left to right.** Step 5 places an `a` at position 9,
+step 6 fills in positions 2 and 6, and only at step 8 does the leading `j` appear.
+A causal model cannot do this; the bidirectional attention from section 2 is what
+lets a position be decided from context on both sides of it.
 
 ## Why These Choices
 
