@@ -343,12 +343,12 @@
     "hash": "181cb2ed"
   },
   "169": {
-    "text": "Header row for the training log: the merge index, the pair of token ids being merged, a readable rendering of that pair, how often it occurred, and the vocabulary size after the merge.",
-    "hash": "51c59c36"
+    "text": "Header row for the training log: the merge index, the pair of token ids being merged, a readable rendering of that pair, how often it occurred, the id given to the new token, and the vocabulary size once that token is added. The new id is always one less than the vocabulary size, since ids start at zero.",
+    "hash": "34730059"
   },
   "170": {
     "text": "Print dashes to separate the table header from the data rows.",
-    "hash": "0de54e22"
+    "hash": "be650ded"
   },
   "172": {
     "text": "Run the greedy merge loop. Earlier merges change the corpus seen by later merges, so the learned vocabulary is order-dependent.",
@@ -399,8 +399,8 @@
     "hash": "91ff0e44"
   },
   "186": {
-    "text": "Print one row of the training log: merge number, pair IDs, visual form, frequency, and new vocab size.",
-    "hash": "b6012b0c"
+    "text": "Print one row of the training log: merge number, pair ids, visual form, frequency, the new token's id, and the vocab size after adding it.",
+    "hash": "3f225624"
   },
   "188": {
     "text": "Apply the merge to every sequence in the corpus. The corpus shrinks because two tokens become one wherever this pair appeared.",

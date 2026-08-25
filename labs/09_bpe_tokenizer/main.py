@@ -166,8 +166,8 @@ def token_str(tid):
 
 print(f"\nStarting vocab: {vocab_size} tokens ({len(uchars)} chars + BOS)")
 print(f"Training {NUM_MERGES} merges...\n")
-print(f"{'Merge':>5}  {'Pair':>20}  {'Visual':>12}  {'Freq':>6}  {'Vocab':>5}")
-print("-" * 60)
+print(f"{'Merge':>5}  {'Pair':>20}  {'Visual':>12}  {'Freq':>6}  {'New id':>6}  {'Vocab':>5}")
+print("-" * 64)
 
 for i in range(NUM_MERGES):
     counts = count_pairs(corpus)
@@ -183,7 +183,7 @@ for i in range(NUM_MERGES):
 
     if i < 20 or i % 10 == 0 or i == NUM_MERGES - 1:
         visual = f"'{token_str(best_pair[0])}'+'{token_str(best_pair[1])}'"
-        print(f"{i + 1:>5}  {best_pair!s:>20}  {visual:>12}  {best_count:>6}  {vocab_size + 1:>5}")
+        print(f"{i + 1:>5}  {best_pair!s:>20}  {visual:>12}  {best_count:>6}  {new_id:>6}  {vocab_size + 1:>5}")
 
     corpus = merge_pair(corpus, best_pair, new_id)
     vocab_size += 1
